@@ -3,6 +3,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:web3dart/web3dart.dart';
 import 'package:avme_wallet/Screen/helper.dart';
@@ -86,12 +87,12 @@ class LoginState extends State<Login> with AfterLayoutMixin <Login>, Helpers
   }
   btn2(context)
   {
-      String pre_mnemonic = "cross burst million health capital category salt float velvet clerk version always";
+      String preMnemonic = "cross burst million health capital category salt float velvet clerk version always";
       // UNCOMMENT THE NEXT LINE TO GENERATE ANOTHER
       // var mnemonic = bip39.generateMnemonic();
       // GENERATIONG HEX
 
-      var _hex = bip39.mnemonicToSeedHex(pre_mnemonic);
+      var _hex = bip39.mnemonicToSeedHex(preMnemonic);
       hex = _hex;
       snack(_hex, context);
       // PRINTING DATA USING SNACKBAR
@@ -101,7 +102,7 @@ class LoginState extends State<Login> with AfterLayoutMixin <Login>, Helpers
 
   }
   btnMakeWallet(BuildContext context)
-  {
+  async {
       //ALLOCATING WALLET DATA
 
       // String content = new File("wallet.json").readAsStringSync();
@@ -112,9 +113,16 @@ class LoginState extends State<Login> with AfterLayoutMixin <Login>, Helpers
       // Credentials _random = EthPrivateKey.createRandom(_rng);
       Credentials credentFromHex = EthPrivateKey.fromHex(hex);
       Wallet wallet = Wallet.createNew(credentFromHex,"abacate", _rng);
-      debugPrint(wallet.toJson());
+
       snack(wallet.toJson(), context);
 
+      // CREATING FILE ON THE CREATED WALLET
+      // todo: refactor this code
+
+      // Async because the app will request access to the device...
+
+      // String path = await WalletManager()._localPath;
+      // snack(path, context);
   }
   @override
   void afterFirstLayout(BuildContext context) {
@@ -122,11 +130,56 @@ class LoginState extends State<Login> with AfterLayoutMixin <Login>, Helpers
   }
 }
 
-// mixin Helpers {
-//   void snack(texto, BuildContext context)
-//   {
-//     debugPrint('$texto');
-//     ScaffoldMessenger.of(context).showSnackBar(
-//         SnackBar(content: Text('$texto')));
-//   }
-// }
+// CREATING FILE ON THE CREATED WALLET
+// todo: refactor this code
+
+// Async because the app will request access to the device...
+
+class WalletManager
+{
+    //Our constructor
+    final String hash;
+    WalletManager({this.hash});
+
+    String ext = ".json";
+    String filename = "AVME/wallet-";
+
+
+    // GET THE DEFAULT PATH
+    // Android: /data/user/0/com.avme.avme_wallet/app_flutter
+    Future<String> get _localPath async
+    {
+        final directory = await getApplicationDocumentsDirectory();
+
+        return directory.path;
+    }
+    // SETTING THE FILE PATH
+    Future<File> get _localFile async
+    {
+        final path = await _localPath;
+        return File('$path/$filename$hash$ext');
+    }
+    // WRITTING DATA
+    Future<File> write(String json) async
+    {
+        final file = await _localFile;
+        return file.writeAsString("$json");
+    }
+    // READING DATA
+    Future<String> read() async
+    {
+        try
+        {
+            // Waits our path to resolve
+            final file = await _localFile;
+            // Read file
+            String contents = await file.readAsString();
+
+            return contents;
+        }
+        catch(e)
+        {
+            debugPrint(e.toString());
+        }
+    }
+}
