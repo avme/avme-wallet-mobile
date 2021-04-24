@@ -1,5 +1,7 @@
 //main file of the design, change to cappucino or something else on:
 //url: [IMPLEMENT URL]
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:web3dart/web3dart.dart';
@@ -7,7 +9,8 @@ import 'package:avme_wallet/Screen/helper.dart';
 import 'package:after_layout/after_layout.dart';
 import 'package:bip39/bip39.dart' as bip39;
 
-
+String hex = "";
+var random = Null;
 void main() {
   runApp(AvmeWallet());
 }
@@ -64,7 +67,7 @@ class LoginState extends State<Login> with AfterLayoutMixin <Login>, Helpers
             ),
             ElevatedButton(
               onPressed: () {
-                btn2(context);
+                btnMakeWallet(context);
               },
               child: Text("Make Wallet"),
             )
@@ -84,14 +87,20 @@ class LoginState extends State<Login> with AfterLayoutMixin <Login>, Helpers
   btn2(context)
   {
       String pre_mnemonic = "cross burst million health capital category salt float velvet clerk version always";
-      var mnemonic = bip39.generateMnemonic();
+      // UNCOMMENT THE NEXT LINE TO GENERATE ANOTHER
+      // var mnemonic = bip39.generateMnemonic();
+      // GENERATIONG HEX
 
+      var _hex = bip39.mnemonicToSeedHex(pre_mnemonic);
+      hex = _hex;
+      snack(_hex, context);
+      // PRINTING DATA USING SNACKBAR
       // debugPrint(mnemonic);
       // snack(mnemonic.toString(), context);
-      //Fazendo nossa Seed to Hex e usar na montagem da wallet...
+
 
   }
-  btnMakeWallet()
+  btnMakeWallet(BuildContext context)
   {
       //ALLOCATING WALLET DATA
 
@@ -99,9 +108,12 @@ class LoginState extends State<Login> with AfterLayoutMixin <Login>, Helpers
       // Wallet wallet = Wallet.fromJson(content, "test");
 
       //DESCOMENTAR
-      // Credentials fromHex = EthPrivateKey.fromHex(hex)
-      // Wallet wallet = Wallet.createNew("abacaxi","abacate","pizza");
-
+      var _rng = new Random.secure();
+      // Credentials _random = EthPrivateKey.createRandom(_rng);
+      Credentials credentFromHex = EthPrivateKey.fromHex(hex);
+      Wallet wallet = Wallet.createNew(credentFromHex,"abacate", _rng);
+      debugPrint(wallet.toJson());
+      snack(wallet.toJson(), context);
 
   }
   @override
