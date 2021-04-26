@@ -27,6 +27,7 @@ class AvmeWallet extends StatelessWidget with Helpers {
       home: Scaffold(
         appBar: AppBar(title: Text("AVME Wallet")),
         body: LoginTwo(),
+        // body: Password()
       )
     );
   }
@@ -44,6 +45,22 @@ class Login extends StatefulWidget
       debugPrint('loaded');
   }
 }
+
+class Password extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child:
+        Text("Password Widget",
+        style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold
+        ),)
+    );
+
+  }
+}
+
 
 class LoginTwo extends StatelessWidget with Helpers
 {
@@ -72,6 +89,17 @@ class LoginTwo extends StatelessWidget with Helpers
                   child: Text("Try me!"),
                 ),
               )
+          ),
+          Card(
+              child: ListTile(
+                title: Text("3 - Change Navigation"),
+                trailing: ElevatedButton(
+                  onPressed: () {
+                    btnChangeNavigation(context);
+                  },
+                  child: Text("Try me!"),
+                ),
+              )
           )
         ],
       );
@@ -88,6 +116,10 @@ class LoginTwo extends StatelessWidget with Helpers
     //Check the credentials
     Credentials accessGranted = wallet.privateKey;
     snack(accessGranted.toString(), context);
+  }
+  btnChangeNavigation(BuildContext context)
+  {
+    Navigator.push(context, new MaterialPageRoute(builder: (context) => Password()));
   }
   btnMakeWallet(BuildContext context) async
   {
