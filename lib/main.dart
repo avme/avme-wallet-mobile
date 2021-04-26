@@ -2,12 +2,13 @@
 //url: [IMPLEMENT URL]
 import 'dart:math';
 
+import 'package:avme_wallet/screens/initial_loading.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:web3dart/web3dart.dart';
-import 'package:avme_wallet/Screen/helper.dart';
+import 'package:avme_wallet/screens/helper.dart';
 import 'package:after_layout/after_layout.dart';
 import 'package:bip39/bip39.dart' as bip39;
 
@@ -24,21 +25,27 @@ class AvmeWallet extends StatelessWidget with Helpers {
   Widget build(BuildContext context) {
     return MaterialApp(
       // home: Login(),
-      home: Scaffold(
-        appBar: AppBar(title: Text("AVME Wallet")),
-        body: LoginTwo(),
-        // body: Password()
-      )
-    );
+      // home: Scaffold(
+      //   appBar: AppBar(title: Text("AVME Wallet")),
+      //   body: Login(),
+      //   // body: Password()
+      // ),
+      initialRoute: '/login',
+      routes: {
+        // '/' : (context) => InitialLoading(),
+        '/login' : (context) => Login(),
+        '/old' : (context) => LoginOld(),
+        '/passphrase' : (context) => Password(),
+    });
   }
 }
 
-class Login extends StatefulWidget
+class LoginOld extends StatefulWidget
 {
   //Criando estado do nosso widget
   //retorna o State do nosso Login State
   @override
-  State<StatefulWidget> createState() => LoginState();
+  State<StatefulWidget> createState() => LoginOldState();
 
   void onLoad(BuildContext context)
   {
@@ -46,51 +53,198 @@ class Login extends StatefulWidget
   }
 }
 
-class Password extends StatelessWidget {
+class Login extends StatelessWidget with Helpers{
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child:
-        Text("Password Widget",
-        style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold
-        ),)
+    TextStyle _textStyle = TextStyle(
+        fontFamily: 'Montserrat',
+        fontSize: 20.0, color: Colors.white
     );
+    EdgeInsets _padding = EdgeInsets.fromLTRB(10, 5, 10, 5);
+    BorderRadius _borderRadius = BorderRadius.circular(16.0);
+    OutlineInputBorder _outlineInputBorder = OutlineInputBorder(
+        borderRadius: _borderRadius,
+    );
+    final password = TextField(
+      obscureText: false,
+      style: _textStyle,
+      decoration: InputDecoration(
+        contentPadding: _padding,
+        hintText: "Your password here owo",
+        fillColor: Colors.white60,
+        hintStyle: TextStyle(
+          color: Colors.white
+        )
+      )
+    );
+    final loginBtn = Material(
+      elevation: 5,
+      borderRadius: _borderRadius,
+      color: Color(0xff01A0C7),
+      child: MaterialButton(
+        minWidth: MediaQuery.of(context).size.width,
+        padding: _padding,
+        onPressed: () {
+          snack("Log-in button fired!", context);
+        },
+        child: Text("Login",
+          textAlign: TextAlign.center,
+          style: _textStyle.copyWith(
+            color: Colors.white,
+            fontWeight: FontWeight.bold
+          ),
+        ),
+      )
+      ,
+    );
+    // return Scaffold(
+    //   body: Center(
+    //     child: Container(
+    //       color: Colors.white,
+    //       child: Padding(
+    //         padding: EdgeInsets.all(36),
+    //         child: Column(
+    //           crossAxisAlignment: CrossAxisAlignment.center,
+    //           mainAxisAlignment: MainAxisAlignment.center,
+    //           children: [
+    //             SizedBox(
+    //               height: 155.0,
+    //               child: Image.asset("assets/supreme_f.png", fit: BoxFit.contain,),
+    //             ),
+    //             SizedBox(height: 45.0),
+    //             password,
+    //             SizedBox(height: 45.0),
+    //             loginBtn
+    //           ]
+    //         ),
+    //       )
+    //     )
+    //   ),
+    // );
+    return Scaffold(
+      body: Column(
+        children: [
+          Flexible(
+            flex: 2,
+            child:
+            Container(
+              color: Colors.blue,
+              child:
+              Center(
+                child:
+                SizedBox(
+                  // height: 155.0,
+                  // child: Image.asset("assets/supreme_f.png", fit: BoxFit.contain,),
+                  child: Image.asset("assets/newlogo02-trans.png", fit: BoxFit.contain, height: 170,),
+                ),
+              ),
+            ),
+          ),
+          Flexible(
+            flex: 3,
+            child:
+              Container(
+                color: Colors.red,
+                child:
 
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(20,0,20,0),
+                    child:
+                    Column(
+                      children: [
+                        SizedBox(height: 20.0),
+                        password,
+                        SizedBox(height: 20.0),
+                        loginBtn
+                      ]
+                    ),
+                  )
+
+              ),
+          )
+        ],
+      ),
+    );
+    return Scaffold(
+      body: Center(
+          child: Container(
+              color: Colors.white,
+              child: Padding(
+                padding: EdgeInsets.all(36),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        height: 155.0,
+                        child: Image.asset("assets/supreme_f.png", fit: BoxFit.contain,),
+                      ),
+                      SizedBox(height: 45.0),
+                      password,
+                      SizedBox(height: 45.0),
+                      loginBtn
+                    ]
+                ),
+              )
+          )
+      ),
+    );
   }
 }
 
 
-class LoginTwo extends StatelessWidget with Helpers
+class Password extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(title: Text("Password Widget")),
+        body:
+          Center(
+          child:
+            Text("Password Widget",
+            style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold
+            ),)
+        )
+      );
+  }
+}
+
+
+class Options extends StatelessWidget with Helpers
 {
   @override
   Widget build(BuildContext context) {
-      return ListView(
-        children: [
-          Card(
-            child: ListTile(
-              title: Text("1 - Load Current Wallet"),
-              trailing: ElevatedButton(
-                onPressed: () {
-                  btnLoadWallet(context);
-                },
-                child: Text("Try me!"),
-              ),
-            )
-          ),
-          Card(
+      return
+        Scaffold(
+          appBar: AppBar(title: Text("AVME Wallet")),
+          body:
+          ListView(
+            children: [
+            Card(
               child: ListTile(
-                title: Text("2 - New Wallet"),
+                title: Text("1 - Load Current Wallet"),
                 trailing: ElevatedButton(
                   onPressed: () {
-                    btnMakeWallet(context);
+                    btnLoadWallet(context);
                   },
                   child: Text("Try me!"),
                 ),
               )
-          ),
-          Card(
+            ),
+            Card(
+                child: ListTile(
+                  title: Text("2 - New Wallet"),
+                  trailing: ElevatedButton(
+                    onPressed: () {
+                      btnMakeWallet(context);
+                    },
+                    child: Text("Try me!"),
+                  ),
+                )
+            ),
+            Card(
               child: ListTile(
                 title: Text("3 - Change Navigation"),
                 trailing: ElevatedButton(
@@ -100,9 +254,10 @@ class LoginTwo extends StatelessWidget with Helpers
                   child: Text("Try me!"),
                 ),
               )
+            )
+            ],
           )
-        ],
-      );
+        );
   }
   btnLoadWallet(BuildContext context) async
   {
@@ -119,7 +274,7 @@ class LoginTwo extends StatelessWidget with Helpers
   }
   btnChangeNavigation(BuildContext context)
   {
-    Navigator.push(context, new MaterialPageRoute(builder: (context) => Password()));
+    Navigator.pushNamed(context, '/passphrase');
   }
   btnMakeWallet(BuildContext context) async
   {
@@ -149,13 +304,16 @@ class LoginTwo extends StatelessWidget with Helpers
   // }
 }
 
-class LoginState extends State<Login> with AfterLayoutMixin <Login>, Helpers
+class LoginOldState extends State<LoginOld> with AfterLayoutMixin <LoginOld>, Helpers
 {
 
   @override
   Widget build(BuildContext context) {
 
-    return Row(children: [
+    return
+      Scaffold(
+          appBar: AppBar(title: Text("AVME Wallet")),
+          body: Row(children: [
               // Row(children: [
               //
               //     Column(
@@ -202,7 +360,8 @@ class LoginState extends State<Login> with AfterLayoutMixin <Login>, Helpers
                   ],
                 ),
               ])
-        ]);
+        ])
+      );
 
   }
   onLoad(BuildContext context)
