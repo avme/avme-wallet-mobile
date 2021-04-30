@@ -66,7 +66,7 @@ class _InitialLoadingState extends State<InitialLoading> with Helpers{
           ),
           actions: [
             TextButton(
-              child: _buttonText(text: "RESTORE BACKUP",),
+              child: _buttonText(text: "RESTORE BACKUP"),
               onPressed: () {
                 Navigator.of(context).pop();
                 // TODO: implement backup process
@@ -82,7 +82,7 @@ class _InitialLoadingState extends State<InitialLoading> with Helpers{
                 if(global.walletManager.logged())
                 {
                   Navigator.of(context).pop();
-                  Navigator.pushReplacementNamed(context, "/options");
+                  Navigator.pushReplacementNamed(context, "/home");
                   return true;
                 }
               },

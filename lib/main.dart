@@ -9,6 +9,7 @@ import 'package:web3dart/web3dart.dart';
 import 'package:avme_wallet/screens/helper.dart';
 import 'package:after_layout/after_layout.dart';
 import 'package:avme_wallet/controller/globals.dart' as global;
+import 'package:avme_wallet/screens/tabswallet.dart';
 var random = Null;
 
 final String password = "abacate";
@@ -23,18 +24,19 @@ class AvmeWallet extends StatelessWidget with Helpers {
     return MaterialApp(
       // home: Login(),
       // home: Scaffold(
-      //   appBar: AppBar(title: Text("AVME Wallet")),
+      //   appBar: AppBar(title: Text()),
       //   body: Login(),
       //   // body: Password()
       // ),
       theme: ThemeData.light(),
-      initialRoute: '/start',
+      initialRoute: '/initialLoad',
       routes: {
         // '/' : (context) => InitialLoading(),
         '/old' : (context) => LoginOld(),
         '/passphrase' : (context) => Password(),
-        '/options' : (context) => Options(),
-        '/start' : (context) => InitialLoading()
+        '/debugOptions' : (context) => Options(),
+        '/initialLoad' : (context) => InitialLoading(),
+        '/home' : (context) => TabsWallet(),
     });
   }
 }
@@ -220,7 +222,7 @@ class Options extends StatelessWidget with Helpers
   Widget build(BuildContext context) {
       return
         Scaffold(
-          appBar: AppBar(title: Text("AVME Wallet")),
+          appBar: AppBar(title: Text(global.appTitle)),
           body:
           ListView(
             children: [
@@ -305,7 +307,7 @@ class LoginOldState extends State<LoginOld> with AfterLayoutMixin <LoginOld>, He
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text("AVME Wallet")),
+        appBar: AppBar(title: Text(global.appTitle)),
         body: Row(children: [
           // Row(children: [
           //
