@@ -221,9 +221,7 @@ class Options extends StatelessWidget with Helpers
   @override
   Widget build(BuildContext context) {
       return
-        Scaffold(
-          appBar: AppBar(title: Text(global.appTitle)),
-          body:
+
           ListView(
             children: [
             Card(
@@ -272,8 +270,7 @@ class Options extends StatelessWidget with Helpers
               )
             )
             ],
-          )
-        );
+          );
   }
   btnLoadWallet(BuildContext context) async
   {

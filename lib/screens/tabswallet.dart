@@ -1,6 +1,7 @@
 import 'package:avme_wallet/screens/helper.dart';
 import 'package:flutter/material.dart';
 import 'package:avme_wallet/controller/globals.dart' as global;
+import 'package:avme_wallet/main.dart';
 class TabsWallet extends StatelessWidget with Helpers{
   BuildContext _this;
   @override
@@ -8,7 +9,7 @@ class TabsWallet extends StatelessWidget with Helpers{
     _this = context;
     return DefaultTabController(
       initialIndex: 1,
-      length: 3,
+      length: 4,
       child: Scaffold(
         appBar: AppBar(
           title: Text(global.appTitle),
@@ -38,6 +39,9 @@ class TabsWallet extends StatelessWidget with Helpers{
               Tab(
                 text: "TRANSACTIONS",
               ),
+              Tab(
+                text: "DEBUG OPTIONS",
+              ),
             ],
           ),
         ),
@@ -46,12 +50,16 @@ class TabsWallet extends StatelessWidget with Helpers{
             Center(
               child: Text('ACCOUNTS WIDGET HERE'),
             ),
+
             Center(
               child: Text('BALANCE WIDGET HERE'),
             ),
+
             Center(
               child: Text('TRANSACTIONS WIDGET HERE'),
             ),
+
+            Options(),
           ],
         ),
       ),
