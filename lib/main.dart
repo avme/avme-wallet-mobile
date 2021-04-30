@@ -8,8 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:avme_wallet/screens/helper.dart';
 import 'package:after_layout/after_layout.dart';
-import 'package:avme_wallet/controller/wallet_manager.dart';
-
+import 'package:avme_wallet/controller/globals.dart' as global;
 var random = Null;
 
 final String password = "abacate";
@@ -28,13 +27,14 @@ class AvmeWallet extends StatelessWidget with Helpers {
       //   body: Login(),
       //   // body: Password()
       // ),
-      initialRoute: '/initial',
+      theme: ThemeData.light(),
+      initialRoute: '/start',
       routes: {
         // '/' : (context) => InitialLoading(),
         '/old' : (context) => LoginOld(),
         '/passphrase' : (context) => Password(),
         '/options' : (context) => Options(),
-        '/initial' : (context) => InitialLoading()
+        '/start' : (context) => InitialLoading()
     });
   }
 }
@@ -262,8 +262,7 @@ class Options extends StatelessWidget with Helpers
                 title: Text("4 - Decrypt"),
                 trailing: ElevatedButton(
                   onPressed: () async {
-                    WalletManager wm = WalletManager();
-                    String content = await wm.decryptAes();
+                    String content = await global.walletManager.decryptAes();
                     snack(content, context);
                   },
                   child: Text("Try me!"),
@@ -278,8 +277,7 @@ class Options extends StatelessWidget with Helpers
   {
 
     snack("Trying to load...", context);
-    WalletManager wm = new WalletManager(hash:"futa");
-    File fileP = await wm.accountFile;
+    File fileP = await global.walletManager.accountFile;
     String content = new File(fileP.path).readAsStringSync();
     Wallet wallet = Wallet.fromJson(content, password);
     // snack(content, context);
@@ -293,8 +291,8 @@ class Options extends StatelessWidget with Helpers
   }
   btnMakeAccount(BuildContext context) async
   {
-    WalletManager wm = new WalletManager(hash:"futa");
-    String ret = await wm.makeAccount("abacaxi");
+    String ret = await global.walletManager.makeAccount("abacaxi");
+    snack(ret, context);
   }
   // @override
   // void afterFirstLayout(BuildContext context) {
@@ -375,9 +373,8 @@ class LoginOldState extends State<LoginOld> with AfterLayoutMixin <LoginOld>, He
     // WalletManager wm = new WalletManager(hash:hex);
     
     // gera new mnemonic
-    String hex = await WalletManager().generateSeed();
-    
-    WalletManager wm = new WalletManager(hash:"futa");
+    String hex = await global.walletManager.generateSeed();
+
     var _rng = new Random.secure();
     // Credentials _random = EthPrivateKey.createRandom(_rng);
     Credentials credentFromHex = EthPrivateKey.fromHex(hex);
@@ -392,7 +389,7 @@ class LoginOldState extends State<LoginOld> with AfterLayoutMixin <LoginOld>, He
     // File pathString = await wm._localFile;
     // snack(pathString.path, context);
 
-    File path = await wm.write(json);
+    File path = await global.walletManager.write(json);
     snack("Saved to: "+path.path, context);
   }
   @override
@@ -400,5 +397,7 @@ class LoginOldState extends State<LoginOld> with AfterLayoutMixin <LoginOld>, He
     onLoad(context);
   }
 }
+
+
 
 

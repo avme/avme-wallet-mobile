@@ -12,18 +12,20 @@ import 'package:web3dart/web3dart.dart';
 import 'package:aes_crypt/aes_crypt.dart';
 
 // CREATING FILE ON THE CREATED WALLET
-// todo: refactor this code
+// TODO: refactor this code
 
 // Async because the app will request access to the device...
 
 String url = "https://api.avax-test.network:443/ext/bc/C/rpc";
 String password = "Banana123";
+String mnemonicFile = "secret.txt.aes";
 
 class WalletManager with Helpers
 {
   //Our constructor
   final String hash;
-  WalletManager({this.hash = ""});
+
+  WalletManager({this.hash = "default"});
 
   String ext = ".json";
   String folder = "AVME-Wallet/";
@@ -48,16 +50,34 @@ class WalletManager with Helpers
   // SETTING THE FILE PATH TO THE ACCOUNT
   Future<File> get accountFile async
   {
+    String fullPath;
     final path = await documentsFolder;
     final bool exists = await checkPath("$path$folder");
-    String fullPath;
-    if(exists)
-    {
+
+    if(exists) {
       fullPath = "$path$folder$filename$hash$ext";
     }
     return File(fullPath);
   }
 
+  Future<bool> hasPreviousWallet() async
+  {
+      File file = await accountFile;
+      return file.exists();
+  }
+  // ONLY FOR TESTING PURPOSES
+  Future<void> deletePreviousWallet() async
+  {
+    bool hasFile = await hasPreviousWallet();
+    if(hasFile){
+      File file = await accountFile;
+      file.delete();
+
+      String documentsPath = await documentsFolder;
+      File mnemonic = new File(documentsPath + mnemonicFile);
+      mnemonic.delete();
+    }
+  }
   // WRITTING DATA
   Future<File> write(String json) async
   {
@@ -103,20 +123,22 @@ class WalletManager with Helpers
   {
     String documentsPath = await documentsFolder;
     AesCrypt crypt = AesCrypt();
+
+    // Using the same password to uncrypt the file
     crypt.setPassword(password);
-    return crypt.decryptTextFromFileSync(documentsPath+"teste.txt.aes", utf16: true);
+    return crypt.decryptTextFromFileSync(documentsPath + mnemonicFile, utf16: true);
   }
 
   Future<String> newMnemonic() async
   {
     // Gera mnemomic
-    String mnemonic = "blossom skate magnet magic put task famous square because attract clog ketchup";
+    String mnemonic =
+        "blossom skate magnet magic put task famous square because attract clog ketchup";
 
     // UNCOMMENT THE NEXT LINE TO GENERATE ANOTHER
     // String mnemonic = bip39.generateMnemonic();
     print(mnemonic);
 
-    // TODO: encrypt save this garbage to a json
 
     // documents folder:
     String documentsPath = await documentsFolder;
@@ -125,16 +147,15 @@ class WalletManager with Helpers
 
     // String salt = hexRandBytes();
 
+    // Setting the main Password to encrypt the file, remember to use
+    // the same parameter if you're planning to use it again, like uncrypt...
     crypt.setPassword(password);
-    debugPrint("AES: "+documentsPath+"teste.txt.aes");
+    debugPrint("AES: "+documentsPath + mnemonicFile);
 
-    // Salva o arquivo
-    // Encrypt text to file
+    // Saving file with the method 'encryptTextToFileSync' from the Lib "aes_crypt"
 
-    crypt.encryptTextToFileSync(mnemonic, documentsPath+"teste.txt.aes",utf16: true);
+    crypt.encryptTextToFileSync(mnemonic, documentsPath + mnemonicFile,utf16: true);
     return mnemonic;
-
-    // crypt.en
   }
 
   Future<String> generateSeed() async
@@ -169,22 +190,16 @@ class WalletManager with Helpers
     Credentials credentFromHex = EthPrivateKey.fromHex(hex);
     Wallet wallet = Wallet.createNew(credentFromHex,password, _rng);
     String json = wallet.toJson();
-
-    // credentFromHex
-
-    // snack(wallet.toJson(), context);
-
-    // SAVING THE WALLET
-
-
-    // UNCOMMENT TO SHOW THE PATH
-    // File pathString = await wm._accountFile;
-    // snack(pathString.path, context);
-
-
-
     File path = await write(json);
     return path.path;
+  }
 
+
+  // TODO: change this to verify if the user has been logged and the wallet has been initialised
+
+
+  bool logged()
+  {
+    return true;
   }
 }
