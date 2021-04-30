@@ -32,6 +32,9 @@ dependencies:
   after_layout: ^1.1.0
   bip39: ^1.0.3
   path_provider: ^2.0.1
+  bip32: ^1.0.7
+  http: ^0.12.2
+  aes_crypt: ^0.1.1
 
 dev_dependencies:
   flutter_test:
