@@ -28,7 +28,7 @@ class AvmeWallet extends StatelessWidget with Helpers {
       //   body: Login(),
       //   // body: Password()
       // ),
-      // initialRoute: '/initial',
+      initialRoute: '/initial',
       routes: {
         // '/' : (context) => InitialLoading(),
         '/old' : (context) => LoginOld(),
