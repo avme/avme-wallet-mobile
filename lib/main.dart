@@ -28,13 +28,13 @@ class AvmeWallet extends StatelessWidget with Helpers {
       //   body: Login(),
       //   // body: Password()
       // ),
-      initialRoute: '/login',
+      // initialRoute: '/initial',
       routes: {
         // '/' : (context) => InitialLoading(),
-        '/login' : (context) => Login(),
         '/old' : (context) => LoginOld(),
         '/passphrase' : (context) => Password(),
-        '/' : (context) => Options(),
+        '/options' : (context) => Options(),
+        '/initial' : (context) => InitialLoading()
     });
   }
 }
@@ -52,147 +52,147 @@ class LoginOld extends StatefulWidget
   }
 }
 
-class Login extends StatelessWidget with Helpers{
-  @override
-  Widget build(BuildContext context) {
-    TextStyle _textStyle = TextStyle(
-        fontFamily: 'Montserrat',
-        fontSize: 20.0, color: Colors.white
-    );
-    EdgeInsets _padding = EdgeInsets.fromLTRB(10, 5, 10, 5);
-    BorderRadius _borderRadius = BorderRadius.circular(16.0);
-    OutlineInputBorder _outlineInputBorder = OutlineInputBorder(
-        borderRadius: _borderRadius,
-    );
-    final password = TextField(
-      obscureText: false,
-      style: _textStyle,
-      decoration: InputDecoration(
-        contentPadding: _padding,
-        hintText: "Your password here owo",
-        fillColor: Colors.white60,
-        hintStyle: TextStyle(
-          color: Colors.white
-        )
-      )
-    );
-    final loginBtn = Material(
-      elevation: 5,
-      borderRadius: _borderRadius,
-      color: Color(0xff01A0C7),
-      child: MaterialButton(
-        minWidth: MediaQuery.of(context).size.width,
-        padding: _padding,
-        onPressed: () {
-          snack("Log-in button fired!", context);
-        },
-        child: Text("Login",
-          textAlign: TextAlign.center,
-          style: _textStyle.copyWith(
-            color: Colors.white,
-            fontWeight: FontWeight.bold
-          ),
-        ),
-      )
-      ,
-    );
-    // return Scaffold(
-    //   body: Center(
-    //     child: Container(
-    //       color: Colors.white,
-    //       child: Padding(
-    //         padding: EdgeInsets.all(36),
-    //         child: Column(
-    //           crossAxisAlignment: CrossAxisAlignment.center,
-    //           mainAxisAlignment: MainAxisAlignment.center,
-    //           children: [
-    //             SizedBox(
-    //               height: 155.0,
-    //               child: Image.asset("assets/supreme_f.png", fit: BoxFit.contain,),
-    //             ),
-    //             SizedBox(height: 45.0),
-    //             password,
-    //             SizedBox(height: 45.0),
-    //             loginBtn
-    //           ]
-    //         ),
-    //       )
-    //     )
-    //   ),
-    // );
-    return Scaffold(
-      body: Column(
-        children: [
-        Flexible(
-          flex: 2,
-          child:
-          Container(
-            color: Colors.blue,
-            child:
-            Center(
-              child:
-                Container(
-                  child: SizedBox(
-                    // height: 155.0,
-                    // child: Image.asset("assets/supreme_f.png", fit: BoxFit.contain,),
-                    child: Image.asset("assets/newlogo02-trans.png", fit: BoxFit.contain, height: 170,),
-                  )
-                )
-
-            ),
-          ),
-        ),
-        Flexible(
-          flex: 3,
-          child:
-          Container(
-            color: Colors.red,
-            child:
-
-            Padding(
-              padding: EdgeInsets.fromLTRB(20,0,20,0),
-              child:
-              Column(
-                children: [
-                  SizedBox(height: 20.0),
-                  password,
-                  SizedBox(height: 20.0),
-                  loginBtn
-                ]
-              ),
-            )
-
-          ),
-        )
-        ],
-      ),
-    );
-    return Scaffold(
-      body: Center(
-          child: Container(
-              color: Colors.white,
-              child: Padding(
-                padding: EdgeInsets.all(36),
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        height: 155.0,
-                        child: Image.asset("assets/supreme_f.png", fit: BoxFit.contain,),
-                      ),
-                      SizedBox(height: 45.0),
-                      password,
-                      SizedBox(height: 45.0),
-                      loginBtn
-                    ]
-                ),
-              )
-          )
-      ),
-    );
-  }
-}
+// class Login extends StatelessWidget with Helpers{
+//   @override
+//   Widget build(BuildContext context) {
+//     TextStyle _textStyle = TextStyle(
+//         fontFamily: 'Montserrat',
+//         fontSize: 20.0, color: Colors.white
+//     );
+//     EdgeInsets _padding = EdgeInsets.fromLTRB(10, 5, 10, 5);
+//     BorderRadius _borderRadius = BorderRadius.circular(16.0);
+//     OutlineInputBorder _outlineInputBorder = OutlineInputBorder(
+//         borderRadius: _borderRadius,
+//     );
+//     final password = TextField(
+//       obscureText: false,
+//       style: _textStyle,
+//       decoration: InputDecoration(
+//         contentPadding: _padding,
+//         hintText: "Your password here owo",
+//         fillColor: Colors.white60,
+//         hintStyle: TextStyle(
+//           color: Colors.white
+//         )
+//       )
+//     );
+//     final loginBtn = Material(
+//       elevation: 5,
+//       borderRadius: _borderRadius,
+//       color: Color(0xff01A0C7),
+//       child: MaterialButton(
+//         minWidth: MediaQuery.of(context).size.width,
+//         padding: _padding,
+//         onPressed: () {
+//           snack("Log-in button fired!", context);
+//         },
+//         child: Text("Login",
+//           textAlign: TextAlign.center,
+//           style: _textStyle.copyWith(
+//             color: Colors.white,
+//             fontWeight: FontWeight.bold
+//           ),
+//         ),
+//       )
+//       ,
+//     );
+//     // return Scaffold(
+//     //   body: Center(
+//     //     child: Container(
+//     //       color: Colors.white,
+//     //       child: Padding(
+//     //         padding: EdgeInsets.all(36),
+//     //         child: Column(
+//     //           crossAxisAlignment: CrossAxisAlignment.center,
+//     //           mainAxisAlignment: MainAxisAlignment.center,
+//     //           children: [
+//     //             SizedBox(
+//     //               height: 155.0,
+//     //               child: Image.asset("assets/supreme_f.png", fit: BoxFit.contain,),
+//     //             ),
+//     //             SizedBox(height: 45.0),
+//     //             password,
+//     //             SizedBox(height: 45.0),
+//     //             loginBtn
+//     //           ]
+//     //         ),
+//     //       )
+//     //     )
+//     //   ),
+//     // );
+//     return Scaffold(
+//       body: Column(
+//         children: [
+//         Flexible(
+//           flex: 2,
+//           child:
+//           Container(
+//             color: Colors.blue,
+//             child:
+//             Center(
+//               child:
+//                 Container(
+//                   child: SizedBox(
+//                     // height: 155.0,
+//                     // child: Image.asset("assets/supreme_f.png", fit: BoxFit.contain,),
+//                     child: Image.asset("assets/newlogo02-trans.png", fit: BoxFit.contain, height: 170,),
+//                   )
+//                 )
+//
+//             ),
+//           ),
+//         ),
+//         Flexible(
+//           flex: 3,
+//           child:
+//           Container(
+//             color: Colors.red,
+//             child:
+//
+//             Padding(
+//               padding: EdgeInsets.fromLTRB(20,0,20,0),
+//               child:
+//               Column(
+//                 children: [
+//                   SizedBox(height: 20.0),
+//                   password,
+//                   SizedBox(height: 20.0),
+//                   loginBtn
+//                 ]
+//               ),
+//             )
+//
+//           ),
+//         )
+//         ],
+//       ),
+//     );
+//     return Scaffold(
+//       body: Center(
+//           child: Container(
+//               color: Colors.white,
+//               child: Padding(
+//                 padding: EdgeInsets.all(36),
+//                 child: Column(
+//                     crossAxisAlignment: CrossAxisAlignment.center,
+//                     mainAxisAlignment: MainAxisAlignment.center,
+//                     children: [
+//                       SizedBox(
+//                         height: 155.0,
+//                         child: Image.asset("assets/supreme_f.png", fit: BoxFit.contain,),
+//                       ),
+//                       SizedBox(height: 45.0),
+//                       password,
+//                       SizedBox(height: 45.0),
+//                       loginBtn
+//                     ]
+//                 ),
+//               )
+//           )
+//       ),
+//     );
+//   }
+// }
 
 
 class Password extends StatelessWidget {
