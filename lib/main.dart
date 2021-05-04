@@ -10,6 +10,7 @@ import 'package:avme_wallet/screens/helper.dart';
 import 'package:after_layout/after_layout.dart';
 import 'package:avme_wallet/controller/globals.dart' as global;
 import 'package:avme_wallet/screens/tabswallet.dart';
+import 'package:avme_wallet/screens/new_password.dart';
 var random = Null;
 
 final String password = "abacate";
@@ -21,6 +22,7 @@ class AvmeWallet extends StatelessWidget with Helpers {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    ThemeData futa = ThemeData.light();
     return MaterialApp(
       // home: Login(),
       // home: Scaffold(
@@ -28,7 +30,8 @@ class AvmeWallet extends StatelessWidget with Helpers {
       //   body: Login(),
       //   // body: Password()
       // ),
-      theme: ThemeData.light(),
+      // theme: ThemeData.light(),
+      theme: futa,
       initialRoute: '/initialLoad',
       routes: {
         // '/' : (context) => InitialLoading(),
@@ -37,6 +40,7 @@ class AvmeWallet extends StatelessWidget with Helpers {
         '/debugOptions' : (context) => Options(),
         '/initialLoad' : (context) => InitialLoading(),
         '/home' : (context) => TabsWallet(),
+        '/registerPassword' : (context) => NewPassword(),
     });
   }
 }

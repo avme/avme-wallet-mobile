@@ -34,18 +34,18 @@ class _InitialLoadingState extends State<InitialLoading> with Helpers{
   }
   void getData() async
   {
-    await Future.delayed(Duration(seconds: 2), () async {
+    await Future.delayed(Duration(microseconds: 700), () async {
       // Navigator.pushReplacementNamed(context, "/options");
 
       await global.walletManager.deletePreviousWallet();
       bool hasWallet = await global.walletManager.hasPreviousWallet();
-      
+
       if(hasWallet == false)
       {
         // THIS DIALOG MUST INIT THE WALLET ON THE GLOBAL
         welcomeDialog();
       }
-      snack(hasWallet.toString(), context);
+      snack("Had wallet \"$hasWallet\"", context);
     });
   }
 
@@ -76,8 +76,12 @@ class _InitialLoadingState extends State<InitialLoading> with Helpers{
             TextButton(
               child: _buttonText(text: "CREATE NEW",),
               onPressed: () async {
-                String ret = await global.walletManager.makeAccount("abacaxi");
-                snack(ret, context);
+                // TODO: implement passphrase, confirmation then create the wallet, for now is disabled
+                // String retForm = await Navigator.pushNamed(context, "/registerPassword") as String;
+                String retForm = "abacaxi";
+                // snack(retorno, context);
+                String ret = await global.walletManager.makeAccount(retForm);
+                snack("$ret : PW: $retForm", context);
 
                 if(global.walletManager.logged())
                 {
