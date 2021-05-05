@@ -15,7 +15,7 @@ class ColoredTabBar extends Container implements PreferredSizeWidget {
         decoration: BoxDecoration(
           border: Border(
             top: BorderSide(
-              color: Color(0xFFB26BFF),
+              color: Color(0xFF7238AD),
               width: 2
             )
           )

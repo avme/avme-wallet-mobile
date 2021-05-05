@@ -77,8 +77,8 @@ class _InitialLoadingState extends State<InitialLoading> with Helpers{
               child: _buttonText(text: "CREATE NEW",),
               onPressed: () async {
                 // TODO: implement passphrase, confirmation then create the wallet, for now is disabled
-                // String retForm = await Navigator.pushNamed(context, "/registerPassword") as String;
-                String retForm = "abacaxi";
+                String retForm = await Navigator.pushNamed(context, "/registerPassword") as String;
+                // String retForm = "abacaxi";
                 // snack(retorno, context);
                 String ret = await global.walletManager.makeAccount(retForm);
                 snack("$ret : PW: $retForm", context);

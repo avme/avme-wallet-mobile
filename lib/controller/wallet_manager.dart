@@ -18,7 +18,7 @@ import 'package:aes_crypt/aes_crypt.dart';
 
 String url = "https://api.avax-test.network:443/ext/bc/C/rpc";
 String password = "Banana123";
-String mnemonicFile = "secret.txt.aes";
+String mnemonicFile = "AVME-Wallet/secret.txt.aes";
 
 class WalletManager with Helpers
 {
@@ -75,6 +75,7 @@ class WalletManager with Helpers
 
       String documentsPath = await documentsFolder;
       File mnemonic = new File(documentsPath + mnemonicFile);
+      debugPrint("MEME MONIC: "+mnemonic.path);
       mnemonic.delete();
     }
   }
@@ -112,10 +113,10 @@ class WalletManager with Helpers
       debugPrint("CREATING THE DIRECTORY: " + directory.path);
       exists = true;
     }
-    else
-    {
-      debugPrint("DIRECTORY ALREADY EXISTS!" + path);
-    }
+    // else
+    // {
+    //   debugPrint("DIRECTORY ALREADY EXISTS!" + path);
+    // }
     return exists;
   }
 

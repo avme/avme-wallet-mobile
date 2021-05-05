@@ -121,7 +121,7 @@ class _TabsWalletState extends State<TabsWallet> with Helpers {
           Container(
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: AssetImage("assets/bg2.jpg"),
+              image: AssetImage("assets/bg2_alt.jpg"),
               fit: BoxFit.cover
             )
           ),
