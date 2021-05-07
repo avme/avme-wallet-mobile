@@ -2,7 +2,7 @@ import 'package:avme_wallet/screens/helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:avme_wallet/controller/globals.dart' as global;
-
+import 'package:avme_wallet/config/main_theme.dart' as theme;
 
 BuildContext _initialLoadingContext;
 
@@ -16,9 +16,7 @@ class _buttonText extends StatelessWidget {
   _buttonText({this.text});
   Widget build(BuildContext context) {
     return Text(text,
-        style: TextStyle(
-        fontWeight: FontWeight.w500
-      )
+        style: theme.alertDialogText()
     );
   }
 }
