@@ -32,7 +32,7 @@ class _InitialLoadingState extends State<InitialLoading> with Helpers{
   }
   void getData() async
   {
-    await Future.delayed(Duration(microseconds: 700), () async {
+    await Future.delayed(Duration(microseconds: 2000), () async {
       // Navigator.pushReplacementNamed(context, "/options");
 
       await global.walletManager.deletePreviousWallet();
@@ -98,9 +98,8 @@ class _InitialLoadingState extends State<InitialLoading> with Helpers{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Colors.blueAccent,
-        body:
-        Container(
+        body: Container(
+          decoration: theme.backgroundImage,
           child: Center(
             child: SpinKitDualRing(
               color: Colors.white,

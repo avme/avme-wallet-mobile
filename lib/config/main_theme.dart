@@ -36,6 +36,7 @@ ThemeData defaultTheme()
   final ThemeData base = ThemeData.dark();
   return base.copyWith(
     textTheme: _defaultTextTheme(base.textTheme),
+    backgroundColor: Color(0xFF1E2C3B), //Default color if it fails...
     brightness: Brightness.dark,
     // primaryColor: Colors.red,
     // accentColor: Color(0xFF7238AD),
@@ -44,3 +45,12 @@ ThemeData defaultTheme()
     indicatorColor: Color(0xFF77C2EC),
   );
 }
+
+// background image / box decoration used in the main container...
+
+BoxDecoration backgroundImage = BoxDecoration(
+  image: DecorationImage(
+  image: AssetImage("assets/bg2_alt.jpg"),
+  fit: BoxFit.cover
+  )
+);

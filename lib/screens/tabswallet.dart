@@ -1,8 +1,10 @@
 import 'package:avme_wallet/screens/helper.dart';
 import 'package:flutter/material.dart';
 import 'package:avme_wallet/controller/globals.dart' as global;
-import 'package:avme_wallet/main.dart';
+import 'package:avme_wallet/screens/debug_options.dart';
 import 'package:avme_wallet/screens/widgets/colored_tab_bar.dart';
+import 'package:avme_wallet/config/main_theme.dart' as theme;
+
 class TabsWallet extends StatefulWidget {
   @override
   _TabsWalletState createState() => _TabsWalletState();
@@ -87,7 +89,7 @@ class _TabsWalletState extends State<TabsWallet> with Helpers {
             onSelected: _popupMenuButtom,
             itemBuilder: (BuildContext context)
             {
-              return {'Logout','Settings'}.map((String choice) {
+              return {'Exit','Settings'}.map((String choice) {
                 return PopupMenuItem<String>(
                   value: choice,
                   child: Text(choice),
@@ -119,12 +121,7 @@ class _TabsWalletState extends State<TabsWallet> with Helpers {
         ),
         body:
           Container(
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage("assets/bg2_alt.jpg"),
-              fit: BoxFit.cover
-            )
-          ),
+          decoration: theme.backgroundImage,
           child:
             SafeArea(
               child:
