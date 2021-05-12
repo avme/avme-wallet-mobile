@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:avme_wallet/config/main_theme.dart' as theme;
 import 'package:avme_wallet/screens/helper.dart';
+import 'package:avme_wallet/screens/widgets/simple_warning.dart';
+import 'package:avme_wallet/controller/globals.dart' as globals;
 
 class Login extends StatelessWidget with Helpers{
 
@@ -14,6 +16,7 @@ class Login extends StatelessWidget with Helpers{
               borderRadius: BorderRadius.only(bottomRight: Radius.circular(4), topRight: Radius.circular(4))
           )
       ),
+      backgroundColor: MaterialStateProperty.all(theme.mainBlue),
       elevation: MaterialStateProperty.all(0)
   );
 
@@ -25,8 +28,8 @@ class Login extends StatelessWidget with Helpers{
       body: SafeArea(child:
       Container(
         // padding: EdgeInsets.all(5),
-          color: theme.defaultTheme().scaffoldBackgroundColor,
-          child:
+        color: theme.defaultTheme().scaffoldBackgroundColor,
+        child:
           Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -59,8 +62,6 @@ class Login extends StatelessWidget with Helpers{
                       constraints: BoxConstraints.expand(),
                       child:
                       Row(
-                        // mainAxisAlignment: MainAxisAlignment.center,
-                        // crossAxisAlignment: CrossAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Flexible(
@@ -73,11 +74,11 @@ class Login extends StatelessWidget with Helpers{
                                     ),
                                     labelText: "Please type your passphrase.",
                                     labelStyle: TextStyle(
-                                        color: theme.defaultTheme().colorScheme.primary
+                                        color: theme.mainBlue
                                     ),
 
                                     focusedBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(width: 1, color: theme.defaultTheme().colorScheme.primary),
+                                        borderSide: BorderSide(width: 1, color: theme.mainBlue),
                                         borderRadius: _radiusField
                                     ),
 
@@ -87,8 +88,7 @@ class Login extends StatelessWidget with Helpers{
                             SizedBox(
                               child: ElevatedButton(
                                 onPressed: () {
-                                  // TODO: Implement the authentication
-                                  snack("Please implement this method!", context);
+                                  authenticate(context);
                                 },
                                 child: Icon(Icons.arrow_forward_outlined),
                                 // style: ElevatedButton.styleFrom(
@@ -101,8 +101,47 @@ class Login extends StatelessWidget with Helpers{
                 )
               ]
           )
-      )
+        )
       ),
     );
+  }
+
+  void authenticate(BuildContext context) async
+  {
+    bool empty = (_passphrase == null || _passphrase.text.length == 0) ? true : false;
+    if(empty)
+    {
+      await showDialog<void>(
+        context: context,
+        builder: (BuildContext context) =>
+          SimpleWarning(
+            title: "Warning",
+            text:
+              "The passphrase field cannot be empty."
+          )
+      );
+      return;
+    }
+
+    var data = await globals.walletManager.decryptFile(_passphrase.text);
+    if(data == "False")
+    {
+      await showDialog<void>(
+          context: context,
+          builder: (BuildContext context) =>
+              SimpleWarning(
+                  title: "Warning",
+                  text:
+                  "Wrong password, try again."
+              )
+      );
+      return;
+    }
+    else
+    {
+      Navigator.pushReplacementNamed(context, "/home");
+    }
+
+    // snack(data, context);
   }
 }

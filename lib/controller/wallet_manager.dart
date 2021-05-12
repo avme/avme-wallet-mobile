@@ -17,13 +17,15 @@ import 'package:aes_crypt/aes_crypt.dart';
 // Async because the app will request access to the device...
 
 String url = "https://api.avax-test.network:443/ext/bc/C/rpc";
-String password = "Banana123";
+// String password = "Banana123";
 String mnemonicFile = "AVME-Wallet/secret.txt.aes";
 
 class WalletManager with Helpers
 {
   //Our constructor
   final String hash;
+
+  bool isLogged = false;
 
   WalletManager({this.hash = "default"});
 
@@ -122,15 +124,17 @@ class WalletManager with Helpers
 
   Future<String> decryptAes() async
   {
-    String documentsPath = await documentsFolder;
-    AesCrypt crypt = AesCrypt();
 
-    // Using the same password to uncrypt the file
-    crypt.setPassword(password);
-    return crypt.decryptTextFromFileSync(documentsPath + mnemonicFile, utf16: true);
+    // String documentsPath = await documentsFolder;
+    // AesCrypt crypt = AesCrypt();
+    //
+    // // Using the same password to uncrypt the file
+    // crypt.setPassword(password);
+    // debugPrint(password);
+    // return crypt.decryptTextFromFileSync(documentsPath + mnemonicFile, utf16: true);
   }
 
-  Future<String> newMnemonic() async
+  Future<String> newMnemonic(String password) async
   {
     // Gera mnemomic
     String mnemonic =
@@ -159,9 +163,9 @@ class WalletManager with Helpers
     return mnemonic;
   }
 
-  Future<String> generateSeed() async
+  Future<String> generateSeed(String password) async
   {
-    String mnemonic = await newMnemonic();
+    String mnemonic = await newMnemonic(password);
     var node = bip32.BIP32.fromSeed(bip39.mnemonicToSeed(mnemonic));
     var child = node.derivePath("m/44'/60'/0'/0/0");
     String privateKey = HEX.encode(child.privateKey);
@@ -174,14 +178,14 @@ class WalletManager with Helpers
     // print(credentials.extractAddress());
 
     Credentials credentials = await eth.credentialsFromPrivateKey(privateKey);
-    var futagostosa = await credentials.extractAddress();
-    print(futagostosa.hex);
+    var pv = await credentials.extractAddress();
+    print(pv.hex);
     return privateKey;
   }
 
   Future<String> makeAccount(String password) async
   {
-    String hex = await generateSeed();
+    String hex = await generateSeed(password);
     // String palavra = await WalletManager().generateSeedTwo();
     // snack(hex,context);
     // return '';
@@ -195,12 +199,29 @@ class WalletManager with Helpers
     return path.path;
   }
 
+  Future<String> decryptFile(String password) async
+  {
+    try
+    {
+      String documentsPath = await documentsFolder;
+      AesCrypt crypt = AesCrypt();
+
+      // Using the same password to uncrypt the file
+      crypt.setPassword(password);
+      this.isLogged = true;
+      return crypt.decryptTextFromFileSync(documentsPath + mnemonicFile, utf16: true);
+    }
+    on AesCryptDataException
+    {
+      return 'False';
+    }
+  }
 
   // TODO: change this to verify if the user has been logged and the wallet has been initialised
 
 
   bool logged()
   {
-    return true;
+    return this.isLogged;
   }
 }

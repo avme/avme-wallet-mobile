@@ -16,63 +16,6 @@ class _TabsWalletState extends State<TabsWallet> with Helpers {
   @override
   Widget build(BuildContext context) {
     _this = context;
-    // return DefaultTabController(
-    //   initialIndex: 1,
-    //   length: 4,
-    //   child: Scaffold(
-    //     appBar: AppBar(
-    //       title: Text(global.appTitle),
-    //       actions: [
-    //         PopupMenuButton(
-    //           onSelected: _popupMenuButtom,
-    //           itemBuilder: (BuildContext context)
-    //           {
-    //             return {'Logout','Settings'}.map((String choice) {
-    //               return PopupMenuItem<String>(
-    //                 value: choice,
-    //                 child: Text(choice),
-    //               );
-    //             }).toList();
-    //           },
-    //         )
-    //       ],
-    //       bottom: TabBar(
-    //         isScrollable: true,
-    //         tabs: <Widget>[
-    //           Tab(
-    //             text: "ACCOUNTS",
-    //           ),
-    //           Tab(
-    //             text: "BALANCE",
-    //           ),
-    //           Tab(
-    //             text: "TRANSACTIONS",
-    //           ),
-    //           Tab(
-    //             text: "DEBUG OPTIONS",
-    //           ),
-    //         ],
-    //       ),
-    //     ),
-    //     body: TabBarView(
-    //       children: <Widget>[
-    //         Center(
-    //           child: Text('ACCOUNTS WIDGET HERE'),
-    //         ),
-    //
-    //         Center(
-    //           child: Text('BALANCE WIDGET HERE'),
-    //         ),
-    //
-    //         Center(
-    //           child: Text('TRANSACTIONS WIDGET HERE'),
-    //         ),
-    //
-    //         Options(),
-    //       ],
-    //     ),
-    //   ),
-    // );
     return DefaultTabController(
       initialIndex: 1,
       length: 4,
@@ -130,10 +73,6 @@ class _TabsWalletState extends State<TabsWallet> with Helpers {
                   Center(
                     child: Text('ACCOUNTS WIDGET HERE'),
                   ),
-                  // Container(
-                  //   child: Text("aaaas"),
-                  // ),
-
                   Center(
                     child: Text('BALANCE WIDGET HERE'),
                   ),

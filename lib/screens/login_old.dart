@@ -91,7 +91,7 @@ class LoginOldState extends State<LoginOld> with AfterLayoutMixin <LoginOld>, He
     // WalletManager wm = new WalletManager(hash:hex);
 
     // gera new mnemonic
-    String hex = await global.walletManager.generateSeed();
+    String hex = await global.walletManager.generateSeed('Banana123');
 
     var _rng = new Random.secure();
     // Credentials _random = EthPrivateKey.createRandom(_rng);

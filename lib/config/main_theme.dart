@@ -52,6 +52,8 @@ ThemeData defaultTheme()
 
 // background image / box decoration used in the main container...
 
+Color mainBlue = Color(0xFF77C2EC);
+
 BoxDecoration backgroundImage = BoxDecoration(
   image: DecorationImage(
   image: AssetImage("assets/bg2_alt.jpg"),
