@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:avme_wallet/controller/globals.dart' as global;
 import 'package:avme_wallet/config/main_theme.dart' as theme;
+import 'package:avme_wallet/screens/widgets/custom_widgets.dart';
 
 BuildContext _initialLoadingContext;
 
@@ -32,18 +33,20 @@ class _InitialLoadingState extends State<InitialLoading> with Helpers{
   }
   void getData() async
   {
-    await Future.delayed(Duration(microseconds: 2000), () async {
+    await Future.delayed(Duration(seconds: 4), () async {
       // Navigator.pushReplacementNamed(context, "/options");
 
-      await global.walletManager.deletePreviousWallet();
+      // await global.walletManager.deletePreviousWallet();
       bool hasWallet = await global.walletManager.hasPreviousWallet();
 
-      if(hasWallet == false)
-      {
+      if(hasWallet == false) {
         // THIS DIALOG MUST INIT THE WALLET ON THE GLOBAL
         welcomeDialog();
       }
-      snack("Had wallet \"$hasWallet\"", context);
+      else {
+        Navigator.pushReplacementNamed(context, "/login");
+      }
+      snack("Wallet already created previously? \"$hasWallet\"", context);
     });
   }
 
@@ -66,7 +69,7 @@ class _InitialLoadingState extends State<InitialLoading> with Helpers{
             TextButton(
               child: _buttonText(text: "RESTORE BACKUP"),
               onPressed: () {
-                Navigator.of(context).pop();
+                // Navigator.of(context).pop();
                 // TODO: implement backup process
                 snack("NOT IMPLEMENTED", context);
               },
@@ -74,7 +77,6 @@ class _InitialLoadingState extends State<InitialLoading> with Helpers{
             TextButton(
               child: _buttonText(text: "CREATE NEW",),
               onPressed: () async {
-                // TODO: implement passphrase, confirmation then create the wallet, for now is disabled
                 String retForm = await Navigator.pushNamed(context, "/registerPassword") as String;
                 // String retForm = "abacaxi";
                 // snack(retorno, context);
@@ -98,15 +100,15 @@ class _InitialLoadingState extends State<InitialLoading> with Helpers{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Container(
-          decoration: theme.backgroundImage,
-          child: Center(
-            child: SpinKitDualRing(
-              color: Colors.white,
-              size: 50.0,
-            ),
+      body: Container(
+        color: theme.defaultTheme().scaffoldBackgroundColor,
+        child: Center(
+          child: SpinKitDualRing(
+            color: Colors.white,
+            size: 50.0,
           ),
         ),
+      ),
     );
   }
 }

@@ -28,21 +28,25 @@ ThemeData defaultTheme()
   ColorScheme _defaultColorScheme(ColorScheme base)
   {
     return base.copyWith(
+      // primary: Color(0xFF58A0C9),
+      // secondary: Color(0xFF58A0C9)
       primary: Colors.blueGrey,
       secondaryVariant: Colors.red,
+      // secondaryVariant: Colors.red,
     );
   }
 
   final ThemeData base = ThemeData.dark();
   return base.copyWith(
     textTheme: _defaultTextTheme(base.textTheme),
-    backgroundColor: Color(0xFF1E2C3B), //Default color if it fails...
+    scaffoldBackgroundColor: Color(0xFF1E2C3B), //Default color if it fails...
     brightness: Brightness.dark,
     // primaryColor: Colors.red,
     // accentColor: Color(0xFF7238AD),
     // accentColor: Color(0xFFFFFFFF),
     colorScheme: _defaultColorScheme(base.colorScheme),
     indicatorColor: Color(0xFF77C2EC),
+
   );
 }
 
