@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:avme_wallet/screens/helper.dart';
+import 'package:avme_wallet/controller/globals.dart' as global;
 import 'package:avme_wallet/screens/widgets/simple_warning.dart';
 import 'package:avme_wallet/screens/widgets/custom_widgets.dart';
 class NewPassword extends StatelessWidget with Helpers
@@ -87,7 +88,13 @@ class NewPassword extends StatelessWidget with Helpers
       );
       return;
     }
-    //Returns the password
-    Navigator.pop<String>(context,field1.text);
+    // Creates the user account
+    await global.walletManager.makeAccount(field1.text);
+    if(global.walletManager.logged())
+    {
+      Navigator.of(context).pop();
+      Navigator.pushReplacementNamed(context, "/home");
+      return;
+    }
   }
 }

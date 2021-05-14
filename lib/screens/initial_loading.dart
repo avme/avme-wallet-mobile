@@ -23,10 +23,10 @@ class _buttonText extends StatelessWidget {
 }
 
 class _InitialLoadingState extends State<InitialLoading> with Helpers{
-  //LIFE CYCLE
   /*GENERIC LOADING SCREEN*/
   @override
-  void initState() {
+  void initState()
+  {
     super.initState();
     _initialLoadingContext = context;
     getData();
@@ -34,16 +34,15 @@ class _InitialLoadingState extends State<InitialLoading> with Helpers{
   void getData() async
   {
     await Future.delayed(Duration(seconds: 4), () async {
-      // Navigator.pushReplacementNamed(context, "/options");
-
       // await global.walletManager.deletePreviousWallet();
       bool hasWallet = await global.walletManager.hasPreviousWallet();
 
-      if(hasWallet == false) {
-        // THIS DIALOG MUST INIT THE WALLET ON THE GLOBAL
+      if(hasWallet == false)
+      {
         welcomeDialog();
       }
-      else {
+      else
+      {
         Navigator.pushReplacementNamed(context, "/login");
       }
       snack("Wallet already created previously? \"$hasWallet\"", context);
@@ -76,19 +75,8 @@ class _InitialLoadingState extends State<InitialLoading> with Helpers{
             ),
             TextButton(
               child: _buttonText(text: "CREATE NEW",),
-              onPressed: () async {
-                String retForm = await Navigator.pushNamed(context, "/registerPassword") as String;
-                // String retForm = "abacaxi";
-                // snack(retorno, context);
-                String ret = await global.walletManager.makeAccount(retForm);
-                snack("$ret : PW: $retForm", context);
-
-                if(global.walletManager.logged())
-                {
-                  Navigator.of(context).pop();
-                  Navigator.pushReplacementNamed(context, "/home");
-                  return true;
-                }
+              onPressed: () {
+                Navigator.pushNamed(context, "/registerPassword");
               },
             ),
           ],

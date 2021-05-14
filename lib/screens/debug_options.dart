@@ -51,7 +51,7 @@ class Options extends StatelessWidget with Helpers
                 title: Text("4 - Decrypt"),
                 trailing: ElevatedButton(
                   onPressed: () async {
-                    String content = await global.walletManager.decryptAes();
+                    String content = await global.walletManager.decryptAes("YOUR_PASSWORD_HERE");
                     snack(content, context);
                   },
                   child: Text("Try me!"),
@@ -61,6 +61,7 @@ class Options extends StatelessWidget with Helpers
         ],
       );
   }
+
   btnLoadWallet(BuildContext context) async
   {
 
@@ -73,17 +74,15 @@ class Options extends StatelessWidget with Helpers
     Credentials accessGranted = wallet.privateKey;
     snack(accessGranted.toString(), context);
   }
+
   btnChangeNavigation(BuildContext context)
   {
     Navigator.pushNamed(context, '/passphrase');
   }
+
   btnMakeAccount(BuildContext context) async
   {
     String ret = await global.walletManager.makeAccount("abacaxi");
     snack(ret, context);
   }
-// @override
-// void afterFirstLayout(BuildContext context) {
-//   onLoad(context);
-// }
 }

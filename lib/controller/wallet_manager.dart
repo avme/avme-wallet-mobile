@@ -10,15 +10,15 @@ import 'package:web3dart/credentials.dart';
 import 'package:http/http.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:aes_crypt/aes_crypt.dart';
-
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 // CREATING FILE ON THE CREATED WALLET
 // TODO: refactor this code
 
 // Async because the app will request access to the device...
 
-String url = "https://api.avax-test.network:443/ext/bc/C/rpc";
+String url = env["NETWORK"];
 // String password = "Banana123";
-String mnemonicFile = "AVME-Wallet/secret.txt.aes";
+String mnemonicFile = env["MNEMONICFILEPATH"];
 
 class WalletManager with Helpers
 {
@@ -122,16 +122,16 @@ class WalletManager with Helpers
     return exists;
   }
 
-  Future<String> decryptAes() async
+  Future<String> decryptAes(String password) async
   {
 
-    // String documentsPath = await documentsFolder;
-    // AesCrypt crypt = AesCrypt();
-    //
-    // // Using the same password to uncrypt the file
-    // crypt.setPassword(password);
-    // debugPrint(password);
-    // return crypt.decryptTextFromFileSync(documentsPath + mnemonicFile, utf16: true);
+    String documentsPath = await documentsFolder;
+    AesCrypt crypt = AesCrypt();
+
+    // Using the same password to uncrypt the file
+    crypt.setPassword(password);
+    debugPrint(password);
+    return crypt.decryptTextFromFileSync(documentsPath + mnemonicFile, utf16: true);
   }
 
   Future<String> newMnemonic(String password) async
