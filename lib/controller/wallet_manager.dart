@@ -25,9 +25,6 @@ class WalletManager with Helpers
 {
   //Our constructor
   final String hash;
-
-  bool isLogged = false;
-
   WalletManager({this.hash = "default"});
 
   String ext = ".json";
@@ -211,7 +208,6 @@ class WalletManager with Helpers
 
       // Using the same password to uncrypt the file
       crypt.setPassword(password);
-      this.isLogged = true;
       return crypt.decryptTextFromFileSync(documentsPath + mnemonicFile, utf16: true);
     }
     on AesCryptDataException
@@ -220,25 +216,22 @@ class WalletManager with Helpers
     }
   }
 
-  // TODO: change this to verify if the user has been logged and the wallet has been initialised
-
-
   bool logged()
   {
-    return this.isLogged;
+    return (global.wallet != null ? true : false);
   }
 
   Future<Map> authenticate(String password) async
   {
     Map ret = {"status":400,"message":"Wrong password."};
-    //
-    // bool mnemonicLocked = await decryptFile(password) == "False" ? false: true;
-    //
-    // if (mnemonicLocked)
-    // {
-    //   ret["message"] = "[Error: 1] "+ret["message"];
-    //   return ret;
-    // }
+
+    bool mnemonicLocked = await decryptFile(password) == "False" ? false: true;
+
+    if (mnemonicLocked)
+    {
+      ret["message"] = "[Error: 1] "+ret["message"];
+      return ret;
+    }
     String content = await readWalletJson();
     try
     {
@@ -248,7 +241,7 @@ class WalletManager with Helpers
 
       global.wallet = _wallet;
       global.eAddress = address;
-      // print(address.hex);
+
       ret["status"] = 200;
       return ret;
     }
