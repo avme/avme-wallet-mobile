@@ -1,10 +1,10 @@
-
 import 'package:flutter/material.dart';
 import 'package:avme_wallet/controller/routes.dart' as appRoutes;
 import 'package:avme_wallet/config/main_theme.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart' as DotEnv;
 
-
-void main() {
+Future<void> main() async{
+  await DotEnv.load();
   runApp(AvmeWallet());
 }
 
