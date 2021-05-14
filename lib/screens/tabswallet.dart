@@ -4,6 +4,9 @@ import 'package:avme_wallet/controller/globals.dart' as global;
 import 'package:avme_wallet/screens/debug_options.dart';
 import 'package:avme_wallet/screens/widgets/colored_tab_bar.dart';
 import 'package:avme_wallet/config/main_theme.dart' as theme;
+import 'package:avme_wallet/screens/tabs/accounts.dart';
+import 'package:avme_wallet/screens/tabs/balance.dart';
+import 'package:avme_wallet/screens/tabs/transactions.dart';
 
 class TabsWallet extends StatefulWidget {
   @override
@@ -70,16 +73,9 @@ class _TabsWalletState extends State<TabsWallet> with Helpers {
               child:
                 TabBarView(
                 children: <Widget>[
-                  Center(
-                    child: Text('ACCOUNTS WIDGET HERE'),
-                  ),
-                  Center(
-                    child: Text('BALANCE WIDGET HERE'),
-                  ),
-
-                  Center(
-                    child: Text('TRANSACTIONS WIDGET HERE'),
-                  ),
+                  Accounts(),
+                  Balance(),
+                  Transactions(),
                   Options(),
                 ],
               )
