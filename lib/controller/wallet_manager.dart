@@ -11,6 +11,7 @@ import 'package:http/http.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:aes_crypt/aes_crypt.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:avme_wallet/controller/globals.dart' as global;
 // CREATING FILE ON THE CREATED WALLET
 // TODO: refactor this code
 
@@ -193,9 +194,11 @@ class WalletManager with Helpers
     var _rng = new Random.secure();
     // Credentials _random = EthPrivateKey.createRandom(_rng);
     Credentials credentFromHex = EthPrivateKey.fromHex(hex);
-    Wallet wallet = Wallet.createNew(credentFromHex,password, _rng);
-    String json = wallet.toJson();
+    Wallet _wallet = Wallet.createNew(credentFromHex,password, _rng);
+    String json = _wallet.toJson();
     File path = await write(json);
+    // created wallet to global scope
+    global.wallet = _wallet;
     return path.path;
   }
 
