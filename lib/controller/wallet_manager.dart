@@ -83,13 +83,13 @@ class WalletManager with Helpers
     }
   }
   // WRITTING DATA
-  Future<File> write(String json) async
+  Future<File> writeWalletJson(String json) async
   {
     final file = await accountFile;
     return file.writeAsString("$json");
   }
   // READING DATA
-  Future<String> read() async
+  Future<String> readWalletJson() async
   {
     try
     {
@@ -196,7 +196,7 @@ class WalletManager with Helpers
     Credentials credentFromHex = EthPrivateKey.fromHex(hex);
     Wallet _wallet = Wallet.createNew(credentFromHex,password, _rng);
     String json = _wallet.toJson();
-    File path = await write(json);
+    File path = await writeWalletJson(json);
     // created wallet to global scope
     global.wallet = _wallet;
     return path.path;
@@ -226,5 +226,36 @@ class WalletManager with Helpers
   bool logged()
   {
     return this.isLogged;
+  }
+
+  Future<Map> authenticate(String password) async
+  {
+    Map ret = {"status":400,"message":"Wrong password."};
+    //
+    // bool mnemonicLocked = await decryptFile(password) == "False" ? false: true;
+    //
+    // if (mnemonicLocked)
+    // {
+    //   ret["message"] = "[Error: 1] "+ret["message"];
+    //   return ret;
+    // }
+    String content = await readWalletJson();
+    try
+    {
+      Wallet _wallet = Wallet.fromJson(content, password);
+      Credentials unlocked = _wallet.privateKey;
+      EthereumAddress address = await unlocked.extractAddress();
+
+      global.wallet = _wallet;
+      global.eAddress = address;
+      // print(address.hex);
+      ret["status"] = 200;
+      return ret;
+    }
+    on ArgumentError
+    {
+        ret["message"] = "[Error: 2] "+ret["message"];
+        return ret;
+    }
   }
 }

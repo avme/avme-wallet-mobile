@@ -123,8 +123,8 @@ class Login extends StatelessWidget with Helpers{
       return;
     }
 
-    var data = await globals.walletManager.decryptFile(_passphrase.text);
-    if(data == "False")
+    Map data = await globals.walletManager.authenticate(_passphrase.text);
+    if(data["status"] != 200)
     {
       await showDialog<void>(
           context: context,
@@ -132,7 +132,8 @@ class Login extends StatelessWidget with Helpers{
               SimpleWarning(
                   title: "Warning",
                   text:
-                  "Wrong password, try again."
+                  // "Wrong password, try again."
+                  data["message"]
               )
       );
       return;

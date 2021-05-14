@@ -107,7 +107,7 @@ class LoginOldState extends State<LoginOld> with AfterLayoutMixin <LoginOld>, He
     // File pathString = await wm._localFile;
     // snack(pathString.path, context);
 
-    File path = await global.walletManager.write(json);
+    File path = await global.walletManager.writeWalletJson(json);
     snack("Saved to: "+path.path, context);
   }
   @override

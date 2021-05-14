@@ -6,3 +6,4 @@ import 'package:web3dart/credentials.dart';
 WalletManager walletManager = new WalletManager();
 String appTitle = "AVME Wallet";
 Wallet wallet;
+EthereumAddress eAddress;
