@@ -1,5 +1,6 @@
 import 'package:avme_wallet/screens/helper.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:avme_wallet/controller/globals.dart' as global;
 import 'package:avme_wallet/config/main_theme.dart' as theme;
@@ -34,7 +35,11 @@ class _InitialLoadingState extends State<InitialLoading> with Helpers{
   void getData() async
   {
     await Future.delayed(Duration(seconds: 4), () async {
-      // await global.walletManager.deletePreviousWallet();
+      if(env["ALWAYS_RESET"].toString().toUpperCase() == "TRUE")
+      {
+        await global.walletManager.deletePreviousWallet();
+      }
+
       bool hasWallet = await global.walletManager.hasPreviousWallet();
 
       if(hasWallet == false)

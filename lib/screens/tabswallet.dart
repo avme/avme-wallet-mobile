@@ -16,12 +16,42 @@ class TabsWallet extends StatefulWidget {
 class _TabsWalletState extends State<TabsWallet> with Helpers {
   BuildContext _this;
 
+  // List of Tabs
+  Map<String,Widget> _tabs = {
+    "ACCOUNTS" : Accounts(),
+    "BALANCE" : Balance(),
+    "TRANSACTIONS" : Transactions(),
+    "DEBUG OPTIONS" : Options(),
+  };
+
+  // Return a list of types...
+  // 1 - Key names as TAB to populate the TabBar
+  // 2 or more - Widget List to the TabBarView
+  List<Widget> extractTabData(int type)
+  {
+    List<Widget> _list = [];
+    if(type == 1)
+    {
+      _tabs.forEach((key, value) {
+        _list.add(Tab(text:key));
+      });
+    }
+    else
+    {
+      _tabs.forEach((key, value) {
+        _list.add(value);
+      });
+    }
+
+    return _list;
+  }
+
   @override
   Widget build(BuildContext context) {
     _this = context;
     return DefaultTabController(
       initialIndex: 1,
-      length: 4,
+      length: _tabs.length,
       child: Scaffold(
         // Testing transparency
         extendBodyBehindAppBar: true,
@@ -48,20 +78,7 @@ class _TabsWalletState extends State<TabsWallet> with Helpers {
             Color(0x23FFFFFF),
             TabBar(
               isScrollable: true,
-              tabs: [
-                Tab(
-                  text: "ACCOUNTS",
-                ),
-                Tab(
-                  text: "BALANCE",
-                ),
-                Tab(
-                  text: "TRANSACTIONS",
-                ),
-                Tab(
-                  text: "DEBUG OPTIONS",
-                ),
-              ],
+              tabs: extractTabData(1),
             ),
           ),
         ),
@@ -72,12 +89,7 @@ class _TabsWalletState extends State<TabsWallet> with Helpers {
             SafeArea(
               child:
                 TabBarView(
-                children: <Widget>[
-                  Accounts(),
-                  Balance(),
-                  Transactions(),
-                  Options(),
-                ],
+                children: extractTabData(2),
               )
           ),
         ),
