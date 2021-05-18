@@ -17,13 +17,13 @@ class _TabsWalletState extends State<TabsWallet> with Helpers {
   BuildContext _this;
 
   // List of Tabs
-  Map<String,Widget> _tabs = {
+  final Map<String,Widget> _tabs = {
     "ACCOUNTS" : Accounts(),
     "BALANCE" : Balance(),
     "TRANSACTIONS" : Transactions(),
     "DEBUG OPTIONS" : Options(),
   };
-
+  final EdgeInsets padding = EdgeInsets.all(12.0);
   // Return a list of types...
   // 1 - Key names as TAB to populate the TabBar
   // 2 or more - Widget List to the TabBarView
@@ -39,7 +39,7 @@ class _TabsWalletState extends State<TabsWallet> with Helpers {
     else
     {
       _tabs.forEach((key, value) {
-        _list.add(value);
+        _list.add(Padding(padding: padding, child: value));
       });
     }
 
@@ -87,10 +87,9 @@ class _TabsWalletState extends State<TabsWallet> with Helpers {
           decoration: theme.backgroundImage,
           child:
             SafeArea(
-              child:
-                TabBarView(
+              child: TabBarView(
                 children: extractTabData(2),
-              )
+              ),
           ),
         ),
       ),

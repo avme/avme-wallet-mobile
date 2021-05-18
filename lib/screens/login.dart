@@ -3,10 +3,15 @@ import 'package:avme_wallet/config/main_theme.dart' as theme;
 import 'package:avme_wallet/screens/helper.dart';
 import 'package:avme_wallet/screens/widgets/simple_warning.dart';
 import 'package:avme_wallet/controller/globals.dart' as globals;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-class Login extends StatelessWidget with Helpers{
+class Login extends StatefulWidget {
+  @override
+  _LoginState createState() => _LoginState();
+}
 
-  //Passphrase controller
+class _LoginState extends State<Login> with Helpers{
+  // Passphrase controller
   TextEditingController _passphrase = new TextEditingController();
   ButtonStyle _btnStyleLogin = ButtonStyle(
       padding: MaterialStateProperty.all<EdgeInsets>
@@ -24,10 +29,10 @@ class Login extends StatelessWidget with Helpers{
 
   @override
   Widget build(BuildContext context) {
+    _passphrase.text = env["DEFAULT_PASSWORD"] ?? "";
     return Scaffold(
       body: SafeArea(child:
       Container(
-        // padding: EdgeInsets.all(5),
         color: theme.defaultTheme().scaffoldBackgroundColor,
         child:
           Column(
@@ -136,13 +141,19 @@ class Login extends StatelessWidget with Helpers{
                   data["message"]
               )
       );
+      _passphrase.text = "";
       return;
     }
     else
     {
       Navigator.pushReplacementNamed(context, "/home");
     }
-
     // snack(data, context);
+  }
+
+  @override
+  State<StatefulWidget> createState() {
+    // TODO: implement createState
+    throw UnimplementedError();
   }
 }
