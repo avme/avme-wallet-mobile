@@ -199,7 +199,7 @@ class WalletManager with Helpers
     return path.path;
   }
 
-  Future<String> decryptFile(String password) async
+  Future<bool> decryptAesWallet(String password) async
   {
     try
     {
@@ -208,11 +208,12 @@ class WalletManager with Helpers
 
       // Using the same password to uncrypt the file
       crypt.setPassword(password);
-      return crypt.decryptTextFromFileSync(documentsPath + mnemonicFile, utf16: true);
+      crypt.decryptTextFromFileSync(documentsPath + mnemonicFile, utf16: true);
+      return true;
     }
     on AesCryptDataException
     {
-      return 'False';
+      return false;
     }
   }
 
@@ -224,14 +225,14 @@ class WalletManager with Helpers
   Future<Map> authenticate(String password) async
   {
     Map ret = {"status":400,"message":"Wrong password."};
+    bool mnemonicUnlocked = await decryptAesWallet(password);
 
-    bool mnemonicLocked = await decryptFile(password) == "False" ? false: true;
-
-    if (mnemonicLocked)
+    if (!mnemonicUnlocked)
     {
       ret["message"] = "[Error: 1] "+ret["message"];
       return ret;
     }
+
     String content = await readWalletJson();
     try
     {
