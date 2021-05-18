@@ -81,7 +81,7 @@ class _InitialLoadingState extends State<InitialLoading> with Helpers{
             TextButton(
               child: _buttonText(text: "CREATE NEW",),
               onPressed: () {
-                Navigator.pushNamed(context, "/registerPassword");
+                Navigator.pushReplacementNamed(context, "/registerPassword");
               },
             ),
           ],
