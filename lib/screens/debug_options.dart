@@ -57,6 +57,17 @@ class Options extends StatelessWidget with Helpers
                   child: Text("Try me!"),
                 ),
               )
+          ),
+          Card(
+              child: ListTile(
+                title: Text("5 - New Password"),
+                trailing: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, "/registerPassword");
+                  },
+                  child: Text("Try me!"),
+                ),
+              )
           )
         ],
       );

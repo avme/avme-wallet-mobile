@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 
 //Common text
@@ -14,20 +16,22 @@ Text commonText(String content)
 }
 
 //Simple list of ListView with padding...
-ListView forms (List<Widget> elementos)
+ListView forms (List<Widget> elementos, {double horizontal = 20,double vertical = 40, double spacing = 10})
 {
   List <Widget> outputItens = [];
   int index = 0;
+  horizontal = horizontal / 2;
+  vertical = vertical / 2;
   for(final widget in elementos)
   {
     var pad;
     if(index == 0)
     {
-      pad = EdgeInsets.fromLTRB(10,20,10,0);
+      pad = EdgeInsets.fromLTRB(vertical,horizontal,vertical,0);
     }
     else
     {
-      pad = EdgeInsets.fromLTRB(0,20,10,10);
+      pad = EdgeInsets.fromLTRB(0,horizontal,vertical,spacing);
     }
     outputItens.add(
         Padding(
