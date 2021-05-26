@@ -54,3 +54,8 @@ TextField passwordField (TextEditingController _controller, String _label) {
       )
   );
 }
+
+Text textCenter(String text)
+{
+  return Text(text, textAlign: TextAlign.center);
+}
