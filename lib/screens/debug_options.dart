@@ -77,7 +77,7 @@ class Options extends StatelessWidget with Helpers
   {
 
     snack("Trying to load...", context);
-    File fileP = await global.walletManager.accountFile;
+    File fileP = await global.walletManager.accountFile();
     String content = new File(fileP.path).readAsStringSync();
     Wallet wallet = Wallet.fromJson(content, password);
     // snack(content, context);
@@ -93,7 +93,7 @@ class Options extends StatelessWidget with Helpers
 
   btnMakeAccount(BuildContext context) async
   {
-    String ret = await global.walletManager.makeAccount("abacaxi");
+    List<String> ret = await global.walletManager.makeAccount("abacaxi");
     snack(ret, context);
   }
 }

@@ -3,21 +3,26 @@ import 'package:avme_wallet/controller/globals.dart' as globals;
 import 'package:avme_wallet/screens/helper.dart';
 import 'package:flutter/services.dart';
 
-class Balance extends StatelessWidget with Helpers{
+class Balance extends StatefulWidget {
+  @override
+  _BalanceState createState() => _BalanceState();
+}
+
+class _BalanceState extends State<Balance> with Helpers{
   double _balance = 0.50;
   double _usdBalance = 21668.80;
   TextStyle _tsTab = TextStyle(
-    fontSize: 16,
-    fontWeight: FontWeight.w500
+      fontSize: 16,
+      fontWeight: FontWeight.w500
   );
   ButtonStyle _roundedButton = new ButtonStyle(
     shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-      RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(100)
-      )
+        RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(100)
+        )
     ),
-
   );
+
   @override
   Widget build(BuildContext context) {
     return
@@ -48,7 +53,7 @@ class Balance extends StatelessWidget with Helpers{
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           Text(copyPrivateKey(), style: TextStyle(
-                            color: Color.fromRGBO(255,255, 255, 0.75)
+                              color: Color.fromRGBO(255,255, 255, 0.75)
                           ),),
                           Text(" "),
                           Icon(Icons.copy, size: 18,),
@@ -56,7 +61,7 @@ class Balance extends StatelessWidget with Helpers{
                       ),
                       SizedBox(height: 4,),
                       Text("This data is just a placeholder", style: TextStyle(
-                        color: Color.fromRGBO(5, 255, 10, 1)
+                          color: Color.fromRGBO(5, 255, 10, 1)
                       ),),
                     ],
                   ),
@@ -66,17 +71,17 @@ class Balance extends StatelessWidget with Helpers{
           ),
           Container(
             // color: Color.fromRGBO(255, 255, 255, 0.095),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical:14.0),
-              child: Column(
-                  children:
-                  [
-                    Text(_balance.toString()+" BTC", style: _tsTab.copyWith(fontSize: 22),),
-                    SizedBox(height: 2,),
-                    Text(_usdBalance.toString()+" USD", style: _tsTab.copyWith(fontSize: 14, color: Color.fromRGBO(255, 255, 255, 0.5)),)
-                  ]
-              ),
-            )
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical:14.0),
+                child: Column(
+                    children:
+                    [
+                      Text(_balance.toString()+" BTC", style: _tsTab.copyWith(fontSize: 22),),
+                      SizedBox(height: 2,),
+                      Text(_usdBalance.toString()+" USD", style: _tsTab.copyWith(fontSize: 14, color: Color.fromRGBO(255, 255, 255, 0.5)),)
+                    ]
+                ),
+              )
           ),
           Container(
             // color: Colors.pinkAccent,
@@ -86,32 +91,32 @@ class Balance extends StatelessWidget with Helpers{
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Column(
-                    children: [
-                      SizedBox(
-                        height:75,
-                        width: 75,
-                        child: ElevatedButton(onPressed: (){},
-                          child: Icon(Icons.upload_sharp),
-                          style: _roundedButton.copyWith(backgroundColor: MaterialStateProperty.all<Color>(Colors.redAccent),),
+                      children: [
+                        SizedBox(
+                          height:75,
+                          width: 75,
+                          child: ElevatedButton(onPressed: (){},
+                            child: Icon(Icons.upload_sharp),
+                            style: _roundedButton.copyWith(backgroundColor: MaterialStateProperty.all<Color>(Colors.redAccent),),
+                          ),
                         ),
-                      ),
-                      Text(" "),
-                      Text("SEND")
-                    ]
+                        Text(" "),
+                        Text("SEND")
+                      ]
                   ),
                   Column(
-                    children: [
-                      SizedBox(
-                        height:75,
-                        width: 75,
-                        child: ElevatedButton(onPressed: (){},
-                          child: Icon(Icons.download_sharp),
-                          style: _roundedButton.copyWith(backgroundColor: MaterialStateProperty.all<Color>(Colors.green),),
+                      children: [
+                        SizedBox(
+                          height:75,
+                          width: 75,
+                          child: ElevatedButton(onPressed: (){},
+                            child: Icon(Icons.download_sharp),
+                            style: _roundedButton.copyWith(backgroundColor: MaterialStateProperty.all<Color>(Colors.green),),
+                          ),
                         ),
-                      ),
-                      Text(" "),
-                      Text("RECEIVE")
-                    ]
+                        Text(" "),
+                        Text("RECEIVE")
+                      ]
                   )
                 ],
               ),
@@ -119,10 +124,10 @@ class Balance extends StatelessWidget with Helpers{
           ),
           Container(
             // color: Color.fromRGBO(255, 255, 255, 0.095),
-            child: SizedBox(
-              height: 70,
-              width: MediaQuery.of(context).size.width,
-            )
+              child: SizedBox(
+                height: 70,
+                width: MediaQuery.of(context).size.width,
+              )
           ),
 
         ],

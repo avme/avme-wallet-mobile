@@ -24,12 +24,12 @@ String mnemonicFile = env["MNEMONICFILEPATH"];
 class WalletManager with Helpers
 {
   //Our constructor
-  final String hash;
-  WalletManager({this.hash = "default"});
+  // final String hash;
+  // WalletManager({this.hash = "default"});
 
   String ext = ".json";
   String folder = "AVME-Wallet/";
-  String filename = "wallet-";
+  String filename = "account-";
 
 
   // GET THE DEFAULT PATH
@@ -48,21 +48,29 @@ class WalletManager with Helpers
   // }
 
   // SETTING THE FILE PATH TO THE ACCOUNT
-  Future<File> get accountFile async
+  Future<File> accountFile ({String position}) async
   {
     String fullPath;
+
     final path = await documentsFolder;
     final bool exists = await checkPath("$path$folder");
-
-    if(exists) {
-      fullPath = "$path$folder$filename$hash$ext";
+    if(exists)
+    {
+      if(position == null)
+      {
+        fullPath = "$path$folder$filename"+"0"+"$ext";
+      }
+      else
+      {
+        fullPath = "$path$folder$filename$position$ext";
+      }
     }
     return File(fullPath);
   }
 
   Future<bool> hasPreviousWallet() async
   {
-      File file = await accountFile;
+      File file = await accountFile();
       return file.exists();
   }
   // ONLY FOR TESTING PURPOSES
@@ -70,7 +78,7 @@ class WalletManager with Helpers
   {
     bool hasFile = await hasPreviousWallet();
     if(hasFile){
-      File file = await accountFile;
+      File file = await accountFile();
       file.delete();
 
       String documentsPath = await documentsFolder;
@@ -80,18 +88,18 @@ class WalletManager with Helpers
     }
   }
   // WRITTING DATA
-  Future<File> writeWalletJson(String json) async
+  Future<File> writeWalletJson(String json, {String position}) async
   {
-    final file = await accountFile;
+    final file = await accountFile(position: position);
     return file.writeAsString("$json");
   }
   // READING DATA
-  Future<String> readWalletJson() async
+  Future<String> readWalletJson({position}) async
   {
     try
     {
       // Waits our path to resolve
-      final file = await accountFile;
+      final file = await accountFile(position: position);
       // Read file
       String contents = await file.readAsString();
 
@@ -161,43 +169,109 @@ class WalletManager with Helpers
     return mnemonic;
   }
 
-  Future<String> generateSeed(String password) async
+  // Future<String> generateSeed(String password) async
+  // {
+  //   String mnemonic = await newMnemonic(password);
+  //   var node = bip32.BIP32.fromSeed(bip39.mnemonicToSeed(mnemonic));
+  //   var child = node.derivePath("m/44'/60'/0'/0/0");
+  //   String privateKey = HEX.encode(child.privateKey);
+  //   // GENERATIONG HEX
+  //   // return bip39.mnemonicToSeedHex(preMnemonic);
+  //
+  //   Client httpClient = new Client();
+  //   Web3Client eth = Web3Client(url, httpClient);
+  //   // var credentials = await eth.credentialsFromPrivateKey(privateKey);
+  //   // print(credentials.extractAddress());
+  //
+  //   Credentials credentials = await eth.credentialsFromPrivateKey(privateKey);
+  //   var pv = await credentials.extractAddress();
+  //   print(pv.hex);
+  //   return privateKey;
+  // }
+
+  Future<String> generateSeed(String password, {position = 0}) async
   {
+    return null;
+    // String mnemonic = await newMnemonic(password);
+    // var node = bip32.BIP32.fromSeed(bip39.mnemonicToSeed(mnemonic));
+    //
+    // if(position == 0)
+    // {
+    //
+    // }
+    //
+    // var child = node.derivePath("m/44'/60'/0'/0/$position");
+    // String privateKey = HEX.encode(child.privateKey);
+    // // GENERATIONG HEX
+    // // return bip39.mnemonicToSeedHex(preMnemonic);
+    //
+    // Client httpClient = new Client();
+    // Web3Client eth = Web3Client(url, httpClient);
+    // // var credentials = await eth.credentialsFromPrivateKey(privateKey);
+    // // print(credentials.extractAddress());
+    //
+    // Credentials credentials = await eth.credentialsFromPrivateKey(privateKey);
+    // var pv = await credentials.extractAddress();
+    // print(pv.hex);
+    // return privateKey;
+  }
+
+  Future<List<String>> makeAccount(String password, {position = 0}) async
+  {
+    // String hex = await generateSeed(password);
+    List<String> ret = [];
     String mnemonic = await newMnemonic(password);
     var node = bip32.BIP32.fromSeed(bip39.mnemonicToSeed(mnemonic));
-    var child = node.derivePath("m/44'/60'/0'/0/0");
-    String privateKey = HEX.encode(child.privateKey);
-    // GENERATIONG HEX
-    // return bip39.mnemonicToSeedHex(preMnemonic);
-
-    Client httpClient = new Client();
-    Web3Client eth = Web3Client(url, httpClient);
-    // var credentials = await eth.credentialsFromPrivateKey(privateKey);
-    // print(credentials.extractAddress());
-
-    Credentials credentials = await eth.credentialsFromPrivateKey(privateKey);
-    var pv = await credentials.extractAddress();
-    print(pv.hex);
-    return privateKey;
-  }
-
-  Future<String> makeAccount(String password) async
-  {
-    String hex = await generateSeed(password);
-    // String palavra = await WalletManager().generateSeedTwo();
-    // snack(hex,context);
-    // return '';
-    // WalletManager wm = new WalletManager(hash:hex);
     var _rng = new Random.secure();
-    // Credentials _random = EthPrivateKey.createRandom(_rng);
-    Credentials credentFromHex = EthPrivateKey.fromHex(hex);
-    Wallet _wallet = Wallet.createNew(credentFromHex,password, _rng);
-    String json = _wallet.toJson();
-    File path = await writeWalletJson(json);
-    // created wallet to global scope
-    global.wallet = _wallet;
-    return path.path;
+    if(position == 0)
+    {
+      for(int index = 0; index <= 2; index++)
+      {
+        var child = node.derivePath("m/44'/60'/0'/0/$index");
+        String privateKey = HEX.encode(child.privateKey);
+
+        Client httpClient = new Client();
+        Web3Client eth = Web3Client(url, httpClient);
+        Credentials credentials = await eth.credentialsFromPrivateKey(privateKey);
+
+        /*Please remove this piece of code...*/
+        var pv = await credentials.extractAddress();
+        print(pv.hex);
+
+        Credentials credentFromHex = EthPrivateKey.fromHex(privateKey);
+        Wallet _wallet = Wallet.createNew(credentFromHex,password, _rng);
+        String json = _wallet.toJson();
+        File savedPath = await writeWalletJson(json,position: index.toString());
+        if(index == 0)
+        {
+          global.wallet = _wallet;
+        }
+        ret.add(savedPath.path);
+      }
+    }
+
+    await authenticate(password);
+
+    return ret;
   }
+
+  // Future<String> makeAccount(String password) async
+  // {
+  //   String hex = await generateSeed(password);
+  //   // String palavra = await WalletManager().generateSeedTwo();
+  //   // snack(hex,context);
+  //   // return '';
+  //   // WalletManager wm = new WalletManager(hash:hex);
+  //   var _rng = new Random.secure();
+  //   // Credentials _random = EthPrivateKey.createRandom(_rng);
+  //   Credentials credentFromHex = EthPrivateKey.fromHex(hex);
+  //   Wallet _wallet = Wallet.createNew(credentFromHex,password, _rng);
+  //   String json = _wallet.toJson();
+  //   File path = await writeWalletJson(json);
+  //   // created wallet to global scope
+  //   global.wallet = _wallet;
+  //   return path.path;
+  // }
 
   Future<bool> decryptAesWallet(String password) async
   {
@@ -233,23 +307,60 @@ class WalletManager with Helpers
       return ret;
     }
 
-    String content = await readWalletJson();
     try
     {
-      Wallet _wallet = Wallet.fromJson(content, password);
-      Credentials unlocked = _wallet.privateKey;
-      EthereumAddress address = await unlocked.extractAddress();
+      // Wallet _wallet = Wallet.fromJson(content, password);
+      // Credentials unlocked = _wallet.privateKey;
+      // EthereumAddress address = await unlocked.extractAddress();
 
-      global.wallet = _wallet;
-      global.eAddress = address;
+
+      //Load the entire wallet
+      await loadWalletAccounts(password);
+      debugPrint(global.accountList.toString());
+      global.wallet = global.accountList[0].account;
+      global.eAddress = await global.wallet.privateKey.extractAddress();
 
       ret["status"] = 200;
+
       return ret;
     }
-    on ArgumentError
+    catch(e)
     {
-        ret["message"] = "[Error: 2] "+ret["message"];
-        return ret;
+      debugPrint(e.toString());
+      ret["message"] = "[Error: 2] "+ret["message"];
+      return ret;
     }
+  }
+
+  Future<List<String>> getAccounts() async
+  {
+    List<String> files = [];
+    String path = await documentsFolder;
+    RegExp regex = new RegExp(r'.aes$', caseSensitive: false, multiLine: false);
+    var directoryRes = new Directory("$path$folder");
+    await for (var entity in directoryRes.list(recursive: true, followLinks: false))
+    {
+      if(regex.hasMatch(entity.path)){
+        continue;
+      }
+      files.add(entity.path);
+    }
+    return files;
+  }
+
+  Future<bool> loadWalletAccounts(String password) async
+  {
+    List<String> accountPathList = await getAccounts();
+    int index = 0;
+    await Future.forEach(accountPathList, (pathEntity) async {
+      print(index.toString()+pathEntity);
+      String content = await readWalletJson(position: index.toString());
+      debugPrint(content);
+      Wallet _wallet = Wallet.fromJson(content, password);
+      global.accountList.add(global.AccountItem(account: _wallet, accountPath: pathEntity));
+      index += 1;
+    });
+
+    return true;
   }
 }

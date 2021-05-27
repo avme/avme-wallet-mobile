@@ -94,6 +94,7 @@ class NewPassword extends StatelessWidget with Helpers
     {
       Navigator.of(context).pop();
       Navigator.pushReplacementNamed(context, "/home");
+      snack("Account #0 selected", context);
       return;
     }
   }

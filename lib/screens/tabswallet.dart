@@ -65,7 +65,7 @@ class _TabsWalletState extends State<TabsWallet> with Helpers {
             onSelected: _popupMenuButtom,
             itemBuilder: (BuildContext context)
             {
-              return {'Exit','Settings'}.map((String choice) {
+              return {'Settings','Reload','Exit'}.map((String choice) {
                 return PopupMenuItem<String>(
                   value: choice,
                   child: Text(choice),
@@ -100,5 +100,11 @@ class _TabsWalletState extends State<TabsWallet> with Helpers {
   {
     //Switch
     snack(val, _this);
+    switch(val)
+    {
+      case "Reload":
+        Navigator.pushReplacementNamed(context, "/home");
+        break;
+    }
   }
 }

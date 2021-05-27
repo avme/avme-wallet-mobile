@@ -3,6 +3,18 @@ library avme_wallet;
 import 'package:avme_wallet/controller/wallet_manager.dart';
 import 'package:web3dart/credentials.dart';
 
+class AccountItem {
+  AccountItem({
+    this.accountPath,
+    this.account,
+  });
+
+  String accountPath;
+  Wallet account;
+}
+
+List<AccountItem> accountList = [];
+
 WalletManager walletManager = new WalletManager();
 String appTitle = "AVME Wallet";
 Wallet wallet;
