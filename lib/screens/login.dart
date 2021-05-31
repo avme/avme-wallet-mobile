@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:avme_wallet/config/main_theme.dart' as theme;
 import 'package:avme_wallet/screens/helper.dart';
-import 'package:avme_wallet/screens/widgets/simple_warning.dart';
 import 'package:avme_wallet/controller/globals.dart' as globals;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:avme_wallet/screens/widgets/custom_widgets.dart';
 
 class Login extends StatefulWidget {
   @override

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:avme_wallet/screens/helper.dart';
 import 'package:avme_wallet/controller/globals.dart' as global;
-import 'package:avme_wallet/screens/widgets/simple_warning.dart';
 import 'package:avme_wallet/screens/widgets/custom_widgets.dart';
 class NewPassword extends StatelessWidget with Helpers
 {

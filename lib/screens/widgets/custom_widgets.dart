@@ -59,3 +59,49 @@ Text textCenter(String text)
 {
   return Text(text, textAlign: TextAlign.center);
 }
+
+class SimpleWarning extends StatelessWidget {
+
+  final String title;
+  final String text;
+  const SimpleWarning({this.title, this.text = 'Sample Text'});
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: title != null ? Text(title) : null,
+      content: Text(text),
+      actions: title != null ? [
+        TextButton(
+            onPressed: () {
+              //Pops this alertDialog
+              Navigator.pop(context);
+            },
+            child: Text("OK"))
+      ] : null,
+    );
+  }
+}
+
+class LoadingPopUp extends StatelessWidget {
+
+  final String title;
+  final String text;
+  const LoadingPopUp({this.title, this.text = 'Sample Text'});
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: title != null ? Text(title) : null,
+      content: Text(text),
+      actions: title != null ? [
+        TextButton(
+            onPressed: () {
+              //Pops this alertDialog
+              Navigator.pop(context);
+            },
+            child: Text("OK"))
+      ] : null,
+    );
+  }
+}

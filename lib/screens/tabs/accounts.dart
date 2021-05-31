@@ -1,12 +1,14 @@
+import 'package:avme_wallet/controller/globals.dart';
 import 'package:avme_wallet/screens/helper.dart';
 import 'package:flutter/material.dart';
 import 'package:avme_wallet/screens/widgets/custom_widgets.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:hex/hex.dart';
 import 'dart:math';
 
 // stores ExpansionPanel state information
-class AccountItem {
-  AccountItem({
+class AccountItemObjects {
+  AccountItemObjects({
     this.expandedValue,
     this.headerValue,
     this.isExpanded = false,
@@ -17,19 +19,20 @@ class AccountItem {
   bool isExpanded;
 }
 
-List<AccountItem> getAccountList(int qtdExample)
-{
-  List accounts = List<AccountItem>.generate(qtdExample, (index) {
-      var rnd = new Random();
-      String r = (999999 + rnd.nextInt(10000000 - 999999) * 999999).toString();
-      return AccountItem(
-          headerValue: "Account $index",
-          expandedValue: r,
-      );
-    }
-  );
-  return accounts;
-}
+List<AccountItemObjects> _accounts = [];
+// List<AccountItem> getAccountList(int qtdExample)
+// {
+//   List accounts = List<AccountItem>.generate(qtdExample, (index) {
+//       var rnd = new Random();
+//       String r = (999999 + rnd.nextInt(10000000 - 999999) * 999999).toString();
+//       return AccountItem(
+//           headerValue: "Account $index",
+//           expandedValue: r,
+//       );
+//     }
+//   );
+//   return accounts;
+// }
 
 //
 
@@ -39,9 +42,12 @@ class Accounts extends StatefulWidget{
 }
 
 class _AccountsState extends State<Accounts> with Helpers {
-  List<AccountItem> _accounts = getAccountList(4);
+
+  BuildContext dialogContext;
+
   @override
   Widget build(BuildContext context) {
+    Navigator.pop(dialogContext);
     return SingleChildScrollView(
       child: Container(
         child: _panelBuilder(),
@@ -49,13 +55,50 @@ class _AccountsState extends State<Accounts> with Helpers {
     );
   }
 
+  @override
+  void initState()
+  {
+    if(_accounts.length == 0)
+    {
+      debugPrint("_accounts is empty, populating");
+      for(int i = 0; i <= 10; i++)
+      {
+        // testeData.add(i.toString());
+      }
+      SchedulerBinding.instance.addPostFrameCallback((_) async {
+        showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          dialogContext = context;
+          return SimpleWarning(
+              text:
+              "Loading Accounts");
+        });
+
+        debugPrint("anal");
+
+      });
+    }
+    else
+    {
+      debugPrint(_accounts.length.toString());
+    }
+  }
+
+  @override
+  void createState()
+  {
+    debugPrint("createState called!");
+  }
+
+
   // Our expansionPanel being built dynamically
 
   List<ExpansionPanel> _expansionPanelBuilder()
   {
     List<ExpansionPanel> _lista = [];
 
-    _accounts.asMap().forEach((int index, AccountItem account){
+    _accounts.asMap().forEach((int index, AccountItemObjects account){
       ExpansionPanel _e = new ExpansionPanel(
           headerBuilder: (BuildContext context, bool isExpanded) {
             return ListTile(
@@ -93,7 +136,7 @@ class _AccountsState extends State<Accounts> with Helpers {
 
   void closePanels()
   {
-    _accounts.asMap().forEach((int index, AccountItem account) {
+    _accounts.asMap().forEach((int index, AccountItemObjects account) {
       _accounts[index].isExpanded = false;
     });
   }
