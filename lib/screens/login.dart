@@ -127,10 +127,23 @@ class _LoginState extends State<Login> with Helpers{
       );
       return;
     }
+    BuildContext _loadingPopupContext;
 
+    showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          _loadingPopupContext = context;
+          return LoadingPopUp(
+              text:
+              "Loading, please wait."
+          );
+        }
+    );
     Map data = await globals.walletManager.authenticate(_passphrase.text);
     if(data["status"] != 200)
     {
+      Navigator.pop(_loadingPopupContext);
       await showDialog<void>(
           context: context,
           builder: (BuildContext context) =>
@@ -146,6 +159,9 @@ class _LoginState extends State<Login> with Helpers{
     }
     else
     {
+      Navigator.pop(_loadingPopupContext);
+      globals.walletManager.selectedAccount = 0;
+      snack("Account #0 selected", context);
       Navigator.pushReplacementNamed(context, "/home");
     }
     // snack(data, context);

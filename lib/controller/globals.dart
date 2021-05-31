@@ -7,10 +7,12 @@ class AccountItem {
   AccountItem({
     this.accountPath,
     this.account,
+    this.address,
   });
 
   String accountPath;
   Wallet account;
+  String address;
 }
 
 List<AccountItem> accountList = [];

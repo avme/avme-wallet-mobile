@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:avme_wallet/controller/globals.dart' as globals;
+import 'package:avme_wallet/controller/globals.dart' as global;
 import 'package:avme_wallet/screens/helper.dart';
 import 'package:flutter/services.dart';
 
@@ -22,7 +22,7 @@ class _BalanceState extends State<Balance> with Helpers{
         )
     ),
   );
-
+  // TODO: implement objects like accounts, balance and transactions
   @override
   Widget build(BuildContext context) {
     return
@@ -45,7 +45,7 @@ class _BalanceState extends State<Balance> with Helpers{
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           Icon(Icons.vpn_key, size: 16,),
-                          Text(' Account 69', style: _tsTab,),
+                          Text(' Account ' + global.walletManager.selectedAccount.toString(), style: _tsTab,),
                         ],
                       ),
                       SizedBox(height: 4,),
@@ -135,12 +135,12 @@ class _BalanceState extends State<Balance> with Helpers{
   }
   String copyPrivateKey()
   {
-    String _hex = globals.eAddress.hex;
+    String _hex = global.accountList[global.walletManager.selectedAccount].address;
     return _hex.substring(0,12)+"..."+_hex.substring(_hex.length - 12);
   }
 
   Future<void> _copyToClipboard(BuildContext context) async {
-    await Clipboard.setData(ClipboardData(text: globals.eAddress.hex));
+    await Clipboard.setData(ClipboardData(text: global.accountList[global.walletManager.selectedAccount].address));
     snack("Private key copied to clipboard",context);
   }
 }

@@ -61,12 +61,6 @@ class LoginOldState extends State<LoginOld> with AfterLayoutMixin <LoginOld>, He
                 //   },
                 //   child: Text("hasPermission"),
                 // ),
-                ElevatedButton(
-                  onPressed: () {
-                    btnMakeAccount(context);
-                  },
-                  child: Text("Make account."),
-                )
 
               ],
             ),
@@ -82,33 +76,6 @@ class LoginOldState extends State<LoginOld> with AfterLayoutMixin <LoginOld>, He
   btn1(context)
   {
     snack("botao apertado", context);
-  }
-
-  btnMakeAccount(BuildContext context) async
-  {
-    // Hex ?
-    // Chave privada em hex da account (instancia: wallet...)
-    // WalletManager wm = new WalletManager(hash:hex);
-
-    // gera new mnemonic
-    String hex = await global.walletManager.generateSeed('Banana123');
-
-    var _rng = new Random.secure();
-    // Credentials _random = EthPrivateKey.createRandom(_rng);
-    Credentials credentFromHex = EthPrivateKey.fromHex(hex);
-    Wallet wallet = Wallet.createNew(credentFromHex,"abacate", _rng);
-    String json = wallet.toJson();
-    // snack(wallet.toJson(), context);
-
-    // SAVING THE WALLET
-
-
-    // UNCOMMENT TO SHOW THE PATH
-    // File pathString = await wm._localFile;
-    // snack(pathString.path, context);
-
-    File path = await global.walletManager.writeWalletJson(json);
-    snack("Saved to: "+path.path, context);
   }
   @override
   void afterFirstLayout(BuildContext context) {

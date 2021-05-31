@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:avme_wallet/screens/helper.dart';
-import 'package:avme_wallet/controller/globals.dart' as global;
+import 'package:avme_wallet/controller/globals.dart' as globals;
 import 'package:avme_wallet/screens/widgets/custom_widgets.dart';
 class NewPassword extends StatelessWidget with Helpers
 {
@@ -87,12 +87,29 @@ class NewPassword extends StatelessWidget with Helpers
       );
       return;
     }
+    BuildContext _loadingPopupContext;
+
+    showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          _loadingPopupContext = context;
+          return LoadingPopUp(
+              text:
+              "Loading, please wait."
+          );
+        }
+    );
+
+
     // Creates the user account
-    await global.walletManager.makeAccount(field1.text);
-    if(global.walletManager.logged())
+    await globals.walletManager.makeAccount(field1.text);
+    if(globals.walletManager.logged())
     {
-      Navigator.of(context).pop();
+      // Navigator.of(context).pop();
+      Navigator.pop(_loadingPopupContext);
       Navigator.pushReplacementNamed(context, "/home");
+      globals.walletManager.selectedAccount = 0;
       snack("Account #0 selected", context);
       return;
     }

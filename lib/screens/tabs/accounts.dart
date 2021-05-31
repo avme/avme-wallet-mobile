@@ -1,4 +1,4 @@
-import 'package:avme_wallet/controller/globals.dart';
+import 'package:avme_wallet/controller/globals.dart' as globals;
 import 'package:avme_wallet/screens/helper.dart';
 import 'package:flutter/material.dart';
 import 'package:avme_wallet/screens/widgets/custom_widgets.dart';
@@ -20,34 +20,17 @@ class AccountItemObjects {
 }
 
 List<AccountItemObjects> _accounts = [];
-// List<AccountItem> getAccountList(int qtdExample)
-// {
-//   List accounts = List<AccountItem>.generate(qtdExample, (index) {
-//       var rnd = new Random();
-//       String r = (999999 + rnd.nextInt(10000000 - 999999) * 999999).toString();
-//       return AccountItem(
-//           headerValue: "Account $index",
-//           expandedValue: r,
-//       );
-//     }
-//   );
-//   return accounts;
-// }
-
-//
 
 class Accounts extends StatefulWidget{
   @override
   _AccountsState createState() => _AccountsState();
 }
 
-class _AccountsState extends State<Accounts> with Helpers {
-
-  BuildContext dialogContext;
-
+class _AccountsState extends State<Accounts> with Helpers
+{
   @override
   Widget build(BuildContext context) {
-    Navigator.pop(dialogContext);
+    // Navigator.pop(dialogContext);
     return SingleChildScrollView(
       child: Container(
         child: _panelBuilder(),
@@ -58,39 +41,28 @@ class _AccountsState extends State<Accounts> with Helpers {
   @override
   void initState()
   {
+    super.initState();
+    loadWalletView();
+  }
+
+  void loadWalletView()
+  {
     if(_accounts.length == 0)
     {
       debugPrint("_accounts is empty, populating");
-      for(int i = 0; i <= 10; i++)
-      {
-        // testeData.add(i.toString());
-      }
-      SchedulerBinding.instance.addPostFrameCallback((_) async {
-        showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          dialogContext = context;
-          return SimpleWarning(
-              text:
-              "Loading Accounts");
-        });
-
-        debugPrint("anal");
-
+      // for(int i = 0; i <= 10; i++)
+      int i = 0;
+      globals.accountList.forEach((element) {
+        debugPrint(element.accountPath);
+        _accounts.add(
+            AccountItemObjects(
+                expandedValue: element.address,
+                isExpanded: false,
+                headerValue: i.toString()));
+        i++;
       });
     }
-    else
-    {
-      debugPrint(_accounts.length.toString());
-    }
   }
-
-  @override
-  void createState()
-  {
-    debugPrint("createState called!");
-  }
-
 
   // Our expansionPanel being built dynamically
 
@@ -121,7 +93,8 @@ class _AccountsState extends State<Accounts> with Helpers {
             minLeadingWidth: 10,
             onTap: () {
               // insert set state if necessary
-              snack("Account $index selected",context);
+              snack("Account #$index selected",context);
+              globals.walletManager.selectedAccount = index;
               setState(() {
                 closePanels();
               });
@@ -155,26 +128,6 @@ class _AccountsState extends State<Accounts> with Helpers {
       },
       //Build the ExpansionPanel (item) for each element in our _accounts
       children: _expansionPanelBuilder().toList(),
-
-      // children:
-      //
-      //
-      //   _accounts.map((AccountItem account){
-      //   ExpansionPanel _expansionPanel = new ExpansionPanel(
-      //     headerBuilder: (BuildContext context, bool isExpanded){
-      //       return new ListTile(
-      //         title: Text(account.headerValue),
-      //       );
-      //     },
-      //     body: new ListTile(
-      //       title: Text(account.expandedValue),
-      //       subtitle: Text("This is a subtitle..."),
-      //       onTap: (){
-      //         snack("Element ",context);
-      //       },
-      //     ));
-      //   return _expansionPanel;
-      // }),
     );
     return listing;
   }

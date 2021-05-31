@@ -30,7 +30,7 @@ class WalletManager with Helpers
   String ext = ".json";
   String folder = "AVME-Wallet/";
   String filename = "account-";
-
+  int selectedAccount;
 
   // GET THE DEFAULT PATH
   // Android: /data/user/0/com.avme.avme_wallet/app_flutter
@@ -143,11 +143,11 @@ class WalletManager with Helpers
   Future<String> newMnemonic(String password) async
   {
     // Gera mnemomic
-    String mnemonic =
-        "blossom skate magnet magic put task famous square because attract clog ketchup";
+    // String mnemonic =
+    //     "blossom skate magnet magic put task famous square because attract clog ketchup";
 
     // UNCOMMENT THE NEXT LINE TO GENERATE ANOTHER
-    // String mnemonic = bip39.generateMnemonic();
+    String mnemonic = bip39.generateMnemonic();
     print(mnemonic);
 
 
@@ -189,33 +189,6 @@ class WalletManager with Helpers
   //   return privateKey;
   // }
 
-  Future<String> generateSeed(String password, {position = 0}) async
-  {
-    return null;
-    // String mnemonic = await newMnemonic(password);
-    // var node = bip32.BIP32.fromSeed(bip39.mnemonicToSeed(mnemonic));
-    //
-    // if(position == 0)
-    // {
-    //
-    // }
-    //
-    // var child = node.derivePath("m/44'/60'/0'/0/$position");
-    // String privateKey = HEX.encode(child.privateKey);
-    // // GENERATIONG HEX
-    // // return bip39.mnemonicToSeedHex(preMnemonic);
-    //
-    // Client httpClient = new Client();
-    // Web3Client eth = Web3Client(url, httpClient);
-    // // var credentials = await eth.credentialsFromPrivateKey(privateKey);
-    // // print(credentials.extractAddress());
-    //
-    // Credentials credentials = await eth.credentialsFromPrivateKey(privateKey);
-    // var pv = await credentials.extractAddress();
-    // print(pv.hex);
-    // return privateKey;
-  }
-
   Future<List<String>> makeAccount(String password, {position = 0}) async
   {
     // String hex = await generateSeed(password);
@@ -223,20 +196,21 @@ class WalletManager with Helpers
     String mnemonic = await newMnemonic(password);
     var node = bip32.BIP32.fromSeed(bip39.mnemonicToSeed(mnemonic));
     var _rng = new Random.secure();
+
     if(position == 0)
     {
-      for(int index = 0; index <= 2; index++)
+      for(int index = 0; index <= 9; index++)
       {
         var child = node.derivePath("m/44'/60'/0'/0/$index");
         String privateKey = HEX.encode(child.privateKey);
 
-        Client httpClient = new Client();
-        Web3Client eth = Web3Client(url, httpClient);
-        Credentials credentials = await eth.credentialsFromPrivateKey(privateKey);
 
-        /*Please remove this piece of code...*/
-        var pv = await credentials.extractAddress();
-        print(pv.hex);
+        // /*Please remove this piece of code...*/
+        // Client httpClient = new Client();
+        // Web3Client eth = Web3Client(url, httpClient);
+        // Credentials credentials = await eth.credentialsFromPrivateKey(privateKey);
+        // var pv = await credentials.extractAddress();
+        // print(pv.hex);
 
         Credentials credentFromHex = EthPrivateKey.fromHex(privateKey);
         Wallet _wallet = Wallet.createNew(credentFromHex,password, _rng);
@@ -309,11 +283,6 @@ class WalletManager with Helpers
 
     try
     {
-      // Wallet _wallet = Wallet.fromJson(content, password);
-      // Credentials unlocked = _wallet.privateKey;
-      // EthereumAddress address = await unlocked.extractAddress();
-
-
       //Load the entire wallet
       await loadWalletAccounts(password);
       debugPrint(global.accountList.toString());
@@ -357,7 +326,12 @@ class WalletManager with Helpers
       String content = await readWalletJson(position: index.toString());
       debugPrint(content);
       Wallet _wallet = Wallet.fromJson(content, password);
-      global.accountList.add(global.AccountItem(account: _wallet, accountPath: pathEntity));
+      EthereumAddress _ethAddress = await _wallet.privateKey.extractAddress();
+      global.accountList.add(
+        global.AccountItem(
+          account: _wallet,
+          accountPath: pathEntity,
+          address: _ethAddress.hex));
       index += 1;
     });
 
