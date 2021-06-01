@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:avme_wallet/controller/globals.dart' as global;
+import 'package:avme_wallet/app/controller/globals.dart' as global;
 import 'package:avme_wallet/screens/helper.dart';
 import 'package:flutter/services.dart';
 

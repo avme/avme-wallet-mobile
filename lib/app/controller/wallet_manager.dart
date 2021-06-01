@@ -11,7 +11,7 @@ import 'package:http/http.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:aes_crypt/aes_crypt.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:avme_wallet/controller/globals.dart' as global;
+import 'package:avme_wallet/app/controller/globals.dart' as global;
 // CREATING FILE ON THE CREATED WALLET
 // TODO: refactor this code
 

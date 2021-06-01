@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:avme_wallet/controller/routes.dart' as appRoutes;
+import 'package:avme_wallet/app/config/routes.dart';
 import 'package:avme_wallet/config/main_theme.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart' as DotEnv;
 
@@ -14,8 +14,8 @@ class AvmeWallet extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: defaultTheme(),
-      initialRoute: appRoutes.defaultRoute,
-      routes: appRoutes.routes);
+      initialRoute: defaultRoute,
+      routes: routes);
   }
 }
 

@@ -1,6 +1,6 @@
 import 'package:avme_wallet/screens/helper.dart';
 import 'package:flutter/material.dart';
-import 'package:avme_wallet/controller/globals.dart' as global;
+import 'package:avme_wallet/app/controller/globals.dart' as global;
 import 'package:avme_wallet/screens/debug_options.dart';
 import 'package:avme_wallet/screens/widgets/colored_tab_bar.dart';
 import 'package:avme_wallet/config/main_theme.dart' as theme;

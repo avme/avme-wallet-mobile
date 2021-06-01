@@ -1,6 +1,6 @@
 library avme_wallet;
 
-import 'package:avme_wallet/controller/wallet_manager.dart';
+import 'package:avme_wallet/app/controller/wallet_manager.dart';
 import 'package:web3dart/credentials.dart';
 
 class AccountItem {

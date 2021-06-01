@@ -1,4 +1,4 @@
-import 'package:avme_wallet/controller/globals.dart' as globals;
+import 'package:avme_wallet/app/controller/globals.dart' as globals;
 import 'package:avme_wallet/screens/helper.dart';
 import 'package:flutter/material.dart';
 import 'package:avme_wallet/screens/widgets/custom_widgets.dart';
