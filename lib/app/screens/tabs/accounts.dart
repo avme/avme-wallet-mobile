@@ -1,10 +1,7 @@
 import 'package:avme_wallet/app/controller/globals.dart' as globals;
-import 'package:avme_wallet/screens/helper.dart';
+import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:flutter/material.dart';
-import 'package:avme_wallet/screens/widgets/custom_widgets.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:hex/hex.dart';
-import 'dart:math';
+import 'package:avme_wallet/app/screens/widgets/custom_widgets.dart';
 
 // stores ExpansionPanel state information
 class AccountItemObjects {
@@ -26,7 +23,7 @@ class Accounts extends StatefulWidget{
   _AccountsState createState() => _AccountsState();
 }
 
-class _AccountsState extends State<Accounts> with Helpers
+class _AccountsState extends State<Accounts>
 {
   @override
   Widget build(BuildContext context) {

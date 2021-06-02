@@ -1,12 +1,12 @@
 import 'dart:io';
 import 'package:web3dart/web3dart.dart';
 import 'package:avme_wallet/app/controller/globals.dart' as global;
-import 'package:avme_wallet/screens/helper.dart';
+import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:flutter/material.dart';
 
 final String password = "abacate";
 
-class Options extends StatelessWidget with Helpers
+class Options extends StatelessWidget
 {
   @override
   Widget build(BuildContext context) {

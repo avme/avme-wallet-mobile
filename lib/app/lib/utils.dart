@@ -3,13 +3,11 @@ import 'dart:typed_data';
 import 'package:hex/hex.dart';
 import 'package:flutter/material.dart';
 
-mixin Helpers {
-  void snack(texto, BuildContext context)
-  {
-    debugPrint('$texto');
-    ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$texto')));
-  }
+void snack(texto, BuildContext context)
+{
+  debugPrint('$texto');
+  ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('$texto')));
 }
 
 String hexRandBytes({int size = 4}) {

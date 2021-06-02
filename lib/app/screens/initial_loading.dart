@@ -1,9 +1,9 @@
-import 'package:avme_wallet/screens/helper.dart';
+import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:avme_wallet/app/controller/globals.dart' as globals;
-import 'package:avme_wallet/config/main_theme.dart' as theme;
+import 'package:avme_wallet/app/screens/widgets/theme.dart' as theme;
 
 BuildContext _initialLoadingContext;
 
@@ -22,7 +22,7 @@ class _buttonText extends StatelessWidget {
   }
 }
 
-class _InitialLoadingState extends State<InitialLoading> with Helpers{
+class _InitialLoadingState extends State<InitialLoading>{
   /*GENERIC LOADING SCREEN*/
   @override
   void initState()

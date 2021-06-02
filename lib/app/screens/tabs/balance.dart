@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:avme_wallet/app/controller/globals.dart' as global;
-import 'package:avme_wallet/screens/helper.dart';
+import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:flutter/services.dart';
 
 class Balance extends StatefulWidget {
@@ -8,7 +8,8 @@ class Balance extends StatefulWidget {
   _BalanceState createState() => _BalanceState();
 }
 
-class _BalanceState extends State<Balance> with Helpers{
+class _BalanceState extends State<Balance>
+{
   double _balance = 0.50;
   double _usdBalance = 21668.80;
   TextStyle _tsTab = TextStyle(

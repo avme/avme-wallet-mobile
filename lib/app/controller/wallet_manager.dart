@@ -1,7 +1,8 @@
+import 'dart:isolate';
 import 'dart:math';
-import 'package:avme_wallet/screens/helper.dart';
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:bip32/bip32.dart' as bip32;
+import 'package:flutter/foundation.dart';
 import 'dart:io';
 import 'package:hex/hex.dart';
 import 'package:flutter/material.dart';
@@ -21,7 +22,7 @@ String url = env["NETWORK"];
 // String password = "Banana123";
 String mnemonicFile = env["MNEMONICFILEPATH"];
 
-class WalletManager with Helpers
+class WalletManager
 {
   //Our constructor
   // final String hash;
@@ -320,21 +321,32 @@ class WalletManager with Helpers
   Future<bool> loadWalletAccounts(String password) async
   {
     List<String> accountPathList = await getAccounts();
+    List<Future> futures = [];
     int index = 0;
-    await Future.forEach(accountPathList, (pathEntity) async {
-      print(index.toString()+pathEntity);
-      String content = await readWalletJson(position: index.toString());
-      debugPrint(content);
-      Wallet _wallet = Wallet.fromJson(content, password);
-      EthereumAddress _ethAddress = await _wallet.privateKey.extractAddress();
-      global.accountList.add(
-        global.AccountItem(
-          account: _wallet,
-          accountPath: pathEntity,
-          address: _ethAddress.hex));
-      index += 1;
-    });
 
+    accountPathList.forEach((pathEntity) async{
+
+      // futures.add(createAccountList(index, pathEntity, password));
+      futures.add(createAccountList(index, pathEntity, password));
+
+    });
+    await Future.wait(futures);
     return true;
+  }
+
+  Future<void> createAccountList(int index, String walletPath, String password) async
+  {
+    // print(index.toString()+walletPath);
+    String content = await readWalletJson(position: index.toString());
+    // debugPrint(content);
+    // instance fromJson is taking forever...
+    Wallet _wallet = Wallet.fromJson(content, password);
+    EthereumAddress _ethAddress = await _wallet.privateKey.extractAddress();
+    global.accountList.add(
+        global.AccountItem(
+            account: _wallet,
+            accountPath: walletPath,
+            address: _ethAddress.hex)
+    );
   }
 }

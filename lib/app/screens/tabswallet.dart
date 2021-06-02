@@ -1,21 +1,20 @@
-import 'package:avme_wallet/screens/helper.dart';
 import 'package:flutter/material.dart';
 import 'package:avme_wallet/app/controller/globals.dart' as global;
-import 'package:avme_wallet/screens/debug_options.dart';
-import 'package:avme_wallet/screens/widgets/colored_tab_bar.dart';
-import 'package:avme_wallet/config/main_theme.dart' as theme;
-import 'package:avme_wallet/screens/tabs/accounts.dart';
-import 'package:avme_wallet/screens/tabs/balance.dart';
-import 'package:avme_wallet/screens/tabs/transactions.dart';
+import 'package:avme_wallet/app/screens/debug_options.dart';
+import 'package:avme_wallet/app/lib/utils.dart';
+import 'package:avme_wallet/app/screens/widgets/colored_tabbar.dart';
+import 'package:avme_wallet/app/screens/widgets/theme.dart' as theme;
+import 'package:avme_wallet/app/screens/tabs/accounts.dart';
+import 'package:avme_wallet/app/screens/tabs/balance.dart';
+import 'package:avme_wallet/app/screens/tabs/transactions.dart';
 
 class TabsWallet extends StatefulWidget {
   @override
   _TabsWalletState createState() => _TabsWalletState();
 }
 
-class _TabsWalletState extends State<TabsWallet> with Helpers {
+class _TabsWalletState extends State<TabsWallet>{
   BuildContext _this;
-
   // List of Tabs
   final Map<String,Widget> _tabs = {
     "ACCOUNTS" : Accounts(),
@@ -23,6 +22,7 @@ class _TabsWalletState extends State<TabsWallet> with Helpers {
     "TRANSACTIONS" : Transactions(),
     "DEBUG OPTIONS" : Options(),
   };
+
   final EdgeInsets padding = EdgeInsets.all(12.0);
   // Return a list of types...
   // 1 - Key names as TAB to populate the TabBar
@@ -42,7 +42,6 @@ class _TabsWalletState extends State<TabsWallet> with Helpers {
         _list.add(Padding(padding: padding, child: value));
       });
     }
-
     return _list;
   }
 

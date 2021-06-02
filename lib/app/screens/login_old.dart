@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:after_layout/after_layout.dart';
-import 'package:avme_wallet/screens/helper.dart';
+import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/controller/globals.dart' as global;
 
 class LoginOld extends StatefulWidget
@@ -15,7 +15,7 @@ class LoginOld extends StatefulWidget
     debugPrint('loaded');
   }
 }
-class LoginOldState extends State<LoginOld> with AfterLayoutMixin <LoginOld>, Helpers
+class LoginOldState extends State<LoginOld> with AfterLayoutMixin <LoginOld>
 {
   @override
   Widget build(BuildContext context) {
