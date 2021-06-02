@@ -4,6 +4,7 @@ import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/controller/globals.dart' as globals;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:avme_wallet/app/screens/widgets/custom_widgets.dart';
+import 'package:avme_wallet/app/controller/thread.dart';
 
 class Login extends StatefulWidget {
   @override
@@ -92,25 +93,35 @@ class _LoginState extends State<Login> {
                             ),
                             SizedBox(
                               child: ElevatedButton(
-                                onPressed: () {
-                                  authenticate(context);
+                                onPressed: () async{
+                                  await authenticate(context);
                                 },
                                 child: Icon(Icons.arrow_forward_outlined),
                                 // style: ElevatedButton.styleFrom(
                                 //   padding: EdgeInsets.symmetric(vertical: 21, horizontal: 0),
                                 style: _btnStyleLogin,
                               ),
-                            ),]
+                            ),
+                          ]
                       )
                   ),
                 )
-              ]
+              ,SizedBox(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      newIsolate();
+                    },
+                    child: Text("Test Isolate"),
+                    // style: ElevatedButton.styleFrom(
+                    //   padding: EdgeInsets.symmetric(vertical: 21, horizontal: 0),
+
+                  ),
+                ),]
           )
         )
       ),
     );
   }
-
   void authenticate(BuildContext context) async
   {
     bool empty = (_passphrase == null || _passphrase.text.length == 0) ? true : false;

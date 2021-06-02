@@ -13,6 +13,8 @@ import 'package:web3dart/web3dart.dart';
 import 'package:aes_crypt/aes_crypt.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:avme_wallet/app/controller/globals.dart' as global;
+import 'package:avme_wallet/app/controller/thread.dart' as thread;
+
 // CREATING FILE ON THE CREATED WALLET
 // TODO: refactor this code
 
@@ -286,6 +288,7 @@ class WalletManager
     {
       //Load the entire wallet
       await loadWalletAccounts(password);
+      new Exception("loadWalletAccounts terminou!");
       debugPrint(global.accountList.toString());
       global.wallet = global.accountList[0].account;
       global.eAddress = await global.wallet.privateKey.extractAddress();
@@ -320,19 +323,64 @@ class WalletManager
 
   Future<bool> loadWalletAccounts(String password) async
   {
-    List<String> accountPathList = await getAccounts();
-    List<Future> futures = [];
-    int index = 0;
-
-    accountPathList.forEach((pathEntity) async{
-
-      // futures.add(createAccountList(index, pathEntity, password));
-      futures.add(createAccountList(index, pathEntity, password));
-
-    });
-    await Future.wait(futures);
-    return true;
+    return await thread.loadWalletAccounts(password);
   }
+
+  // Future<bool> loadWalletAccounts(String password) async
+  // {
+  //   List<String> accountPathList = await getAccounts();
+  //   List<Future> futures = [];
+  //   int index = 0;
+  //   accountPathList.forEach((pathEntity) {
+  //     print("Added $index to async queue");
+  //     futures.add(createAccountList(index, pathEntity, password));
+  //
+  //     index++;
+  //   });
+  //   await Future.wait(futures);
+  //   return true;
+  // }
+
+  // 18 seconds
+  // Future<bool> loadWalletAccounts(String password) async
+  // {
+  //   List<String> accountPathList = await getAccounts();
+  //   List<Future> futures = [];
+  //   int index = 0;
+  //
+  //   accountPathList.forEach((pathEntity) async{
+  //
+  //     // futures.add(createAccountList(index, pathEntity, password));
+  //     futures.add(createAccountList(index, pathEntity, password));
+  //
+  //   });
+  //   await Future.wait(futures);
+  //   return true;
+  // }
+
+  Future<global.AccountItem> createAccountList_ignore(Map map) async
+  {
+    int index = map['index'];
+    String walletPath = map["pathEntity"];
+    String password = map["password"];
+
+    // print(index.toString()+walletPath);
+    // WalletManager wm = new WalletManager();
+    String content = await readWalletJson(position: index.toString());
+    // debugPrint(content);
+    // instance fromJson is taking forever...
+    Wallet _wallet = Wallet.fromJson(content, password);
+    EthereumAddress _ethAddress = await _wallet.privateKey.extractAddress();
+    // global.accountList.add(
+
+    // );
+    return global.AccountItem(
+        account: _wallet,
+        accountPath: walletPath,
+        address: _ethAddress.hex);
+  }
+
+
 
   Future<void> createAccountList(int index, String walletPath, String password) async
   {
@@ -348,5 +396,41 @@ class WalletManager
             accountPath: walletPath,
             address: _ethAddress.hex)
     );
+  }
+  Future<void> createAccountListBasic(int index, String walletPath, String password) async
+  {
+    // print(index.toString()+walletPath);
+    String content = await readWalletJson(position: index.toString());
+    // debugPrint(content);
+    // instance fromJson is taking forever...
+    Wallet _wallet = Wallet.fromJson(content, password);
+    EthereumAddress _ethAddress = await _wallet.privateKey.extractAddress();
+    global.accountList.add(
+        global.AccountItem(
+            account: _wallet,
+            accountPath: walletPath,
+            address: _ethAddress.hex)
+    );
+  }
+  // 18 seconds
+  Future<bool> loadWalletAccounts_old(String password) async
+  {
+    List<String> accountPathList = await getAccounts();
+    int index = 0;
+    await Future.forEach(accountPathList, (pathEntity) async {
+      print(index.toString()+pathEntity);
+      String content = await readWalletJson(position: index.toString());
+      debugPrint(content);
+      Wallet _wallet = Wallet.fromJson(content, password);
+      EthereumAddress _ethAddress = await _wallet.privateKey.extractAddress();
+      global.accountList.add(
+          global.AccountItem(
+              account: _wallet,
+              accountPath: pathEntity,
+              address: _ethAddress.hex));
+      index += 1;
+    });
+
+    return true;
   }
 }
