@@ -94,7 +94,7 @@ class _LoginState extends State<Login> {
                             SizedBox(
                               child: ElevatedButton(
                                 onPressed: () async{
-                                  await authenticate(context);
+                                  authenticate(context);
                                 },
                                 child: Icon(Icons.arrow_forward_outlined),
                                 // style: ElevatedButton.styleFrom(
@@ -106,17 +106,7 @@ class _LoginState extends State<Login> {
                       )
                   ),
                 )
-              ,SizedBox(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      newIsolate();
-                    },
-                    child: Text("Test Isolate"),
-                    // style: ElevatedButton.styleFrom(
-                    //   padding: EdgeInsets.symmetric(vertical: 21, horizontal: 0),
-
-                  ),
-                ),]
+              ]
           )
         )
       ),

@@ -142,6 +142,6 @@ class _BalanceState extends State<Balance>
 
   Future<void> _copyToClipboard(BuildContext context) async {
     await Clipboard.setData(ClipboardData(text: global.accountList[global.walletManager.selectedAccount].address));
-    snack("Private key copied to clipboard",context);
+    snack("Address copied to clipboard",context);
   }
 }

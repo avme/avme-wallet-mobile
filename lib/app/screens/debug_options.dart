@@ -76,14 +76,14 @@ class Options extends StatelessWidget
   btnLoadWallet(BuildContext context) async
   {
 
-    snack("Trying to load...", context);
-    File fileP = await global.walletManager.accountFile();
-    String content = new File(fileP.path).readAsStringSync();
-    Wallet wallet = Wallet.fromJson(content, password);
-    // snack(content, context);
-    //Check the credentials
-    Credentials accessGranted = wallet.privateKey;
-    snack(accessGranted.toString(), context);
+    // snack("Trying to load...", context);
+    // File fileP = await global.walletManager.accountFile();
+    // String content = new File(fileP.path).readAsStringSync();
+    // Wallet wallet = Wallet.fromJson(content, password);
+    // // snack(content, context);
+    // //Check the credentials
+    // Credentials accessGranted = wallet.privateKey;
+    // snack(accessGranted.toString(), context);
   }
 
   btnChangeNavigation(BuildContext context)

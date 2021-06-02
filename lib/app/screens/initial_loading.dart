@@ -1,3 +1,4 @@
+import 'package:avme_wallet/app/controller/file_manager.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -33,9 +34,15 @@ class _InitialLoadingState extends State<InitialLoading>{
   }
   void getData() async
   {
+    //Define the documents folder to use globaly
+    FileManager fileManager = new FileManager();
+    await fileManager.getDocumentsFolder();
+    globals.fileManager = fileManager;
+    globals.setWalletManager(fileManager);
+
     if(env["ALWAYS_RESET"].toString().toUpperCase() == "TRUE")
     {
-      await globals.walletManager.deletePreviousWallet();
+      globals.walletManager.deletePreviousWallet();
     }
 
     bool hasWallet = await globals.walletManager.hasPreviousWallet();
