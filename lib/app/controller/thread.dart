@@ -1,8 +1,10 @@
 import 'dart:isolate';
 import 'package:avme_wallet/app/controller/wallet_manager.dart';
 import 'package:web3dart/web3dart.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 // Memory from threads/isolates in dart isn't shared, just for object reference
 import 'package:avme_wallet/app/controller/globals.dart' as global;
+
 WalletManager wm = new WalletManager();
 
 void newIsolate() async
@@ -85,14 +87,15 @@ void createAccountList(GenericThreadData param) async
   //   print(ret);
   //   param.sendPort.send(ret);
   // });
-
+  String content = await wm.readWalletJson(position: param.data["index"].toString());
+  param.sendPort.send(content);
 }
 
 void createAccountListOld(int index, String walletPath, String password) async
 {
   // print(index.toString()+walletPath);
   String content = await wm.readWalletJson(position: index.toString());
-  // debugPrint(content);
+  // print(content);
   // instance fromJson is taking forever...
   Wallet _wallet = Wallet.fromJson(content, password);
   EthereumAddress _ethAddress = await _wallet.privateKey.extractAddress();

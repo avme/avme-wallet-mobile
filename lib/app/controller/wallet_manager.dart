@@ -1,11 +1,8 @@
-import 'dart:isolate';
 import 'dart:math';
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:bip32/bip32.dart' as bip32;
-import 'package:flutter/foundation.dart';
 import 'dart:io';
 import 'package:hex/hex.dart';
-import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:web3dart/credentials.dart';
 import 'package:http/http.dart';
@@ -21,15 +18,10 @@ import 'package:avme_wallet/app/controller/thread.dart' as thread;
 // Async because the app will request access to the device...
 
 String url = env["NETWORK"];
-// String password = "Banana123";
 String mnemonicFile = env["MNEMONICFILEPATH"];
 
 class WalletManager
 {
-  //Our constructor
-  // final String hash;
-  // WalletManager({this.hash = "default"});
-
   String ext = ".json";
   String folder = "AVME-Wallet/";
   String filename = "account-";
@@ -37,11 +29,14 @@ class WalletManager
 
   // GET THE DEFAULT PATH
   // Android: /data/user/0/com.avme.avme_wallet/app_flutter
+  //TODO ASAP: FIX THIS FUNCTION, CANNOT BE CALLED IN THREAD
   Future<String> get documentsFolder async
   {
-    final directory = await getApplicationDocumentsDirectory();
-
-    return directory.path+"/";
+    // final directory = await getApplicationDocumentsDirectory();
+    //
+    // return directory.path+"/";
+    //
+    return "/data/user/0/com.avme.avme_wallet/app_flutter/";
   }
   // // SETTING THE FILE PATH
   // Future<File> get _accountFile async
@@ -86,7 +81,7 @@ class WalletManager
 
       String documentsPath = await documentsFolder;
       File mnemonic = new File(documentsPath + mnemonicFile);
-      debugPrint("MEME MONIC: "+mnemonic.path);
+      print("MEME MONIC: "+mnemonic.path);
       mnemonic.delete();
     }
   }
@@ -110,7 +105,7 @@ class WalletManager
     }
     catch(e)
     {
-      debugPrint(e.toString());
+      print(e.toString());
     }
     return null;
   }
@@ -121,12 +116,12 @@ class WalletManager
     if(exists.toString() == "false")
     {
       var directory = await Directory(path).create(recursive: true);
-      debugPrint("CREATING THE DIRECTORY: " + directory.path);
+      print("CREATING THE DIRECTORY: " + directory.path);
       exists = true;
     }
     // else
     // {
-    //   debugPrint("DIRECTORY ALREADY EXISTS!" + path);
+    //   print("DIRECTORY ALREADY EXISTS!" + path);
     // }
     return exists;
   }
@@ -139,7 +134,7 @@ class WalletManager
 
     // Using the same password to uncrypt the file
     crypt.setPassword(password);
-    debugPrint(password);
+    print(password);
     return crypt.decryptTextFromFileSync(documentsPath + mnemonicFile, utf16: true);
   }
 
@@ -164,7 +159,7 @@ class WalletManager
     // Setting the main Password to encrypt the file, remember to use
     // the same parameter if you're planning to use it again, like uncrypt...
     crypt.setPassword(password);
-    debugPrint("AES: "+documentsPath + mnemonicFile);
+    print("AES: "+documentsPath + mnemonicFile);
 
     // Saving file with the method 'encryptTextToFileSync' from the Lib "aes_crypt"
 
@@ -289,7 +284,7 @@ class WalletManager
       //Load the entire wallet
       await loadWalletAccounts(password);
       new Exception("loadWalletAccounts terminou!");
-      debugPrint(global.accountList.toString());
+      print(global.accountList.toString());
       global.wallet = global.accountList[0].account;
       global.eAddress = await global.wallet.privateKey.extractAddress();
 
@@ -299,7 +294,7 @@ class WalletManager
     }
     catch(e)
     {
-      debugPrint(e.toString());
+      print(e.toString());
       ret["message"] = "[Error: 2] "+ret["message"];
       return ret;
     }
@@ -367,7 +362,7 @@ class WalletManager
     // print(index.toString()+walletPath);
     // WalletManager wm = new WalletManager();
     String content = await readWalletJson(position: index.toString());
-    // debugPrint(content);
+    // print(content);
     // instance fromJson is taking forever...
     Wallet _wallet = Wallet.fromJson(content, password);
     EthereumAddress _ethAddress = await _wallet.privateKey.extractAddress();
@@ -386,7 +381,7 @@ class WalletManager
   {
     // print(index.toString()+walletPath);
     String content = await readWalletJson(position: index.toString());
-    // debugPrint(content);
+    // print(content);
     // instance fromJson is taking forever...
     Wallet _wallet = Wallet.fromJson(content, password);
     EthereumAddress _ethAddress = await _wallet.privateKey.extractAddress();
@@ -401,7 +396,7 @@ class WalletManager
   {
     // print(index.toString()+walletPath);
     String content = await readWalletJson(position: index.toString());
-    // debugPrint(content);
+    // print(content);
     // instance fromJson is taking forever...
     Wallet _wallet = Wallet.fromJson(content, password);
     EthereumAddress _ethAddress = await _wallet.privateKey.extractAddress();
@@ -420,7 +415,7 @@ class WalletManager
     await Future.forEach(accountPathList, (pathEntity) async {
       print(index.toString()+pathEntity);
       String content = await readWalletJson(position: index.toString());
-      debugPrint(content);
+      print(content);
       Wallet _wallet = Wallet.fromJson(content, password);
       EthereumAddress _ethAddress = await _wallet.privateKey.extractAddress();
       global.accountList.add(

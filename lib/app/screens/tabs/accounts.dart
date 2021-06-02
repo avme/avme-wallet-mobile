@@ -46,11 +46,11 @@ class _AccountsState extends State<Accounts>
   {
     if(_accounts.length == 0)
     {
-      debugPrint("_accounts is empty, populating");
+      print("_accounts is empty, populating");
       // for(int i = 0; i <= 10; i++)
       int i = 0;
       globals.accountList.forEach((element) {
-        debugPrint(element.accountPath);
+        print(element.accountPath);
         _accounts.add(
             AccountItemObjects(
                 expandedValue: element.address,

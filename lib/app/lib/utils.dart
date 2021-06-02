@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 
 void snack(texto, BuildContext context)
 {
-  debugPrint('$texto');
+  print('$texto');
   ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('$texto')));
 }

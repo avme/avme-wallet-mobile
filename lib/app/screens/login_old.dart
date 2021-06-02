@@ -12,7 +12,7 @@ class LoginOld extends StatefulWidget
 
   void onLoad(BuildContext context)
   {
-    debugPrint('loaded');
+    print('loaded');
   }
 }
 class LoginOldState extends State<LoginOld> with AfterLayoutMixin <LoginOld>
