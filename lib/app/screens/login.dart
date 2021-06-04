@@ -1,5 +1,5 @@
 import 'package:avme_wallet/app/controller/events.dart';
-import 'package:avme_wallet/app/database/notifier.dart';
+import 'package:avme_wallet/app/model/app.dart';
 import 'package:flutter/material.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart' as theme;
 import 'package:avme_wallet/app/lib/utils.dart';
@@ -13,7 +13,6 @@ import 'package:provider/provider.dart';
 // {
 //   print("Loading data!! "+ _progress.progress.toString());
 // }
-Notifier _progress = Notifier();
 
 class Login extends StatefulWidget {
   @override
@@ -23,7 +22,6 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   // Passphrase controller
   TextEditingController _passphrase = new TextEditingController();
-  ChangeNotifierProvider loadDialog;
   ButtonStyle _btnStyleLogin = ButtonStyle(
       padding: MaterialStateProperty.all<EdgeInsets>
         (EdgeInsets.symmetric(vertical: 17.6, horizontal: 0)),
@@ -42,99 +40,102 @@ class _LoginState extends State<Login> {
   Widget build(BuildContext context)
   {
     _passphrase.text = env["DEFAULT_PASSWORD"] ?? "";
-    return Scaffold(
-      body: SafeArea(child:
-      Container(
-        color: theme.defaultTheme().scaffoldBackgroundColor,
-        child:
-          Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  // flex: 1, default as 1
-                    child:
-                    Container(
-                      color: Color(0xAFFFFFF),
-                      constraints: BoxConstraints.expand(),
-                      child: Center(
-                        child: Image.asset(
-                          'assets/resized-newlogo02-trans.png',
-                          width: 120,
-                          fit: BoxFit.fitHeight,),
-                      ),
-                    )
-                ),
-                Container(
-                  color: Color(0xFFFFFFF),
-                  padding: EdgeInsets.symmetric(horizontal: 0, vertical: 10),
-                  child: Center(child: Text("Welcome to AVME Wallet"),),
-                ),
-                Expanded(
-                  flex: 2,
-                  child:
-                  Container(
-                      padding: EdgeInsets.symmetric(vertical: 30, horizontal: 15),
-                      // color: Color(0x26FFFFFF),
-                      constraints: BoxConstraints.expand(),
+    return Consumer<AvmeWallet>
+      (builder: (context, avmeWallet, child){
+        return Scaffold(
+          body: SafeArea(child:
+          Container(
+              color: theme.defaultTheme().scaffoldBackgroundColor,
+              child:
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    // flex: 1, default as 1
                       child:
-                      Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Flexible(
-                              child: TextField(
-                                  controller: _passphrase,
-                                  obscureText: true,
-                                  decoration: InputDecoration(
-                                    border: OutlineInputBorder(
-                                        borderRadius: _radiusField
-                                    ),
-                                    labelText: "Please type your passphrase.",
-                                    labelStyle: TextStyle(
-                                        color: theme.mainBlue
-                                    ),
-
-                                    focusedBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(width: 1, color: theme.mainBlue),
-                                        borderRadius: _radiusField
-                                    ),
-
-                                  )
-                              ),
-                            ),
-                            SizedBox(
-                              child: ElevatedButton(
-                                onPressed: () async{
-                                  authenticate(context);
-                                },
-                                child: Icon(Icons.arrow_forward_outlined),
-                                // style: ElevatedButton.styleFrom(
-                                //   padding: EdgeInsets.symmetric(vertical: 21, horizontal: 0),
-                                style: _btnStyleLogin,
-                              ),
-                            ),
-                          ]
+                      Container(
+                        color: Color(0xAFFFFFF),
+                        constraints: BoxConstraints.expand(),
+                        child: Center(
+                          child: Image.asset(
+                            'assets/resized-newlogo02-trans.png',
+                            width: 120,
+                            fit: BoxFit.fitHeight,),
+                        ),
                       )
                   ),
-                ),
-                SizedBox(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      testEventListeneer();
-                    },
-                    child: Text("Teste Event"),
-                    // style: ElevatedButton.styleFrom(
-                    //   padding: EdgeInsets.symmetric(vertical: 21, horizontal: 0),
-                    style: _btnStyleLogin,
+                  Container(
+                    color: Color(0xFFFFFFF),
+                    padding: EdgeInsets.symmetric(horizontal: 0, vertical: 10),
+                    child: Center(child: Text("Welcome to AVME Wallet"),),
                   ),
-                ),
-              ],
+                  Expanded(
+                    flex: 2,
+                    child:
+                    Container(
+                        padding: EdgeInsets.symmetric(vertical: 30, horizontal: 15),
+                        // color: Color(0x26FFFFFF),
+                        constraints: BoxConstraints.expand(),
+                        child:
+                        Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Flexible(
+                                child: TextField(
+                                    controller: _passphrase,
+                                    obscureText: true,
+                                    decoration: InputDecoration(
+                                      border: OutlineInputBorder(
+                                          borderRadius: _radiusField
+                                      ),
+                                      labelText: "Please type your passphrase. ${avmeWallet.progress}",
+                                      labelStyle: TextStyle(
+                                          color: theme.mainBlue
+                                      ),
+
+                                      focusedBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(width: 1, color: theme.mainBlue),
+                                          borderRadius: _radiusField
+                                      ),
+
+                                    )
+                                ),
+                              ),
+                              SizedBox(
+                                child: ElevatedButton(
+                                  onPressed: () async{
+                                    authenticate(context, avmeWallet);
+                                  },
+                                  child: Icon(Icons.arrow_forward_outlined),
+                                  // style: ElevatedButton.styleFrom(
+                                  //   padding: EdgeInsets.symmetric(vertical: 21, horizontal: 0),
+                                  style: _btnStyleLogin,
+                                ),
+                              ),
+                            ]
+                        )
+                    ),
+                  ),
+                  SizedBox(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        avmeWallet.progress += 1;
+                      },
+                      child: Text("Teste Event"),
+                      // style: ElevatedButton.styleFrom(
+                      //   padding: EdgeInsets.symmetric(vertical: 21, horizontal: 0),
+                      style: _btnStyleLogin,
+                    ),
+                  ),
+                ],
+              )
           )
-        )
-      ),
-    );
+          ),
+        );
+    });
   }
-  void authenticate(BuildContext context) async
+  void authenticate(BuildContext context, AvmeWallet avmeWallet) async
   {
     bool empty = (_passphrase == null || _passphrase.text.length == 0) ? true : false;
     if(empty)
@@ -152,8 +153,6 @@ class _LoginState extends State<Login> {
     }
     BuildContext _loadingPopupContext;
 
-    // NOTIFIER
-    globals.walletManager.notifier = _progress;
     // _progress.addListener(progress);
 
     showDialog<void>(
@@ -161,10 +160,10 @@ class _LoginState extends State<Login> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         _loadingPopupContext = context;
-        return loadDialog.build(context);
+        return LoadingPopUp(text:"${avmeWallet.progress} Loading, please wait...");
       }
     );
-
+    // return;
     Map data = await globals.walletManager.authenticate(_passphrase.text);
     if(data["status"] != 200)
     {

@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:isolate';
 import 'package:avme_wallet/app/controller/wallet_manager.dart';
-import 'package:avme_wallet/app/database/account_item.dart';
-import 'package:avme_wallet/app/database/notifier.dart';
+import 'package:avme_wallet/app/model/account_item.dart';
+import 'package:avme_wallet/app/model/app.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 // Memory from threads/isolates in dart isn't shared, just for object reference
@@ -42,7 +42,7 @@ class GenericThreadData
   GenericThreadData(this.data, this.sendPort);
 }
 
-Future<bool> loadWalletAccounts(String password, WalletManager walletManager, {Notifier tracker}) async
+Future<bool> loadWalletAccounts(String password, WalletManager walletManager, {AvmeWallet tracker}) async
 {
   List<String> accountPathList = await walletManager.getAccounts();
   ReceivePort receivePort = ReceivePort();
@@ -54,8 +54,6 @@ Future<bool> loadWalletAccounts(String password, WalletManager walletManager, {N
     // GenericThreadData param = new GenericThreadData(
     //   {"index":index,"walletPath":pathEntity,"password":password,"walletManager":walletManager},receivePort.sendPort
     // );
-
-
     genericThreadData = new GenericThreadData({"index":index,"walletPath":pathEntity,"password":password,"walletManager":walletManager}, receivePort.sendPort);
     isolateList.add(await Isolate.spawn(createAccountList, genericThreadData));
   });

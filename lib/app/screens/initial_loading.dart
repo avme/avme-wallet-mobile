@@ -39,7 +39,6 @@ class _InitialLoadingState extends State<InitialLoading>{
     await fileManager.getDocumentsFolder();
     globals.fileManager = fileManager;
     globals.setWalletManager(fileManager);
-
     if(env["ALWAYS_RESET"].toString().toUpperCase() == "TRUE")
     {
       globals.walletManager.deletePreviousWallet();
