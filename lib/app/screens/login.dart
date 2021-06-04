@@ -1,10 +1,19 @@
+import 'package:avme_wallet/app/controller/events.dart';
+import 'package:avme_wallet/app/database/notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart' as theme;
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/controller/globals.dart' as globals;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:avme_wallet/app/screens/widgets/custom_widgets.dart';
-import 'package:avme_wallet/app/controller/thread.dart';
+import 'package:provider/provider.dart';
+
+//
+// void progress()
+// {
+//   print("Loading data!! "+ _progress.progress.toString());
+// }
+Notifier _progress = Notifier();
 
 class Login extends StatefulWidget {
   @override
@@ -14,6 +23,7 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   // Passphrase controller
   TextEditingController _passphrase = new TextEditingController();
+  ChangeNotifierProvider loadDialog;
   ButtonStyle _btnStyleLogin = ButtonStyle(
       padding: MaterialStateProperty.all<EdgeInsets>
         (EdgeInsets.symmetric(vertical: 17.6, horizontal: 0)),
@@ -29,7 +39,8 @@ class _LoginState extends State<Login> {
   BorderRadius _radiusField = BorderRadius.only(bottomLeft: Radius.circular(4), topLeft: Radius.circular(4));
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context)
+  {
     _passphrase.text = env["DEFAULT_PASSWORD"] ?? "";
     return Scaffold(
       body: SafeArea(child:
@@ -105,8 +116,19 @@ class _LoginState extends State<Login> {
                           ]
                       )
                   ),
-                )
-              ]
+                ),
+                SizedBox(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      testEventListeneer();
+                    },
+                    child: Text("Teste Event"),
+                    // style: ElevatedButton.styleFrom(
+                    //   padding: EdgeInsets.symmetric(vertical: 21, horizontal: 0),
+                    style: _btnStyleLogin,
+                  ),
+                ),
+              ],
           )
         )
       ),
@@ -130,17 +152,19 @@ class _LoginState extends State<Login> {
     }
     BuildContext _loadingPopupContext;
 
+    // NOTIFIER
+    globals.walletManager.notifier = _progress;
+    // _progress.addListener(progress);
+
     showDialog<void>(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          _loadingPopupContext = context;
-          return LoadingPopUp(
-              text:
-              "Loading, please wait."
-          );
-        }
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        _loadingPopupContext = context;
+        return loadDialog.build(context);
+      }
     );
+
     Map data = await globals.walletManager.authenticate(_passphrase.text);
     if(data["status"] != 200)
     {
@@ -172,5 +196,22 @@ class _LoginState extends State<Login> {
   State<StatefulWidget> createState() {
     // TODO: implement createState
     throw UnimplementedError();
+  }
+
+  void testEventListeneer() async{
+    EventListeneer evento = new EventListeneer();
+    evento.addListener(fireEvent);
+
+    for(int i = 0; i < 5; i++)
+    {
+      await Future.delayed(Duration(seconds: 1), (){
+        evento.foo = i;
+      });
+    }
+  }
+
+  void fireEvent()
+  {
+    print("Event fired");
   }
 }

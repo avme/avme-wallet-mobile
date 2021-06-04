@@ -2,13 +2,14 @@ import 'dart:async';
 import 'dart:isolate';
 import 'package:avme_wallet/app/controller/wallet_manager.dart';
 import 'package:avme_wallet/app/database/account_item.dart';
+import 'package:avme_wallet/app/database/notifier.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 // Memory from threads/isolates in dart isn't shared, just for object reference
 import 'package:avme_wallet/app/controller/globals.dart' as global;
 
 List<Isolate> isolateList = [];
-
+GenericThreadData genericThreadData;
 void exampleIsolate() async
 {
   ReceivePort receivePort = ReceivePort();
@@ -41,7 +42,7 @@ class GenericThreadData
   GenericThreadData(this.data, this.sendPort);
 }
 
-Future<bool> loadWalletAccounts(String password, WalletManager walletManager) async
+Future<bool> loadWalletAccounts(String password, WalletManager walletManager, {Notifier tracker}) async
 {
   List<String> accountPathList = await walletManager.getAccounts();
   ReceivePort receivePort = ReceivePort();
@@ -50,24 +51,46 @@ Future<bool> loadWalletAccounts(String password, WalletManager walletManager) as
   bool inProgress = true;
   accountPathList.asMap().forEach((index,pathEntity) async
   {
-    GenericThreadData param = new GenericThreadData(
-      {"index":index,"walletPath":pathEntity,"password":password,"walletManager":walletManager},receivePort.sendPort
-    );
-    isolateList.add(await Isolate.spawn(createAccountList, param));
+    // GenericThreadData param = new GenericThreadData(
+    //   {"index":index,"walletPath":pathEntity,"password":password,"walletManager":walletManager},receivePort.sendPort
+    // );
+
+
+    genericThreadData = new GenericThreadData({"index":index,"walletPath":pathEntity,"password":password,"walletManager":walletManager}, receivePort.sendPort);
+    isolateList.add(await Isolate.spawn(createAccountList, genericThreadData));
   });
 
   // Listens the threads...
-
-  receivePort.listen((response){
-    print("Data returned:"+response.toString());
-    global.accountList.add(response);
-    progress++;
-    print(progress);
-    if(progress >= accountPathList.length)
+  if(tracker != null)
+  {
+    receivePort.listen((response)
     {
-      inProgress = false;
-    }
-  });
+      print("Data returned:"+response.toString());
+      global.accountList.add(response);
+      progress++;
+      tracker.progress = progress;
+      print(progress);
+      if(progress >= accountPathList.length)
+      {
+        tracker.inProgress = false;
+        inProgress = false;
+      }
+    });
+  }
+  else
+  {
+    receivePort.listen((response){
+      print("Data returned:"+response.toString());
+      global.accountList.add(response);
+      progress++;
+      print(progress);
+      if(progress >= accountPathList.length)
+      {
+        inProgress = false;
+      }
+    });
+  }
+
   await waitWhile(() => inProgress);
   stopLoadWalletAccountsThreads();
   return true;

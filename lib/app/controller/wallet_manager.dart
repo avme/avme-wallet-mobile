@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:avme_wallet/app/database/notifier.dart';
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:bip32/bip32.dart' as bip32;
 import 'dart:io';
@@ -20,10 +21,14 @@ class WalletManager
   FileManager _fileManager;
   int selectedAccount;
 
-  void setFileManager(FileManager newfileManager)
-  {
-    this._fileManager = newfileManager;
-  }
+  Notifier _notifier;
+
+  get notifier => this._notifier;
+  set notifier(Notifier value) => this._notifier = value;
+  void destroyNotifier() => this._notifier = null;
+
+  void setFileManager(FileManager newfileManager) =>
+      this._fileManager = newfileManager;
 
   Future<File> writeWalletJson(String json, {String position}) async
   {
@@ -199,7 +204,7 @@ class WalletManager
 
   Future<bool> loadWalletAccounts(String password) async
   {
-    await thread.loadWalletAccounts(password, global.walletManager);
+    await thread.loadWalletAccounts(password, global.walletManager, tracker: this.notifier);
     return false;
   }
 }

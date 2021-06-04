@@ -37,6 +37,7 @@ dependencies:
   aes_crypt: ^0.1.1
   flutter_spinkit: ^5.0.0
   flutter_dotenv: ^3.1.0
+  provider: ^5.0.0
 
 dev_dependencies:
   flutter_test:
