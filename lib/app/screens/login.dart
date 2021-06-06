@@ -138,6 +138,20 @@ class _LoginState extends State<Login> {
   void authenticate(BuildContext context, AvmeWallet avmeWallet) async
   {
     bool empty = (_passphrase == null || _passphrase.text.length == 0) ? true : false;
+
+    BuildContext _loadingPopupContext;
+    showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          _loadingPopupContext = context;
+
+          // Always get the provider inside the build method
+          var provider = Provider.of<AvmeWallet>(context);
+          return LoadingPopUp(text:"${provider.progress} Loading, please wait...");
+        }
+    );
+
     if(empty)
     {
       await showDialog<void>(
@@ -151,20 +165,7 @@ class _LoginState extends State<Login> {
       );
       return;
     }
-    BuildContext _loadingPopupContext;
-
-    // _progress.addListener(progress);
-
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        _loadingPopupContext = context;
-        return LoadingPopUp(text:"${avmeWallet.progress} Loading, please wait...");
-      }
-    );
-    // return;
-    Map data = await globals.walletManager.authenticate(_passphrase.text);
+    Map data = await globals.walletManager.authenticate(_passphrase.text, avmeWallet: avmeWallet);
     if(data["status"] != 200)
     {
       Navigator.pop(_loadingPopupContext);

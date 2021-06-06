@@ -83,18 +83,28 @@ class SimpleWarning extends StatelessWidget {
   }
 }
 
-class LoadingPopUp extends StatelessWidget {
-
+class LoadingPopUp extends StatefulWidget {
   final String title;
   final String text;
-  const LoadingPopUp({this.title, this.text = 'Sample Text'});
+  final BuildContext context;
+  LoadingPopUp({this.title, this.text = 'Sample Text', this.context});
+  @override
+  LoadingPopUpState createState() => LoadingPopUpState();
+}
+
+class LoadingPopUpState extends State<LoadingPopUp> {
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: title != null ? Text(title) : null,
-      content: Text(text),
-      actions: title != null ? [
+      title: widget.title != null ? Text(widget.title) : null,
+      content: StatefulBuilder(
+        builder: (BuildContext context, StateSetter setState)
+        {
+          return Text(widget.text);
+        }
+      ),
+      actions: widget.title != null ? [
         TextButton(
             onPressed: () {
               //Pops this alertDialog

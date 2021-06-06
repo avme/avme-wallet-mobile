@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:avme_wallet/app/model/app.dart';
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:bip32/bip32.dart' as bip32;
 import 'dart:io';
@@ -154,7 +155,7 @@ class WalletManager
     return (global.wallet != null ? true : false);
   }
 
-  Future<Map> authenticate(String password) async
+  Future<Map> authenticate(String password, {AvmeWallet avmeWallet}) async
   {
     Map ret = {"status":400,"message":"Wrong password."};
     bool mnemonicUnlocked = await decryptAesWallet(password);
@@ -166,7 +167,7 @@ class WalletManager
     }
     try
     {
-      await loadWalletAccounts(password);
+      await loadWalletAccounts(password, avmeWallet);
       global.wallet = global.accountList[0].account;
       global.eAddress = await global.wallet.privateKey.extractAddress();
       ret["status"] = 200;
@@ -195,9 +196,9 @@ class WalletManager
     return files;
   }
 
-  Future<bool> loadWalletAccounts(String password) async
+  Future<bool> loadWalletAccounts(String password, AvmeWallet avmeWallet) async
   {
-    await thread.loadWalletAccounts(password, global.walletManager);
+    await thread.loadWalletAccounts(password, global.walletManager, tracker: avmeWallet);
     return false;
   }
 }

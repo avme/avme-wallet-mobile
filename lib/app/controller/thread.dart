@@ -96,12 +96,15 @@ Future<bool> loadWalletAccounts(String password, WalletManager walletManager, {A
 
 void stopLoadWalletAccountsThreads()
 {
-  for(Isolate thread in isolateList)
+  // for(Isolate thread in isolateList)
+  // for(Isolate thread in isolateList)
+  for(int i = 0; i < isolateList.length; i++)
   {
-    if(thread != null)
+    if(isolateList[i] != null)
     {
-      thread.kill(priority: Isolate.immediate);
-      thread = null;
+      isolateList[i].kill(priority: Isolate.immediate);
+      print("killing thread ${i.toString()}");
+      isolateList[i] = null;
     }
   }
 }
