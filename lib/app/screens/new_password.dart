@@ -1,7 +1,9 @@
+import 'package:avme_wallet/app/model/app.dart';
 import 'package:flutter/material.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/controller/globals.dart' as globals;
 import 'package:avme_wallet/app/screens/widgets/custom_widgets.dart';
+import 'package:provider/provider.dart';
 class NewPassword extends StatelessWidget
 {
 
@@ -101,9 +103,10 @@ class NewPassword extends StatelessWidget
         }
     );
 
+    AvmeWallet appState = Provider.of<AvmeWallet>(context, listen: false);
 
     // Creates the user account
-    await globals.walletManager.makeAccount(field1.text);
+    await globals.walletManager.makeAccount(field1.text, appState);
     if(globals.walletManager.logged())
     {
       // Navigator.of(context).pop();

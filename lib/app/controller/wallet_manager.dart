@@ -103,7 +103,7 @@ class WalletManager
     return mnemonic;
   }
 
-  Future<List<String>> makeAccount(String password, {position = 0}) async
+  Future<List<String>> makeAccount(String password, AvmeWallet appState,{position = 0}) async
   {
     List<String> ret = [];
     String mnemonic = await newMnemonic(password);
@@ -129,7 +129,7 @@ class WalletManager
       }
     }
 
-    await authenticate(password);
+    await authenticate(password, appState);
 
     return ret;
   }
@@ -155,7 +155,7 @@ class WalletManager
     return (global.wallet != null ? true : false);
   }
 
-  Future<Map> authenticate(String password, {AvmeWallet avmeWallet}) async
+  Future<Map> authenticate(String password, AvmeWallet appState) async
   {
     Map ret = {"status":400,"message":"Wrong password."};
     bool mnemonicUnlocked = await decryptAesWallet(password);
@@ -167,7 +167,7 @@ class WalletManager
     }
     try
     {
-      await loadWalletAccounts(password, avmeWallet);
+      await loadWalletAccounts(password, appState);
       global.wallet = global.accountList[0].account;
       global.eAddress = await global.wallet.privateKey.extractAddress();
       ret["status"] = 200;

@@ -12,6 +12,10 @@ class _BalanceState extends State<Balance>
 {
   double _balance = 0.50;
   double _usdBalance = 21668.80;
+  List<double> _btnDimensions = [
+    70,
+    70
+  ];
   TextStyle _tsTab = TextStyle(
       fontSize: 16,
       fontWeight: FontWeight.w500
@@ -87,15 +91,15 @@ class _BalanceState extends State<Balance>
           Container(
             // color: Colors.pinkAccent,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal:60.0),
+              padding: const EdgeInsets.symmetric(horizontal:20.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Column(
                       children: [
                         SizedBox(
-                          height:75,
-                          width: 75,
+                          height:_btnDimensions[0],
+                          width: _btnDimensions[1],
                           child: ElevatedButton(onPressed: (){},
                             child: Icon(Icons.upload_sharp),
                             style: _roundedButton.copyWith(backgroundColor: MaterialStateProperty.all<Color>(Colors.redAccent),),
@@ -108,8 +112,23 @@ class _BalanceState extends State<Balance>
                   Column(
                       children: [
                         SizedBox(
-                          height:75,
-                          width: 75,
+                          height:_btnDimensions[0],
+                          width: _btnDimensions[1],
+                          child: ElevatedButton(onPressed: (){},
+                            child: Icon(Icons.qr_code_scanner),
+                            style: _roundedButton.copyWith(backgroundColor: MaterialStateProperty.all<Color>(Color(
+                                0xFF4B4B4B)),),
+                          ),
+                        ),
+                        Text(" "),
+                        Text("SCAN")
+                      ]
+                  ),
+                  Column(
+                      children: [
+                        SizedBox(
+                          height:_btnDimensions[0],
+                          width: _btnDimensions[1],
                           child: ElevatedButton(onPressed: (){},
                             child: Icon(Icons.download_sharp),
                             style: _roundedButton.copyWith(backgroundColor: MaterialStateProperty.all<Color>(Colors.green),),
@@ -130,7 +149,6 @@ class _BalanceState extends State<Balance>
                 width: MediaQuery.of(context).size.width,
               )
           ),
-
         ],
       );
   }

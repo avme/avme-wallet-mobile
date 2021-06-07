@@ -89,7 +89,7 @@ class _LoginState extends State<Login> {
                                       border: OutlineInputBorder(
                                           borderRadius: _radiusField
                                       ),
-                                      labelText: "Please type your passphrase. ${avmeWallet.progress}",
+                                      labelText: "Please type your passphrase.",
                                       labelStyle: TextStyle(
                                           color: theme.mainBlue
                                       ),
@@ -105,7 +105,7 @@ class _LoginState extends State<Login> {
                               SizedBox(
                                 child: ElevatedButton(
                                   onPressed: () async{
-                                    authenticate(context, avmeWallet);
+                                    authenticate(context);
                                   },
                                   child: Icon(Icons.arrow_forward_outlined),
                                   // style: ElevatedButton.styleFrom(
@@ -117,17 +117,6 @@ class _LoginState extends State<Login> {
                         )
                     ),
                   ),
-                  SizedBox(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        avmeWallet.progress += 1;
-                      },
-                      child: Text("Teste Event"),
-                      // style: ElevatedButton.styleFrom(
-                      //   padding: EdgeInsets.symmetric(vertical: 21, horizontal: 0),
-                      style: _btnStyleLogin,
-                    ),
-                  ),
                 ],
               )
           )
@@ -135,7 +124,7 @@ class _LoginState extends State<Login> {
         );
     });
   }
-  void authenticate(BuildContext context, AvmeWallet avmeWallet) async
+  void authenticate(BuildContext context) async
   {
     bool empty = (_passphrase == null || _passphrase.text.length == 0) ? true : false;
 
@@ -165,7 +154,8 @@ class _LoginState extends State<Login> {
       );
       return;
     }
-    Map data = await globals.walletManager.authenticate(_passphrase.text, avmeWallet: avmeWallet);
+    AvmeWallet appState = Provider.of<AvmeWallet>(context, listen: false);
+    Map data = await globals.walletManager.authenticate(_passphrase.text, appState);
     if(data["status"] != 200)
     {
       Navigator.pop(_loadingPopupContext);

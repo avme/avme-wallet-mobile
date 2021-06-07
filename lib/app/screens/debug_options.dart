@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:avme_wallet/app/model/app.dart';
+import 'package:provider/provider.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:avme_wallet/app/controller/globals.dart' as global;
 import 'package:avme_wallet/app/lib/utils.dart';
@@ -93,7 +95,8 @@ class Options extends StatelessWidget
 
   btnMakeAccount(BuildContext context) async
   {
-    List<String> ret = await global.walletManager.makeAccount("abacaxi");
+    AvmeWallet appState = Provider.of<AvmeWallet>(context, listen: false);
+    List<String> ret = await global.walletManager.makeAccount("abacaxi",appState);
     snack(ret, context);
   }
 }
