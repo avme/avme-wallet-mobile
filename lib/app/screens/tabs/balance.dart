@@ -82,7 +82,7 @@ class _BalanceState extends State<Balance>
                 child: Column(
                     children:
                     [
-                      Text(_balance.toString()+" BTC", style: _tsTab.copyWith(fontSize: 22),),
+                      Text(_balance.toString()+" ETH", style: _tsTab.copyWith(fontSize: 22),),
                       SizedBox(height: 2,),
                       Text(_usdBalance.toString()+" USD", style: _tsTab.copyWith(fontSize: 14, color: Color.fromRGBO(255, 255, 255, 0.5)),)
                     ]
@@ -153,6 +153,12 @@ class _BalanceState extends State<Balance>
                 ],
               ),
             ),
+          ),
+          Container(
+            child: ElevatedButton(onPressed: () async { 
+              String balance = await global.walletManager.getBalance(0);
+              snack(balance,context);
+            }, child: Text("Test Receiving Stuff"),),
           ),
           Container(
             // color: Color.fromRGBO(255, 255, 255, 0.095),

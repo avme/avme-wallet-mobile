@@ -1,9 +1,11 @@
+// import 'dart:html';
 import 'dart:math';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:bip32/bip32.dart' as bip32;
 import 'dart:io';
 import 'package:hex/hex.dart';
+import 'package:http/http.dart';
 import 'package:web3dart/credentials.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:aes_crypt/aes_crypt.dart';
@@ -13,7 +15,7 @@ import 'package:avme_wallet/app/controller/thread.dart' as thread;
 
 import 'file_manager.dart';
 
-String url = env["NETWORK"];
+String url = env["NETWORK_URL"];
 String mnemonicFile = env["MNEMONICFILEPATH"];
 
 class WalletManager
@@ -200,5 +202,22 @@ class WalletManager
   {
     await thread.loadWalletAccounts(password, global.walletManager, tracker: avmeWallet);
     return false;
+  }
+
+  Future<String> getBalance(int pos) async
+  {
+    //Please stop using those globals, and use a model to keep track in appState
+
+    Client httpClient = new Client();
+    print("URL:$url");
+    Web3Client ethClient = new Web3Client(url, httpClient);
+    // var credentials = ethClient.credentialsFromPrivateKey(global.accountList[pos].address);
+    EthereumAddress data = await global.accountList[pos].account.privateKey.extractAddress();
+
+    EtherAmount balance = await ethClient.getBalance(data);
+    print(balance);
+    return balance.getValueInUnit(EtherUnit.ether).toString();
+    // EthereumAddress credentials = await networkClient.credentialsFromPrivateKey(global.accountList[pos].address);
+
   }
 }
