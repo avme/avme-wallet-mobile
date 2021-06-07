@@ -6,6 +6,8 @@ import 'package:avme_wallet/app/controller/globals.dart' as global;
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:flutter/material.dart';
 
+import 'example/qrcode_reader.dart';
+
 final String password = "abacate";
 
 class Options extends StatelessWidget
@@ -66,6 +68,17 @@ class Options extends StatelessWidget
                 trailing: ElevatedButton(
                   onPressed: () {
                     Navigator.pushNamed(context, "/registerPassword");
+                  },
+                  child: Text("Try me!"),
+                ),
+              )
+          ),
+          Card(
+              child: ListTile(
+                title: Text("6 - Call QR Code Screen"),
+                trailing: ElevatedButton(
+                  onPressed: () async {
+                    String response = await Navigator.push(context, MaterialPageRoute(builder: (context) => QRViewExample()));
                   },
                   child: Text("Try me!"),
                 ),

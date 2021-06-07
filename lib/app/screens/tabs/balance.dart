@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:avme_wallet/app/controller/globals.dart' as global;
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:flutter/services.dart';
+import 'package:avme_wallet/app/screens/widgets/qr_reader.dart';
 
 class Balance extends StatefulWidget {
   @override
@@ -114,7 +115,18 @@ class _BalanceState extends State<Balance>
                         SizedBox(
                           height:_btnDimensions[0],
                           width: _btnDimensions[1],
-                          child: ElevatedButton(onPressed: (){},
+                          child: ElevatedButton(onPressed: () async{
+                            // String response = await Navigator.push(context, MaterialPageRoute(builder: (context) => QRViewExample()));
+
+                            String response = await showDialog<String>(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return QrReader();
+                              }
+                            );
+                            //TODO: Use the returned data into transferer screen
+                            snack(response, context);
+                          },
                             child: Icon(Icons.qr_code_scanner),
                             style: _roundedButton.copyWith(backgroundColor: MaterialStateProperty.all<Color>(Color(
                                 0xFF4B4B4B)),),
