@@ -1,8 +1,9 @@
+import 'package:avme_wallet/app/model/app.dart';
 import 'package:flutter/material.dart';
-import 'package:avme_wallet/app/controller/globals.dart' as global;
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:flutter/services.dart';
 import 'package:avme_wallet/app/screens/widgets/qr_reader.dart';
+import 'package:provider/provider.dart';
 
 class Balance extends StatefulWidget {
   @override
@@ -11,6 +12,7 @@ class Balance extends StatefulWidget {
 
 class _BalanceState extends State<Balance>
 {
+  AvmeWallet appState;
   double _balance = 0.50;
   double _usdBalance = 21668.80;
   List<double> _btnDimensions = [
@@ -28,9 +30,9 @@ class _BalanceState extends State<Balance>
         )
     ),
   );
-  // TODO: implement objects like accounts, balance and transactions
   @override
   Widget build(BuildContext context) {
+    appState = Provider.of<AvmeWallet>(context);
     return
       Column(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -51,7 +53,7 @@ class _BalanceState extends State<Balance>
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           Icon(Icons.vpn_key, size: 16,),
-                          Text(' Account ' + global.walletManager.selectedAccount.toString(), style: _tsTab,),
+                          Text(' Account ' + appState.walletManager.selectedAccount.toString(), style: _tsTab,),
                         ],
                       ),
                       SizedBox(height: 4,),
@@ -156,7 +158,7 @@ class _BalanceState extends State<Balance>
           ),
           Container(
             child: ElevatedButton(onPressed: () async { 
-              String balance = await global.walletManager.getBalance(0);
+              String balance = await appState.walletManager.getBalance(0);
               snack(balance,context);
             }, child: Text("Test Receiving Stuff"),),
           ),
@@ -172,12 +174,12 @@ class _BalanceState extends State<Balance>
   }
   String copyPrivateKey()
   {
-    String _hex = global.accountList[global.walletManager.selectedAccount].address;
+    String _hex = appState.accountList[appState.walletManager.selectedAccount].address;
     return _hex.substring(0,12)+"..."+_hex.substring(_hex.length - 12);
   }
 
   Future<void> _copyToClipboard(BuildContext context) async {
-    await Clipboard.setData(ClipboardData(text: global.accountList[global.walletManager.selectedAccount].address));
+    await Clipboard.setData(ClipboardData(text: appState.accountList[appState.walletManager.selectedAccount].address));
     snack("Address copied to clipboard",context);
   }
 }

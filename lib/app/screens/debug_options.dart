@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:provider/provider.dart';
 import 'package:web3dart/web3dart.dart';
-import 'package:avme_wallet/app/controller/globals.dart' as global;
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:flutter/material.dart';
 
@@ -12,8 +11,12 @@ final String password = "abacate";
 
 class Options extends StatelessWidget
 {
+  AppLoadingState loadState;
+  AvmeWallet appState;
   @override
   Widget build(BuildContext context) {
+    loadState = Provider.of<AppLoadingState>(context, listen: false);
+    appState = Provider.of<AvmeWallet>(context, listen: false);
     return
       ListView(
         children: [
@@ -55,7 +58,7 @@ class Options extends StatelessWidget
                 title: Text("4 - Decrypt"),
                 trailing: ElevatedButton(
                   onPressed: () async {
-                    String content = await global.walletManager.decryptAes("YOUR_PASSWORD_HERE");
+                    String content = await appState.walletManager.decryptAes("YOUR_PASSWORD_HERE");
                     snack(content, context);
                   },
                   child: Text("Try me!"),
@@ -108,8 +111,7 @@ class Options extends StatelessWidget
 
   btnMakeAccount(BuildContext context) async
   {
-    AppLoadingState appState = Provider.of<AppLoadingState>(context, listen: false);
-    List<String> ret = await global.walletManager.makeAccount("abacaxi",appState);
+    List<String> ret = await appState.walletManager.makeAccount("abacaxi",appState, loadState);
     snack(ret, context);
   }
 }

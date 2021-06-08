@@ -1,4 +1,9 @@
+import 'package:avme_wallet/app/controller/file_manager.dart';
+import 'package:avme_wallet/app/controller/wallet_manager.dart';
 import 'package:flutter/foundation.dart';
+import 'package:web3dart/credentials.dart';
+
+import 'account_item.dart';
 
 class AppLoadingState extends ChangeNotifier{
   int _progress = 0;
@@ -28,13 +33,27 @@ class AppLoadingState extends ChangeNotifier{
 
 class AvmeWallet extends ChangeNotifier
 {
-  // AppLoadingState _appLoadingState;
-  //
-  // set newAppLoadingState(AppLoadingState value) => _appLoadingState = value;
-  // AppLoadingState get appLoadingState => _appLoadingState;
-  //
-  // void init()
-  // {
-  //   this._appLoadingState = AppLoadingState();
-  // }
+  FileManager _fileManager = new FileManager();
+  FileManager get fileManager => _fileManager;
+
+  WalletManager _walletManager = new WalletManager();
+  WalletManager get walletManager => _walletManager;
+
+  Wallet _w3dartWallet;
+  Wallet get getW3DartWallet => _w3dartWallet;
+  set w3dartWallet (Wallet value) => _w3dartWallet = value;
+
+  EthereumAddress _eAddress;
+  set eAddress (EthereumAddress value) => _eAddress = value;
+
+  List<AccountItem> accountList = [];
+
+  String appTitle = "AVME Wallet";
+
+  //Implement some init functions here
+  void init()
+  {
+    _walletManager.setFileManager(fileManager);
+
+  }
 }

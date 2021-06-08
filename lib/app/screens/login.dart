@@ -3,7 +3,6 @@ import 'package:avme_wallet/app/model/app.dart';
 import 'package:flutter/material.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart' as theme;
 import 'package:avme_wallet/app/lib/utils.dart';
-import 'package:avme_wallet/app/controller/globals.dart' as globals;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:avme_wallet/app/screens/widgets/custom_widgets.dart';
 import 'package:provider/provider.dart';
@@ -127,6 +126,8 @@ class _LoginState extends State<Login> {
   void authenticate(BuildContext context) async
   {
     bool empty = (_passphrase == null || _passphrase.text.length == 0) ? true : false;
+    AppLoadingState loadState = Provider.of<AppLoadingState>(context, listen: false);
+    AvmeWallet appState = Provider.of<AvmeWallet>(context, listen: false);
 
     BuildContext _loadingPopupContext;
     showDialog<void>(
@@ -154,9 +155,9 @@ class _LoginState extends State<Login> {
       );
       return;
     }
-    AppLoadingState appState = Provider.of<AppLoadingState>(context, listen: false);
 
-    Map data = await globals.walletManager.authenticate(_passphrase.text, appState);
+
+    Map data = await appState.walletManager.authenticate(_passphrase.text, appState, loadState);
     if(data["status"] != 200)
     {
       Navigator.pop(_loadingPopupContext);
@@ -176,7 +177,7 @@ class _LoginState extends State<Login> {
     else
     {
       Navigator.pop(_loadingPopupContext);
-      globals.walletManager.selectedAccount = 0;
+      appState.walletManager.selectedAccount = 0;
       snack("Account #0 selected", context);
       Navigator.pushReplacementNamed(context, "/home");
     }

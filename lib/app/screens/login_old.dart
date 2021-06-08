@@ -1,7 +1,8 @@
+import 'package:avme_wallet/app/model/app.dart';
 import 'package:flutter/material.dart';
 import 'package:after_layout/after_layout.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
-import 'package:avme_wallet/app/controller/globals.dart' as global;
+import 'package:provider/provider.dart';
 
 class LoginOld extends StatefulWidget
 {
@@ -19,8 +20,9 @@ class LoginOldState extends State<LoginOld> with AfterLayoutMixin <LoginOld>
 {
   @override
   Widget build(BuildContext context) {
+    AvmeWallet appState = Provider.of<AvmeWallet>(context);
     return Scaffold(
-        appBar: AppBar(title: Text(global.appTitle)),
+        appBar: AppBar(title: Text(appState.appTitle)),
         body: Row(children: [
           // Row(children: [
           //

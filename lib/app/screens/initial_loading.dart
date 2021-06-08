@@ -4,7 +4,6 @@ import 'package:avme_wallet/app/model/app.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:avme_wallet/app/controller/globals.dart' as globals;
 import 'package:avme_wallet/app/screens/widgets/theme.dart' as theme;
 import 'package:provider/provider.dart';
 
@@ -51,18 +50,18 @@ class _InitialLoadingState extends State<InitialLoading>{
   void getData(BuildContext context) async
   {
     //Initialize the appLoadingState
-    AppLoadingState appState = Provider.of<AppLoadingState>(context);
+    AvmeWallet wallet = Provider.of<AvmeWallet>(context);
+    wallet.init();
     //REMOVE THE GLOBALS REFERENCE AND USE THE AppState / AvmeWallet Model please
-    FileManager fileManager = new FileManager();
-    await fileManager.getDocumentsFolder();
-    globals.fileManager = fileManager;
-    globals.setWalletManager(fileManager);
+
+    await wallet.fileManager.getDocumentsFolder();
+
     if(env["ALWAYS_RESET"].toString().toUpperCase() == "TRUE")
     {
-      globals.walletManager.deletePreviousWallet();
+      wallet.walletManager.deletePreviousWallet();
     }
 
-    bool hasWallet = await globals.walletManager.hasPreviousWallet();
+    bool hasWallet = await wallet.walletManager.hasPreviousWallet();
 
     if(hasWallet == false)
     {

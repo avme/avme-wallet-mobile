@@ -10,7 +10,6 @@ import 'package:web3dart/credentials.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:aes_crypt/aes_crypt.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:avme_wallet/app/controller/globals.dart' as global;
 import 'package:avme_wallet/app/controller/thread.dart' as thread;
 
 import 'file_manager.dart';
@@ -105,7 +104,7 @@ class WalletManager
     return mnemonic;
   }
 
-  Future<List<String>> makeAccount(String password, AppLoadingState state,{position = 0}) async
+  Future<List<String>> makeAccount(String password, AvmeWallet wallet, AppLoadingState state,{position = 0}) async
   {
     List<String> ret = [];
     String mnemonic = await newMnemonic(password);
@@ -125,13 +124,13 @@ class WalletManager
         File savedPath = await writeWalletJson(json,position: index.toString());
         if(index == 0)
         {
-          global.wallet = _wallet;
+          wallet.w3dartWallet = _wallet;
         }
         ret.add(savedPath.path);
       }
     }
 
-    await authenticate(password, state);
+    await authenticate(password, wallet, state);
 
     return ret;
   }
@@ -152,12 +151,7 @@ class WalletManager
     }
   }
 
-  bool logged()
-  {
-    return (global.wallet != null ? true : false);
-  }
-
-  Future<Map> authenticate(String password, AppLoadingState state) async
+  Future<Map> authenticate(String password, AvmeWallet wallet, AppLoadingState state) async
   {
     Map ret = {"status":400,"message":"Wrong password."};
     bool mnemonicUnlocked = await decryptAesWallet(password);
@@ -169,9 +163,9 @@ class WalletManager
     }
     try
     {
-      await loadWalletAccounts(password, state);
-      global.wallet = global.accountList[0].account;
-      global.eAddress = await global.wallet.privateKey.extractAddress();
+      await loadWalletAccounts(password, wallet, state);
+      wallet.w3dartWallet = wallet.accountList[0].account;
+      wallet.eAddress = await wallet.getW3DartWallet.privateKey.extractAddress();
       ret["status"] = 200;
       return ret;
     }
@@ -198,35 +192,36 @@ class WalletManager
     return files;
   }
 
-  Future<bool> loadWalletAccounts(String password, AppLoadingState state) async
+  Future<bool> loadWalletAccounts(String password, AvmeWallet wallet,AppLoadingState state) async
   {
     //Priority to account #0 or preferred in options menu
     //TODO: get the last account and set to default
-    List<String> accounts = await global.walletManager.getAccounts();
+    List<String> accounts = await wallet.walletManager.getAccounts();
     // int lastAccount = 0;
     // List<String> defaultAccount = [accounts[lastAccount]];
     // await thread.loadWalletAccounts(defaultAccount, password, global.walletManager, state: state);
 
     //Loads all accounts
-    await thread.loadWalletAccounts(accounts,password, global.walletManager, state: state);
+    await thread.loadWalletAccounts(accounts,password, wallet, state);
 
     return false;
   }
 
   Future<String> getBalance(int pos) async
   {
+    return "unavailable";
     //Please stop using those globals, and use a model to keep track in appState
 
-    Client httpClient = new Client();
-    print("URL:$url");
-    Web3Client ethClient = new Web3Client(url, httpClient);
-    // var credentials = ethClient.credentialsFromPrivateKey(global.accountList[pos].address);
-    EthereumAddress data = await global.accountList[pos].account.privateKey.extractAddress();
-
-    EtherAmount balance = await ethClient.getBalance(data);
-    print(balance);
-    return balance.getValueInUnit(EtherUnit.ether).toString();
-    // EthereumAddress credentials = await networkClient.credentialsFromPrivateKey(global.accountList[pos].address);
+    // Client httpClient = new Client();
+    // print("URL:$url");
+    // Web3Client ethClient = new Web3Client(url, httpClient);
+    // // var credentials = ethClient.credentialsFromPrivateKey(global.accountList[pos].address);
+    // EthereumAddress data = await global.accountList[pos].account.privateKey.extractAddress();
+    //
+    // EtherAmount balance = await ethClient.getBalance(data);
+    // print(balance);
+    // return balance.getValueInUnit(EtherUnit.ether).toString();
+    // // EthereumAddress credentials = await networkClient.credentialsFromPrivateKey(global.accountList[pos].address);
 
   }
 }

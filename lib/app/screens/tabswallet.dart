@@ -1,5 +1,5 @@
+import 'package:avme_wallet/app/model/app.dart';
 import 'package:flutter/material.dart';
-import 'package:avme_wallet/app/controller/globals.dart' as global;
 import 'package:avme_wallet/app/screens/debug_options.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/screens/widgets/colored_tabbar.dart';
@@ -7,6 +7,7 @@ import 'package:avme_wallet/app/screens/widgets/theme.dart' as theme;
 import 'package:avme_wallet/app/screens/tabs/accounts.dart';
 import 'package:avme_wallet/app/screens/tabs/balance.dart';
 import 'package:avme_wallet/app/screens/tabs/transactions.dart';
+import 'package:provider/provider.dart';
 
 class TabsWallet extends StatefulWidget {
   @override
@@ -48,6 +49,7 @@ class _TabsWalletState extends State<TabsWallet>{
   @override
   Widget build(BuildContext context) {
     _this = context;
+    AvmeWallet appState = Provider.of<AvmeWallet>(context);
     return DefaultTabController(
       initialIndex: 1,
       length: _tabs.length,
@@ -55,7 +57,7 @@ class _TabsWalletState extends State<TabsWallet>{
         // Testing transparency
         extendBodyBehindAppBar: true,
         appBar: AppBar(
-          title: Text(global.appTitle),
+          title: Text(appState.appTitle),
           // Testing transparency, removes shadow
           elevation: 0,
           backgroundColor: Color(0x81000000),

@@ -1,7 +1,6 @@
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:flutter/material.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
-import 'package:avme_wallet/app/controller/globals.dart' as globals;
 import 'package:avme_wallet/app/screens/widgets/custom_widgets.dart';
 import 'package:provider/provider.dart';
 class NewPassword extends StatelessWidget
@@ -47,6 +46,8 @@ class NewPassword extends StatelessWidget
 
   void validateAndReturnToNavigation (BuildContext context) async
   {
+    AvmeWallet appState = Provider.of<AvmeWallet>(context);
+    AppLoadingState loadingState = Provider.of<AppLoadingState>(context, listen: false);
     bool empty = (field1 == null || field2 == null) ? true : false;
     bool notEqual = (field1.text != field2.text) ? true : false;
     bool short = (field1.text.length <= 5 || field2.text.length <= 5) ? true : false;
@@ -103,18 +104,16 @@ class NewPassword extends StatelessWidget
         }
     );
 
-    AppLoadingState appState = Provider.of<AppLoadingState>(context, listen: false);
-
     // Creates the user account
-    await globals.walletManager.makeAccount(field1.text, appState);
-    if(globals.walletManager.logged())
-    {
+    await appState.walletManager.makeAccount(field1.text, appState, loadingState);
+    // if(globals.walletManager.logged())
+    // {
       // Navigator.of(context).pop();
-      Navigator.pop(_loadingPopupContext);
-      Navigator.pushReplacementNamed(context, "/home");
-      globals.walletManager.selectedAccount = 0;
-      snack("Account #0 selected", context);
-      return;
-    }
+    Navigator.pop(_loadingPopupContext);
+    Navigator.pushReplacementNamed(context, "/home");
+    appState.walletManager.selectedAccount = 0;
+    snack("Account #0 selected", context);
+    return;
+    // }
   }
 }

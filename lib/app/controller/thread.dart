@@ -1,12 +1,8 @@
 import 'dart:async';
 import 'dart:isolate';
-import 'package:avme_wallet/app/controller/wallet_manager.dart';
 import 'package:avme_wallet/app/model/account_item.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:web3dart/web3dart.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-// Memory from threads/isolates in dart isn't shared, just for object reference
-import 'package:avme_wallet/app/controller/globals.dart' as global;
 
 List<Isolate> isolateList = [];
 GenericThreadData genericThreadData;
@@ -42,7 +38,7 @@ class GenericThreadData
   GenericThreadData(this.data, this.sendPort);
 }
 
-Future<bool> loadWalletAccounts(List<String> accountPathList, String password, WalletManager walletManager, {AppLoadingState state}) async
+Future<bool> loadWalletAccounts(List<String> accountPathList, String password, AvmeWallet appState, AppLoadingState loadState) async
 {
   // List<String> accountPathList = await walletManager.getAccounts(first:false);
   ReceivePort receivePort = ReceivePort();
@@ -51,8 +47,8 @@ Future<bool> loadWalletAccounts(List<String> accountPathList, String password, W
   bool inProgress = true;
   accountPathList.asMap().forEach((index,pathEntity) async
   {
-    state.total = (index + 1);
-    genericThreadData = new GenericThreadData({"index":index,"walletPath":pathEntity,"password":password,"walletManager":walletManager}, receivePort.sendPort);
+    loadState.total = (index + 1);
+    genericThreadData = new GenericThreadData({"index":index,"walletPath":pathEntity,"password":password,"walletManager":appState.walletManager}, receivePort.sendPort);
     isolateList.add(await Isolate.spawn(createAccountList, genericThreadData));
   });
 
@@ -60,10 +56,10 @@ Future<bool> loadWalletAccounts(List<String> accountPathList, String password, W
 
   receivePort.listen((response){
     print("Data returned:"+response.toString());
-    global.accountList.add(response);
+    appState.accountList.add(response);
     progress++;
     print(progress);
-    state.progress = progress;
+    loadState.progress = progress;
     if(progress >= accountPathList.length)
     {
       inProgress = false;
