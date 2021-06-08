@@ -187,8 +187,8 @@ class WalletManager
   {
     List<String> files = [];
     RegExp regex = new RegExp(r'.aes$', caseSensitive: false, multiLine: false);
-    var directoryRes = new Directory(this._fileManager.filesFolder());
-    await for (var entity in directoryRes.list(recursive: true, followLinks: false))
+    Directory directoryRes = new Directory(this._fileManager.filesFolder());
+    await for (FileSystemEntity entity in directoryRes.list(recursive: true, followLinks: false))
     {
       if(regex.hasMatch(entity.path)){
         continue;
@@ -200,7 +200,16 @@ class WalletManager
 
   Future<bool> loadWalletAccounts(String password, AvmeWallet avmeWallet) async
   {
-    await thread.loadWalletAccounts(password, global.walletManager, tracker: avmeWallet);
+    //Priority to account #0 or preferred in options menu
+    //TODO: get the last account and set to default
+    List<String> accounts = await global.walletManager.getAccounts();
+    int lastAccount = 0;
+    List<String> defaultAccount = [accounts[lastAccount]];
+    await thread.loadWalletAccounts(defaultAccount, password, global.walletManager, tracker: avmeWallet);
+
+    //Loads all accounts
+    await thread.loadWalletAccounts(accounts,password, global.walletManager, tracker: avmeWallet);
+
     return false;
   }
 

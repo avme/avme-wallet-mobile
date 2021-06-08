@@ -42,55 +42,37 @@ class GenericThreadData
   GenericThreadData(this.data, this.sendPort);
 }
 
-Future<bool> loadWalletAccounts(String password, WalletManager walletManager, {AvmeWallet tracker}) async
+Future<bool> loadWalletAccounts(List<String> accountPathList, String password, WalletManager walletManager, {AvmeWallet tracker}) async
 {
-  List<String> accountPathList = await walletManager.getAccounts();
+  // List<String> accountPathList = await walletManager.getAccounts(first:false);
   ReceivePort receivePort = ReceivePort();
 
   int progress = 0;
   bool inProgress = true;
   accountPathList.asMap().forEach((index,pathEntity) async
   {
-    // GenericThreadData param = new GenericThreadData(
-    //   {"index":index,"walletPath":pathEntity,"password":password,"walletManager":walletManager},receivePort.sendPort
-    // );
     genericThreadData = new GenericThreadData({"index":index,"walletPath":pathEntity,"password":password,"walletManager":walletManager}, receivePort.sendPort);
     isolateList.add(await Isolate.spawn(createAccountList, genericThreadData));
   });
 
   // Listens the threads...
-  if(tracker != null)
-  {
-    receivePort.listen((response)
-    {
-      print("Data returned:"+response.toString());
-      global.accountList.add(response);
-      progress++;
-      tracker.progress = progress;
-      print(progress);
-      if(progress >= accountPathList.length)
-      {
-        tracker.inProgress = false;
-        inProgress = false;
-      }
-    });
-  }
-  else
-  {
-    receivePort.listen((response){
-      print("Data returned:"+response.toString());
-      global.accountList.add(response);
-      progress++;
-      print(progress);
-      if(progress >= accountPathList.length)
-      {
-        inProgress = false;
-      }
-    });
-  }
 
-  await waitWhile(() => inProgress);
-  stopLoadWalletAccountsThreads();
+  receivePort.listen((response){
+    print("Data returned:"+response.toString());
+    global.accountList.add(response);
+    progress++;
+    print(progress);
+    if(progress >= accountPathList.length)
+    {
+      inProgress = false;
+      stopLoadWalletAccountsThreads();
+    }
+  });
+
+  if(accountPathList.length == 1)
+  {
+    await waitWhile(() => inProgress);
+  }
   return true;
 }
 
@@ -114,6 +96,7 @@ void createAccountList(GenericThreadData param) async
   ReceivePort response = new ReceivePort();
   String content = await param.data["walletManager"]
       .readWalletJson(position: param.data["index"].toString());
+  //Wallet.fromJson can take up to 2 seconds per operation!
   Wallet _wallet = Wallet.fromJson(content, param.data["password"]);
   EthereumAddress _ethAddress = await _wallet.privateKey.extractAddress();
   //Return a AccountItem object to be added in the accountList
