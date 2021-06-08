@@ -71,7 +71,6 @@ Future<bool> loadWalletAccounts(List<String> accountPathList, String password, A
   {
     await waitWhile(() => inProgress);
   }
-  await waitWhile(() => inProgress);
   return true;
 }
 

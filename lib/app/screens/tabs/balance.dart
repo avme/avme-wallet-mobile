@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:avme_wallet/app/screens/widgets/qr_reader.dart';
 import 'package:provider/provider.dart';
 
+import '../receive.dart';
+
 class Balance extends StatefulWidget {
   @override
   _BalanceState createState() => _BalanceState();
@@ -143,9 +145,11 @@ class _BalanceState extends State<Balance>
                         SizedBox(
                           height:_btnDimensions[0],
                           width: _btnDimensions[1],
-                          child: ElevatedButton(onPressed: (){},
-                            child: Icon(Icons.download_sharp),
-                            style: _roundedButton.copyWith(backgroundColor: MaterialStateProperty.all<Color>(Colors.green),),
+                          child: ElevatedButton(onPressed: (){
+                            Navigator.push(context, MaterialPageRoute(builder: (builder) => Receive()));
+                          },
+                          child: Icon(Icons.download_sharp),
+                          style: _roundedButton.copyWith(backgroundColor: MaterialStateProperty.all<Color>(Colors.green),),
                           ),
                         ),
                         Text(" "),

@@ -197,13 +197,11 @@ class WalletManager
     //Priority to account #0 or preferred in options menu
     //TODO: get the last account and set to default
     List<String> accounts = await wallet.walletManager.getAccounts();
-    // int lastAccount = 0;
-    // List<String> defaultAccount = [accounts[lastAccount]];
-    // await thread.loadWalletAccounts(defaultAccount, password, global.walletManager, state: state);
-
+    int lastAccount = 0;
+    List<String> defaultAccount = [accounts[lastAccount]];
+    await thread.loadWalletAccounts(defaultAccount,password, wallet, state);
     //Loads all accounts
     await thread.loadWalletAccounts(accounts,password, wallet, state);
-
     return false;
   }
 
