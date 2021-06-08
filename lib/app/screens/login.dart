@@ -40,8 +40,8 @@ class _LoginState extends State<Login> {
   Widget build(BuildContext context)
   {
     _passphrase.text = env["DEFAULT_PASSWORD"] ?? "";
-    return Consumer<AvmeWallet>
-      (builder: (context, avmeWallet, child){
+    return Consumer<AppLoadingState>
+      (builder: (context, appState, child){
         return Scaffold(
           body: SafeArea(child:
           Container(
@@ -136,7 +136,7 @@ class _LoginState extends State<Login> {
           _loadingPopupContext = context;
 
           // Always get the provider inside the build method
-          var provider = Provider.of<AvmeWallet>(context);
+          AppLoadingState provider = Provider.of<AppLoadingState>(context);
           return LoadingPopUp(text:"${provider.progress} Loading, please wait...");
         }
     );
@@ -154,7 +154,8 @@ class _LoginState extends State<Login> {
       );
       return;
     }
-    AvmeWallet appState = Provider.of<AvmeWallet>(context, listen: false);
+    AppLoadingState appState = Provider.of<AppLoadingState>(context, listen: false);
+
     Map data = await globals.walletManager.authenticate(_passphrase.text, appState);
     if(data["status"] != 200)
     {

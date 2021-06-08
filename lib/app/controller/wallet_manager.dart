@@ -105,7 +105,7 @@ class WalletManager
     return mnemonic;
   }
 
-  Future<List<String>> makeAccount(String password, AvmeWallet appState,{position = 0}) async
+  Future<List<String>> makeAccount(String password, AppLoadingState state,{position = 0}) async
   {
     List<String> ret = [];
     String mnemonic = await newMnemonic(password);
@@ -131,7 +131,7 @@ class WalletManager
       }
     }
 
-    await authenticate(password, appState);
+    await authenticate(password, state);
 
     return ret;
   }
@@ -157,7 +157,7 @@ class WalletManager
     return (global.wallet != null ? true : false);
   }
 
-  Future<Map> authenticate(String password, AvmeWallet appState) async
+  Future<Map> authenticate(String password, AppLoadingState state) async
   {
     Map ret = {"status":400,"message":"Wrong password."};
     bool mnemonicUnlocked = await decryptAesWallet(password);
@@ -169,7 +169,7 @@ class WalletManager
     }
     try
     {
-      await loadWalletAccounts(password, appState);
+      await loadWalletAccounts(password, state);
       global.wallet = global.accountList[0].account;
       global.eAddress = await global.wallet.privateKey.extractAddress();
       ret["status"] = 200;
@@ -198,17 +198,17 @@ class WalletManager
     return files;
   }
 
-  Future<bool> loadWalletAccounts(String password, AvmeWallet avmeWallet) async
+  Future<bool> loadWalletAccounts(String password, AppLoadingState state) async
   {
     //Priority to account #0 or preferred in options menu
     //TODO: get the last account and set to default
     List<String> accounts = await global.walletManager.getAccounts();
-    int lastAccount = 0;
-    List<String> defaultAccount = [accounts[lastAccount]];
-    await thread.loadWalletAccounts(defaultAccount, password, global.walletManager, tracker: avmeWallet);
+    // int lastAccount = 0;
+    // List<String> defaultAccount = [accounts[lastAccount]];
+    // await thread.loadWalletAccounts(defaultAccount, password, global.walletManager, state: state);
 
     //Loads all accounts
-    await thread.loadWalletAccounts(accounts,password, global.walletManager, tracker: avmeWallet);
+    await thread.loadWalletAccounts(accounts,password, global.walletManager, state: state);
 
     return false;
   }

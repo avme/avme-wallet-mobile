@@ -9,9 +9,13 @@ import 'package:flutter/services.dart';
 main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await DotEnv.load();
-  runApp(
-    ChangeNotifierProvider(create: (context) => AvmeWallet(),
-      child: AvmeWalletApp())
+  runApp(MultiProvider(
+      providers: [
+        ChangeNotifierProvider<AvmeWallet>(create:(_) => AvmeWallet()),
+        ChangeNotifierProvider<AppLoadingState>(create:(_) => AppLoadingState())
+      ],
+    child: AvmeWalletApp(),
+    )
   );
 }
 

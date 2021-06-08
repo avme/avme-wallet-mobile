@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-class AvmeWallet extends ChangeNotifier
-{
+class AppLoadingState extends ChangeNotifier{
   int _progress = 0;
   int _total = 0;
   bool _inProgress = true;
@@ -23,6 +22,19 @@ class AvmeWallet extends ChangeNotifier
     _inProgress = value;
     notifyListeners();
   }
-  get progress => _progress;
-  get total => total;
+  int get progress => _progress;
+  int get total => total;
+}
+
+class AvmeWallet extends ChangeNotifier
+{
+  // AppLoadingState _appLoadingState;
+  //
+  // set newAppLoadingState(AppLoadingState value) => _appLoadingState = value;
+  // AppLoadingState get appLoadingState => _appLoadingState;
+  //
+  // void init()
+  // {
+  //   this._appLoadingState = AppLoadingState();
+  // }
 }

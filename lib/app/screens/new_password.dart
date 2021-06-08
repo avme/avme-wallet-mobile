@@ -103,7 +103,7 @@ class NewPassword extends StatelessWidget
         }
     );
 
-    AvmeWallet appState = Provider.of<AvmeWallet>(context, listen: false);
+    AppLoadingState appState = Provider.of<AppLoadingState>(context, listen: false);
 
     // Creates the user account
     await globals.walletManager.makeAccount(field1.text, appState);

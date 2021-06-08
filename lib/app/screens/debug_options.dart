@@ -108,7 +108,7 @@ class Options extends StatelessWidget
 
   btnMakeAccount(BuildContext context) async
   {
-    AvmeWallet appState = Provider.of<AvmeWallet>(context, listen: false);
+    AppLoadingState appState = Provider.of<AppLoadingState>(context, listen: false);
     List<String> ret = await global.walletManager.makeAccount("abacaxi",appState);
     snack(ret, context);
   }

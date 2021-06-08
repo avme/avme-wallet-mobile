@@ -42,7 +42,7 @@ class GenericThreadData
   GenericThreadData(this.data, this.sendPort);
 }
 
-Future<bool> loadWalletAccounts(List<String> accountPathList, String password, WalletManager walletManager, {AvmeWallet tracker}) async
+Future<bool> loadWalletAccounts(List<String> accountPathList, String password, WalletManager walletManager, {AppLoadingState state}) async
 {
   // List<String> accountPathList = await walletManager.getAccounts(first:false);
   ReceivePort receivePort = ReceivePort();
@@ -51,6 +51,7 @@ Future<bool> loadWalletAccounts(List<String> accountPathList, String password, W
   bool inProgress = true;
   accountPathList.asMap().forEach((index,pathEntity) async
   {
+    state.total = (index + 1);
     genericThreadData = new GenericThreadData({"index":index,"walletPath":pathEntity,"password":password,"walletManager":walletManager}, receivePort.sendPort);
     isolateList.add(await Isolate.spawn(createAccountList, genericThreadData));
   });
@@ -62,6 +63,7 @@ Future<bool> loadWalletAccounts(List<String> accountPathList, String password, W
     global.accountList.add(response);
     progress++;
     print(progress);
+    state.progress = progress;
     if(progress >= accountPathList.length)
     {
       inProgress = false;
@@ -73,6 +75,7 @@ Future<bool> loadWalletAccounts(List<String> accountPathList, String password, W
   {
     await waitWhile(() => inProgress);
   }
+  await waitWhile(() => inProgress);
   return true;
 }
 

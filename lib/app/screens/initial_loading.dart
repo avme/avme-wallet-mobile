@@ -1,12 +1,12 @@
 import 'package:avme_wallet/app/controller/file_manager.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
+import 'package:avme_wallet/app/model/app.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:avme_wallet/app/controller/globals.dart' as globals;
 import 'package:avme_wallet/app/screens/widgets/theme.dart' as theme;
-
-BuildContext _initialLoadingContext;
+import 'package:provider/provider.dart';
 
 class InitialLoading extends StatefulWidget {
   @override
@@ -29,12 +29,30 @@ class _InitialLoadingState extends State<InitialLoading>{
   void initState()
   {
     super.initState();
-    _initialLoadingContext = context;
-    getData();
+    // getData();
   }
-  void getData() async
+
+  @override
+  Widget build(BuildContext context) {
+    getData(context);
+    return Scaffold(
+      body: Container(
+        color: theme.defaultTheme().scaffoldBackgroundColor,
+        child: Center(
+          child: SpinKitDualRing(
+            color: Colors.white,
+            size: 50.0,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void getData(BuildContext context) async
   {
-    //Define the documents folder to use globaly
+    //Initialize the appLoadingState
+    AppLoadingState appState = Provider.of<AppLoadingState>(context);
+    //REMOVE THE GLOBALS REFERENCE AND USE THE AppState / AvmeWallet Model please
     FileManager fileManager = new FileManager();
     await fileManager.getDocumentsFolder();
     globals.fileManager = fileManager;
@@ -90,21 +108,6 @@ class _InitialLoadingState extends State<InitialLoading>{
           ],
         );
       },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        color: theme.defaultTheme().scaffoldBackgroundColor,
-        child: Center(
-          child: SpinKitDualRing(
-            color: Colors.white,
-            size: 50.0,
-          ),
-        ),
-      ),
     );
   }
 }
