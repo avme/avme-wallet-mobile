@@ -1,6 +1,8 @@
 import 'package:avme_wallet/app/lib/utils.dart';
+import 'package:avme_wallet/app/model/app.dart';
 import 'package:flutter/material.dart';
 import 'package:avme_wallet/app/screens/widgets/custom_widgets.dart';
+import 'package:provider/provider.dart';
 
 // stores ExpansionPanel state information
 class AccountItemObjects {
@@ -27,38 +29,66 @@ class _AccountsState extends State<Accounts>
   @override
   Widget build(BuildContext context) {
     // Navigator.pop(dialogContext);
-    return SingleChildScrollView(
-      child: Container(
-        // child: _panelBuilder(),
-        child: Text("Unavailable"),
-      ),
-    );
+    return
+      Consumer<AvmeWallet>
+        (builder: (context, wallet, child) {
+          List<Widget> accountListWidget = [];
+
+          accountListWidget.add(Text("${wallet.accountList.length.toString()} Amount."));
+
+          // for(int i = 0; i < wallet.accountList.length; i++) {
+          // wallet.accountList.forEach((element) {
+          wallet.accountList.forEach((key, element) {
+            // accountListWidget.add(Text("Address: ${wallet.accountList[key].address} \r\n Path :${wallet.accountList[key].accountPath}"));
+            // accountListWidget.add(SizedBox(width: 10,height: 10,));
+            if(_accounts.length < wallet.accountList.length)
+            {
+              _accounts.add(
+                  AccountItemObjects(
+                      expandedValue: wallet.accountList[key].address,
+                      isExpanded: false,
+                      headerValue: key.toString()));
+            }
+            // print(_accounts.length.toString());
+            print("${wallet.accountList[0].address}");
+          });
+
+          return SingleChildScrollView(
+            child: Container(
+
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: accountListWidget,
+              ),
+            ),
+          );
+      });
   }
 
   @override
   void initState()
   {
     super.initState();
-    loadWalletView();
+    // loadWalletView();
   }
 
   void loadWalletView()
   {
-    if(_accounts.length == 0)
-    {
-      print("_accounts is empty, populating");
-      // for(int i = 0; i <= 10; i++)
-      int i = 0;
-      // globals.accountList.forEach((element) {
-      //   print(element.accountPath);
-      //   _accounts.add(
-      //       AccountItemObjects(
-      //           expandedValue: element.address,
-      //           isExpanded: false,
-      //           headerValue: i.toString()));
-      //   i++;
-      // });
-    }
+    // if(_accounts.length == 0)
+    // {
+    //   print("_accounts is empty, populating");
+    //   // for(int i = 0; i <= 10; i++)
+    //   int i = 0;
+    //   globals.accountList.forEach((element) {
+    //     print(element.accountPath);
+    //     _accounts.add(
+    //         AccountItemObjects(
+    //             expandedValue: element.address,
+    //             isExpanded: false,
+    //             headerValue: i.toString()));
+    //     i++;
+    //   });
+    // }
   }
 
   // Our expansionPanel being built dynamically

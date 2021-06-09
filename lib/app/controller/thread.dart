@@ -38,14 +38,14 @@ class GenericThreadData
   GenericThreadData(this.data, this.sendPort);
 }
 
-Future<bool> loadWalletAccounts(List<String> accountPathList, String password, AvmeWallet appState, AppLoadingState loadState) async
+Future<bool> loadWalletAccounts(Map<int, String> accountPathList, String password, AvmeWallet appState, AppLoadingState loadState) async
 {
   // List<String> accountPathList = await walletManager.getAccounts(first:false);
   ReceivePort receivePort = ReceivePort();
 
   int progress = 0;
   bool inProgress = true;
-  accountPathList.asMap().forEach((index,pathEntity) async
+  accountPathList.forEach((index,pathEntity) async
   {
     loadState.total = (index + 1);
     genericThreadData = new GenericThreadData({"index":index,"walletPath":pathEntity,"password":password,"walletManager":appState.walletManager}, receivePort.sendPort);
@@ -55,8 +55,8 @@ Future<bool> loadWalletAccounts(List<String> accountPathList, String password, A
   // Listens the threads...
 
   receivePort.listen((response){
-    print("Data returned:"+response.toString());
-    appState.accountList.add(response);
+    // print("Data returned:"+response.toString());
+    appState.addToAccountList(response[0],response[1]);
     progress++;
     print(progress);
     loadState.progress = progress;
@@ -98,11 +98,15 @@ void createAccountList(GenericThreadData param) async
   Wallet _wallet = Wallet.fromJson(content, param.data["password"]);
   EthereumAddress _ethAddress = await _wallet.privateKey.extractAddress();
   //Return a AccountItem object to be added in the accountList
+  print("Thread Index:"+param.data["index"].toString());
   param.sendPort.send(
-    AccountItem(
-      account: _wallet,
-      accountPath: param.data["walletPath"],
-      address: _ethAddress.hex)
+    [
+      param.data["index"],
+      AccountItem(
+        account: _wallet,
+        accountPath: param.data["walletPath"],
+        address: _ethAddress.hex)
+    ]
   );
   return response.first;
 }

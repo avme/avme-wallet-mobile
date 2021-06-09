@@ -46,7 +46,7 @@ class AvmeWallet extends ChangeNotifier
   EthereumAddress _eAddress;
   set eAddress (EthereumAddress value) => _eAddress = value;
 
-  List<AccountItem> accountList = [];
+  Map<int,AccountItem> accountList = {};
 
   String appTitle = "AVME Wallet";
 
@@ -54,6 +54,11 @@ class AvmeWallet extends ChangeNotifier
   void init()
   {
     _walletManager.setFileManager(fileManager);
+  }
 
+  void addToAccountList(int pos,AccountItem account)
+  {
+    accountList[pos] = account;
+    notifyListeners();
   }
 }

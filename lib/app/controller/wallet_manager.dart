@@ -1,6 +1,7 @@
 // import 'dart:html';
 import 'dart:math';
 import 'package:avme_wallet/app/model/app.dart';
+import 'package:bip32/bip32.dart';
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:bip32/bip32.dart' as bip32;
 import 'dart:io';
@@ -104,30 +105,28 @@ class WalletManager
     return mnemonic;
   }
 
-  Future<List<String>> makeAccount(String password, AvmeWallet wallet, AppLoadingState state,{position = 0}) async
+  Future<List<String>> makeAccount(String password, AvmeWallet wallet, AppLoadingState state) async
   {
     List<String> ret = [];
     String mnemonic = await newMnemonic(password);
-    var node = bip32.BIP32.fromSeed(bip39.mnemonicToSeed(mnemonic));
-    var _rng = new Random.secure();
+    BIP32 node = bip32.BIP32.fromSeed(bip39.mnemonicToSeed(mnemonic));
+    Random _rng = new Random.secure();
 
-    if(position == 0)
+    for(int index = 1; index <= 9; index++)
     {
-      for(int index = 0; index <= 9; index++)
-      {
-        var child = node.derivePath("m/44'/60'/0'/0/$index");
-        String privateKey = HEX.encode(child.privateKey);
+      var child = node.derivePath("m/44'/60'/0'/0/$index");
+      String privateKey = HEX.encode(child.privateKey);
 
-        Credentials credentFromHex = EthPrivateKey.fromHex(privateKey);
-        Wallet _wallet = Wallet.createNew(credentFromHex,password, _rng);
-        String json = _wallet.toJson();
-        File savedPath = await writeWalletJson(json,position: index.toString());
-        if(index == 0)
-        {
-          wallet.w3dartWallet = _wallet;
-        }
-        ret.add(savedPath.path);
+      Credentials credentFromHex = EthPrivateKey.fromHex(privateKey);
+      Wallet _wallet = Wallet.createNew(credentFromHex,password, _rng);
+      String json = _wallet.toJson();
+      File savedPath = await writeWalletJson(json,position: index.toString());
+      if(index == 0)
+      {
+        wallet.w3dartWallet = _wallet;
       }
+      ret.add(savedPath.path);
+
     }
 
     await authenticate(password, wallet, state);
@@ -177,17 +176,19 @@ class WalletManager
     }
   }
 
-  Future<List<String>> getAccounts() async
+  Future<Map<int, String>> getAccounts() async
   {
-    List<String> files = [];
+    Map<int, String> files = {};
     RegExp regex = new RegExp(r'.aes$', caseSensitive: false, multiLine: false);
     Directory directoryRes = new Directory(this._fileManager.filesFolder());
+    int index = 0;
     await for (FileSystemEntity entity in directoryRes.list(recursive: true, followLinks: false))
     {
       if(regex.hasMatch(entity.path)){
         continue;
       }
-      files.add(entity.path);
+      files[index] = entity.path;
+      index++;
     }
     return files;
   }
@@ -196,9 +197,10 @@ class WalletManager
   {
     //Priority to account #0 or preferred in options menu
     //TODO: get the last account and set to default
-    List<String> accounts = await wallet.walletManager.getAccounts();
+    Map<int, String> accounts = await wallet.walletManager.getAccounts();
     int lastAccount = 0;
-    List<String> defaultAccount = [accounts[lastAccount]];
+    Map<int, String> defaultAccount = {lastAccount:accounts[lastAccount]};
+    accounts.remove(lastAccount);
     await thread.loadWalletAccounts(defaultAccount,password, wallet, state);
     //Loads all accounts
     await thread.loadWalletAccounts(accounts,password, wallet, state);

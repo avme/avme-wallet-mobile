@@ -12,22 +12,3 @@ class AccountItem {
   String headerValue;
   bool isExpanded;
 }
-
-Future<List<String>> getAccountList(int qtdExample) async
-{
-  WalletManager wm = new WalletManager();
-  List accounts = await wm.getAccounts();
-
-  accounts.forEach((element) {
-    print(element);
-  });
-
-  // List accounts = List<AccountItem>.generate(qtdExample, (index) {
-  //   return AccountItem(
-  //     headerValue: "Account $index",
-  //     expandedValue: "Account id here...",
-  //   );
-  // }
-  // );
-  return accounts;
-}
