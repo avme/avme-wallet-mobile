@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:avme_wallet/app/controller/file_manager.dart';
 import 'package:avme_wallet/app/controller/wallet_manager.dart';
 import 'package:flutter/foundation.dart';
@@ -9,6 +11,7 @@ class AppLoadingState extends ChangeNotifier{
   int _progress = 0;
   int _total = 0;
   bool _inProgress = true;
+  bool _loadedAccounts = false;
 
   set progress (int value)
   {
@@ -27,8 +30,16 @@ class AppLoadingState extends ChangeNotifier{
     _inProgress = value;
     notifyListeners();
   }
+
+  set loadedAccounts (bool value)
+  {
+    _loadedAccounts = value;
+    notifyListeners();
+  }
+
   int get progress => _progress;
   int get total => total;
+  bool get accountsWasLoaded => _loadedAccounts;
 }
 
 class AvmeWallet extends ChangeNotifier
@@ -46,7 +57,9 @@ class AvmeWallet extends ChangeNotifier
   EthereumAddress _eAddress;
   set eAddress (EthereumAddress value) => _eAddress = value;
 
-  Map<int,AccountItem> accountList = {};
+  Map<int,AccountItem> _accountList = {};
+  set setAccountList (Map<int,AccountItem> value) => _accountList = value;
+  Map get accountList => _accountList;
 
   String appTitle = "AVME Wallet";
 
@@ -59,6 +72,10 @@ class AvmeWallet extends ChangeNotifier
   void addToAccountList(int pos,AccountItem account)
   {
     accountList[pos] = account;
-    notifyListeners();
+    //First we get an ordered list of keys, and rebuild in loop the entire list...
+    List keys = accountList.keys.toList()..sort();
+    Map<int,AccountItem> localAccountList = {};
+    keys.forEach((key) => localAccountList[key] = accountList[key]);
+    setAccountList = localAccountList;
   }
 }

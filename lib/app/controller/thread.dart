@@ -63,6 +63,10 @@ Future<bool> loadWalletAccounts(Map<int, String> accountPathList, String passwor
     if(progress >= accountPathList.length)
     {
       inProgress = false;
+      if(accountPathList.length != 1)
+      {
+        loadState.loadedAccounts = true;
+      }
       stopLoadWalletAccountsThreads();
     }
   });
