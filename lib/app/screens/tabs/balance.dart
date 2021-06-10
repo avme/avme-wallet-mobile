@@ -1,3 +1,4 @@
+import 'package:avme_wallet/app/model/account_item.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:flutter/material.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
@@ -15,7 +16,6 @@ class Balance extends StatefulWidget {
 class _BalanceState extends State<Balance>
 {
   AvmeWallet appState;
-  double _balance = 0.50;
   double _usdBalance = 21668.80;
   List<double> _btnDimensions = [
     70,
@@ -35,6 +35,9 @@ class _BalanceState extends State<Balance>
   @override
   Widget build(BuildContext context) {
     appState = Provider.of<AvmeWallet>(context);
+
+    balanceServiceIsRunning(appState);
+
     return
       Column(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -55,7 +58,7 @@ class _BalanceState extends State<Balance>
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           Icon(Icons.vpn_key, size: 16,),
-                          Text(' Account ' + appState.walletManager.selectedAccount.toString(), style: _tsTab,),
+                          Text(' Account ' + appState.currentWalletId.toString(), style: _tsTab,),
                         ],
                       ),
                       SizedBox(height: 4,),
@@ -84,12 +87,25 @@ class _BalanceState extends State<Balance>
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical:14.0),
                 child: Column(
-                    children:
-                    [
-                      Text(_balance.toString()+" ETH", style: _tsTab.copyWith(fontSize: 22),),
-                      SizedBox(height: 2,),
-                      Text(_usdBalance.toString()+" USD", style: _tsTab.copyWith(fontSize: 14, color: Color.fromRGBO(255, 255, 255, 0.5)),)
-                    ]
+                  children:
+                  [
+                    Selector<AvmeWallet, Map>(
+                      selector: (context, model) => model.accountList,
+                      builder: (context, accounts, child
+                    ){
+                      // We register our model to keep track of the balance
+                      appState.watchBalanceUpdates(appState.currentWalletId);
+                      double balance = accounts[appState.currentWalletId].balance;
+                      if(balance != null)
+                        {}
+                      // return Text(accounts[appState.currentWalletId].balance.toString()+" ETH", style: _tsTab.copyWith(fontSize: 22),);
+                      return Text(
+                        balance != null ? accounts[appState.currentWalletId].balance.toString()+" ETH" : "Loading balance",
+                        style: _tsTab.copyWith(fontSize: balance != null ? 22 : null),);
+                    }),
+                    SizedBox(height: 2,),
+                    Text(_usdBalance.toString()+" USD", style: _tsTab.copyWith(fontSize: 14, color: Color.fromRGBO(255, 255, 255, 0.5)),)
+                  ]
                 ),
               )
           ),
@@ -161,12 +177,6 @@ class _BalanceState extends State<Balance>
             ),
           ),
           Container(
-            child: ElevatedButton(onPressed: () async { 
-              String balance = await appState.walletManager.getBalance(0);
-              snack(balance,context);
-            }, child: Text("Test Receiving Stuff"),),
-          ),
-          Container(
             // color: Color.fromRGBO(255, 255, 255, 0.095),
               child: SizedBox(
                 height: 70,
@@ -178,12 +188,19 @@ class _BalanceState extends State<Balance>
   }
   String copyPrivateKey()
   {
-    String _hex = appState.accountList[appState.walletManager.selectedAccount].address;
+    String _hex = appState.accountList[appState.currentWalletId].address;
     return _hex.substring(0,12)+"..."+_hex.substring(_hex.length - 12);
   }
 
   Future<void> _copyToClipboard(BuildContext context) async {
-    await Clipboard.setData(ClipboardData(text: appState.accountList[appState.walletManager.selectedAccount].address));
+    await Clipboard.setData(ClipboardData(text: appState.accountList[appState.currentWalletId].address));
     snack("Address copied to clipboard",context);
+  }
+
+  void balanceServiceIsRunning(AvmeWallet appState) {
+    if(!appState.services.containsKey("balanceTab"))
+    {
+      appState.walletManager.getBalance(appState);
+    }
   }
 }

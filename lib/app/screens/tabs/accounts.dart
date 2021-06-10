@@ -29,9 +29,10 @@ class Accounts extends StatefulWidget{
 
 class _AccountsState extends State<Accounts>
 {
-  List<int> rendered = [];
   AvmeWallet wallet;
   AppLoadingState loadState;
+  BuildContext loadingDialog;
+
   @override
   void initState()
   {
@@ -39,79 +40,54 @@ class _AccountsState extends State<Accounts>
   }
   @override
   Widget build(BuildContext context) {
+
     wallet = Provider.of<AvmeWallet>(context);
     loadState = Provider.of<AppLoadingState>(context);
+
+    if(!loadState.accountsWasLoaded && loadingDialog == null)
+    {
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            loadingDialog = context;
+            return CircularLoading(text: "Loading accounts.");
+          },
+        );
+      });
+    }
     return SingleChildScrollView(
       child: Container(
         child:
-        Selector<AvmeWallet,Map>
+        Selector<AppLoadingState, bool>
           (
-          selector: (context, model) => model.accountList,
-          builder: (context, accountList, child)
+          selector: (context, model) => model.accountsWasLoaded,
+          builder: (context, loaded, child)
           {
-            accountList.forEach((key, element) {
-              if(loadState.accountsWasLoaded && _accounts.length < accountList.length)
-              {
+            if(loaded && _accounts.length < wallet.accountList.length)
+            {
+              wallet.accountList.forEach((key, element) {
                 _accounts.add(
-                  AccountItemObjects(
-                    expandedValue: accountList[key].address,
-                    isExpanded: false,
-                    headerValue: "Account #${key.toString()}"
-                  )
+                    AccountItemObjects(
+                        expandedValue: wallet.accountList[key].address,
+                        isExpanded: false,
+                        headerValue: "Account #${key.toString()}"
+                    )
                 );
+              });
+              if(loadingDialog != null)
+              {
+                Navigator.pop(loadingDialog);
               }
             }
-          );
-          //Build the list
-          return Container(
-
-            child: _panelBuilder(),
+            return Container(
+              child: _panelBuilder(),
             );
           }
         ),
       )
     );
-  // Widget build(BuildContext context) {
-  //   return SingleChildScrollView(
-  //     child: Container(
-  //       child:
-  //       Consumer<AvmeWallet>
-  //         (builder: (context, wallet, child) {
-  //         List<Widget> accountListWidget = [];
-  //
-  //         accountListWidget.add(Text("${wallet.accountList.length.toString()} Amount."));
-  //
-  //         // for(int i = 0; i < wallet.accountList.length; i++) {
-  //         // wallet.accountList.forEach((element) {
-  //         wallet.accountList.forEach((key, element) {
-  //           // accountListWidget.add(Text("Address: ${wallet.accountList[key].address} \r\n Path :${wallet.accountList[key].accountPath}"));
-  //           // accountListWidget.add(SizedBox(width: 10,height: 10,));
-  //           if((_accounts.length < wallet.accountList.length) && rendered.contains(key) == false)
-  //           // if(_accounts.length < wallet.accountList.length && !rendered.contains(key))
-  //           {
-  //             _accounts.add(
-  //                 AccountItemObjects(
-  //                     expandedValue: wallet.accountList[key].address,
-  //                     isExpanded: false,
-  //                     headerValue: key.toString()));
-  //             rendered.add(key);
-  //             print("Contains:" + rendered.contains(key).toString());
-  //             print(rendered.toString());
-  //           }
-  //           print(_accounts.length.toString());
-  //           print("${wallet.accountList[0].address}");
-  //         });
-  //         //Build the list
-  //         accountListWidget.add(_panelBuilder(wallet));
-  //         return Column(
-  //           crossAxisAlignment: CrossAxisAlignment.start,
-  //           children: accountListWidget,
-  //         );
-  //         }
-  //       ),
-  //     )
-  //   );
-
   }
 
 
@@ -142,7 +118,8 @@ class _AccountsState extends State<Accounts>
             onTap: () {
               // insert set state if necessary
               snack("Account #$index selected",context);
-              wallet.walletManager.selectedAccount = index;
+              wallet.changeCurrentWalletId = index;
+              wallet.killService("balanceTab");
               setState(() {
                 closePanels();
               });

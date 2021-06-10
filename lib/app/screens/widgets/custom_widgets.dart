@@ -83,6 +83,36 @@ class SimpleWarning extends StatelessWidget {
   }
 }
 
+
+class CircularLoading extends StatefulWidget {
+  final String text;
+
+  CircularLoading({this.text = "Loading."});
+
+  @override
+  _CircularLoadingState createState() => _CircularLoadingState();
+}
+
+class _CircularLoadingState extends State<CircularLoading> {
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      child: Padding(
+        padding: const EdgeInsets.all(14.0),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(width: 14),
+            Text(widget.text),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
 class LoadingPopUp extends StatefulWidget {
   final String title;
   final String text;

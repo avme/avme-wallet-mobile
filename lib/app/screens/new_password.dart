@@ -111,7 +111,7 @@ class NewPassword extends StatelessWidget
       // Navigator.of(context).pop();
     Navigator.pop(_loadingPopupContext);
     Navigator.pushReplacementNamed(context, "/home");
-    appState.walletManager.selectedAccount = 0;
+    appState.changeCurrentWalletId = 0;
     snack("Account #0 selected", context);
     return;
     // }

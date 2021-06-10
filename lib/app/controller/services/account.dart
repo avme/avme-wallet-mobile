@@ -1,42 +1,13 @@
 import 'dart:async';
 import 'dart:isolate';
-import 'package:avme_wallet/app/model/account_item.dart';
 import 'package:avme_wallet/app/model/app.dart';
+import 'package:avme_wallet/app/model/account_item.dart';
+import 'package:avme_wallet/app/model/service_data.dart';
+
 import 'package:web3dart/web3dart.dart';
 
 List<Isolate> isolateList = [];
-GenericThreadData genericThreadData;
-void exampleIsolate() async
-{
-  ReceivePort receivePort = ReceivePort();
-  List<Isolate> isolateList = [];
-
-  for(int i = 0; i < 10; i++)
-  {
-    print("thread $i was added to the task");
-    isolateList.add(await Isolate.spawn(runExample, receivePort.sendPort));
-  }
-  receivePort.listen((response){
-    print("A isolate returned: $response");
-  });
-}
-
-void runExample(SendPort sendPort) async
-{
-  await Future.delayed(Duration(seconds: 5), () {
-    print("This code was run on a new Isolate");
-  });
-  sendPort.send("a isolate finished his task");
-}
-
-//WalletManager new Thread execution
-
-class GenericThreadData
-{
-  Map<String, dynamic> data;
-  SendPort sendPort;
-  GenericThreadData(this.data, this.sendPort);
-}
+ServiceData genericThreadData;
 
 Future<bool> loadWalletAccounts(Map<int, String> accountPathList, String password, AvmeWallet appState, AppLoadingState loadState) async
 {
@@ -48,7 +19,7 @@ Future<bool> loadWalletAccounts(Map<int, String> accountPathList, String passwor
   accountPathList.forEach((index,pathEntity) async
   {
     loadState.total = (index + 1);
-    genericThreadData = new GenericThreadData({"index":index,"walletPath":pathEntity,"password":password,"walletManager":appState.walletManager}, receivePort.sendPort);
+    genericThreadData = new ServiceData({"index":index,"walletPath":pathEntity,"password":password,"walletManager":appState.walletManager}, receivePort.sendPort);
     isolateList.add(await Isolate.spawn(createAccountList, genericThreadData));
   });
 
@@ -80,8 +51,6 @@ Future<bool> loadWalletAccounts(Map<int, String> accountPathList, String passwor
 
 void stopLoadWalletAccountsThreads()
 {
-  // for(Isolate thread in isolateList)
-  // for(Isolate thread in isolateList)
   for(int i = 0; i < isolateList.length; i++)
   {
     if(isolateList[i] != null)
@@ -93,7 +62,7 @@ void stopLoadWalletAccountsThreads()
   }
 }
 
-void createAccountList(GenericThreadData param) async
+void createAccountList(ServiceData param) async
 {
   ReceivePort response = new ReceivePort();
   String content = await param.data["walletManager"]
@@ -106,10 +75,11 @@ void createAccountList(GenericThreadData param) async
   param.sendPort.send(
     [
       param.data["index"],
-      AccountItem(
+      AccountObject(
         account: _wallet,
         accountPath: param.data["walletPath"],
-        address: _ethAddress.hex)
+        address: _ethAddress.hex
+      )
     ]
   );
   return response.first;

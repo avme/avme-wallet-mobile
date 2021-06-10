@@ -1,5 +1,6 @@
-// import 'dart:html';
 import 'dart:math';
+import 'package:avme_wallet/app/controller/services/balance.dart';
+import 'package:avme_wallet/app/model/account_item.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:bip32/bip32.dart';
 import 'package:bip39/bip39.dart' as bip39;
@@ -11,7 +12,7 @@ import 'package:web3dart/credentials.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:aes_crypt/aes_crypt.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:avme_wallet/app/controller/thread.dart' as thread;
+import 'services/account.dart' as accountThread;
 
 import 'file_manager.dart';
 
@@ -201,27 +202,15 @@ class WalletManager
     int lastAccount = 0;
     Map<int, String> defaultAccount = {lastAccount:accounts[lastAccount]};
     accounts.remove(lastAccount);
-    await thread.loadWalletAccounts(defaultAccount,password, wallet, state);
+    await accountThread.loadWalletAccounts(defaultAccount,password, wallet, state);
     //Loads all accounts
-    await thread.loadWalletAccounts(accounts,password, wallet, state);
+    await accountThread.loadWalletAccounts(accounts,password, wallet, state);
     return false;
   }
 
-  Future<String> getBalance(int pos) async
+  Future<String> getBalance(AvmeWallet wallet) async
   {
-    return "unavailable";
-    //Please stop using those globals, and use a model to keep track in appState
-
-    // Client httpClient = new Client();
-    // print("URL:$url");
-    // Web3Client ethClient = new Web3Client(url, httpClient);
-    // // var credentials = ethClient.credentialsFromPrivateKey(global.accountList[pos].address);
-    // EthereumAddress data = await global.accountList[pos].account.privateKey.extractAddress();
-    //
-    // EtherAmount balance = await ethClient.getBalance(data);
-    // print(balance);
-    // return balance.getValueInUnit(EtherUnit.ether).toString();
-    // // EthereumAddress credentials = await networkClient.credentialsFromPrivateKey(global.accountList[pos].address);
-
+    updateBalanceService(wallet);
+    return "Spawned";
   }
 }

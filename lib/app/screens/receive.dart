@@ -77,7 +77,7 @@ class Receive extends StatelessWidget {
   }
   String getAddress(AvmeWallet appState)
   {
-    return appState.accountList[appState.walletManager.selectedAccount].address;
+    return appState.accountList[appState.currentWalletId].address;
   }
   double getQrSize(BuildContext context)
   {
@@ -88,13 +88,13 @@ class Receive extends StatelessWidget {
   }
 
   Future<void> _copyToClipboard(BuildContext context, AvmeWallet appState) async {
-    await Clipboard.setData(ClipboardData(text: appState.accountList[appState.walletManager.selectedAccount].address));
+    await Clipboard.setData(ClipboardData(text: appState.accountList[appState.currentWalletId].address));
     snack("Address copied to clipboard",context);
   }
   
   void _shareAddress(BuildContext context, AvmeWallet appState) {
     Share.share(
-      appState.accountList[appState.walletManager.selectedAccount].address,
+      appState.accountList[appState.currentWalletId].address,
       subject: "Sharing ${appState.appTitle} address."
     );
   }

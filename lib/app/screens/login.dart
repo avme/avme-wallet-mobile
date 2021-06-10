@@ -135,6 +135,7 @@ class _LoginState extends State<Login> {
 
           // Always get the provider inside the build method
           AppLoadingState provider = Provider.of<AppLoadingState>(context);
+          return CircularLoading(text: "${(provider.progress*100)}% Loading accounts.");
           return LoadingPopUp(text:"${provider.progress} Loading, please wait...");
         }
     );
@@ -152,6 +153,7 @@ class _LoginState extends State<Login> {
       );
       return;
     }
+
 
 
     Map data = await appState.walletManager.authenticate(_passphrase.text, appState, loadState);
@@ -174,33 +176,9 @@ class _LoginState extends State<Login> {
     else
     {
       Navigator.pop(_loadingPopupContext);
-      appState.walletManager.selectedAccount = 0;
+      appState.changeCurrentWalletId = 0;
       snack("Account #0 selected", context);
       Navigator.pushReplacementNamed(context, "/home");
     }
-    // snack(data, context);
-  }
-
-  @override
-  State<StatefulWidget> createState() {
-    // TODO: implement createState
-    throw UnimplementedError();
-  }
-
-  void testEventListeneer() async{
-    EventListeneer evento = new EventListeneer();
-    evento.addListener(fireEvent);
-
-    for(int i = 0; i < 5; i++)
-    {
-      await Future.delayed(Duration(seconds: 1), (){
-        evento.foo = i;
-      });
-    }
-  }
-
-  void fireEvent()
-  {
-    print("Event fired");
   }
 }
