@@ -111,7 +111,8 @@ class _AccountsState extends State<Accounts>
             );
           },
           body: ListTile(
-            title: textCenter(account.expandedValue),
+            // title: textCenter(account.expandedValue),
+            title: Text(account.expandedValue, textAlign: TextAlign.center),
             // subtitle: Text(),
             leading: Icon(Icons.vpn_key),
             minLeadingWidth: 10,

@@ -42,6 +42,7 @@ dependencies:
   web_socket_channel: ^1.2.0
   qr_flutter: ^4.0.0
   share_plus: ^2.1.2
+  intl: ^0.17.0
 
 dev_dependencies:
   flutter_test:

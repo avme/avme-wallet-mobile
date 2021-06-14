@@ -5,12 +5,15 @@ import 'package:avme_wallet/app/screens/widgets/custom_widgets.dart';
 import 'package:provider/provider.dart';
 class NewPassword extends StatelessWidget
 {
-
   final field1 = TextEditingController();
   final field2 = TextEditingController();
+  AvmeWallet appState;
+  AppLoadingState loadingState;
   String description1 = "Please use a dificult passphrase, it will be used to enter the Wallet";
   @override
   Widget build(BuildContext context) {
+    appState = Provider.of<AvmeWallet>(context);
+    loadingState = Provider.of<AppLoadingState>(context);
     ListView _view = forms([
       commonText("Please type a passphrase in both fields!"),
       //Field1
@@ -23,7 +26,7 @@ class NewPassword extends StatelessWidget
       )
     ]);
     // Prevent user to go back and cause some chaos in the code...
-    return new WillPopScope(onWillPop: () async
+    return WillPopScope(onWillPop: () async
       {
         // snack("You cant go back now", context);
         // TODO: implement this dialog as a component
@@ -46,8 +49,6 @@ class NewPassword extends StatelessWidget
 
   void validateAndReturnToNavigation (BuildContext context) async
   {
-    AvmeWallet appState = Provider.of<AvmeWallet>(context);
-    AppLoadingState loadingState = Provider.of<AppLoadingState>(context, listen: false);
     bool empty = (field1 == null || field2 == null) ? true : false;
     bool notEqual = (field1.text != field2.text) ? true : false;
     bool short = (field1.text.length <= 5 || field2.text.length <= 5) ? true : false;

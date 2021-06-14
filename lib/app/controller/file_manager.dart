@@ -10,8 +10,6 @@ class FileManager
   String folder = "AVME-Wallet/";
   String filename = "account-";
 
-  // Android: /data/user/0/com.avme.avme_wallet/app_flutter
-  // TODO ASAP: FIX THIS FUNCTION, CANNOT BE CALLED IN THREAD
   Future<void> getDocumentsFolder() async
   {
     final directory = await getApplicationDocumentsDirectory();

@@ -31,7 +31,7 @@ class Receive extends StatelessWidget {
                         padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
                         child: QrImage(
                           backgroundColor: Colors.white,
-                          data: "Futagostosa1234123",
+                          data: getAddress(appState),
                           version: QrVersions.auto,
                           size: getQrSize(context),
                         ),
@@ -58,7 +58,6 @@ class Receive extends StatelessWidget {
                             ),
                             Text("   "),
                             GestureDetector(
-                                // onTap:() => snack("Please implement the context sharing!", context),
                                 onTap:() => _shareAddress(context, appState),
                                 child:Icon(Icons.share_sharp)
                             ),
@@ -88,7 +87,7 @@ class Receive extends StatelessWidget {
   }
 
   Future<void> _copyToClipboard(BuildContext context, AvmeWallet appState) async {
-    await Clipboard.setData(ClipboardData(text: appState.accountList[appState.currentWalletId].address));
+    await Clipboard.setData(ClipboardData(text: getAddress(appState)));
     snack("Address copied to clipboard",context);
   }
   

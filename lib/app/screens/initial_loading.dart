@@ -12,9 +12,9 @@ class InitialLoading extends StatefulWidget {
   _InitialLoadingState createState() => _InitialLoadingState();
 }
 
-class _buttonText extends StatelessWidget {
+class buttonText extends StatelessWidget {
   final String text;
-  _buttonText({this.text});
+  buttonText({this.text});
   Widget build(BuildContext context) {
     return Text(text,
         style: theme.alertDialogText()
@@ -28,7 +28,6 @@ class _InitialLoadingState extends State<InitialLoading>{
   void initState()
   {
     super.initState();
-    // getData();
   }
 
   @override
@@ -52,6 +51,7 @@ class _InitialLoadingState extends State<InitialLoading>{
     //Initialize the appLoadingState
     AvmeWallet wallet = Provider.of<AvmeWallet>(context);
     wallet.init();
+    print("Wallet init was called...");
     //REMOVE THE GLOBALS REFERENCE AND USE THE AppState / AvmeWallet Model please
 
     await wallet.fileManager.getDocumentsFolder();
@@ -91,7 +91,7 @@ class _InitialLoadingState extends State<InitialLoading>{
           ),
           actions: [
             TextButton(
-              child: _buttonText(text: "RESTORE BACKUP"),
+              child: buttonText(text: "RESTORE BACKUP"),
               onPressed: () {
                 // Navigator.of(context).pop();
                 // TODO: implement backup process
@@ -99,8 +99,9 @@ class _InitialLoadingState extends State<InitialLoading>{
               },
             ),
             TextButton(
-              child: _buttonText(text: "CREATE NEW",),
+              child: buttonText(text: "CREATE NEW",),
               onPressed: () {
+                Navigator.pop(context);
                 Navigator.pushReplacementNamed(context, "/registerPassword");
               },
             ),

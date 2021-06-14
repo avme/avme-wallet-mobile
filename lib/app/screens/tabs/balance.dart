@@ -1,5 +1,6 @@
 import 'package:avme_wallet/app/model/account_item.dart';
 import 'package:avme_wallet/app/model/app.dart';
+import 'package:avme_wallet/app/screens/send.dart';
 import 'package:flutter/material.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:flutter/services.dart';
@@ -121,7 +122,9 @@ class _BalanceState extends State<Balance>
                         SizedBox(
                           height:_btnDimensions[0],
                           width: _btnDimensions[1],
-                          child: ElevatedButton(onPressed: (){},
+                          child: ElevatedButton(onPressed: (){
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => Send()));
+                          },
                             child: Icon(Icons.upload_sharp),
                             style: _roundedButton.copyWith(backgroundColor: MaterialStateProperty.all<Color>(Colors.redAccent),),
                           ),

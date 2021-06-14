@@ -50,7 +50,9 @@ class WalletManager
 
   Future<bool> hasPreviousWallet() async
   {
-    File file = await this._fileManager.accountFile();
+    File file = await this._fileManager.accountFile(position: "1");
+    bool e = await file.exists();
+    print("File existis? ${e.toString()}");
     return file.exists();
   }
 
@@ -59,8 +61,12 @@ class WalletManager
   {
     bool hasFile = await hasPreviousWallet();
     if(hasFile){
-      File file = await this._fileManager.accountFile();
-      file.delete();
+      Map<int,String> accounts = await getAccounts();
+      accounts.forEach((key, value) async{
+        File file = await this._fileManager.accountFile(position: key.toString());
+        file.delete();
+      });
+
       File mnemonic = new File(this._fileManager.documentsFolder + mnemonicFile);
       print("MEME MONIC: "+mnemonic.path);
       mnemonic.delete();
@@ -113,7 +119,7 @@ class WalletManager
     BIP32 node = bip32.BIP32.fromSeed(bip39.mnemonicToSeed(mnemonic));
     Random _rng = new Random.secure();
 
-    for(int index = 1; index <= 9; index++)
+    for(int index = 0; index <= 9; index++)
     {
       var child = node.derivePath("m/44'/60'/0'/0/$index");
       String privateKey = HEX.encode(child.privateKey);
@@ -211,6 +217,5 @@ class WalletManager
   Future<String> getBalance(AvmeWallet wallet) async
   {
     updateBalanceService(wallet);
-    return "Spawned";
   }
 }
