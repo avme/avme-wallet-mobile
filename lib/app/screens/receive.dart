@@ -76,7 +76,7 @@ class Receive extends StatelessWidget {
   }
   String getAddress(AvmeWallet appState)
   {
-    return appState.accountList[appState.currentWalletId].address;
+    return appState.currentAccount.address;
   }
   double getQrSize(BuildContext context)
   {
@@ -93,7 +93,7 @@ class Receive extends StatelessWidget {
   
   void _shareAddress(BuildContext context, AvmeWallet appState) {
     Share.share(
-      appState.accountList[appState.currentWalletId].address,
+      appState.currentAccount.address,
       subject: "Sharing ${appState.appTitle} address."
     );
   }

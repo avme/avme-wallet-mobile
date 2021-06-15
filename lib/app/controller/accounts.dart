@@ -1,6 +1,3 @@
-import 'package:avme_wallet/app/controller/wallet_manager.dart';
-import 'package:flutter/material.dart';
-
 class AccountItem {
   AccountItem({
     this.expandedValue,

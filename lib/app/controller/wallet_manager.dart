@@ -200,7 +200,7 @@ class WalletManager
     return files;
   }
 
-  Future<bool> loadWalletAccounts(String password, AvmeWallet wallet,AppLoadingState state) async
+  Future<bool> loadWalletAccounts(String password, AvmeWallet wallet, AppLoadingState state) async
   {
     //Priority to account #0 or preferred in options menu
     //TODO: get the last account and set to default
@@ -214,8 +214,29 @@ class WalletManager
     return false;
   }
 
-  Future<String> getBalance(AvmeWallet wallet) async
+  void getBalance(AvmeWallet wallet)
   {
     updateBalanceService(wallet);
   }
+
+  Future<void> sendTransaction(AvmeWallet wallet) async
+  {
+    Client httpClient = Client();
+    Web3Client ethClient = Web3Client(url, httpClient);
+    Transaction _transaction = Transaction(
+      to:EthereumAddress.fromHex("0x879bf934cee4d2fe5294cbab1ca9c5703867ccbb"),
+      // gasPrice: EtherAmount.inWei(BigInt.one),
+      gasPrice: EtherAmount.inWei(BigInt.from(225000000000)),
+      maxGas: 210000,
+      value: EtherAmount.fromUnitAndValue(EtherUnit.ether, 1)
+    );
+
+    // await ethClient.sendTransaction(wallet.currentAccount.account.privateKey,_transaction);
+    var objSigning = ethClient.signTransaction(wallet.currentAccount.account.privateKey, _transaction, chainId: 43113);
+
+    print(HEX.encode(await objSigning));
+    // internalSign()
+  }
+
+
 }

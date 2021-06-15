@@ -191,12 +191,12 @@ class _BalanceState extends State<Balance>
   }
   String copyPrivateKey()
   {
-    String _hex = appState.accountList[appState.currentWalletId].address;
+    String _hex = appState.currentAccount.address;
     return _hex.substring(0,12)+"..."+_hex.substring(_hex.length - 12);
   }
 
   Future<void> _copyToClipboard(BuildContext context) async {
-    await Clipboard.setData(ClipboardData(text: appState.accountList[appState.currentWalletId].address));
+    await Clipboard.setData(ClipboardData(text: appState.currentAccount.address));
     snack("Address copied to clipboard",context);
   }
 

@@ -154,8 +154,6 @@ class _LoginState extends State<Login> {
       return;
     }
 
-
-
     Map data = await appState.walletManager.authenticate(_passphrase.text, appState, loadState);
     if(data["status"] != 200)
     {
