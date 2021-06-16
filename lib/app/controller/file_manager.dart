@@ -7,20 +7,22 @@ class FileManager
 {
   String documentsFolder;
   String ext = ".json";
-  String folder = "AVME-Wallet/";
+  String accountFolder = "Accounts/";
+  String transactions = "Transactions/";
   String filename = "account-";
 
-  Future<void> getDocumentsFolder() async
+  Future<String> getDocumentsFolder() async
   {
     final directory = await getApplicationDocumentsDirectory();
     documentsFolder = directory.path+"/";
-    print(documentsFolder);
+    // print(documentsFolder);
+    return documentsFolder;
   }
 
   String filesFolder()
   {
     final path = this.documentsFolder;
-    return "$path$folder";
+    return "$path$accountFolder";
   }
 
   // SETTING THE FILE PATH TO THE ACCOUNT
@@ -46,10 +48,11 @@ class FileManager
   Future<bool> checkPath(path) async
   {
     bool exists = await Directory(path).exists();
-    if(exists.toString() == "false")
+    if(!exists)
     {
-      Directory dir = await Directory(path).create(recursive: true);
-      print("CREATING THE DIRECTORY: " + dir.path);
+      await Directory(path).create(recursive: true);
+      // Directory dir = await Directory(path).create(recursive: true);
+      // print("CREATING THE DIRECTORY: " + dir.path);
       exists = true;
     }
     return exists;

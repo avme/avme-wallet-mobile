@@ -2,6 +2,7 @@ import 'dart:isolate';
 
 import 'package:avme_wallet/app/controller/file_manager.dart';
 import 'package:avme_wallet/app/controller/wallet_manager.dart';
+import 'package:avme_wallet/app/model/transaction_information.dart';
 import 'package:flutter/foundation.dart';
 import 'package:web3dart/credentials.dart';
 
@@ -80,10 +81,24 @@ class AvmeWallet extends ChangeNotifier
 
   Map<String, Isolate> services = {};
 
+  TransactionInformation lastTransactionWasSucessful = new TransactionInformation();
+
   //Implement some init functions here
   void init()
   {
     _walletManager.setFileManager(fileManager);
+  }
+
+  void wasLastTransactionInformationSuccessful()
+  {
+    lastTransactionWasSucessful.addListener(() {
+      notifyListeners();
+    });
+  }
+
+  void resetLastTransactionInformation()
+  {
+    this.lastTransactionWasSucessful = new TransactionInformation();
   }
 
   void watchBalanceUpdates(int pos)
@@ -105,7 +120,9 @@ class AvmeWallet extends ChangeNotifier
 
   void killService(String key)
   {
+    print("killService($key)");
     services[key].kill(priority: Isolate.immediate);
+
     services.remove(key);
   }
 }

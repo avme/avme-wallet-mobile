@@ -1,5 +1,5 @@
 import 'dart:math';
-import 'package:avme_wallet/app/controller/services/balance.dart';
+import 'dart:typed_data';
 import 'package:avme_wallet/app/model/account_item.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:bip32/bip32.dart';
@@ -12,7 +12,7 @@ import 'package:web3dart/credentials.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:aes_crypt/aes_crypt.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'services/account.dart' as accountThread;
+import '../packages/services.dart' as services;
 
 import 'file_manager.dart';
 
@@ -67,7 +67,7 @@ class WalletManager
         file.delete();
       });
 
-      File mnemonic = new File(this._fileManager.documentsFolder + mnemonicFile);
+      File mnemonic = new File(this._fileManager.documentsFolder + this._fileManager.accountFolder + mnemonicFile);
       print("MEME MONIC: "+mnemonic.path);
       mnemonic.delete();
     }
@@ -80,7 +80,7 @@ class WalletManager
 
     // Using the same password to uncrypt the file
     crypt.setPassword(password);
-    return crypt.decryptTextFromFileSync(documentsPath + mnemonicFile, utf16: true);
+    return crypt.decryptTextFromFileSync(documentsPath + this._fileManager.accountFolder + mnemonicFile, utf16: true);
   }
 
   Future<String> newMnemonic(String password) async
@@ -104,11 +104,11 @@ class WalletManager
     // Setting the main Password to encrypt the file, remember to use
     // the same parameter if you're planning to use it again, like uncrypt...
     crypt.setPassword(password);
-    print("AES: "+documentsPath + mnemonicFile);
+    print("AES: "+documentsPath + this._fileManager.accountFolder + mnemonicFile);
 
     // Saving file with the method 'encryptTextToFileSync' from the Lib "aes_crypt"
 
-    crypt.encryptTextToFileSync(mnemonic, documentsPath + mnemonicFile,utf16: true);
+    crypt.encryptTextToFileSync(mnemonic, documentsPath + this._fileManager.accountFolder + mnemonicFile,utf16: true);
     return mnemonic;
   }
 
@@ -148,7 +148,7 @@ class WalletManager
       String documentsPath = this._fileManager.documentsFolder;
       AesCrypt crypt = AesCrypt();
       crypt.setPassword(password);
-      crypt.decryptTextFromFileSync(documentsPath + mnemonicFile, utf16: true);
+      crypt.decryptTextFromFileSync(documentsPath + this._fileManager.accountFolder + mnemonicFile, utf16: true);
       return true;
     }
     on AesCryptDataException
@@ -208,35 +208,21 @@ class WalletManager
     int lastAccount = 0;
     Map<int, String> defaultAccount = {lastAccount:accounts[lastAccount]};
     accounts.remove(lastAccount);
-    await accountThread.loadWalletAccounts(defaultAccount,password, wallet, state);
-    //Loads all accounts
-    await accountThread.loadWalletAccounts(accounts,password, wallet, state);
+
+    await services.loadWalletAccounts(defaultAccount,password, wallet, state);
+    //Loads all the accounts
+    await services.loadWalletAccounts(accounts,password, wallet, state);
     return false;
   }
 
   void getBalance(AvmeWallet wallet)
   {
-    updateBalanceService(wallet);
+    services.updateBalanceService(wallet);
   }
 
-  Future<void> sendTransaction(AvmeWallet wallet) async
+  Future<bool> sendTransaction(AvmeWallet wallet) async
   {
-    Client httpClient = Client();
-    Web3Client ethClient = Web3Client(url, httpClient);
-    Transaction _transaction = Transaction(
-      to:EthereumAddress.fromHex("0x879bf934cee4d2fe5294cbab1ca9c5703867ccbb"),
-      // gasPrice: EtherAmount.inWei(BigInt.one),
-      gasPrice: EtherAmount.inWei(BigInt.from(225000000000)),
-      maxGas: 210000,
-      value: EtherAmount.fromUnitAndValue(EtherUnit.ether, 1)
-    );
-
-    // await ethClient.sendTransaction(wallet.currentAccount.account.privateKey,_transaction);
-    var objSigning = ethClient.signTransaction(wallet.currentAccount.account.privateKey, _transaction, chainId: 43113);
-
-    print(HEX.encode(await objSigning));
-    // internalSign()
+    wallet.lastTransactionWasSucessful.retrievingData = true;
+    return services.sendTransaction(wallet, "0x879bf934cee4d2fe5294cbab1ca9c5703867ccbb");
   }
-
-
 }
