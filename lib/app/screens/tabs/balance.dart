@@ -1,5 +1,6 @@
 import 'package:avme_wallet/app/model/account_item.dart';
 import 'package:avme_wallet/app/model/app.dart';
+import 'package:avme_wallet/app/screens/qrcode_reader.dart';
 import 'package:avme_wallet/app/screens/send.dart';
 import 'package:flutter/material.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
@@ -139,14 +140,14 @@ class _BalanceState extends State<Balance>
                           height:_btnDimensions[0],
                           width: _btnDimensions[1],
                           child: ElevatedButton(onPressed: () async{
-                            // String response = await Navigator.push(context, MaterialPageRoute(builder: (context) => QRViewExample()));
+                            String response = await Navigator.push(context, MaterialPageRoute(builder: (context) => QRScanner()));
 
-                            String response = await showDialog<String>(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return QrReader();
-                              }
-                            );
+                            // String response = await showDialog<String>(
+                            //   context: context,
+                            //   builder: (BuildContext context) {
+                            //     return QrReader();
+                            //   }
+                            // );
                             //TODO: Use the returned data into transferer screen
                             snack(response, context);
                           },

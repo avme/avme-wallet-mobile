@@ -10,25 +10,13 @@ import 'package:web3dart/web3dart.dart';
 String url = env["NETWORK_URL"];
 ServiceData requestTransactionData;
 
-
-
-Future<bool> ssendTransaction(AvmeWallet appState, String receiverAddress) async
-{
-  await Future.delayed(Duration(seconds:5), (){
-    // appState.lastTransactionWasSucessful.recovered = true;
-  });
-  print("Memes.");
-  appState.lastTransactionWasSucessful.retrievingData = false;
-  appState.resetLastTransactionInformation();
-  return true;
-}
 Future<bool> sendTransaction(AvmeWallet appState, String receiverAddress) async
 {
   ReceivePort receivePort = ReceivePort();
   Client httpClient = Client();
   Web3Client ethClient = Web3Client(url, httpClient);
   Transaction _transaction = Transaction(
-      to:EthereumAddress.fromHex("0x879bf934cee4d2fe5294cbab1ca9c5703867ccbb"),
+      to:EthereumAddress.fromHex(receiverAddress),
       gasPrice: EtherAmount.inWei(BigInt.from(225000000000)),
       maxGas: 21000,
       value: EtherAmount.fromUnitAndValue(EtherUnit.ether, 1)
@@ -77,11 +65,8 @@ void getTransactionByHash(ServiceData param) async
         transactionData = await ethClient.getTransactionByHash(transactionHash);
         if(transactionData != null)
         {
-          param.sendPort.send(
-            {
-              "response" : transactionData
-            }
-          );
+          param.sendPort.send({
+              "response" : transactionData});
           done = true;
         }
       });

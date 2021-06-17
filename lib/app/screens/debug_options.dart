@@ -5,7 +5,7 @@ import 'package:web3dart/web3dart.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:flutter/material.dart';
 
-import 'example/qrcode_reader.dart';
+import 'qrcode_reader.dart';
 
 final String password = "abacate";
 
@@ -81,7 +81,7 @@ class Options extends StatelessWidget
                 title: Text("6 - Call QR Code Screen"),
                 trailing: ElevatedButton(
                   onPressed: () async {
-                    String response = await Navigator.push(context, MaterialPageRoute(builder: (context) => QRViewExample()));
+                    String response = await Navigator.push(context, MaterialPageRoute(builder: (context) => QRScanner()));
                   },
                   child: Text("Try me!"),
                 ),
