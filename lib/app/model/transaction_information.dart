@@ -45,13 +45,13 @@ class TransactionInformation with ChangeNotifier{
     transaction["code"] = "";
     transaction["from"] = transactionInformation.from.toString();
     transaction["gas"] = transactionInformation.gas.toString();
-    transaction["gasPrice"] = transactionInformation.gasPrice.toString();
+    transaction["gasPrice"] = "${transactionInformation.gasPrice.getValueInUnit(web3Dart.EtherUnit.gwei).toInt()} Gwei (${transactionInformation.gasPrice.getInWei} wei)";
     transaction["hash"] = transactionInformation.hash;
     transaction["input"] = HEX.encode(transactionInformation.input);
     transaction["nonce"] = transactionInformation.nonce.toString();
     transaction["to"] = transactionInformation.to.toString();
     transaction["transactionIndex"] = transactionInformation.transactionIndex.toString();
-    transaction["value"] = transactionInformation.value.toString();
+    transaction["value"] = "${transactionInformation.value.getValueInUnit(web3Dart.EtherUnit.gwei).toInt()} Gwei (${transactionInformation.value.getInWei} wei)";
     transaction["type"] = "message";
     transaction["v"] = transactionInformation.v.toString();
     transaction["r"] = transactionInformation.r.toString();
@@ -60,6 +60,7 @@ class TransactionInformation with ChangeNotifier{
     transaction["humanDate"] = formattedDate;
     transaction["confirmed"] = true;
     transaction["invalid"] = false;
+    transaction["creates"] = "";
     transaction["operation"] = "Exchange between accounts";
   }
 
@@ -68,7 +69,7 @@ class TransactionInformation with ChangeNotifier{
     String documentsFolder = await fileManager.getDocumentsFolder();
     String transactions = documentsFolder + fileManager.transactions;
     await fileManager.checkPath(transactions);
-    transactions = transactions+"${this.transaction["from"]}.json";
+    transactions = transactions+"${this.transaction["from"]}";
     File stream = File(transactions);
     JsonEncoder encoder = JsonEncoder.withIndent('  ');
     String jsonFile;
