@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:flutter/services.dart';
 import 'package:avme_wallet/app/screens/widgets/qr_reader.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:web3dart/web3dart.dart';
 
 import '../receive.dart';
 
@@ -95,16 +97,27 @@ class _BalanceState extends State<Balance>
                       selector: (context, model) => model.accountList,
                       builder: (context, accounts, child
                     ){
-                      // We register our model to keep track of the balance
-                      appState.watchBalanceUpdates(appState.currentWalletId);
-                      double balance = accounts[appState.currentWalletId].balance;
-                      if(balance != null)
-                        {}
-                      // return Text(accounts[appState.currentWalletId].balance.toString()+" ETH", style: _tsTab.copyWith(fontSize: 22),);
-                      return Text(
-                        balance != null ? accounts[appState.currentWalletId].balance.toString()+" ETH" : "Loading balance",
-                        style: _tsTab.copyWith(fontSize: balance != null ? 22 : null),);
-                    }),
+                        // We register our model to keep track of the balance
+                        appState.watchBalanceUpdates(appState.currentWalletId);
+                        String balance = accounts[appState.currentWalletId].balance;
+                        BigInt weiBalance = accounts[appState.currentWalletId].waiBalance;
+                        String strBalance = "";
+                        // return Text(
+                        //   weiBalance != null ? appState.currentAccount.balance.substring(0,7) +" ETH" : "Loading balance",
+                        //   style: _tsTab.copyWith(fontSize: balance != null ? 22 : null),);
+                        if(weiBalance != null)
+                        {
+                          if(weiBalance.toDouble() == 0) strBalance = "0.0000";
+                          else strBalance = appState.currentAccount.balance.substring(0,7);
+                          strBalance += " ETH";
+                        }
+                        else strBalance = "Loading balance";
+                        return Text(strBalance, style: _tsTab.copyWith(fontSize: 22));
+                        return Text(
+                          weiBalance != null ? appState.currentAccount.balance.substring(0,7) +" ETH" : "Loading balance",
+                          style: _tsTab.copyWith(fontSize: balance != null ? 22 : null),);
+                      }
+                    ),
                     SizedBox(height: 2,),
                     Text(_usdBalance.toString()+" USD", style: _tsTab.copyWith(fontSize: 14, color: Color.fromRGBO(255, 255, 255, 0.5)),)
                   ]
@@ -148,10 +161,11 @@ class _BalanceState extends State<Balance>
                             //     return QrReader();
                             //   }
                             // );
-                            //TODO: Use the returned data into transferer screen
+
+                            Navigator.push(context,MaterialPageRoute(builder: (context) => Send(sendersAddress: response,)));
                             snack(response, context);
                           },
-                            child: Icon(Icons.qr_code_scanner),
+                            child: Icon(Icons.qr_code, size: 20,),
                             style: _roundedButton.copyWith(backgroundColor: MaterialStateProperty.all<Color>(Color(
                                 0xFF4B4B4B)),),
                           ),

@@ -29,10 +29,6 @@ class _QRScannerState extends State<QRScanner> {
 
   Widget build(BuildContext context) {
     _context = context;
-    ButtonStyle invisible =  ButtonStyle(
-      backgroundColor: MaterialStateProperty.all<Color>(Colors.transparent),
-      shadowColor: MaterialStateProperty.all<Color>(Colors.transparent),
-    );
     return WillPopScope(
       onWillPop: () async => false,
       child:
@@ -66,18 +62,10 @@ class _QRScannerState extends State<QRScanner> {
                             child: SizedBox(
                               height: 60,
                               width: 60,
-                              child: ElevatedButton(
-                                // style: ButtonStyle(
-                                //     shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                                //         RoundedRectangleBorder(
-                                //             borderRadius: BorderRadius.circular(30)
-                                //         )
-                                //     )
-                                // ),
-                                style: invisible,
+                              child: IconButton(
                                 onPressed: () async {
-                                  Navigator.pop(context, "returned some data");
-                                }, child: Icon(Icons.close),
+                                  Navigator.pop(context);
+                                }, icon: Icon(Icons.close),
                               ),
                             ),
                           ),
@@ -108,13 +96,12 @@ class _QRScannerState extends State<QRScanner> {
                           child: SizedBox(
                             width: 70,
                             height: 70,
-                            child: ElevatedButton(
-                                style: invisible,
+                            child: IconButton(
                                 onPressed: () async {
                                   await controller?.toggleFlash();
                                   setState(() {});
                                 },
-                                child: FutureBuilder(
+                                icon: FutureBuilder(
                                   future: controller?.getFlashStatus(),
                                   builder: (context, snapshot) {
                                     // return Text('Flash: ${snapshot.data}');
@@ -133,13 +120,12 @@ class _QRScannerState extends State<QRScanner> {
                               return SizedBox(
                                 width: 70,
                                 height: 70,
-                                child: ElevatedButton(
-                                    style: invisible,
+                                child: IconButton(
                                     onPressed: snapshot.data != null ? () async {
                                       await controller?.flipCamera();
                                       setState(() {});
                                     } : null,
-                                    child: FutureBuilder(
+                                    icon: FutureBuilder(
                                       future: controller?.getCameraInfo(),
                                       builder: (context, snapshot) {
                                         if (snapshot.data != null) {

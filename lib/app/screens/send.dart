@@ -10,74 +10,209 @@ import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+class Send extends StatefulWidget {
 
-class Send extends StatelessWidget {
+  final String sendersAddress;
+  Send({this.sendersAddress});
+
+  @override
+  _SendState createState() => _SendState();
+}
+
+class _SendState extends State<Send> {
+
   BuildContext loadingDialog;
   AvmeWallet appState;
-  TextEditingController sendersAddress;
+  TextEditingController sendersAddress = TextEditingController();
+  TextEditingController amount = TextEditingController();
+  BigInt bigIntValue;
+  // String previewBalance;
+  // Map<int,List<dynamic>> timers = {};
+
+  void initState()
+  {
+    super.initState();
+    // amount.addListener(() {
+    //   if(amount.text.isNotEmpty)
+    //   {
+    //     previewBalance = (double.parse(appState.currentAccount.balance) - double.parse(amount.text)).toString();
+    //     // setState(() {
+    //     //
+    //     //
+    //     // });
+    //     print(previewBalance);
+    //   }
+    // });
+  }
+
+
   @override
   Widget build(BuildContext context) {
-    appState = Provider.of<AvmeWallet>(context);
-
+    appState = Provider.of<AvmeWallet>(context, listen: false);
+    sendersAddress.text = widget.sendersAddress;
+    final _formKey = GlobalKey<FormState>();
+    // previewBalance = appState.currentAccount.balance;
     // checkTransactionPending();
     return Scaffold(
-      appBar:AppBar(title: Text("Send")),
-      body: Container(
-        child:
-        Padding(
-          padding: const EdgeInsets.all(18.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Center(
+        appBar:AppBar(title: Text("Send")),
+        body: Container(
+            child:
+            Form(
+              key: _formKey,
+              child: Padding(
+                padding: const EdgeInsets.all(18.0),
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child:
-                        TextField(
-                          controller: sendersAddress,
-                          decoration: InputDecoration(
-                              hintText: "Scan or type the address here."
+                      Column(
+                        children: [
+                          Row(
+                            // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            // crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Expanded(
+                                flex: 10,
+                                child:
+                                TextFormField(
+                                  controller: sendersAddress,
+                                  decoration: InputDecoration(
+                                      labelText: "Scan or type the address here.",
+                                      icon: FaIcon(FontAwesomeIcons.key, size: 20,)
+                                  ),
+                                  validator: (value)
+                                  {
+                                      if(value == null || value.isEmpty || value.length != 42) return "Invalid Address";
+                                      return null;
+                                  }
+                                ),
+                              ),
+                              Expanded(child: SizedBox()),
+                              Expanded(
+                                flex: 2,
+                                child: ElevatedButton(
+                                  onPressed: () async {
+                                    String response = await Navigator.push(context, MaterialPageRoute(builder: (context) => QRScanner()));
+                                    snack(response, context);
+                                    setState(() {
+                                      sendersAddress.text = response;
+                                    });
+                                  },
+                                  child:Icon(Icons.qr_code, size: 25,)
+                                ),
+                              ),
+
+                            ],
                           ),
-                        ),
+                          Row(
+                            children: [
+                              Expanded(
+                                flex: 10,
+                                child:
+                                TextFormField(
+                                  // onChanged: (value)
+                                  // {
+                                  //   setState(() {
+                                  //     previewBalance = (double.parse(appState.currentAccount.balance) - double.parse(value)).toString();
+                                  //   });
+                                  //
+                                  // },
+                                  validator: (_value) {
+                                    _value = _value.replaceAll(r",", ".");
+                                    bigIntValue = bigIntFixedPointToWei(_value);
+                                    if(_value.isEmpty && _value != "")
+                                    {
+                                      return "Invalid Amount";
+                                    }
+                                    else if (bigIntValue > appState.accountList[appState.currentWalletId].waiBalance)
+                                    {
+                                      return "Balance too low.";
+                                    }
+                                    return null;
+                                  },
+                                  controller: amount,
+                                  keyboardType: TextInputType.number,
+                                  decoration: InputDecoration(
+                                      labelText: "Type the amount",
+                                      icon: FaIcon(FontAwesomeIcons.moneyBillAlt, size: 16,)
+                                  ),
+                                ),
+                              ),
+                              Expanded(child: SizedBox()),
+                              Expanded(
+                                flex:2,
+                                // width: 55,
+                                child:
+                                  ElevatedButton(
+                                      style: ButtonStyle(
+                                        padding: MaterialStateProperty.all<EdgeInsets>(EdgeInsets.zero),
+                                      ),
+                                      onPressed: (){
+                                        setState(() {
+                                          amount.text = appState.currentAccount.balance;
+                                        });
+                                      },
+                                      child:Text("Max")
+                                  ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 24,),
+                          Center(
+                            child: Column(
+                              children: [
+                                Text("Current Balance: ${appState.currentAccount.balance}"),
+                                // Text("New Balance: $previewBalance"),
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: 24,),
+                          Center(child:
+                            ElevatedButton(onPressed: () {
+                              if (_formKey.currentState != null && _formKey.currentState.validate()) {
+                                startTransaction(context);
+                              }
+                            },
+                              child: Text("Enviar"),
+                            ),
+                          )
+                        ],
                       ),
-                      SizedBox(width: 16,),
-                      SizedBox(
-                          width: 60,
-                          height: 60,
-                          child:
-                          ElevatedButton(onPressed: () async {
-                            // snack("Abre camera ScanQR", context);
-                            String response = await Navigator.push(context, MaterialPageRoute(builder: (context) => QRScanner()));
-                            //TODO: Use the returned data into transferer screen
-                            snack(response, context);
-                          },child:Icon(Icons.qr_code, size: 28,))
-                          // ElevatedButton(onPressed: () {snack("Abre camera ScanQR", context);},child:Text("yes"))
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 8,),
-                  Center(child:
-                    ElevatedButton(onPressed: () => startTransaction(context),
-                    child: Text("Enviar"),
-                    ),
-                  )
                   ],
                 ),
               ),
-            ],
-          ),
+            )
         )
-      )
     );
   }
+
   //
   // String getAddress(AvmeWallet appState)
   // {
   //   return appState.currentAccount.address;
+  // }
+
+  // void timerOnChanged(int idTimer) async
+  // {
+  //   if(!timers.containsKey(idTimer))
+  //   {
+  //     //Has timer running
+  //     timers[idTimer][0] = true;
+  //     //Seconds to wait
+  //     timers[idTimer][1] = 3;
+  //     while(timers[idTimer][0])
+  //     {
+  //       await Future.delayed(Duration(seconds: timers[idTimer][1]));
+  //       timers[idTimer][0] = false;
+  //       setState(() {});
+  //     }
+  //   }
+  //   else
+  //   {
+  //     timers[idTimer][1] += 2;
+  //   }
+  //
+  //
   // }
 
   double getQrSize(BuildContext context)
@@ -96,7 +231,7 @@ class Send extends StatelessWidget {
         return CircularLoading(text: "Requesting Transaction, please wait.");
       },
     );
-    await appState.walletManager.sendTransaction(appState);
+    await appState.walletManager.sendTransaction(appState, sendersAddress.text,bigIntValue);
     Navigator.pop(loadingDialog);
   }
 
@@ -116,17 +251,48 @@ class Send extends StatelessWidget {
     print("the memes!");
   }
 
-  // void checkTransactionPending()
-  // {
-  //   bool closed = loadingDialog == null ? true : false;
-  //   while(!closed) {
-  //     Future.delayed(Duration(microseconds: 200), () {
-  //       closed = !appState.lastTransactionWasSucessful.retrievingData ? true : false;
-  //       if(closed == true)
-  //       {
-  //         Navigator.pop(loadingDialog);
-  //       }
-  //     });
-  //   }
-  // }
+  void validateBeforeSending() async
+  {
+    bool badAmount = ((amount.text).trim() == null ||
+        int.parse((amount.text).trim()) == 0) ? true : false;
+    bool badAddress = (amount.text == null || sendersAddress.text == null)
+        ? true
+        : false;
+
+    if (badAmount) {
+      await showDialog<void>(
+          context: context,
+          builder: (BuildContext context) =>
+              SimpleWarning(
+                  title: "Warning",
+                  text:
+                  "Invalid amount.")
+      );
+      return;
+    }
+    if (badAddress) {
+      await showDialog<void>(
+          context: context,
+          builder: (BuildContext context) =>
+              SimpleWarning(
+                  title: "Warning",
+                  text:
+                  "Invalid Address.")
+      );
+      return;
+    }
+  }
+// void checkTransactionPending()
+// {
+//   bool closed = loadingDialog == null ? true : false;
+//   while(!closed) {
+//     Future.delayed(Duration(microseconds: 200), () {
+//       closed = !appState.lastTransactionWasSucessful.retrievingData ? true : false;
+//       if(closed == true)
+//       {
+//         Navigator.pop(loadingDialog);
+//       }
+//     });
+//   }
+// }
 }

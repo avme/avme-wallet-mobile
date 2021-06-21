@@ -220,9 +220,9 @@ class WalletManager
     services.updateBalanceService(wallet);
   }
 
-  Future<bool> sendTransaction(AvmeWallet wallet) async
+  Future<bool> sendTransaction(AvmeWallet wallet, String address, BigInt amount) async
   {
     wallet.lastTransactionWasSucessful.retrievingData = true;
-    return services.sendTransaction(wallet, "0x879bf934cee4d2fe5294cbab1ca9c5703867ccbb");
+    return services.sendTransaction(wallet, address, amount);
   }
 }

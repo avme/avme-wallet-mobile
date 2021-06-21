@@ -10,24 +10,24 @@ import 'package:web3dart/web3dart.dart';
 String url = env["NETWORK_URL"];
 ServiceData requestTransactionData;
 
-Future<bool> sendTransaction(AvmeWallet appState, String receiverAddress) async
+Future<bool> sendTransaction(AvmeWallet appState, String receiverAddress, BigInt amount) async
 {
   ReceivePort receivePort = ReceivePort();
   Client httpClient = Client();
   Web3Client ethClient = Web3Client(url, httpClient);
   Transaction _transaction = Transaction(
       to:EthereumAddress.fromHex(receiverAddress),
-      gasPrice: EtherAmount.inWei(BigInt.from(225000000000)),
-      maxGas: 21000,
-      value: EtherAmount.fromUnitAndValue(EtherUnit.ether, 1)
+      gasPrice: EtherAmount.inWei(BigInt.from(int.parse(env["GAS_PRICE"]))),
+      maxGas: int.parse(env["MAX_GAS"]),
+      // value: EtherAmount.fromUnitAndValue(EtherUnit.ether, amount)
+      value: EtherAmount.inWei(amount)
   );
 
-  Uint8List signedTransaction = await ethClient.signTransaction
-    (
-      appState.currentAccount.account.privateKey,
-      _transaction,
-      chainId: 43113
-    );
+  Uint8List signedTransaction = await ethClient.signTransaction(
+    appState.currentAccount.account.privateKey,
+    _transaction,
+    chainId: int.parse(env["CHAIN_ID"])
+  );
 
   String transactionHash = await ethClient.sendRawTransaction(signedTransaction);
 
@@ -66,7 +66,7 @@ void getTransactionByHash(ServiceData param) async
         if(transactionData != null)
         {
           param.sendPort.send({
-              "response" : transactionData});
+            "response" : transactionData});
           done = true;
         }
       });

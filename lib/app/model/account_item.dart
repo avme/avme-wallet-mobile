@@ -1,3 +1,4 @@
+import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:web3dart/credentials.dart';
 class AccountObject extends ChangeNotifier
@@ -11,13 +12,22 @@ class AccountObject extends ChangeNotifier
   String accountPath;
   Wallet account;
   String address;
-  double _balance;
+  BigInt _weiBalance;
 
-  set updateAccountBalance(double value)
+  set updateAccountBalance(BigInt value)
   {
-    _balance = value;
+    // print("BIG INT:"+value.toString());
+    _weiBalance = value;
     notifyListeners();
   }
-  double get balance => _balance;
+  String get balance {
+    if(_weiBalance == null) return null;
+    // print("balance:$_weiBalance");
+    if(_weiBalance.toDouble() != 0) return weiToFixedPoint(_weiBalance.toString());
+    else return "";
+  }
+
+  BigInt get waiBalance => _weiBalance;
+
 }
 
