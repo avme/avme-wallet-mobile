@@ -49,7 +49,7 @@ class _SendState extends State<Send> {
 
   @override
   Widget build(BuildContext context) {
-    appState = Provider.of<AvmeWallet>(context, listen: false);
+    appState = Provider.of<AvmeWallet>(context);
     sendersAddress.text = widget.sendersAddress;
     final _formKey = GlobalKey<FormState>();
     // previewBalance = appState.currentAccount.balance;

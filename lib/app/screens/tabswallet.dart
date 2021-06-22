@@ -1,9 +1,9 @@
 import 'package:avme_wallet/app/model/app.dart';
+import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:avme_wallet/app/screens/debug_options.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/screens/widgets/colored_tabbar.dart';
-import 'package:avme_wallet/app/screens/widgets/theme.dart' as theme;
 import 'package:avme_wallet/app/screens/tabs/accounts.dart';
 import 'package:avme_wallet/app/screens/tabs/balance.dart';
 import 'package:avme_wallet/app/screens/tabs/transactions.dart';
@@ -24,7 +24,8 @@ class _TabsWalletState extends State<TabsWallet>{
     "DEBUG OPTIONS" : Options(),
   };
 
-  final EdgeInsets padding = EdgeInsets.all(12.0);
+  final EdgeInsets padding = EdgeInsets.zero;
+  // final EdgeInsets padding = EdgeInsets.all(12.0);
   // Return a list of types...
   // 1 - Key names as TAB to populate the TabBar
   // 2 or more - Widget List to the TabBarView
@@ -85,7 +86,7 @@ class _TabsWalletState extends State<TabsWallet>{
         ),
         body:
           Container(
-          decoration: theme.backgroundImage,
+          decoration: backgroundImage,
           child:
             SafeArea(
               child: TabBarView(

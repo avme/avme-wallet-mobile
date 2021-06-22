@@ -56,7 +56,7 @@ class TransactionInformation with ChangeNotifier{
     transaction["v"] = transactionInformation.v.toString();
     transaction["r"] = transactionInformation.r.toString();
     transaction["s"] = transactionInformation.s.toString();
-    transaction["unixDate"] = now.millisecondsSinceEpoch;
+    transaction["unixDate"] = now.microsecondsSinceEpoch;
     transaction["humanDate"] = formattedDate;
     transaction["confirmed"] = true;
     transaction["invalid"] = false;
@@ -77,20 +77,23 @@ class TransactionInformation with ChangeNotifier{
     {
       Map<String, dynamic> readJson = jsonDecode(await stream.readAsString());
       print(readJson["transactions"][0]);
-      readJson["transactions"].add(this.transaction);
+      readJson["transactions"].insert(0,this.transaction);
       jsonFile = encoder.convert(readJson);
     }
     else jsonFile = encoder.convert({"transactions":[this.transaction]});
     stream.writeAsString(jsonFile);
   }
 
-  Future<File> fileTransactions(String address) async {
+  Future<Map<dynamic,dynamic>> fileTransactions(String address) async {
     FileManager fileManager = FileManager();
-    File ret;
-    String file = (await fileManager.getDocumentsFolder()) + fileManager.transactions + "$address.json";
-    ret = File(file);
-    this.storedTransaction = jsonDecode(await ret.readAsString());
-    return ret;
+    String file = (await fileManager.getDocumentsFolder()) + fileManager.transactions + "$address";
+    File dataFile = File(file);
+    if(!await dataFile.exists())
+    {
+      return {};
+    }
+    return jsonDecode(await dataFile.readAsString());
+    // return ret;
   }
 
   int get qtdTransactions => this.storedTransaction["transactions"].length;

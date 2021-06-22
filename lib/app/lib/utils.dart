@@ -41,13 +41,12 @@ String fixedPointToWei(String amount, int decimals) {
 
   if(!validate.hasMatch(amount))
   {
-    return "no matches";
+    return "";
   }
 
   // Read value from input String
 
   int index = 0;
-  print("Phase 1");
   while (index < amount.length && amount[index] != '.') {
     valuestr += amount[index];
     print(amount[index]);
@@ -56,12 +55,10 @@ String fixedPointToWei(String amount, int decimals) {
 
   // Jump fixed point.
   ++index;
-  print("Fixed dot:");
-  print(amount[index-1]);
   // Check if fixed point exists
   if (amount[index-1] == '.' && (amount.length - (index)) > decimals)
   {
-    return "no 'dot' found";
+    return "";
   }
 
   // Check if input precision matches digit precision
@@ -72,7 +69,6 @@ String fixedPointToWei(String amount, int decimals) {
       digitPadding += amount[index];
       ++index;
     }
-    print("digitPadding $digitPadding");
   }
 
   // Create padding if there are missing decimals
@@ -92,24 +88,22 @@ String fixedPointToWei(String amount, int decimals) {
 
 String weiToFixedPoint(String amount, {int digits = 18})
 {
-  String result;
-
+  String result = "";
   if (amount.length <= digits) {
     int valueToPoint = digits - amount.length;
-
     result += "0.";
 
     for (int i = 0; i < valueToPoint; ++i) {
       result += "0";
     }
     result += amount;
-    }
-    else
-    {
-      result = amount;
-      int pointToPlace = result.length - digits;
-      result = result.substring(0, pointToPlace) + "." + result.substring(pointToPlace);
-    }
+  }
+  else
+  {
+    result = amount;
+    int pointToPlace = result.length - digits;
+    result = result.substring(0, pointToPlace) + "." + result.substring(pointToPlace);
+  }
   if (result == "") result = "0";
   return result;
 }

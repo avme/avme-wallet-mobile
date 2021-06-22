@@ -1,10 +1,8 @@
-import 'package:avme_wallet/app/controller/file_manager.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:avme_wallet/app/screens/widgets/theme.dart' as theme;
 import 'package:provider/provider.dart';
 
 class InitialLoading extends StatefulWidget {
@@ -12,12 +10,12 @@ class InitialLoading extends StatefulWidget {
   _InitialLoadingState createState() => _InitialLoadingState();
 }
 
-class buttonText extends StatelessWidget {
+class ButtonText extends StatelessWidget {
   final String text;
-  buttonText({this.text});
+  ButtonText({this.text});
   Widget build(BuildContext context) {
     return Text(text,
-        style: theme.alertDialogText()
+        // style: theme.alertDialogText()
     );
   }
 }
@@ -35,7 +33,7 @@ class _InitialLoadingState extends State<InitialLoading>{
     getData(context);
     return Scaffold(
       body: Container(
-        color: theme.defaultTheme().scaffoldBackgroundColor,
+        // color: theme.defaultTheme().scaffoldBackgroundColor,
         child: Center(
           child: SpinKitDualRing(
             color: Colors.white,
@@ -91,7 +89,7 @@ class _InitialLoadingState extends State<InitialLoading>{
           ),
           actions: [
             TextButton(
-              child: buttonText(text: "RESTORE BACKUP"),
+              child: ButtonText(text: "RESTORE BACKUP"),
               onPressed: () {
                 // Navigator.of(context).pop();
                 // TODO: implement backup process
@@ -99,7 +97,7 @@ class _InitialLoadingState extends State<InitialLoading>{
               },
             ),
             TextButton(
-              child: buttonText(text: "CREATE NEW",),
+              child: ButtonText(text: "CREATE NEW",),
               onPressed: () {
                 Navigator.pop(context);
                 Navigator.pushReplacementNamed(context, "/registerPassword");

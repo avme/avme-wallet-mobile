@@ -1,7 +1,7 @@
 import 'package:avme_wallet/app/controller/events.dart';
 import 'package:avme_wallet/app/model/app.dart';
+import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
-import 'package:avme_wallet/app/screens/widgets/theme.dart' as theme;
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:avme_wallet/app/screens/widgets/custom_widgets.dart';
@@ -29,7 +29,7 @@ class _LoginState extends State<Login> {
               borderRadius: BorderRadius.only(bottomRight: Radius.circular(4), topRight: Radius.circular(4))
           )
       ),
-      backgroundColor: MaterialStateProperty.all(theme.mainBlue),
+      backgroundColor: MaterialStateProperty.all(lightBlue1),
       elevation: MaterialStateProperty.all(0)
   );
 
@@ -42,7 +42,6 @@ class _LoginState extends State<Login> {
       return Scaffold(
         body: SafeArea(child:
         Container(
-            color: theme.defaultTheme().scaffoldBackgroundColor,
             child:
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -88,11 +87,13 @@ class _LoginState extends State<Login> {
                                     ),
                                     labelText: "Please type your passphrase.",
                                     labelStyle: TextStyle(
-                                        color: theme.mainBlue
+                                        color: lightBlue1
                                     ),
 
                                     focusedBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(width: 1, color: theme.mainBlue),
+                                        borderSide: BorderSide(width: 1,
+                                          color: lightBlue1
+                                        ),
                                         borderRadius: _radiusField
                                     ),
 

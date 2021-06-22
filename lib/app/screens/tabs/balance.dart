@@ -43,165 +43,168 @@ class _BalanceState extends State<Balance>
     balanceServiceIsRunning(appState);
 
     return
-      Column(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          GestureDetector(
-            onTap:()
-            {
-              _copyToClipboard(context);
-            },
-            child: Container(
-              // color: Colors.blueGrey,
-              child: Row(
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Wrap(
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          Icon(Icons.vpn_key, size: 16,),
-                          Text(' Account ' + appState.currentWalletId.toString(), style: _tsTab,),
-                        ],
-                      ),
-                      SizedBox(height: 4,),
-                      Wrap(
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          Text(copyPrivateKey(), style: TextStyle(
-                              color: Color.fromRGBO(255,255, 255, 0.75)
-                          ),),
-                          Text(" "),
-                          Icon(Icons.copy, size: 18,),
-                        ],
-                      ),
-                      SizedBox(height: 4,),
-                      Text("This data is just a placeholder", style: TextStyle(
-                          color: Color.fromRGBO(5, 255, 10, 1)
-                      ),),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Container(
-            // color: Color.fromRGBO(255, 255, 255, 0.095),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical:14.0),
-                child: Column(
-                  children:
-                  [
-                    Selector<AvmeWallet, Map>(
-                      selector: (context, model) => model.accountList,
-                      builder: (context, accounts, child
-                    ){
-                        // We register our model to keep track of the balance
-                        appState.watchBalanceUpdates(appState.currentWalletId);
-                        String balance = accounts[appState.currentWalletId].balance;
-                        BigInt weiBalance = accounts[appState.currentWalletId].waiBalance;
-                        String strBalance = "";
-                        // return Text(
-                        //   weiBalance != null ? appState.currentAccount.balance.substring(0,7) +" ETH" : "Loading balance",
-                        //   style: _tsTab.copyWith(fontSize: balance != null ? 22 : null),);
-                        if(weiBalance != null)
-                        {
-                          if(weiBalance.toDouble() == 0) strBalance = "0.0000";
-                          else strBalance = appState.currentAccount.balance.substring(0,7);
-                          strBalance += " ETH";
-                        }
-                        else strBalance = "Loading balance";
-                        return Text(strBalance, style: _tsTab.copyWith(fontSize: 22));
-                        return Text(
-                          weiBalance != null ? appState.currentAccount.balance.substring(0,7) +" ETH" : "Loading balance",
-                          style: _tsTab.copyWith(fontSize: balance != null ? 22 : null),);
-                      }
+      Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            GestureDetector(
+              onTap:()
+              {
+                _copyToClipboard(context);
+              },
+              child: Container(
+                // color: Colors.blueGrey,
+                child: Row(
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            Icon(Icons.vpn_key, size: 16,),
+                            Text(' Account ' + appState.currentWalletId.toString(), style: _tsTab,),
+                          ],
+                        ),
+                        SizedBox(height: 4,),
+                        Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            Text(copyPrivateKey(), style: TextStyle(
+                                color: Color.fromRGBO(255,255, 255, 0.75)
+                            ),),
+                            Text(" "),
+                            Icon(Icons.copy, size: 18,),
+                          ],
+                        ),
+                        SizedBox(height: 4,),
+                        Text("This data is just a placeholder", style: TextStyle(
+                            color: Color.fromRGBO(5, 255, 10, 1)
+                        ),),
+                      ],
                     ),
-                    SizedBox(height: 2,),
-                    Text(_usdBalance.toString()+" USD", style: _tsTab.copyWith(fontSize: 14, color: Color.fromRGBO(255, 255, 255, 0.5)),)
-                  ]
+                  ],
                 ),
-              )
-          ),
-          Container(
-            // color: Colors.pinkAccent,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal:20.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                      children: [
-                        SizedBox(
-                          height:_btnDimensions[0],
-                          width: _btnDimensions[1],
-                          child: ElevatedButton(onPressed: (){
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => Send()));
-                          },
-                            child: Icon(Icons.upload_sharp),
-                            style: _roundedButton.copyWith(backgroundColor: MaterialStateProperty.all<Color>(Colors.redAccent),),
-                          ),
-                        ),
-                        Text(" "),
-                        Text("SEND")
-                      ]
-                  ),
-                  Column(
-                      children: [
-                        SizedBox(
-                          height:_btnDimensions[0],
-                          width: _btnDimensions[1],
-                          child: ElevatedButton(onPressed: () async{
-                            String response = await Navigator.push(context, MaterialPageRoute(builder: (context) => QRScanner()));
-
-                            // String response = await showDialog<String>(
-                            //   context: context,
-                            //   builder: (BuildContext context) {
-                            //     return QrReader();
-                            //   }
-                            // );
-
-                            Navigator.push(context,MaterialPageRoute(builder: (context) => Send(sendersAddress: response,)));
-                            snack(response, context);
-                          },
-                            child: Icon(Icons.qr_code, size: 20,),
-                            style: _roundedButton.copyWith(backgroundColor: MaterialStateProperty.all<Color>(Color(
-                                0xFF4B4B4B)),),
-                          ),
-                        ),
-                        Text(" "),
-                        Text("SCAN")
-                      ]
-                  ),
-                  Column(
-                      children: [
-                        SizedBox(
-                          height:_btnDimensions[0],
-                          width: _btnDimensions[1],
-                          child: ElevatedButton(onPressed: (){
-                            Navigator.push(context, MaterialPageRoute(builder: (builder) => Receive()));
-                          },
-                          child: Icon(Icons.download_sharp),
-                          style: _roundedButton.copyWith(backgroundColor: MaterialStateProperty.all<Color>(Colors.green),),
-                          ),
-                        ),
-                        Text(" "),
-                        Text("RECEIVE")
-                      ]
-                  )
-                ],
               ),
             ),
-          ),
-          Container(
-            // color: Color.fromRGBO(255, 255, 255, 0.095),
-              child: SizedBox(
-                height: 70,
-                width: MediaQuery.of(context).size.width,
-              )
-          ),
-        ],
+            Container(
+              // color: Color.fromRGBO(255, 255, 255, 0.095),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical:14.0),
+                  child: Column(
+                    children:
+                    [
+                      Selector<AvmeWallet, Map>(
+                        selector: (context, model) => model.accountList,
+                        builder: (context, accounts, child
+                      ){
+                          // We register our model to keep track of the balance
+                          appState.watchBalanceUpdates(appState.currentWalletId);
+                          String balance = accounts[appState.currentWalletId].balance;
+                          BigInt weiBalance = accounts[appState.currentWalletId].waiBalance;
+                          String strBalance = "";
+                          // return Text(
+                          //   weiBalance != null ? appState.currentAccount.balance.substring(0,7) +" ETH" : "Loading balance",
+                          //   style: _tsTab.copyWith(fontSize: balance != null ? 22 : null),);
+                          if(weiBalance != null)
+                          {
+                            if(weiBalance.toDouble() == 0) strBalance = "0.0000";
+                            else strBalance = appState.currentAccount.balance.substring(0,7);
+                            strBalance += " ETH";
+                          }
+                          else strBalance = "Loading balance";
+                          return Text(strBalance, style: _tsTab.copyWith(fontSize: 22));
+                          return Text(
+                            weiBalance != null ? appState.currentAccount.balance.substring(0,7) +" ETH" : "Loading balance",
+                            style: _tsTab.copyWith(fontSize: balance != null ? 22 : null),);
+                        }
+                      ),
+                      SizedBox(height: 2,),
+                      Text(_usdBalance.toString()+" USD", style: _tsTab.copyWith(fontSize: 14, color: Color.fromRGBO(255, 255, 255, 0.5)),)
+                    ]
+                  ),
+                )
+            ),
+            Container(
+              // color: Colors.pinkAccent,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal:20.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                        children: [
+                          SizedBox(
+                            height:_btnDimensions[0],
+                            width: _btnDimensions[1],
+                            child: ElevatedButton(onPressed: (){
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => Send()));
+                            },
+                              child: Icon(Icons.upload_sharp),
+                              style: _roundedButton.copyWith(backgroundColor: MaterialStateProperty.all<Color>(Colors.redAccent),),
+                            ),
+                          ),
+                          Text(" "),
+                          Text("SEND")
+                        ]
+                    ),
+                    Column(
+                        children: [
+                          SizedBox(
+                            height:_btnDimensions[0],
+                            width: _btnDimensions[1],
+                            child: ElevatedButton(onPressed: () async{
+                              String response = await Navigator.push(context, MaterialPageRoute(builder: (context) => QRScanner()));
+
+                              // String response = await showDialog<String>(
+                              //   context: context,
+                              //   builder: (BuildContext context) {
+                              //     return QrReader();
+                              //   }
+                              // );
+
+                              Navigator.push(context,MaterialPageRoute(builder: (context) => Send(sendersAddress: response,)));
+                              snack(response, context);
+                            },
+                              child: Icon(Icons.qr_code, size: 20,),
+                              style: _roundedButton.copyWith(backgroundColor: MaterialStateProperty.all<Color>(Color(
+                                  0xFF4B4B4B)),),
+                            ),
+                          ),
+                          Text(" "),
+                          Text("SCAN")
+                        ]
+                    ),
+                    Column(
+                        children: [
+                          SizedBox(
+                            height:_btnDimensions[0],
+                            width: _btnDimensions[1],
+                            child: ElevatedButton(onPressed: (){
+                              Navigator.push(context, MaterialPageRoute(builder: (builder) => Receive()));
+                            },
+                            child: Icon(Icons.download_sharp),
+                            style: _roundedButton.copyWith(backgroundColor: MaterialStateProperty.all<Color>(Colors.green),),
+                            ),
+                          ),
+                          Text(" "),
+                          Text("RECEIVE")
+                        ]
+                    )
+                  ],
+                ),
+              ),
+            ),
+            Container(
+              // color: Color.fromRGBO(255, 255, 255, 0.095),
+                child: SizedBox(
+                  height: 70,
+                  width: MediaQuery.of(context).size.width,
+                )
+            ),
+          ],
+        ),
       );
   }
   String copyPrivateKey()

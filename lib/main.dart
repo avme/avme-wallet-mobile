@@ -1,6 +1,6 @@
+import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:avme_wallet/app/config/routes.dart';
-import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart' as DotEnv;
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:provider/provider.dart';
@@ -28,7 +28,7 @@ class AvmeWalletApp extends StatelessWidget {
       DeviceOrientation.portraitDown
     ]);
     return MaterialApp(
-      theme: defaultTheme(),
+      theme: avmeTheme,
       initialRoute: defaultRoute,
       routes: routes);
   }

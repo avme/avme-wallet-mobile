@@ -20,6 +20,7 @@ class AccountObject extends ChangeNotifier
     _weiBalance = value;
     notifyListeners();
   }
+
   String get balance {
     if(_weiBalance == null) return null;
     // print("balance:$_weiBalance");

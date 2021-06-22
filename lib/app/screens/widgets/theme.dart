@@ -1,62 +1,40 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-TextStyle alertDialogText()
-{
-  return TextStyle(
-      fontWeight: FontWeight.w500,
-      color: Colors.white,
-      decoration: TextDecoration.underline,
-      // decorationThickness: 1
-    // color: Colors.red
-  );
-}
-
-ThemeData defaultTheme()
-{
-  TextTheme _defaultTextTheme(TextTheme base)
-  {
-    // Copies and overwrite as new ThemeData
-    return base.copyWith(
-      bodyText1: base.headline.copyWith(
-        fontSize: 50,
-        color: Colors.pinkAccent,
-        fontFamily: 'Roboto Mono'
-      )
-    );
-  }
-  
-  ColorScheme _defaultColorScheme(ColorScheme base)
-  {
-    return base.copyWith(
-      // primary: Color(0xFF58A0C9),
-      // secondary: Color(0xFF58A0C9)
-      primary: Colors.blueGrey,
-      secondaryVariant: Colors.red,
-      // secondaryVariant: Colors.red,
-    );
-  }
-
-  final ThemeData base = ThemeData.dark();
-  return base.copyWith(
-    textTheme: _defaultTextTheme(base.textTheme),
-    scaffoldBackgroundColor: Color(0xFF1E2C3B), //Default color if it fails...
-    brightness: Brightness.dark,
-    // primaryColor: Colors.red,
-    // accentColor: Color(0xFF7238AD),
-    // accentColor: Color(0xFFFFFFFF),
-    colorScheme: _defaultColorScheme(base.colorScheme),
-    indicatorColor: Color(0xFF77C2EC),
-
-  );
-}
-
-// background image / box decoration used in the main container...
-
-Color mainBlue = Color(0xFF77C2EC);
+const Color primaryColor = Color(0xFF258CF3);
+const Color secondaryColor = Color(0xFF7238AD);
+const Color accentColor = Color(0xFF7238AD);
+const Color blue1 =  Color(0xFF1E2C3B);
+const Color blue2 = Color.fromRGBO(64, 75, 96, .9);
+const Color lightBlue1 = Color(0xFF77C2EC);
+const Color loading1 = Color(0x607684BA);
+const Color loading2 = Color(0x607F8CC2);
 
 BoxDecoration backgroundImage = BoxDecoration(
-  image: DecorationImage(
-  image: AssetImage("assets/bg2_alt.jpg"),
-  fit: BoxFit.cover
-  )
+    image: DecorationImage(
+        image: AssetImage("assets/bg2_alt.jpg"),
+        fit: BoxFit.cover
+    )
 );
+
+ThemeData avmeTheme = ThemeData(
+    // Define the default brightness and colors.
+    brightness: Brightness.dark,
+    primaryColor: primaryColor,
+    accentColor: accentColor,
+    // Define the default font family.
+    fontFamily:  'Roboto Mono',
+    scaffoldBackgroundColor: blue1,
+    indicatorColor: lightBlue1,
+    cardColor: blue2,
+    cardTheme: CardTheme(
+      color:blue2,
+    ),
+    // Define the default TextTheme. Use this to specify the default
+    // text styling for headlines, titles, bodies of text, and more.
+    textTheme: TextTheme(
+      headline1: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold),
+      headline6: TextStyle(fontSize: 36.0, fontStyle: FontStyle.italic),
+      bodyText2: TextStyle(fontSize: 14.0, fontFamily: 'Hind'),
+    ),
+  );

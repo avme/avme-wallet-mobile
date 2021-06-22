@@ -25,10 +25,7 @@ void updateBalanceService(AvmeWallet appState) async
   appState.services["balanceTab"] = await Isolate.spawn(watchBalanceChanges,balanceData);
 
   receivePort.listen((data) {
-    // print("Returned Data: ${data["response"]}");
-    // print("Returned BigInt:"+data["response"].toString());
-    // print("Returned BigInt:${data["response"].runtimeType}");
-    accountWallet.updateAccountBalance = data["response"];
+    if(accountWallet.waiBalance != data["response"]) accountWallet.updateAccountBalance = data["response"];
   });
 }
 
@@ -46,7 +43,6 @@ void watchBalanceChanges(ServiceData param) async
       // print("${(secondsPassed*5)} seconds passed, and the balance is... ${balance.getValueInUnit(EtherUnit.ether).toString()}");
       param.sendPort.send(
         {
-          // "response" : balance.getValueInUnit(EtherUnit.ether)
           "response" : balance.getInWei
         }
       );
