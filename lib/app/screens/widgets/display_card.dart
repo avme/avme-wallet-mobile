@@ -1,3 +1,5 @@
+import 'package:avme_wallet/app/lib/utils.dart';
+import 'package:avme_wallet/app/screens/widgets/transaction_details.dart';
 import 'package:flutter/material.dart';
 import 'package:avme_wallet/app/screens/widgets/shimmer.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -106,12 +108,11 @@ class _DisplayCardState extends State<DisplayCard> {
       elevation: 8.0,
       margin: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
       child: Container(
-        // decoration: BoxDecoration(color: Color.fromRGBO(64, 75, 96, .9)),
         child: ListTile(
-            contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-            leading: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
+          contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+          leading: Column(
+              // crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Container(
                   padding: EdgeInsets.only(right: 12.0),
@@ -124,47 +125,58 @@ class _DisplayCardState extends State<DisplayCard> {
                 ),
               ],
             ),
-            title: Column(
+          title:
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  " "+widget.data["address"],
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                ),
+                    "${widget.data["to"]}",
+                    maxLines: 2,
+                    overflow: TextOverflow.fade,
+
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
                 SizedBox(height: 4,)
               ],
-            ),
-            // subtitle: Text("Intermediate", style: TextStyle(color: Colors.white)),
-
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: <Widget>[
-                    Icon(Icons.monetization_on, color: Colors.yellow, size: 18,),
-                    Text(" "+widget.data["amount"], style: TextStyle(color: Colors.white))
-                  ],
-                ),
-                SizedBox(height: 4,),
-                Row(
-                  children: <Widget>[
-                    FaIcon(FontAwesomeIcons.exchangeAlt, color: Colors.white, size: 18,),
-                    Text(" "+widget.data["operation"], style: TextStyle(color: Colors.white))
-                  ],
-                ),
-                SizedBox(height: 4,),
-                Row(
-                  children: <Widget>[
-                    Icon(Icons.date_range, color: Colors.red, size: 18,),
-                    Text(" "+widget.data["date"], style: TextStyle(color: Colors.white))
-                  ],
-                ),
-              ],
-            ),
-            trailing:
-            Icon(Icons.keyboard_arrow_right, color: Colors.white, size: 30.0))
-        ,
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: <Widget>[
+                  Icon(Icons.monetization_on, color: Colors.yellow, size: 18,),
+                  Text(" "+widget.data["formatedAmount"], style: TextStyle(color: Colors.white))
+                ],
+              ),
+              SizedBox(height: 4,),
+              Row(
+                children: <Widget>[
+                  FaIcon(FontAwesomeIcons.exchangeAlt, color: Colors.white, size: 18,),
+                  Text(" "+widget.data["operation"], style: TextStyle(color: Colors.white))
+                ],
+              ),
+              SizedBox(height: 4,),
+              Row(
+                children: <Widget>[
+                  Icon(Icons.date_range, color: Colors.red, size: 18,),
+                  Text(" "+widget.data["date"], style: TextStyle(color: Colors.white))
+                ],
+              ),
+            ],
+          ),
+          trailing:
+          Icon(Icons.keyboard_arrow_right, color: Colors.white, size: 30.0),
+          onTap: (){
+            // snack("clicked in ${widget.data["amount"]}", context);
+            openTransactionDetails(context, widget.data);
+          },
+        ),
       ),
     );
+  }
+
+  void openTransactionDetails(BuildContext context, Map transactionData)
+  {
+    Navigator.push(context, MaterialPageRoute(builder: (context) => TransactionDetails(transactionData)));
   }
 }

@@ -20,7 +20,7 @@ Future<bool> sendTransaction(AvmeWallet appState, String receiverAddress, BigInt
       gasPrice: EtherAmount.inWei(BigInt.from(int.parse(env["GAS_PRICE"]))),
       maxGas: int.parse(env["MAX_GAS"]),
       // value: EtherAmount.fromUnitAndValue(EtherUnit.ether, amount)
-      value: EtherAmount.inWei(amount)
+      value: EtherAmount.inWei(amount),
   );
 
   Uint8List signedTransaction = await ethClient.signTransaction(

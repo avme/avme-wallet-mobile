@@ -38,10 +38,7 @@ class _TransactionsState extends State<Transactions> {
                   },
                 );
               }
-              else
-              {
-                return snapshot.data;
-              }
+              else return snapshot.data;
             },
           )
         ),
@@ -55,7 +52,8 @@ class _TransactionsState extends State<Transactions> {
   {
     await Future.delayed(Duration(seconds: 1), (){});
     TransactionInformation _transactionInformation = TransactionInformation();
-    Map<dynamic, dynamic> transactionsMap = {};
+    Map<String, dynamic> transactionsMap = {};
+    Map<String, dynamic> transactionData = {};
     transactionsMap = await _transactionInformation.fileTransactions(appState.currentAccount.address);
 
     transactions = transactionsMap["transactions"];
@@ -66,19 +64,15 @@ class _TransactionsState extends State<Transactions> {
       return Center(child: Text("No transactions found."),);
     }
 
-    transactions.forEach((element) {
-      DateTime date = DateTime.fromMicrosecondsSinceEpoch(element["unixDate"],isUtc: false);
+    transactions.forEach((card) {
+      DateTime date = DateTime.fromMicrosecondsSinceEpoch(card["unixDate"],isUtc: false);
       DateFormat dateFormat = DateFormat('MM-dd-yyyy hh:mm:ss');
-
+      transactionData = card;
+      transactionData["formatedAmount"] = weiToFixedPoint(amountValidator.firstMatch(card["value"]).group(1).replaceAll(" wei", "")) + " ETH";
+      transactionData["date"] = dateFormat.format(date);
+      print(card["to"]);
       _widgetsList.add(
-        DisplayCard(
-          data:
-          {
-            "address": element["from"],
-            "amount": weiToFixedPoint(amountValidator.firstMatch(element["value"]).group(1).replaceAll(" wei", "")) + " ETH",
-            "operation": element["operation"],
-            "date": dateFormat.format(date),
-          },)
+        DisplayCard(data:transactionData)
       );
     });
     // 1000000000 Gwei (1000000000000000000 wei)

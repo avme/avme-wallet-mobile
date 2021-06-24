@@ -104,9 +104,6 @@ class _BalanceState extends State<Balance>
                           String balance = accounts[appState.currentWalletId].balance;
                           BigInt weiBalance = accounts[appState.currentWalletId].waiBalance;
                           String strBalance = "";
-                          // return Text(
-                          //   weiBalance != null ? appState.currentAccount.balance.substring(0,7) +" ETH" : "Loading balance",
-                          //   style: _tsTab.copyWith(fontSize: balance != null ? 22 : null),);
                           if(weiBalance != null)
                           {
                             if(weiBalance.toDouble() == 0) strBalance = "0.0000";
@@ -115,9 +112,6 @@ class _BalanceState extends State<Balance>
                           }
                           else strBalance = "Loading balance";
                           return Text(strBalance, style: _tsTab.copyWith(fontSize: 22));
-                          return Text(
-                            weiBalance != null ? appState.currentAccount.balance.substring(0,7) +" ETH" : "Loading balance",
-                            style: _tsTab.copyWith(fontSize: balance != null ? 22 : null),);
                         }
                       ),
                       SizedBox(height: 2,),
@@ -156,14 +150,6 @@ class _BalanceState extends State<Balance>
                             width: _btnDimensions[1],
                             child: ElevatedButton(onPressed: () async{
                               String response = await Navigator.push(context, MaterialPageRoute(builder: (context) => QRScanner()));
-
-                              // String response = await showDialog<String>(
-                              //   context: context,
-                              //   builder: (BuildContext context) {
-                              //     return QrReader();
-                              //   }
-                              // );
-
                               Navigator.push(context,MaterialPageRoute(builder: (context) => Send(sendersAddress: response,)));
                               snack(response, context);
                             },
