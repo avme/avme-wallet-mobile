@@ -2,8 +2,8 @@
 // @dart=2.12
 import 'package:web3dart/web3dart.dart' as _i1;
 
-class Avme extends _i1.GeneratedContract {
-  Avme(
+class AvmeContract extends _i1.GeneratedContract {
+  AvmeContract(
       {required _i1.EthereumAddress address,
       required _i1.Web3Client client,
       int? chainId})
