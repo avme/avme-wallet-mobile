@@ -27,25 +27,11 @@ class _SendState extends State<Send> {
   TextEditingController sendersAddress = TextEditingController();
   TextEditingController amount = TextEditingController();
   BigInt bigIntValue;
-  // String previewBalance;
-  // Map<int,List<dynamic>> timers = {};
 
   void initState()
   {
     super.initState();
-    // amount.addListener(() {
-    //   if(amount.text.isNotEmpty)
-    //   {
-    //     previewBalance = (double.parse(appState.currentAccount.balance) - double.parse(amount.text)).toString();
-    //     // setState(() {
-    //     //
-    //     //
-    //     // });
-    //     print(previewBalance);
-    //   }
-    // });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -110,13 +96,6 @@ class _SendState extends State<Send> {
                                 flex: 10,
                                 child:
                                 TextFormField(
-                                  // onChanged: (value)
-                                  // {
-                                  //   setState(() {
-                                  //     previewBalance = (double.parse(appState.currentAccount.balance) - double.parse(value)).toString();
-                                  //   });
-                                  //
-                                  // },
                                   validator: (_value) {
                                     _value = _value.replaceAll(r",", ".");
                                     bigIntValue = bigIntFixedPointToWei(_value);
@@ -124,7 +103,7 @@ class _SendState extends State<Send> {
                                     {
                                       return "Invalid Amount";
                                     }
-                                    else if (bigIntValue > appState.accountList[appState.currentWalletId].waiBalance)
+                                    else if (bigIntValue > appState.accountList[appState.currentWalletId].rawTokenBalance)
                                     {
                                       return "Balance too low.";
                                     }
@@ -161,7 +140,9 @@ class _SendState extends State<Send> {
                           Center(
                             child: Column(
                               children: [
-                                Text("Current Balance: ${appState.currentAccount.balance}"),
+                                Text("AVME Balance: ${appState.currentAccount.tokenBalance}"),
+                                SizedBox(height: 2,),
+                                Text("AVAX Balance: ${appState.currentAccount.balance}"),
                                 // Text("New Balance: $previewBalance"),
                               ],
                             ),
@@ -186,35 +167,6 @@ class _SendState extends State<Send> {
     );
   }
 
-  //
-  // String getAddress(AvmeWallet appState)
-  // {
-  //   return appState.currentAccount.address;
-  // }
-
-  // void timerOnChanged(int idTimer) async
-  // {
-  //   if(!timers.containsKey(idTimer))
-  //   {
-  //     //Has timer running
-  //     timers[idTimer][0] = true;
-  //     //Seconds to wait
-  //     timers[idTimer][1] = 3;
-  //     while(timers[idTimer][0])
-  //     {
-  //       await Future.delayed(Duration(seconds: timers[idTimer][1]));
-  //       timers[idTimer][0] = false;
-  //       setState(() {});
-  //     }
-  //   }
-  //   else
-  //   {
-  //     timers[idTimer][1] += 2;
-  //   }
-  //
-  //
-  // }
-
   double getQrSize(BuildContext context)
   {
     double qrSize = MediaQuery.of(context).size.width <= 200 ?
@@ -231,24 +183,18 @@ class _SendState extends State<Send> {
         return CircularLoading(text: "Requesting Transaction, please wait.");
       },
     );
-    await appState.walletManager.sendTransaction(appState, sendersAddress.text,bigIntValue);
+    Map<String, dynamic> response = await appState.walletManager.sendTransaction(appState, sendersAddress.text,bigIntValue);
     Navigator.pop(loadingDialog);
-  }
-
-  Future<void> _copyToClipboard(BuildContext context, AvmeWallet appState) async {
-    await Clipboard.setData(ClipboardData(text: appState.currentAccount.address));
-    snack("Address copied to clipboard",context);
-  }
-
-  void _shareAddress(BuildContext context, AvmeWallet appState) {
-    Share.share(
-        appState.currentAccount.address,
-        subject: "Sharing ${appState.appTitle} address."
-    );
-  }
-
-  void buttonPress(){
-    print("the memes!");
+    if(response["status"] != 200)
+    {
+      showDialog(
+        context: context,
+        barrierDismissible: true,
+        builder: (BuildContext context) {
+          return SimpleWarning(title: response["title"],text: response["message"],);
+        },
+      );
+    }
   }
 
   void validateBeforeSending() async
@@ -282,17 +228,4 @@ class _SendState extends State<Send> {
       return;
     }
   }
-// void checkTransactionPending()
-// {
-//   bool closed = loadingDialog == null ? true : false;
-//   while(!closed) {
-//     Future.delayed(Duration(microseconds: 200), () {
-//       closed = !appState.lastTransactionWasSucessful.retrievingData ? true : false;
-//       if(closed == true)
-//       {
-//         Navigator.pop(loadingDialog);
-//       }
-//     });
-//   }
-// }
 }

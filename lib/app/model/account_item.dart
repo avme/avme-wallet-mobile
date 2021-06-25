@@ -13,22 +13,34 @@ class AccountObject extends ChangeNotifier
   Wallet account;
   String address;
   BigInt _weiBalance;
+  BigInt _tokenWeiBalance;
+
+  set updateTokenBalance(BigInt value)
+  {
+    _tokenWeiBalance = value;
+    notifyListeners();
+  }
 
   set updateAccountBalance(BigInt value)
   {
-    // print("BIG INT:"+value.toString());
     _weiBalance = value;
     notifyListeners();
   }
 
-  String get balance {
-    if(_weiBalance == null) return null;
-    // print("balance:$_weiBalance");
-    if(_weiBalance.toDouble() != 0) return weiToFixedPoint(_weiBalance.toString());
+  String get tokenBalance
+  {
+    if(_tokenWeiBalance == null) return null;
+    if(_tokenWeiBalance.toDouble() != 0) return weiToFixedPoint(_tokenWeiBalance.toString());
     else return "";
   }
 
-  BigInt get waiBalance => _weiBalance;
+  String get balance {
+    if(_weiBalance == null) return null;
+    if(_weiBalance.toDouble() != 0) return weiToFixedPoint(_weiBalance.toString());
+    else return "0.0000";
+  }
 
+  BigInt get waiBalance => _weiBalance;
+  BigInt get rawTokenBalance => _tokenWeiBalance;
 }
 

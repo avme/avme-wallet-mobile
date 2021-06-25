@@ -8,23 +8,6 @@ import 'package:web3dart/web3dart.dart' as web3Dart;
 import 'package:hex/hex.dart';
 
 class TransactionInformation with ChangeNotifier{
-  // String blockHash;
-  // String blockNumber;
-  // String from;
-  // String gas;
-  // String gasPrice;
-  // String hash;
-  // String input;
-  // String nonce;
-  // String to;
-  // String transactionIndex;
-  // String value;
-  // String type;
-  // String v;
-  // String r;
-  // String s;
-  // String confirmed;
-  // int unixDate;
   bool _retrievingData = false;
   Map<String, dynamic> transaction = {};
   bool get retrievingData => _retrievingData;
@@ -34,14 +17,12 @@ class TransactionInformation with ChangeNotifier{
     this._retrievingData = value;
     notifyListeners();
   }
-
-  set setLastTransactionInformation(web3Dart.TransactionInformation transactionInformation) {
-    // transaction["blockHash"] = transactionInformation.blockHash;
-    // transaction["blockNumber"] = transactionInformation.blockNumber.toString();
-
+  void setLastTransactionInformation(web3Dart.TransactionInformation transactionInformation, {
+      web3Dart.EtherAmount tokenValue,
+      String to,
+    }) {
     DateTime now = DateTime.now();
     String formattedDate = DateFormat("yyyy-MM-dd HH-mm-ss").format(now);
-
     transaction["code"] = "";
     transaction["from"] = transactionInformation.from.toString();
     transaction["gas"] = transactionInformation.gas.toString();
@@ -49,9 +30,11 @@ class TransactionInformation with ChangeNotifier{
     transaction["hash"] = transactionInformation.hash;
     transaction["input"] = HEX.encode(transactionInformation.input);
     transaction["nonce"] = transactionInformation.nonce.toString();
-    transaction["to"] = transactionInformation.to.toString();
+    transaction["to"] = to;
     transaction["transactionIndex"] = transactionInformation.transactionIndex.toString();
-    transaction["value"] = "${transactionInformation.value.getValueInUnit(web3Dart.EtherUnit.gwei).toInt()} Gwei (${transactionInformation.value.getInWei} wei)";
+    transaction["value"] = tokenValue.getInWei.toDouble() != 0 ?
+      "${tokenValue.getValueInUnit(web3Dart.EtherUnit.gwei).toInt()} Gwei (${tokenValue.getInWei} wei)" :
+      "${transactionInformation.value.getValueInUnit(web3Dart.EtherUnit.gwei).toInt()} Gwei (${transactionInformation.value.getInWei} wei)";
     transaction["type"] = "message";
     transaction["v"] = transactionInformation.v.toString();
     transaction["r"] = transactionInformation.r.toString();
@@ -90,10 +73,9 @@ class TransactionInformation with ChangeNotifier{
     File dataFile = File(file);
     if(!await dataFile.exists())
     {
-      return {};
+      return null;
     }
     return jsonDecode(await dataFile.readAsString());
-    // return ret;
   }
 
   int get qtdTransactions => this.storedTransaction["transactions"].length;

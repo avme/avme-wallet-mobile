@@ -120,7 +120,8 @@ class _AccountsState extends State<Accounts>
               // insert set state if necessary
               snack("Account #$index selected",context);
               wallet.changeCurrentWalletId = index;
-              wallet.killService("balanceTab");
+              wallet.killService("watchBalanceChanges");
+              wallet.killService("watchTokenChanges");
               setState(() {
                 closePanels();
               });

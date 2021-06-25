@@ -101,18 +101,38 @@ class _BalanceState extends State<Balance>
                       ){
                           // We register our model to keep track of the balance
                           appState.watchBalanceUpdates(appState.currentWalletId);
-                          String balance = accounts[appState.currentWalletId].balance;
-                          BigInt weiBalance = accounts[appState.currentWalletId].waiBalance;
+                          BigInt tokenBalance = accounts[appState.currentWalletId].rawTokenBalance;
                           String strBalance = "";
-                          if(weiBalance != null)
+                          if(tokenBalance != null)
                           {
-                            if(weiBalance.toDouble() == 0) strBalance = "0.0000";
-                            else strBalance = appState.currentAccount.balance.substring(0,7);
-                            strBalance += " ETH";
+                            if(tokenBalance.toDouble() == 0) strBalance = "0.0000";
+                            else strBalance = appState.currentAccount.tokenBalance.substring(0,7);
+                            strBalance += " AVME";
                           }
                           else strBalance = "Loading balance";
                           return Text(strBalance, style: _tsTab.copyWith(fontSize: 22));
                         }
+                      ),
+                      SizedBox(height: 2,),
+                      Text(_usdBalance.toString()+" USD", style: _tsTab.copyWith(fontSize: 14, color: Color.fromRGBO(255, 255, 255, 0.5)),),
+                      SizedBox(height: 2,),
+                      Selector<AvmeWallet, Map>(
+                          selector: (context, model) => model.accountList,
+                          builder: (context, accounts, child
+                              ){
+                            // We register our model to keep track of the balance
+                            appState.watchBalanceUpdates(appState.currentWalletId);
+                            BigInt weiBalance = accounts[appState.currentWalletId].waiBalance;
+                            String strBalance = "";
+                            if(weiBalance != null)
+                            {
+                              if(weiBalance.toDouble() == 0) strBalance = "0.0000";
+                              else strBalance = appState.currentAccount.balance.substring(0,7);
+                              strBalance += " AVAX";
+                            }
+                            else strBalance = "Loading balance";
+                            return Text(strBalance, style: _tsTab.copyWith(fontSize: 22));
+                          }
                       ),
                       SizedBox(height: 2,),
                       Text(_usdBalance.toString()+" USD", style: _tsTab.copyWith(fontSize: 14, color: Color.fromRGBO(255, 255, 255, 0.5)),)
@@ -205,7 +225,7 @@ class _BalanceState extends State<Balance>
   }
 
   void balanceServiceIsRunning(AvmeWallet appState) {
-    if(!appState.services.containsKey("balanceTab"))
+    if(!appState.services.containsKey("watchBalanceChanges"))
     {
       appState.walletManager.getBalance(appState);
     }

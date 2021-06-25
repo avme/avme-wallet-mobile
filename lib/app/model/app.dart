@@ -120,9 +120,13 @@ class AvmeWallet extends ChangeNotifier
 
   void killService(String key)
   {
-    print("killService($key)");
-    services[key].kill(priority: Isolate.immediate);
+    if(services.containsKey(key))
+    {
+      print("killService($key)");
+      services[key].kill(priority: Isolate.immediate);
 
-    services.remove(key);
+      services.remove(key);
+    }
+
   }
 }

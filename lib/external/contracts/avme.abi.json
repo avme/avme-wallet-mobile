@@ -83,7 +83,7 @@
         },
         {
           "type":"address",
-          "name":"novo",
+          "name":"_new",
           "internalType":"address",
           "indexed":true
         }
@@ -102,7 +102,7 @@
         },
         {
           "type":"address",
-          "name":"novo",
+          "name":"_new",
           "internalType":"address",
           "indexed":true
         }

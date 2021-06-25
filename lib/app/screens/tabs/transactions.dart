@@ -55,14 +55,34 @@ class _TransactionsState extends State<Transactions> {
     Map<String, dynamic> transactionsMap = {};
     Map<String, dynamic> transactionData = {};
     transactionsMap = await _transactionInformation.fileTransactions(appState.currentAccount.address);
+    if(transactionsMap == null)
+    {
+      return Center(child:
+        Card(
+          elevation: 8.0,
+          child:
+          SizedBox(
+            width: MediaQuery.of(context).size.width / 1.5,
+            child:  Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                Text("😕  ", style: TextStyle(
+                  fontSize: 22)),
+                Text("No transactions found."),
+                ],
+              ),
+            )
+          ),
+        )
+      );
 
+    }
     transactions = transactionsMap["transactions"];
     RegExp amountValidator = RegExp(r'\((.*?)\)', multiLine: false, caseSensitive: false);
     List<Widget> _widgetsList = [];
-    if(transactionsMap.length == 0)
-    {
-      return Center(child: Text("No transactions found."),);
-    }
+
 
     transactions.forEach((card) {
       DateTime date = DateTime.fromMicrosecondsSinceEpoch(card["unixDate"],isUtc: false);
@@ -75,7 +95,6 @@ class _TransactionsState extends State<Transactions> {
         DisplayCard(data:transactionData)
       );
     });
-    // 1000000000 Gwei (1000000000000000000 wei)
     return ListView(children: _widgetsList,);
   }
 }
