@@ -47,7 +47,6 @@ dependencies:
   font_awesome_flutter: ^9.1.0
 
 dev_dependencies:
-  web3dart: ^2.1.4
   build_runner: ^2.0.0
   build_web_compilers: ^3.0.0
   flutter_test:

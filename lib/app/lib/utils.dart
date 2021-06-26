@@ -19,6 +19,13 @@ String hexRandBytes({int size = 4}) {
   return HEX.encode(bytes);
 }
 
+String shortAmount(String amount, {int lenght})
+{
+  int dotIndex = amount.indexOf(".");
+  int maxSize = dotIndex + (lenght ?? 6);
+  return amount.substring(0, maxSize);
+}
+
 BigInt bigIntFixedPointToWei(String amount, {int decimals = 18})
 {
   return BigInt.tryParse(fixedPointToWei(amount, decimals));

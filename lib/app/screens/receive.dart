@@ -1,4 +1,5 @@
 import 'package:avme_wallet/app/lib/utils.dart';
+import 'package:avme_wallet/app/screens/widgets/qr_display.dart';
 import 'package:flutter/material.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:provider/provider.dart';
@@ -23,18 +24,13 @@ class Receive extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Container(
-                    // constraints: BoxConstraints.expand(),
-                    // color: Colors.red,
                     child: Center(
                       child:
                       Padding(
                         padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                        child: QrImage(
-                          backgroundColor: Colors.white,
-                          data: getAddress(appState),
-                          version: QrVersions.auto,
-                          size: getQrSize(context),
-                        ),
+                        child: QrDisplay(
+                          stringToRender: appState.currentAccount.address,
+                        )
                       ),
                     ),
                   ),
@@ -46,7 +42,7 @@ class Receive extends StatelessWidget {
                         contentPadding: EdgeInsets.symmetric(vertical: 4, horizontal: 4),
                         title: Text('Address:'),
                         subtitle: Text(
-                          getAddress(appState)
+                          appState.currentAccount.address
                         ),
                         // trailing: Icon(Icons.share_sharp),
                         trailing: Row(
@@ -74,20 +70,9 @@ class Receive extends StatelessWidget {
       }
     );
   }
-  String getAddress(AvmeWallet appState)
-  {
-    return appState.currentAccount.address;
-  }
-  double getQrSize(BuildContext context)
-  {
-    double qrSize = MediaQuery.of(context).size.width <= 200 ?
-        MediaQuery.of(context).size.width * 0.5 : MediaQuery.of(context).size.width * 0.6
-    ;
-    return qrSize;
-  }
 
   Future<void> _copyToClipboard(BuildContext context, AvmeWallet appState) async {
-    await Clipboard.setData(ClipboardData(text: getAddress(appState)));
+    await Clipboard.setData(ClipboardData(text: appState.currentAccount.address));
     snack("Address copied to clipboard",context);
   }
   
