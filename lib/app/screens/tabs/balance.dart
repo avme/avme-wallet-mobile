@@ -18,604 +18,341 @@ class Balance extends StatefulWidget {
   _BalanceState createState() => _BalanceState();
 }
 
-class _BalanceState extends State<Balance>
-{
+class _BalanceState extends State<Balance> {
   AvmeWallet appState;
-  double _usdBalance = 21668.80;
-  List<double> _btnDimensions = [
-    70,
-    70
-  ];
-  TextStyle _tsTab = TextStyle(
-      fontSize: 16,
-      fontWeight: FontWeight.w500
-  );
-  ButtonStyle _roundedButton = new ButtonStyle(
-    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-        RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20)
-        )
-    ),
-  );
-
-  /*NEW UI*/
-
   double qrSize;
 
-  Widget buildded(BuildContext context)
-  {
+  Widget build(BuildContext context) {
+
     appState = Provider.of<AvmeWallet>(context);
     balanceServiceIsRunning(appState);
-    qrSize = MediaQuery.of(context).size.width / 3.6;
+
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: SizedBox(
-        height: 200,
+      child: Container(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Card(
-              elevation: 8.0,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      flex: 6,
-                      child: SizedBox(
-                        height: 200,
-                        child: Column(
-                          children: [
-                          Expanded(
-                            child: Container(
-                              child: Text("Account Address:", style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16)
-                              ),
-                            ),
-                          )
-                          ],
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 3,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          SizedBox(
-                            width: qrSize,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text("Account Selected #1"),
-                                SizedBox(height: 8),
-                                SizedBox(
-                                  width: qrSize,
-                                  height: qrSize,
-                                  child: QrDisplay(stringToRender: appState.currentAccount.address,)
-                                )
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            ///Main info card
+            StatusCard(appState: appState),
+            SizedBox(
+              height: 8,
             ),
+            ///Quick-access card
+            QuickAccessCard()
           ],
-        )
-      ),
+      )),
     );
   }
-  Widget build(BuildContext context)
-  {
-    appState = Provider.of<AvmeWallet>(context);
-    balanceServiceIsRunning(appState);
+
+  String copyPrivateKey() {
+    String _hex = appState.currentAccount.address;
+    return _hex.substring(0, 12) + "..." + _hex.substring(_hex.length - 12);
+  }
+
+  Future<void> _copyToClipboard(BuildContext context) async {
+    await Clipboard.setData(
+        ClipboardData(text: appState.currentAccount.address));
+    snack("Address copied to clipboard", context);
+  }
+
+  void balanceServiceIsRunning(AvmeWallet appState) {
+    if (!appState.services.containsKey("watchBalanceChanges")) {
+      appState.walletManager.getBalance(appState);
+    }
+  }
+}
+
+class QuickAccessCard extends StatelessWidget {
+  const QuickAccessCard({
+    Key key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+        elevation: 8.0,
+        child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Actions:",
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 16)),
+                Padding(
+                  padding: const EdgeInsets.only(top: 14.0, bottom: 14.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    // crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      QuickActionButton(
+                        buttonColor: Colors.green,
+                        buttonIcon: Icons.upload_sharp,
+                        buttonLabel: "Send",
+                        onPressed: () {
+                          Navigator.push(
+                              context, MaterialPageRoute(builder: (builder) => Send()));
+                        },),
+                      QuickActionButton(
+                        buttonColor: Colors.grey,
+                        buttonIcon: Icons.qr_code,
+                        buttonLabel: "Scan QR",
+                        onPressed: () {
+                          Navigator.push(
+                              context, MaterialPageRoute(builder: (builder) => QRScanner()));
+                        },),
+                      QuickActionButton(
+                        buttonColor: Colors.blue,
+                        buttonIcon: Icons.download,
+                        buttonLabel: "Receive",
+                        onPressed: () {
+                          Navigator.push(
+                              context, MaterialPageRoute(builder: (builder) => Receive()));
+                        },),
+                    ],
+                  ),
+                ),
+              ],
+            )
+        )
+    );
+  }
+}
+
+class QuickActionButton extends StatelessWidget {
+  QuickActionButton({
+    @required this.buttonColor,
+    @required this.buttonLabel,
+    @required this.buttonIcon,
+    @required this.onPressed
+  });
+
+  final Color buttonColor;
+  final String buttonLabel;
+  final IconData buttonIcon;
+  final VoidCallback onPressed;
+
+  final ButtonStyle _roundedButton = new ButtonStyle(
+    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))),
+  );
+  final List<double> _btnDimensions = [70, 70];
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        SizedBox(
+          height: _btnDimensions[0],
+          width: _btnDimensions[1],
+          child: ElevatedButton(
+            onPressed: onPressed,
+            child: Icon(buttonIcon),
+            style: _roundedButton.copyWith(
+              backgroundColor:
+                  MaterialStateProperty.all<Color>(this.buttonColor),
+            ),
+          ),
+        ),
+        SizedBox(
+          height: 14,
+        ),
+        Text(this.buttonLabel,
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+      ],
+    );
+  }
+}
+
+class StatusCard extends StatefulWidget {
+  const StatusCard({
+    Key key,
+    @required this.appState,
+  }) : super(key: key);
+
+  final AvmeWallet appState;
+
+  @override
+  _StatusCardState createState() => _StatusCardState();
+}
+
+class _StatusCardState extends State<StatusCard> {
+  double qrSize;
+
+  @override
+  Widget build(BuildContext context) {
     qrSize = MediaQuery.of(context).size.width / 3.6;
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Container(child:
-      Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          Card(
-            elevation: 8.0,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
+    return Card(
+      elevation: 8.0,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 6,
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    flex: 6,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Account Address:", style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16)
-                        ),
-                        SizedBox(height: 8,),
-                        Text(appState.currentAccount.address),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 2, bottom: 2),
-                          child: Divider(),
-                        ),
-                        Row(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: SizedBox(
-                                width: 32,
-                                height: 32,
-                                child: Image.asset(
-                                  'assets/avme_logo.png',
-                                  fit: BoxFit.fitHeight,),
-                              ),
-                            ),
-                            Expanded(
-                              flex: 2,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text("AVME TOKEN",style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12)),
-                                  Consumer<AvmeWallet>
-                                    (builder: (context, appState, child) {
-                                     return Text("${shortAmount(appState.currentAccount.tokenBalance)} AVME", style: TextStyle(
-                                         fontSize: 12)
-                                     );
-                                  }),
-                                ],
-                              ),
-                            ),
-                            Expanded(
-                              flex: 1,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  Text(" ",style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12)),
-                                  Text("2.00 USD", style: TextStyle(
-                                  fontSize: 12)),
-
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 8,),
-                        Row(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: SizedBox(
-                                width: 32,
-                                height: 32,
-                                child: Image.asset(
-                                  'assets/avax_logo.png',
-                                  fit: BoxFit.fitHeight,),
-                              ),
-                            ),
-                            Expanded(
-                              flex: 2,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text("AVAX",style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12)),
-                                  Consumer<AvmeWallet>
-                                    (builder: (context, appState, child) {
-                                    return Text("${shortAmount(appState.currentAccount.balance)} AVAX", style: TextStyle(
-                                        fontSize: 12)
-                                    );
-                                  }),
-                                ],
-                              ),
-                            ),
-                            Expanded(
-                              flex: 1,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  Text("1.85 USD", style: TextStyle(
-                                      fontSize: 12)),
-                                ],
-                              ),
-                            ),
-                          ],
-                        )
-                      ],
-                    ),
+                  Text("Account Address:",
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  SizedBox(
+                    height: 8,
                   ),
-                  Expanded(
-                    flex: 3,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        SizedBox(
-                          width: qrSize,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text("Account Selected #${appState.currentWalletId}"),
-                              SizedBox(height: 8),
-                              SizedBox(
-                                  width: qrSize,
-                                  height: qrSize,
-                                  child: QrDisplay(stringToRender: appState.currentAccount.address,)
-                              )
-                            ],
+                  Text(widget.appState.currentAccount.address),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2, bottom: 2),
+                    child: Divider(),
+                  ),
+                  Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: SizedBox(
+                          width: 32,
+                          height: 32,
+                          child: Image.asset(
+                            'assets/avme_logo.png',
+                            fit: BoxFit.fitHeight,
                           ),
                         ),
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("AVME TOKEN",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 12)),
+                            Selector<AvmeWallet, AccountObject>
+                            (
+                              selector: (context, model) => model.currentAccount,
+                              builder:(context, data, child)
+                              {
+                                widget.appState.watchBalanceUpdates();
+
+                                String avmeValue = "";
+                                if (widget.appState.currentAccount.rawTokenBalance ==
+                                    null) {
+                                  avmeValue = "0.00000";
+                                } else {
+                                  avmeValue = shortAmount(
+                                      widget.appState.currentAccount.tokenBalance);
+                                }
+                                return Text("$avmeValue AVME",
+                                    style: TextStyle(fontSize: 12));
+                              }
+                            )
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Text(" ",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 12)),
+                            Text("2.00 USD", style: TextStyle(fontSize: 12)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 8,
+                  ),
+                  Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: SizedBox(
+                          width: 32,
+                          height: 32,
+                          child: Image.asset(
+                            'assets/avax_logo.png',
+                            fit: BoxFit.fitHeight,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("AVAX",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 12)),
+                            Selector<AvmeWallet, AccountObject>
+                              (
+                                selector: (context, model) => model.currentAccount,
+                                builder:(context, data, child)
+                                {
+                                  widget.appState.watchBalanceUpdates();
+
+                                  String avmeValue = "";
+                                  if (widget.appState.currentAccount.waiBalance ==
+                                      null) {
+                                    avmeValue = "0.00000";
+                                  } else {
+                                    avmeValue = shortAmount(
+                                        widget.appState.currentAccount.balance);
+                                  }
+                                  return Text("$avmeValue AVAX",
+                                      style: TextStyle(fontSize: 12));
+                                }
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Text("1.85 USD", style: TextStyle(fontSize: 12)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            ),
+            Expanded(
+              flex: 3,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  SizedBox(
+                    width: qrSize,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                            "Account Selected #${widget.appState.currentWalletId}"),
+                        SizedBox(height: 8),
+                        SizedBox(
+                            width: qrSize,
+                            height: qrSize,
+                            child: QrDisplay(
+                              stringToRender:
+                                  widget.appState.currentAccount.address,
+                            ))
                       ],
                     ),
                   ),
                 ],
               ),
             ),
-          ),
-          SizedBox(height: 8,),
-          Row(
-            children: [
-              Expanded(
-                child: Card(
-                  elevation: 8.0,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: Column(
-                            children: [
-
-                              SizedBox(
-                                height:_btnDimensions[0],
-                                width: _btnDimensions[1],
-                                child: ElevatedButton(onPressed: (){
-                                  Navigator.push(context, MaterialPageRoute(builder: (builder) => Receive()));
-                                },
-                                  child: Icon(Icons.download_sharp),
-                                  style: _roundedButton.copyWith(backgroundColor: MaterialStateProperty.all<Color>(Colors.green),),
-                                ),
-                              ),
-                              SizedBox(height: 14,),
-                              Text("Send", style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16)
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-
-
-                    )
-                  )
-                ),
-              ),
-            ],
-          )
-        ],
-      )
-      ),
-    );
-  }
-/*
-
-  Widget build(BuildContext context)
-  {
-    appState = Provider.of<AvmeWallet>(context);
-    balanceServiceIsRunning(appState);
-    qrSize = MediaQuery.of(context).size.width / 3.6;
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Container(child:
-        Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Card(
-              elevation: 8.0,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      flex: 6,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                        Text("Account Address:", style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16)
-                        ),
-                        SizedBox(height: 8,),
-                        Text(appState.currentAccount.address),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 5, bottom: 5),
-                          child: Divider(),
-                        ),
-                        Row(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: SizedBox(
-                                width: 32,
-                                height: 32,
-                                child: Image.asset(
-                                  'assets/avme_logo.png',
-                                  fit: BoxFit.fitHeight,),
-                              ),
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("AVME TOKEN",style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12)),
-                                Column(
-                                  children: [
-                                    Container(
-                                      color:Colors.red,
-                                      child: Row(
-                                        children: [
-                                          Text("0.000000 AVME", style: TextStyle(
-                                              fontSize: 12)
-                                          ),
-                                          Text("2.00 USD", style: TextStyle(
-                                              fontSize: 12)
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                )
-                              ],
-                            ),
-                          ],
-                        )
-                        ],
-                      ),
-                    ),
-                    Expanded(
-                      flex: 3,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          SizedBox(
-                            width: qrSize,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text("Account Selected #1"),
-                                SizedBox(height: 8),
-                                SizedBox(
-                                  width: qrSize,
-                                  height: qrSize,
-                                  child: QrDisplay(stringToRender: appState.currentAccount.address,)
-                                )
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        )
-      ),
-    );
-  }
-*/
-
-  @override
-  Widget build2(BuildContext context) {
-    appState = Provider.of<AvmeWallet>(context);
-
-    balanceServiceIsRunning(appState);
-
-    return
-      Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            GestureDetector(
-              onTap:()
-              {
-                _copyToClipboard(context);
-              },
-              child: Container(
-                // color: Colors.blueGrey,
-                child: Row(
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Wrap(
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          children: [
-                            Icon(Icons.vpn_key, size: 16,),
-                            Text(' Account ' + appState.currentWalletId.toString(), style: _tsTab,),
-                          ],
-                        ),
-                        SizedBox(height: 4,),
-                        Wrap(
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          children: [
-                            Text(copyPrivateKey(), style: TextStyle(
-                                color: Color.fromRGBO(255,255, 255, 0.75)
-                            ),),
-                            Text(" "),
-                            Icon(Icons.copy, size: 18,),
-                          ],
-                        ),
-                        SizedBox(height: 4,),
-                        Text("This data is just a placeholder", style: TextStyle(
-                            color: Color.fromRGBO(5, 255, 10, 1)
-                        ),),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Container(
-              // color: Color.fromRGBO(255, 255, 255, 0.095),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical:14.0),
-                  child: Column(
-                    children:
-                    [
-                      Selector<AvmeWallet, Map>(
-                        selector: (context, model) => model.accountList,
-                        builder: (context, accounts, child
-                      ){
-                          // We register our model to keep track of the balance
-                          appState.watchBalanceUpdates(appState.currentWalletId);
-                          BigInt tokenBalance = accounts[appState.currentWalletId].rawTokenBalance;
-                          String strBalance = "";
-                          if(tokenBalance != null)
-                          {
-                            if(tokenBalance.toDouble() == 0) strBalance = "0.0000";
-                            else strBalance = appState.currentAccount.tokenBalance.substring(0,7);
-                            strBalance += " AVME";
-                          }
-                          else strBalance = "Loading balance";
-                          return Text(strBalance, style: _tsTab.copyWith(fontSize: 22));
-                        }
-                      ),
-                      SizedBox(height: 2,),
-                      Text(_usdBalance.toString()+" USD", style: _tsTab.copyWith(fontSize: 14, color: Color.fromRGBO(255, 255, 255, 0.5)),),
-                      SizedBox(height: 2,),
-                      Selector<AvmeWallet, Map>(
-                          selector: (context, model) => model.accountList,
-                          builder: (context, accounts, child
-                              ){
-                            // We register our model to keep track of the balance
-                            appState.watchBalanceUpdates(appState.currentWalletId);
-                            BigInt weiBalance = accounts[appState.currentWalletId].waiBalance;
-                            String strBalance = "";
-                            if(weiBalance != null)
-                            {
-                              if(weiBalance.toDouble() == 0) strBalance = "0.0000";
-                              else strBalance = appState.currentAccount.balance.substring(0,7);
-                              strBalance += " AVAX";
-                            }
-                            else strBalance = "Loading balance";
-                            return Text(strBalance, style: _tsTab.copyWith(fontSize: 22));
-                          }
-                      ),
-                      SizedBox(height: 2,),
-                      Text(_usdBalance.toString()+" USD", style: _tsTab.copyWith(fontSize: 14, color: Color.fromRGBO(255, 255, 255, 0.5)),)
-                    ]
-                  ),
-                )
-            ),
-            Container(
-              // color: Colors.pinkAccent,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal:20.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                        children: [
-                          SizedBox(
-                            height:_btnDimensions[0],
-                            width: _btnDimensions[1],
-                            child: ElevatedButton(onPressed: (){
-                              Navigator.push(context, MaterialPageRoute(builder: (context) => Send()));
-                            },
-                              child: Icon(Icons.upload_sharp),
-                              style: _roundedButton.copyWith(backgroundColor: MaterialStateProperty.all<Color>(Colors.redAccent),),
-                            ),
-                          ),
-                          Text(" "),
-                          Text("SEND")
-                        ]
-                    ),
-                    Column(
-                        children: [
-                          SizedBox(
-                            height:_btnDimensions[0],
-                            width: _btnDimensions[1],
-                            child: ElevatedButton(onPressed: () async{
-                              String response = await Navigator.push(context, MaterialPageRoute(builder: (context) => QRScanner()));
-                              Navigator.push(context,MaterialPageRoute(builder: (context) => Send(sendersAddress: response,)));
-                              snack(response, context);
-                            },
-                              child: Icon(Icons.qr_code, size: 20,),
-                              style: _roundedButton.copyWith(backgroundColor: MaterialStateProperty.all<Color>(Color(
-                                  0xFF4B4B4B)),),
-                            ),
-                          ),
-                          Text(" "),
-                          Text("SCAN")
-                        ]
-                    ),
-                    Column(
-                        children: [
-                          SizedBox(
-                            height:_btnDimensions[0],
-                            width: _btnDimensions[1],
-                            child: ElevatedButton(onPressed: (){
-                              Navigator.push(context, MaterialPageRoute(builder: (builder) => Receive()));
-                            },
-                            child: Icon(Icons.download_sharp),
-                            style: _roundedButton.copyWith(backgroundColor: MaterialStateProperty.all<Color>(Colors.green),),
-                            ),
-                          ),
-                          Text(" "),
-                          Text("RECEIVE")
-                        ]
-                    )
-                  ],
-                ),
-              ),
-            ),
-            Container(
-              // color: Color.fromRGBO(255, 255, 255, 0.095),
-                child: SizedBox(
-                  height: 70,
-                  width: MediaQuery.of(context).size.width,
-                )
-            ),
           ],
         ),
-      );
-  }
-  String copyPrivateKey()
-  {
-    String _hex = appState.currentAccount.address;
-    return _hex.substring(0,12)+"..."+_hex.substring(_hex.length - 12);
-  }
-
-  Future<void> _copyToClipboard(BuildContext context) async {
-    await Clipboard.setData(ClipboardData(text: appState.currentAccount.address));
-    snack("Address copied to clipboard",context);
-  }
-
-  void balanceServiceIsRunning(AvmeWallet appState) {
-    if(!appState.services.containsKey("watchBalanceChanges"))
-    {
-      appState.walletManager.getBalance(appState);
-    }
+      ),
+    );
   }
 }

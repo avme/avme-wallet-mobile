@@ -101,7 +101,14 @@ class AvmeWallet extends ChangeNotifier
     this.lastTransactionWasSucessful = new TransactionInformation();
   }
 
-  void watchBalanceUpdates(int pos)
+  void watchBalanceUpdates()
+  {
+    currentAccount.addListener(() {
+      notifyListeners();
+    });
+  }
+
+  void watchAccountBalanceUpdates(int pos)
   {
     accountList[pos].addListener(() {
       notifyListeners();
