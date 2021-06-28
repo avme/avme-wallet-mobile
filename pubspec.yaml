@@ -48,6 +48,7 @@ dependencies:
   tuple: ^2.0.0
   fl_chart: ^0.36.2
   syncfusion_flutter_charts: ^19.1.69+1
+  decimal: ^1.2.0
 
 dev_dependencies:
   build_runner: ^2.0.0

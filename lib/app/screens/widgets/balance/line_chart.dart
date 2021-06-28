@@ -113,7 +113,7 @@ class _LineChartSample2State extends State<LineChartSample2> {
             }
             return '';
           },
-          reservedSize: 50,
+          reservedSize: 22,
           margin: 12,
         ),
       ),

@@ -1,6 +1,8 @@
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/account_item.dart';
 import 'package:avme_wallet/app/model/app.dart';
+import 'package:avme_wallet/app/model/metacoin.dart';
+import 'package:avme_wallet/app/model/token.dart';
 import 'package:avme_wallet/app/screens/widgets/qr_display.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -98,7 +100,14 @@ class _StatusCardState extends State<StatusCard> {
                             Text(" ",
                                 style: TextStyle(
                                     fontWeight: FontWeight.bold, fontSize: 12)),
-                            Text("2.00 USD", style: TextStyle(fontSize: 12)),
+                            Selector<AvmeWallet, Token>(
+                              selector: (context, token) => token.token,
+                              builder: (context, token, child) {
+                                widget.appState.watchTokenValueChanges();
+                                String _text;
+                                _text = token.value != null ? shortAmount(token.value,length: 4, comma: true) : "0,00";
+                                return Text("$_text USD",style: TextStyle(fontSize: 12));
+                              },),
                           ],
                         ),
                       ),
@@ -155,7 +164,18 @@ class _StatusCardState extends State<StatusCard> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            Text("1.85 USD", style: TextStyle(fontSize: 12)),
+                            Text(" ",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 12)),
+                            Selector<AvmeWallet, MetaCoin>(
+                                selector: (context, model) => model.metaCoin,
+                                builder:(context, metaCoin, child) {
+                                  String _text;
+                                  _text = metaCoin.value != null ? shortAmount(metaCoin.value, length: 3, comma: true) : "0,00";
+                                  return Text("$_text USD", style: TextStyle(fontSize: 12),);
+                              }
+                            )
+                            // Text("1.85 USD", style: TextStyle(fontSize: 12)),
                           ],
                         ),
                       ),

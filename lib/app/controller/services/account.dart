@@ -11,7 +11,6 @@ ServiceData genericThreadData;
 
 Future<bool> loadWalletAccounts(Map<int, String> accountPathList, String password, AvmeWallet appState, AppLoadingState loadState) async
 {
-  // List<String> accountPathList = await walletManager.getAccounts(first:false);
   ReceivePort receivePort = ReceivePort();
 
   int progress = 0;
@@ -26,7 +25,6 @@ Future<bool> loadWalletAccounts(Map<int, String> accountPathList, String passwor
   // Listens the threads...
 
   receivePort.listen((response){
-    // print("Data returned:"+response.toString());
     appState.addToAccountList(response[0],response[1]);
     progress++;
     print(progress);

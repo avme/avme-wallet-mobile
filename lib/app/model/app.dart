@@ -2,6 +2,8 @@ import 'dart:isolate';
 
 import 'package:avme_wallet/app/controller/file_manager.dart';
 import 'package:avme_wallet/app/controller/wallet_manager.dart';
+import 'package:avme_wallet/app/model/metacoin.dart';
+import 'package:avme_wallet/app/model/token.dart';
 import 'package:avme_wallet/app/model/transaction_information.dart';
 import 'package:flutter/foundation.dart';
 import 'package:web3dart/credentials.dart';
@@ -83,6 +85,9 @@ class AvmeWallet extends ChangeNotifier
 
   TransactionInformation lastTransactionWasSucessful = new TransactionInformation();
 
+  Token token = Token();
+  MetaCoin metaCoin = MetaCoin();
+
   //Implement some init functions here
   void init()
   {
@@ -104,6 +109,20 @@ class AvmeWallet extends ChangeNotifier
   void watchBalanceUpdates()
   {
     currentAccount.addListener(() {
+      notifyListeners();
+    });
+  }
+
+  void watchMetaCoinValueChanges()
+  {
+    metaCoin.addListener(() {
+      notifyListeners();
+    });
+  }
+
+  void watchTokenValueChanges()
+  {
+    token.addListener(() {
       notifyListeners();
     });
   }
