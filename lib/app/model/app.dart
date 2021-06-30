@@ -2,10 +2,13 @@ import 'dart:isolate';
 
 import 'package:avme_wallet/app/controller/file_manager.dart';
 import 'package:avme_wallet/app/controller/wallet_manager.dart';
+import 'package:avme_wallet/app/model/boxes.dart';
 import 'package:avme_wallet/app/model/metacoin.dart';
 import 'package:avme_wallet/app/model/token.dart';
+import 'package:avme_wallet/app/model/token_chart.dart';
 import 'package:avme_wallet/app/model/transaction_information.dart';
 import 'package:flutter/foundation.dart';
+import 'package:hive/hive.dart';
 import 'package:web3dart/credentials.dart';
 
 import 'account_item.dart';
@@ -88,10 +91,15 @@ class AvmeWallet extends ChangeNotifier
   Token token = Token();
   MetaCoin metaCoin = MetaCoin();
 
+  Box<TokenChart> dashboardBox = Boxes.getHistory();
+
+  TokenChart dashboard = TokenChart();
+
   //Implement some init functions here
   void init()
   {
     _walletManager.setFileManager(fileManager);
+    dashboard = dashboardBox.values.elementAt(0);
   }
 
   void wasLastTransactionInformationSuccessful()

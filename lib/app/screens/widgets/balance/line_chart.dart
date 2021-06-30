@@ -1,14 +1,18 @@
+import 'package:avme_wallet/app/model/app.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../theme.dart';
 
-class LineChartSample2 extends StatefulWidget {
+class TokenChart extends StatefulWidget {
+  TokenChart(this.appState);
+  final AvmeWallet appState;
   @override
-  _LineChartSample2State createState() => _LineChartSample2State();
+  _TokenChartState createState() => _TokenChartState();
 }
 
-class _LineChartSample2State extends State<LineChartSample2> {
+class _TokenChartState extends State<TokenChart> {
   List<Color> gradientColors = [
     const Color(0xff23b6e6),
     const Color(0xff02d39a),
@@ -82,17 +86,7 @@ class _LineChartSample2State extends State<LineChartSample2> {
           reservedSize: 22,
           getTextStyles: (value) =>
           const TextStyle(color: Color(0xffffffff), fontWeight: FontWeight.bold, fontSize: 16),
-          getTitles: (value) {
-            switch (value.toInt()) {
-              case 2:
-                return 'MAR';
-              case 5:
-                return 'JUN';
-              case 8:
-                return 'SEP';
-            }
-            return '';
-          },
+          getTitles: (value) => getDays(value),
           margin: 8,
         ),
         leftTitles: SideTitles(
@@ -102,31 +96,21 @@ class _LineChartSample2State extends State<LineChartSample2> {
             fontWeight: FontWeight.bold,
             fontSize: 15,
           ),
-          getTitles: (value) {
-            switch (value.toInt()) {
-              case 1:
-                return '0.5';
-              case 3:
-                return '1';
-              case 5:
-                return '2';
-            }
-            return '';
-          },
-          reservedSize: 22,
-          margin: 12,
+          getTitles: (value) =>  getHeight(value),
+          reservedSize: 28,
+          margin: 8,
         ),
       ),
       borderData:
       FlBorderData(show: true, border: Border.all(color: const Color(0xff37434d), width: 1)),
       minX: 0,
-      maxX: 11,
+      maxX: 15,
       minY: 0,
       maxY: 6,
       lineBarsData: [
         LineChartBarData(
           spots: [
-            FlSpot(0, 3),
+            FlSpot(0, 1),
             FlSpot(2.6, 2),
             FlSpot(4.9, 5),
             FlSpot(6.8, 3.1),
@@ -150,104 +134,42 @@ class _LineChartSample2State extends State<LineChartSample2> {
     );
   }
 
-  LineChartData avgData() {
-    return LineChartData(
-      lineTouchData: LineTouchData(enabled: false),
-      gridData: FlGridData(
-        show: true,
-        drawHorizontalLine: true,
-        getDrawingVerticalLine: (value) {
-          return FlLine(
-            color: const Color(0xff37434d),
-            strokeWidth: 1,
-          );
-        },
-        getDrawingHorizontalLine: (value) {
-          return FlLine(
-            color: const Color(0xff37434d),
-            strokeWidth: 1,
-          );
-        },
-      ),
-      titlesData: FlTitlesData(
-        show: true,
-        bottomTitles: SideTitles(
-          showTitles: true,
-          reservedSize: 22,
-          getTextStyles: (value) =>
-          const TextStyle(color: Color(0xff68737d), fontWeight: FontWeight.bold, fontSize: 16),
-          getTitles: (value) {
-            switch (value.toInt()) {
-              case 2:
-                return 'MAR';
-              case 5:
-                return 'JUN';
-              case 8:
-                return 'SEP';
-            }
-            return '';
-          },
-          margin: 8,
-        ),
-        leftTitles: SideTitles(
-          showTitles: true,
-          getTextStyles: (value) => const TextStyle(
-            color: Color(0xff67727d),
-            fontWeight: FontWeight.bold,
-            fontSize: 15,
-          ),
-          getTitles: (value) {
-            switch (value.toInt()) {
-              case 1:
-                return '10k';
-              case 3:
-                return '30k';
-              case 5:
-                return '50k';
-            }
-            return '';
-          },
-          reservedSize: 28,
-          margin: 12,
-        ),
-      ),
-      borderData:
-      FlBorderData(show: true, border: Border.all(color: const Color(0xff37434d), width: 1)),
-      minX: 0,
-      maxX: 11,
-      minY: 0,
-      maxY: 6,
-      lineBarsData: [
-        LineChartBarData(
-          spots: [
-            FlSpot(0, 3.44),
-            FlSpot(2.6, 3.44),
-            FlSpot(4.9, 3.44),
-            FlSpot(6.8, 3.44),
-            FlSpot(8, 3.44),
-            FlSpot(9.5, 3.44),
-            FlSpot(11, 3.44),
-          ],
-          isCurved: true,
-          colors: [
-            ColorTween(begin: gradientColors[0], end: gradientColors[1]).lerp(0.2),
-            ColorTween(begin: gradientColors[0], end: gradientColors[1]).lerp(0.2),
-          ],
-          barWidth: 5,
-          isStrokeCapRound: true,
-          dotData: FlDotData(
-            show: false,
-          ),
-          belowBarData: BarAreaData(show: true, colors: [
-            ColorTween(begin: gradientColors[0], end: gradientColors[1])
-                .lerp(0.2)
-                .withOpacity(0.1),
-            ColorTween(begin: gradientColors[0], end: gradientColors[1])
-                .lerp(0.2)
-                .withOpacity(0.1),
-          ]),
-        ),
-      ],
-    );
+  String getHeight(double value)
+  {
+    double highest = widget.appState.dashboard.getHighestValue()[1] * 1.15;
+
+    switch (value.toInt()) {
+      case 1:
+        return (highest/3).toStringAsPrecision(2);
+      case 3:
+        return (highest/2).toStringAsPrecision(2);
+      case 5:
+        return highest.toStringAsPrecision(2);
+    }
+    return '';
   }
+
+  String getDays(double value)
+  {
+    int lastday =  widget.appState.dashboard.getHighestDay()[0];
+    int secondsday10 = 864000;
+    DateTime dateTimeYesterday  = DateTime.fromMillisecondsSinceEpoch(lastday * 1000);
+    // DateTime dateTime10  = DateTime.fromMillisecondsSinceEpoch((lastday - secondsday10) * 1000);
+    DateTime dateTime20 = DateTime.fromMillisecondsSinceEpoch((lastday - secondsday10 * 2 ) * 1000);
+    DateTime dateTime30 = DateTime.fromMillisecondsSinceEpoch((lastday - secondsday10 * 3) * 1000);
+
+    switch (value.toInt()) {
+      case 0:
+        return DateFormat('MM/dd').format(dateTime30).toString();
+      case 7:
+        return DateFormat('MM/dd').format(dateTime20).toString();
+      case 14:
+        return DateFormat('MM/dd').format(dateTimeYesterday).toString();
+    }
+    return '';
+  }
+  /*
+    DateTime date = DateTime.fromMicrosecondsSinceEpoch(card["unixDate"],isUtc: false);
+    DateFormat dateFormat = DateFormat('MM-dd-yyyy hh:mm:ss');
+   */
 }

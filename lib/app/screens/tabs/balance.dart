@@ -22,6 +22,7 @@ class _BalanceState extends State<Balance> {
     appState = Provider.of<AvmeWallet>(context);
     balanceServiceIsRunning(appState);
     updateCoinValuesIsRunning(appState);
+    updateChart(appState);
     return Scrollbar(
       child: ListView(
         children:
@@ -33,7 +34,7 @@ class _BalanceState extends State<Balance> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   ///AVME value chart
-                  LineChartSample2(),
+                  TokenChart(appState),
                   SizedBox(
                     height: 8,
                   ),
@@ -71,6 +72,11 @@ class _BalanceState extends State<Balance> {
   void updateCoinValuesIsRunning(AvmeWallet appState) {
     if (!appState.services.containsKey("updateCoinValues")) {
       updateCoinValues(appState);
+    }
+  }
+  void updateChart(AvmeWallet appState) {
+    if (!appState.services.containsKey("tokenPriceHistory")) {
+      getTokenPriceHistory(appState);
     }
   }
 }

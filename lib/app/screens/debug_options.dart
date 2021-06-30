@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:avme_wallet/app/model/app.dart';
-import 'package:avme_wallet/external/contracts/avme.g.dart';
+import 'package:avme_wallet/external/contracts/avme_contract.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart';
 import 'package:provider/provider.dart';
