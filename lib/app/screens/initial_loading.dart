@@ -1,3 +1,4 @@
+import 'package:avme_wallet/app/controller/services/balance.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:flutter/material.dart';
@@ -30,7 +31,7 @@ class _InitialLoadingState extends State<InitialLoading>{
 
   @override
   Widget build(BuildContext context) {
-    getData(context);
+    startWalletServices(context);
     return Scaffold(
       body: Container(
         // color: theme.defaultTheme().scaffoldBackgroundColor,
@@ -44,13 +45,15 @@ class _InitialLoadingState extends State<InitialLoading>{
     );
   }
 
-  void getData(BuildContext context) async
+  void startWalletServices(BuildContext context) async
   {
-    //Initialize the appLoadingState
     AvmeWallet wallet = Provider.of<AvmeWallet>(context);
     wallet.init();
-    print("Wallet init was called...");
-    //REMOVE THE GLOBALS REFERENCE AND USE THE AppState / AvmeWallet Model please
+    if (!wallet.services.containsKey("tokenPriceHistory"))
+      getTokenPriceHistory(wallet);
+
+    if (!wallet.services.containsKey("updateCoinValues"))
+      updateCoinValues(wallet);
 
     await wallet.fileManager.getDocumentsFolder();
 
@@ -62,13 +65,10 @@ class _InitialLoadingState extends State<InitialLoading>{
     bool hasWallet = await wallet.walletManager.hasPreviousWallet();
 
     if(hasWallet == false)
-    {
       welcomeDialog();
-    }
+
     else
-    {
       Navigator.pushReplacementNamed(context, "/login");
-    }
     snack("Wallet already created previously? \"$hasWallet\"", context);
   }
 

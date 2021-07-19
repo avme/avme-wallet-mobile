@@ -99,7 +99,14 @@ class AvmeWallet extends ChangeNotifier
   void init()
   {
     _walletManager.setFileManager(fileManager);
-    dashboard = dashboardBox.values.elementAt(0);
+  }
+
+  void displayTokenChart()
+  {
+    if(dashboardBox.length > 0)
+    {
+      dashboard = dashboardBox.values.elementAt(0);
+    }
   }
 
   void wasLastTransactionInformationSuccessful()
@@ -113,6 +120,29 @@ class AvmeWallet extends ChangeNotifier
   {
     this.lastTransactionWasSucessful = new TransactionInformation();
   }
+
+  void addToAccountList(int pos,AccountObject account)
+  {
+    accountList[pos] = account;
+    //First we get an ordered list of keys, and rebuild in loop the entire list...
+    List keys = accountList.keys.toList()..sort();
+    Map<int,AccountObject> localAccountList = {};
+    keys.forEach((key) => localAccountList[key] = accountList[key]);
+    setAccountList = localAccountList;
+  }
+
+  void killService(String key)
+  {
+    if(services.containsKey(key))
+    {
+      print("killService($key)");
+      services[key].kill(priority: Isolate.immediate);
+
+      services.remove(key);
+    }
+  }
+
+  ///Listeners
 
   void watchBalanceUpdates()
   {
@@ -140,27 +170,5 @@ class AvmeWallet extends ChangeNotifier
     accountList[pos].addListener(() {
       notifyListeners();
     });
-  }
-
-  void addToAccountList(int pos,AccountObject account)
-  {
-    accountList[pos] = account;
-    //First we get an ordered list of keys, and rebuild in loop the entire list...
-    List keys = accountList.keys.toList()..sort();
-    Map<int,AccountObject> localAccountList = {};
-    keys.forEach((key) => localAccountList[key] = accountList[key]);
-    setAccountList = localAccountList;
-  }
-
-  void killService(String key)
-  {
-    if(services.containsKey(key))
-    {
-      print("killService($key)");
-      services[key].kill(priority: Isolate.immediate);
-
-      services.remove(key);
-    }
-
   }
 }
