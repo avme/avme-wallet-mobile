@@ -62,7 +62,7 @@ class _InitialLoadingState extends State<InitialLoading>{
       wallet.walletManager.deletePreviousWallet();
     }
 
-    bool hasWallet = await wallet.walletManager.hasPreviousWallet();
+    bool hasWallet = await wallet.walletManager.walletAlreadyExists();
 
     if(hasWallet == false)
       welcomeDialog();

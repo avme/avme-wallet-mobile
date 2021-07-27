@@ -1,5 +1,4 @@
 import 'package:avme_wallet/app/model/app.dart';
-import 'package:avme_wallet/app/packages/services.dart';
 import 'package:avme_wallet/app/screens/widgets/balance/line_chart.dart';
 import 'package:avme_wallet/app/screens/widgets/balance/quick_access_card.dart';
 import 'package:avme_wallet/app/screens/widgets/balance/status_card.dart';

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 import 'package:avme_wallet/app/model/account_item.dart';
@@ -27,30 +28,32 @@ class WalletManager
   void setFileManager(FileManager newfileManager) =>
       this._fileManager = newfileManager;
 
-  Future<File> writeWalletJson(String json, {String position}) async
+  Future<File> writeWalletJson(String json) async
   {
-    final file = await this._fileManager.accountFile(position: position);
+    final File file = await this._fileManager.accountFile();
+    // print("$json");
     return file.writeAsString("$json");
   }
 
   Future<String> readWalletJson({position}) async
   {
-    String contents;
+    String content;
     try
     {
-      final file = await this._fileManager.accountFile(position: position);
-      contents = await file.readAsString();
+      final file = await this._fileManager.accountFile();
+      List contents = jsonDecode(await file.readAsString());
+      content = jsonEncode(contents[0]["data"]);
     }
     catch(e)
     {
       print(e.toString());
     }
-    return contents;
+    return content;
   }
 
-  Future<bool> hasPreviousWallet() async
+  Future<bool> walletAlreadyExists() async
   {
-    File file = await this._fileManager.accountFile(position: "1");
+    File file = await this._fileManager.accountFile();
     bool e = await file.exists();
     print("File existis? ${e.toString()}");
     return file.exists();
@@ -59,13 +62,10 @@ class WalletManager
   // ONLY FOR TESTING PURPOSES
   void deletePreviousWallet() async
   {
-    bool hasFile = await hasPreviousWallet();
+    bool hasFile = await walletAlreadyExists();
     if(hasFile){
-      Map<int,String> accounts = await getAccounts();
-      accounts.forEach((key, value) async{
-        File file = await this._fileManager.accountFile(position: key.toString());
-        file.delete();
-      });
+      File file = await this._fileManager.accountFile();
+      file.delete();
 
       File mnemonic = new File(this._fileManager.documentsFolder + this._fileManager.accountFolder + mnemonicFile);
       print("MEME MONIC: "+mnemonic.path);
@@ -112,30 +112,37 @@ class WalletManager
     return mnemonic;
   }
 
-  Future<List<String>> makeAccount(String password, AvmeWallet wallet, AppLoadingState state) async
+  Future<List<String>> makeAccount(String password, AvmeWallet wallet, AppLoadingState state, {bool first = true, String title}) async
   {
     List<String> ret = [];
     String mnemonic = await newMnemonic(password);
     BIP32 node = bip32.BIP32.fromSeed(bip39.mnemonicToSeed(mnemonic));
     Random _rng = new Random.secure();
+    JsonEncoder encoder = JsonEncoder.withIndent('  ');
 
-    for(int index = 0; index <= 9; index++)
-    {
-      var child = node.derivePath("m/44'/60'/0'/0/$index");
-      String privateKey = HEX.encode(child.privateKey);
+    int slot = (await getAccounts()).keys.length;
 
-      Credentials credentFromHex = EthPrivateKey.fromHex(privateKey);
-      Wallet _wallet = Wallet.createNew(credentFromHex,password, _rng);
-      String json = _wallet.toJson();
-      File savedPath = await writeWalletJson(json,position: index.toString());
-      if(index == 0)
-      {
-        wallet.w3dartWallet = _wallet;
-      }
-      ret.add(savedPath.path);
+    BIP32 child = node.derivePath("m/44'/60'/0'/0/$slot");
+    String privateKey = HEX.encode(child.privateKey);
 
-    }
+    Credentials credentFromHex = EthPrivateKey.fromHex(privateKey);
+    Wallet _wallet = Wallet.createNew(credentFromHex,password, _rng);
+    // Map walletObject = jsonDecode(_wallet.toJson());
+    // int slot = ((await getAccounts()).keys.length - 1);
 
+
+    List walletObject = [{
+      "slot" : slot,
+      "title" : (first ? "Account #0" : title),
+      "derived" : slot,
+      "token" : "",
+      "data" : jsonDecode(_wallet.toJson())
+    }];
+
+    String json = encoder.convert(walletObject);
+    File savedPath = await writeWalletJson(json);
+    wallet.w3dartWallet = _wallet;
+    ret.add(savedPath.path);
     await authenticate(password, wallet, state);
 
     return ret;
@@ -207,6 +214,7 @@ class WalletManager
     Map<int, String> accounts = await wallet.walletManager.getAccounts();
     int lastAccount = 0;
     Map<int, String> defaultAccount = {lastAccount:accounts[lastAccount]};
+    print(defaultAccount);
     accounts.remove(lastAccount);
 
     await services.loadWalletAccounts(defaultAccount,password, wallet, state);

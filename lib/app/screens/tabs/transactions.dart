@@ -1,7 +1,7 @@
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/model/transaction_information.dart';
-import 'package:avme_wallet/app/screens/widgets/display_card.dart';
+import '../widgets/transactions/display_card.dart';
 import 'package:avme_wallet/app/screens/widgets/shimmer.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';

@@ -1,4 +1,5 @@
 import 'package:avme_wallet/app/model/app.dart';
+import 'package:avme_wallet/app/screens/tabs/accounts_old.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:avme_wallet/app/screens/debug_options.dart';
@@ -18,6 +19,7 @@ class _TabsWalletState extends State<TabsWallet>{
   BuildContext _this;
   // List of Tabs
   final Map<String,Widget> _tabs = {
+    "ACCOUNTS OLD" : AccountsOld(),
     "ACCOUNTS" : Accounts(),
     "BALANCE" : Balance(),
     "TRANSACTIONS" : Transactions(),
@@ -52,7 +54,7 @@ class _TabsWalletState extends State<TabsWallet>{
     _this = context;
     AvmeWallet appState = Provider.of<AvmeWallet>(context);
     return DefaultTabController(
-      initialIndex: 1,
+      initialIndex: 2,
       length: _tabs.length,
       child: Scaffold(
         // Testing transparency

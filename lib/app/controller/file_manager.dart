@@ -9,7 +9,7 @@ class FileManager
   String ext = ".json";
   String accountFolder = "Accounts/";
   String transactions = "Transactions/";
-  String filename = "account-";
+  String filename = "accounts";
 
   Future<String> getDocumentsFolder() async
   {
@@ -26,22 +26,30 @@ class FileManager
   }
 
   // SETTING THE FILE PATH TO THE ACCOUNT
-  Future<File> accountFile ({String position}) async
+  // Future<File> accountFile ({String position}) async
+  // {
+  //   String fullPath;
+  //
+  //   final bool exists = await checkPath(filesFolder());
+  //   if(exists)
+  //   {
+  //     if(position == null)
+  //     {
+  //       fullPath = filesFolder()+"$filename"+"0"+"$ext";
+  //     }
+  //     else
+  //     {
+  //       fullPath = filesFolder()+"$filename$position$ext";
+  //     }
+  //   }
+  //   return File(fullPath);
+  // }
+
+  Future<File> accountFile () async
   {
     String fullPath;
-
-    final bool exists = await checkPath(filesFolder());
-    if(exists)
-    {
-      if(position == null)
-      {
-        fullPath = filesFolder()+"$filename"+"0"+"$ext";
-      }
-      else
-      {
-        fullPath = filesFolder()+"$filename$position$ext";
-      }
-    }
+    await checkPath(filesFolder());
+    fullPath = filesFolder()+"$filename$ext";
     return File(fullPath);
   }
 

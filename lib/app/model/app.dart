@@ -94,8 +94,7 @@ class AvmeWallet extends ChangeNotifier
   Box<TokenChart> dashboardBox = Boxes.getHistory();
 
   TokenChart dashboard = TokenChart();
-
-  //Implement some init functions here
+  
   void init()
   {
     _walletManager.setFileManager(fileManager);

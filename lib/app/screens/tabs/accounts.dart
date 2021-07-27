@@ -1,161 +1,302 @@
 import 'package:avme_wallet/app/lib/utils.dart';
-import 'package:avme_wallet/app/model/app.dart';
+import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
-import 'package:avme_wallet/app/screens/widgets/custom_widgets.dart';
-import 'package:provider/provider.dart';
 
-// stores ExpansionPanel state information
-class AccountItemObjects {
-
-  AccountItemObjects({
-    this.expandedValue,
-    this.headerValue,
-    this.isExpanded = false,
-    this.balance = "0",
-  });
-
-  String expandedValue;
-  String headerValue;
-  bool isExpanded;
-  String balance;
-}
-
-List<AccountItemObjects> _accounts = [];
-
-class Accounts extends StatefulWidget{
+class Accounts extends StatefulWidget {
   @override
   _AccountsState createState() => _AccountsState();
 }
 
-class _AccountsState extends State<Accounts>
-{
-  AvmeWallet wallet;
-  AppLoadingState loadState;
-  BuildContext loadingDialog;
-
-  @override
-  void initState()
-  {
-    super.initState();
-  }
+class _AccountsState extends State<Accounts> {
+  int accounts = 2;
   @override
   Widget build(BuildContext context) {
+    // return Padding(
+    //   padding: const EdgeInsets.symmetric(vertical: 8.0),
+    //   child: ListView(
+    //       children:[
+    //         AccountCard(loading:true),
+    //         Center(child: ElevatedButton(
+    //           onPressed: () {
+    //             snack("new wallet pressed", context);
+    //           },
+    //           child: Icon(Icons.add),),)
+    //       ]
+    //   ),
+    // );
+    List<Widget> accounts = repeatWidgetList(AccountCard(loading: true,), this.accounts)
 
-    wallet = Provider.of<AvmeWallet>(context);
-    loadState = Provider.of<AppLoadingState>(context);
-
-    if(!loadState.accountsWasLoaded && loadingDialog == null)
-    {
-      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext context) {
-            loadingDialog = context;
-            return CircularLoading(text: "Loading accounts.");
-          },
-        );
-      });
-    }
-    return SingleChildScrollView(
-      child: Container(
-        child:
-        Selector<AppLoadingState, bool>
-          (
-          selector: (context, model) => model.accountsWasLoaded,
-          builder: (context, loaded, child)
-          {
-            if(loaded && _accounts.length < wallet.accountList.length)
-            {
-              wallet.accountList.forEach((key, element) {
-                _accounts.add(
-                    AccountItemObjects(
-                        expandedValue: wallet.accountList[key].address,
-                        isExpanded: false,
-                        headerValue: "Account #${key.toString()}"
-                    )
-                );
-              });
-              if(loadingDialog != null)
-              {
-                Navigator.pop(loadingDialog);
-              }
-            }
-            return Container(
-              child: _panelBuilder(),
-            );
-          }
+    ..add(
+      Padding(
+        padding: const EdgeInsets.only(top: 8.0, bottom: 16),
+        child: Center(child:
+          Container(
+            // color: Colors.red,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: avmeTheme.cardColor,
+              boxShadow: [
+                BoxShadow(
+                  spreadRadius: 0,
+                  offset: Offset(0,5),
+                  blurRadius: 10,
+                )
+              ]
+            ),
+            child: SizedBox(
+              width: 60,
+              height: 60,
+              child: TextButton(
+                style: TextButton.styleFrom(
+                  primary: Colors.white
+                ),
+                onPressed: () {
+                  setState(() {
+                    this.accounts++;
+                  });
+                },
+                child: Icon(Icons.add),
+              ),
+            ),
+          ),
         ),
       )
     );
-  }
 
-
-  // Our expansionPanel being built dynamically
-
-  List<ExpansionPanel> _expansionPanelBuilder()
-  {
-    List<ExpansionPanel> _lista = [];
-    _accounts.asMap().forEach((int index, AccountItemObjects account){
-      ExpansionPanel _e = new ExpansionPanel(
-          headerBuilder: (BuildContext context, bool isExpanded) {
-            return ListTile(
-              title: Text(account.headerValue),
-              onTap: () {
-                setState(() {
-                  closePanels();
-                  account.isExpanded = !isExpanded;
-                });
-              },
-              // trailing: Icon(Icons.security),
-            );
-          },
-          body: ListTile(
-            // title: textCenter(account.expandedValue),
-            title: Text(account.expandedValue, textAlign: TextAlign.center),
-            // subtitle: Text(),
-            leading: Icon(Icons.vpn_key),
-            minLeadingWidth: 10,
-            onTap: () {
-              // insert set state if necessary
-              snack("Account #$index selected",context);
-              wallet.changeCurrentWalletId = index;
-              wallet.killService("watchBalanceChanges");
-              wallet.killService("watchTokenChanges");
-              setState(() {
-                closePanels();
-              });
-            },
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Column(
+        children: [
+          // Container(
+          //   width: 200,
+          //   height: 200,
+          //   color: Colors.yellow,
+          //   child: CustomPaint(
+          //     painter: ListIndicator(),
+          //   ),
+          // ),
+          SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height / 2),
+              child: ListView(
+                  children: accounts
+              ),
+            ),
           ),
-          isExpanded: account.isExpanded
-      );
-      _lista.add(_e);
-    });
-    return _lista;
-  }
+        ],
+      ),
+          // ListView(
+          //     children:[
+          //       AccountCard(loading:true),
+          //       Center(child: ElevatedButton(
+          //         onPressed: () {
+          //           snack("new wallet pressed", context);
+          //         },
+          //         child: Icon(Icons.add),),)
+          //     ]
+          // ),
 
-  void closePanels()
-  {
-    _accounts.asMap().forEach((int index, AccountItemObjects account) {
-      _accounts[index].isExpanded = false;
-    });
-  }
-
-  Widget _panelBuilder()
-  {
-    ExpansionPanelList listing = new ExpansionPanelList(
-      expandedHeaderPadding: EdgeInsets.all(0),
-      elevation: 0,
-      expansionCallback: (int index, bool isExpanded) {
-        setState(() {
-          closePanels();
-          //Captures the click action and swap between expanded or not
-          _accounts[index].isExpanded = !isExpanded;
-        });
-      },
-      //Build the ExpansionPanel (item) for each element in our _accounts
-      children: _expansionPanelBuilder().toList(),
     );
-    return listing;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: FutureBuilder(
+        future: accountList(),
+        builder: (BuildContext context, snapshot){
+          if(snapshot.data == null)
+            return ListView.builder(
+              itemCount: 3,
+              itemBuilder: (BuildContext context, index)
+              {
+                return AccountCard(loading:true);
+              },
+            );
+          else return snapshot.data;
+        },
+      ),
+    );
   }
+
+  List<Widget> repeatWidgetList(Widget widget, int amount)
+  {
+    List<Widget> ret = [];
+    for(int i = 0; i < amount; i++) ret.add(widget);
+    return ret;
+  }
+
+  Future<Widget> accountList() async
+  {
+    await Future.delayed(Duration(seconds: 3));
+    return ListView(
+      children: [
+        Text("data"),
+        Text("data"),
+        Text("data"),
+        Text("data"),
+      ],
+    );
+  }
+}
+
+
+class AccountCard extends StatelessWidget {
+
+  /// Widget State
+  final bool loading;
+
+  /// Widget Style params
+  final double labelHeight = 16;
+  final double labelSpacing = 6.5;
+  final BorderRadius labelRadius = BorderRadius.circular(16);
+  final BorderRadius cardRadius = BorderRadius.all(Radius.circular(4.0));
+
+
+  AccountCard({this.loading});
+
+  @override
+  Widget build(BuildContext context) {
+    double textWidth = MediaQuery.of(context).size.width / 2.33;
+    if(this.loading)
+    {
+      return Card(
+        elevation: 8.0,
+        margin: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+        shape: RoundedRectangleBorder(
+          borderRadius: cardRadius,
+        ),
+        child: ClipRRect(
+          borderRadius: cardRadius,
+          child: Stack(
+            children: [
+              ///Container to indicate what is the selected account
+              Container(
+                height: 20,
+                width: 20,
+                child: CustomPaint(
+                  painter: ListIndicator(),
+                ),
+              ),
+              Container(
+                // decoration: BoxDecoration(color: Color.fromRGBO(64, 75, 96, .9)),
+                child: ListTile(
+                  contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                  title: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: labelHeight,
+                            height: labelHeight,
+                            decoration: BoxDecoration(
+                              color: Colors.black,
+                              borderRadius: labelRadius,
+                            ),
+                          ),
+                          SizedBox(width: 6,),
+                          Container(
+                            width: textWidth * 1.2,
+                            height: labelHeight,
+                            decoration: BoxDecoration(
+                              color: Colors.black,
+                              borderRadius: labelRadius,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: labelSpacing,)
+                    ],
+                  ),
+                  // subtitle: Text("Intermediate", style: TextStyle(color: Colors.white)),
+
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: textWidth,
+                            height: labelHeight,
+                            decoration: BoxDecoration(
+                              color: Colors.black,
+                              borderRadius: labelRadius,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: labelSpacing,),
+                      Row(
+                        children: [
+                          Container(
+                            width: textWidth / 1.5,
+                            height: labelHeight,
+                            decoration: BoxDecoration(
+                              color: Colors.black,
+                              borderRadius: labelRadius,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+            ],
+          ),
+        ),
+      );
+    }
+    return Text("Loading is set to false");
+  }
+}
+
+class ListIndicator extends CustomPainter {
+  bool selected;
+  final Color red = Color(0xFF890000);
+  final Color green = Color(0xFF458900);
+
+  ListIndicator({this.selected = false});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+
+    canvas.drawPath(
+        Path()
+          ..moveTo(0,0)
+          ..lineTo(0, size.height)
+          ..lineTo(size.width, 0)
+          ..close(),
+        Paint()
+          ..color = this.selected ? green : red
+          ..strokeWidth = 15
+          ..style = PaintingStyle.fill);
+
+    canvas.drawPath(
+        Path()
+          ..moveTo(0,0)
+          ..lineTo(0, size.height)
+          ..lineTo(size.width, 0)
+          ..close(),
+        Paint()
+          ..color = Color.fromRGBO(255, 255, 255, 0.3)
+          ..strokeWidth = 15
+          ..style = PaintingStyle.fill);
+
+    canvas.drawPath(
+        Path()
+          ..moveTo(0,0)
+          ..lineTo(0, size.height * 11 / 12)
+          ..lineTo(size.width * 11 / 12, 0)
+          ..close(),
+        Paint()
+          ..color = this.selected ? green : red
+          ..strokeWidth = 15
+          ..style = PaintingStyle.fill);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
+  }
+  
 }
