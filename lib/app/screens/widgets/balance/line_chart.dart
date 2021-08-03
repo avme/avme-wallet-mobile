@@ -3,6 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../custom_widgets.dart';
 import '../theme.dart';
 
 class TokenChart extends StatefulWidget {
@@ -37,9 +38,7 @@ class _TokenChartState extends State<TokenChart> {
              children: [
                Padding(
                  padding: const EdgeInsets.only(top: 12,),
-                 child: Text("Market Data:",
-                     style: TextStyle(
-                         fontWeight: FontWeight.bold, fontSize: 16)),
+                 child: LabelText("Market Data:"),
                ),
                Padding(
                  padding: const EdgeInsets.all(4.0),

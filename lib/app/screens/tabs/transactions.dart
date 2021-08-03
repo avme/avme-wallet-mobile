@@ -1,6 +1,7 @@
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/model/transaction_information.dart';
+import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import '../widgets/transactions/display_card.dart';
 import 'package:avme_wallet/app/screens/widgets/shimmer.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +21,7 @@ class _TransactionsState extends State<Transactions> {
     //Implement FutureBuilder in the list...
     appState = Provider.of<AvmeWallet>(context);
     return Shimmer(
-      linearGradient: shimmerGradient,
+      linearGradient: shimmerGradientDefault,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: Container(
@@ -44,9 +45,7 @@ class _TransactionsState extends State<Transactions> {
         ),
       ),
     );
-
   }
-
 
   Future<Widget> listTransactions() async
   {
@@ -62,13 +61,13 @@ class _TransactionsState extends State<Transactions> {
           elevation: 8.0,
           child:
           SizedBox(
-            width: MediaQuery.of(context).size.width / 1.5,
+            width: MediaQuery.of(context).size.width * 1 / 2,
             child:  Padding(
               padding: const EdgeInsets.all(16.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                Text("😕  ", style: TextStyle(
+                Text("😕 ", style: TextStyle(
                   fontSize: 22)),
                 Text("No transactions found."),
                 ],

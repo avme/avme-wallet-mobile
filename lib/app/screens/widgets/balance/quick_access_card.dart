@@ -1,4 +1,5 @@
 import 'package:avme_wallet/app/screens/widgets/balance/quick_action_button.dart';
+import 'package:avme_wallet/app/screens/widgets/custom_widgets.dart';
 import 'package:flutter/material.dart';
 
 import '../../qrcode_reader.dart';
@@ -19,9 +20,7 @@ class QuickAccessCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Actions:",
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 16)),
+                LabelText("Actions:"),
                 Divider(),
                 Padding(
                   // padding: const EdgeInsets.only(top: 14.0, bottom: 14.0),

@@ -1,21 +1,4 @@
-import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
-
-const shimmerGradient = LinearGradient(
-  colors: [
-    loading1,
-    loading2,
-    loading1,
-  ],
-  stops: [
-    0.1,
-    0.3,
-    0.4,
-  ],
-  begin: Alignment(-1.0, -0.3),
-  end: Alignment(1.0, 0.3),
-  tileMode: TileMode.clamp,
-);
 
 class ShimmerLoadingEffect extends StatefulWidget {
   final bool isLoading;

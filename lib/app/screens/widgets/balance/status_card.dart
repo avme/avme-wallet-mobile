@@ -3,6 +3,7 @@ import 'package:avme_wallet/app/model/account_item.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/model/metacoin.dart';
 import 'package:avme_wallet/app/model/token.dart';
+import 'package:avme_wallet/app/screens/widgets/custom_widgets.dart';
 import 'package:avme_wallet/app/screens/widgets/qr_display.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -38,9 +39,7 @@ class _StatusCardState extends State<StatusCard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Account Address:",
-                      style:
-                      TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  LabelText("Account Address:"),
                   SizedBox(
                     height: 8,
                   ),

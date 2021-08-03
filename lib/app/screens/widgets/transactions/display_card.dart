@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:avme_wallet/app/screens/widgets/shimmer.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import '../theme.dart';
+
 class DisplayCard extends StatefulWidget {
   DisplayCard({this.loading = false, this.data});
   final bool loading;
@@ -53,14 +55,14 @@ class _DisplayCardState extends State<DisplayCard> {
                 ShimmerLoadingEffect(
                   child: Container(
                     width: double.infinity,
-                    height: 24,
+                    height: labelHeight * 1.1,
                     decoration: BoxDecoration(
                       color: Colors.black,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: labelRadius,
                     ),
                   ),
                 ),
-                SizedBox(height: 4,)
+                SizedBox(height: labelSpacing,)
               ],
             ),
             // subtitle: Text("Intermediate", style: TextStyle(color: Colors.white)),
@@ -73,25 +75,25 @@ class _DisplayCardState extends State<DisplayCard> {
                     ShimmerLoadingEffect(
                       child: Container(
                         width: textWidth,
-                        height: 24,
+                        height: labelHeight,
                         decoration: BoxDecoration(
                           color: Colors.black,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: labelRadius,
                         ),
                       ),
                     ),
                   ],
                 ),
-                SizedBox(height: 4,),
+                SizedBox(height: labelSpacing,),
                 Row(
                   children: [
                     ShimmerLoadingEffect(
                       child: Container(
                         width: textWidth / 1.5,
-                        height: 24,
+                        height: labelHeight,
                         decoration: BoxDecoration(
                           color: Colors.black,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: labelRadius,
                         ),
                       ),
                     ),
@@ -136,7 +138,7 @@ class _DisplayCardState extends State<DisplayCard> {
 
                     style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                   ),
-                SizedBox(height: 4,)
+                SizedBox(height: labelSpacing,)
               ],
           ),
           subtitle: Column(
@@ -148,14 +150,14 @@ class _DisplayCardState extends State<DisplayCard> {
                   Text(" "+widget.data["formatedAmount"], style: TextStyle(color: Colors.white))
                 ],
               ),
-              SizedBox(height: 4,),
+              SizedBox(height: labelSpacing,),
               Row(
                 children: <Widget>[
                   FaIcon(FontAwesomeIcons.exchangeAlt, color: Colors.white, size: 18,),
                   Text(" "+widget.data["operation"], style: TextStyle(color: Colors.white))
                 ],
               ),
-              SizedBox(height: 4,),
+              SizedBox(height: labelSpacing,),
               Row(
                 children: <Widget>[
                   Icon(Icons.date_range, color: Colors.red, size: 18,),

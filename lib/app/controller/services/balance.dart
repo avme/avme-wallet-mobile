@@ -169,6 +169,7 @@ void updateCoinValues(AvmeWallet appState) async
 {
   ReceivePort isolatePort = ReceivePort();
 
+  // Nosso map é os parametros q vai pro isolate
   Map <String, dynamic> data =
   {
     "url" : env["MAINNET_URL"] + ":${env["MAINNET_PORT"]}" + env["MAINNET_VALUEPATH"],
@@ -180,6 +181,7 @@ void updateCoinValues(AvmeWallet appState) async
 
   appState.services["updateCoinValues"] = await Isolate.spawn(watchCoinValueChanges,isolateData);
   isolatePort.listen((data) {
+    //Atualiza o nosso model
     appState.metaCoin.value = data["avax"];
     appState.token.value = data["avme"];
   });

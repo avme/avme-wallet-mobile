@@ -145,3 +145,15 @@ class LoadingPopUpState extends State<LoadingPopUp> {
     );
   }
 }
+
+class LabelText extends StatelessWidget {
+  final String text;
+  LabelText(this.text);
+  @override
+  Widget build(BuildContext context) {
+    return Text(this.text,
+        style: TextStyle(
+            fontWeight: FontWeight.bold, fontSize: 16)
+    );
+  }
+}
