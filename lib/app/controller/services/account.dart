@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:isolate';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/model/account_item.dart';
@@ -9,25 +10,29 @@ import 'package:web3dart/web3dart.dart';
 List<Isolate> isolateList = [];
 ServiceData genericThreadData;
 
-Future<bool> loadWalletAccounts(Map<int, String> accountPathList, String password, AvmeWallet appState) async
+Future<bool> loadWalletAccounts(List accounts, String password, AvmeWallet appState) async
 {
   ReceivePort receivePort = ReceivePort();
 
   int progress = 0;
   bool inProgress = true;
-  accountPathList.forEach((index,pathEntity) async
+
+  accounts.asMap().forEach((index,accountData) async
   {
+    print(index);
+    print(accountData["data"]);
+    //TODO: move to receivePort
     appState.accountsState.total = (index + 1);
 
     genericThreadData = new ServiceData(
         {
           "index":index,
-          "walletPath":pathEntity,
+          "accountData": jsonEncode(accountData["data"]),
           "password":password,
           "walletManager":appState.walletManager
         }, receivePort.sendPort);
 
-    isolateList.add(await Isolate.spawn(createAccountList, genericThreadData));
+    isolateList.add(await Isolate.spawn(buildAccountObjectList, genericThreadData));
   });
 
   // Listens the threads...
@@ -37,10 +42,10 @@ Future<bool> loadWalletAccounts(Map<int, String> accountPathList, String passwor
     progress++;
     print(progress);
     appState.accountsState.progress = progress;
-    if(progress >= accountPathList.length)
+    if(progress >= accounts.length)
     {
       inProgress = false;
-      print(accountPathList.length);
+      print(accounts.length);
       // if(accountPathList.length != 1)
       // {
       appState.accountsState.loadedAccounts = true;
@@ -49,7 +54,10 @@ Future<bool> loadWalletAccounts(Map<int, String> accountPathList, String passwor
     }
   });
 
-  if(accountPathList.length == 1)
+  ///Remove this implementation, is lazy and inapropiate,
+  ///please use FutureBuilder at Widget/UI level
+
+  if(accounts.length == 1)
   {
     await waitWhile(() => inProgress);
   }
@@ -69,22 +77,19 @@ void stopLoadWalletAccountsThreads()
   }
 }
 
-void createAccountList(ServiceData param) async
+void buildAccountObjectList(ServiceData param) async
 {
+  print(param.data);
   ReceivePort response = new ReceivePort();
-  String content = await param.data["walletManager"]
-      .readWalletJson(position: param.data["index"].toString());
   //Wallet.fromJson can take up to 2 seconds per operation!
-  Wallet _wallet = Wallet.fromJson(content, param.data["password"]);
+  Wallet _wallet = Wallet.fromJson(param.data["accountData"], param.data["password"]);
   EthereumAddress _ethAddress = await _wallet.privateKey.extractAddress();
   //Return a AccountItem object to be added in the accountList
-  print("Thread Index:"+param.data["index"].toString());
   param.sendPort.send(
     [
       param.data["index"],
       AccountObject(
         account: _wallet,
-        accountPath: param.data["walletPath"],
         address: _ethAddress.hex
       )
     ]

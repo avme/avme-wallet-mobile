@@ -35,14 +35,14 @@ class WalletManager
     return file.writeAsString("$json");
   }
 
-  Future<String> readWalletJson({position}) async
+  Future<String> readWalletJson({position = -1}) async
   {
     String content;
     try
     {
       final file = await this._fileManager.accountFile();
       List contents = jsonDecode(await file.readAsString());
-      content = jsonEncode(contents[0]["data"]);
+      content = (position == -1 ? jsonEncode(contents) : jsonEncode(contents[position]["data"]));
     }
     catch(e)
     {
@@ -112,15 +112,33 @@ class WalletManager
     return mnemonic;
   }
 
-  Future<List<String>> makeAccount(String password, AvmeWallet appState, {bool first = true, String title}) async
+  Future<List<String>> makeAccount(String password, AvmeWallet appState, {String title = ""}) async
   {
     List<String> ret = [];
-    String mnemonic = await newMnemonic(password);
+    print("keys:");
+    print(appState.accountList.keys);
+    return ret;
+    String mnemonic;
+    if(appState.accountList.isEmpty)
+    {
+      mnemonic = await newMnemonic(password);
+    }
+    else
+    {
+      mnemonic = await decryptAesWallet(password, shouldReturnMnemonicFile: true);
+    }
+
+    print(mnemonic);
     BIP32 node = bip32.BIP32.fromSeed(bip39.mnemonicToSeed(mnemonic));
     Random _rng = new Random.secure();
     JsonEncoder encoder = JsonEncoder.withIndent('  ');
 
-    int slot = (await getAccounts()).keys.length;
+    int slot = (appState.accountList.keys.length);
+
+    if(slot > 9)
+    {
+      throw Exception("Limit of 9 accounts reached!");
+    }
 
     BIP32 child = node.derivePath("m/44'/60'/0'/0/$slot");
     String privateKey = HEX.encode(child.privateKey);
@@ -130,16 +148,29 @@ class WalletManager
     // Map walletObject = jsonDecode(_wallet.toJson());
     // int slot = ((await getAccounts()).keys.length - 1);
 
-
-    List walletObject = [{
+    Map accountObject = {
       "slot" : slot,
-      "title" : (first ? "Account #0" : title),
+      "title" : (appState.accountList.isEmpty ? "Account #0" : title),
       "derived" : slot,
       "token" : "",
       "data" : jsonDecode(_wallet.toJson())
-    }];
+    };
+
+    List walletObject;
+
+    if(appState.accountList.isEmpty)
+    {
+      walletObject = [accountObject];
+    }
+    else
+    {
+      walletObject = jsonDecode(await readWalletJson());
+      walletObject.add(accountObject);
+    }
 
     String json = encoder.convert(walletObject);
+    // print(json);
+
     File savedPath = await writeWalletJson(json);
     appState.w3dartWallet = _wallet;
     ret.add(savedPath.path);
@@ -148,19 +179,19 @@ class WalletManager
     return ret;
   }
 
-  Future<bool> decryptAesWallet(String password) async
+  Future<dynamic> decryptAesWallet(String password, {bool shouldReturnMnemonicFile = false}) async
   {
     try
     {
       String documentsPath = this._fileManager.documentsFolder;
       AesCrypt crypt = AesCrypt();
       crypt.setPassword(password);
-      crypt.decryptTextFromFileSync(documentsPath + this._fileManager.accountFolder + mnemonicFile, utf16: true);
-      return true;
+      String ret = crypt.decryptTextFromFileSync(documentsPath + this._fileManager.accountFolder + mnemonicFile, utf16: true);
+      return shouldReturnMnemonicFile ? ret : true;
     }
     on AesCryptDataException
     {
-      return false;
+      return shouldReturnMnemonicFile ? "" : true;
     }
   }
 
@@ -190,36 +221,43 @@ class WalletManager
     }
   }
 
-  Future<Map<int, String>> getAccounts() async
-  {
-    Map<int, String> files = {};
-    RegExp regex = new RegExp(r'.aes$', caseSensitive: false, multiLine: false);
-    Directory directoryRes = new Directory(this._fileManager.filesFolder());
-    int index = 0;
-    await for (FileSystemEntity entity in directoryRes.list(recursive: true, followLinks: false))
-    {
-      if(regex.hasMatch(entity.path)){
-        continue;
-      }
-      files[index] = entity.path;
-      index++;
-    }
-    return files;
-  }
+  // Future<Map<int, String>> getAccounts() async
+  // {
+  //   Map<int, String> files = {};
+  //   RegExp regex = new RegExp(r'.aes$', caseSensitive: false, multiLine: false);
+  //   Directory directoryRes = new Directory(this._fileManager.filesFolder());
+  //   int index = 0;
+  //   await for (FileSystemEntity entity in directoryRes.list(recursive: true, followLinks: false))
+  //   {
+  //     if(regex.hasMatch(entity.path)){
+  //       continue;
+  //     }
+  //     files[index] = entity.path;
+  //     index++;
+  //   }
+  //   return files;
+  // }
+
+  // Future<bool> loadWalletAccounts(String password, AvmeWallet appState) async
+  // {
+  //   //Priority to account #0 or preferred in options menu
+  //   //TODO: get the last account and set to default
+  //   Map<int, String> accounts = await appState.walletManager.getAccounts();
+  //   int lastAccount = 0;
+  //   Map<int, String> defaultAccount = {lastAccount:accounts[lastAccount]};
+  //   print(defaultAccount);
+  //   accounts.remove(lastAccount);
+  //
+  //   await services.loadWalletAccounts(defaultAccount,password, appState);
+  //   //Loads all the accounts
+  //   await services.loadWalletAccounts(accounts,password, appState);
+  //   return false;
+  // }
 
   Future<bool> loadWalletAccounts(String password, AvmeWallet appState) async
   {
-    //Priority to account #0 or preferred in options menu
-    //TODO: get the last account and set to default
-    Map<int, String> accounts = await appState.walletManager.getAccounts();
-    int lastAccount = 0;
-    Map<int, String> defaultAccount = {lastAccount:accounts[lastAccount]};
-    print(defaultAccount);
-    accounts.remove(lastAccount);
-
-    await services.loadWalletAccounts(defaultAccount,password, appState);
-    //Loads all the accounts
-    await services.loadWalletAccounts(accounts,password, appState);
+    List<dynamic> file = jsonDecode(await readWalletJson());
+    await services.loadWalletAccounts(file,password, appState);
     return false;
   }
 

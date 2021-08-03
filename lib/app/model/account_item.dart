@@ -4,12 +4,10 @@ import 'package:web3dart/credentials.dart';
 class AccountObject extends ChangeNotifier
 {
   AccountObject({
-    this.accountPath,
     this.account,
     this.address,
   });
 
-  String accountPath;
   Wallet account;
   String address;
   BigInt _weiBalance;

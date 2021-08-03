@@ -46,7 +46,7 @@ class _AccountsState extends State<Accounts> {
                   primary: Colors.white
                 ),
                 onPressed: () async{
-                  // await appState.walletManager.makeAccount(field1.text, appState, loadingState);
+                  await appState.walletManager.makeAccount("abacaxi", appState, title: "Account #500", );
                   setState(() {
                     // Creates the user account
 

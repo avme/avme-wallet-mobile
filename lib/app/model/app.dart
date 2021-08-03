@@ -33,7 +33,7 @@ class AvmeWallet extends ChangeNotifier
   set setAccountList (Map<int,AccountObject> value) => _accountList = value;
   Map<int,AccountObject> get accountList => _accountList;
 
-  AccountObject get currentAccount => accountList[currentWalletId];
+  AccountObject get currentAccount => _accountList[currentWalletId];
 
   String appTitle = "AVME Wallet";
 
