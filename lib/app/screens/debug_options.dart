@@ -13,11 +13,9 @@ final String password = "abacate";
 
 class Options extends StatelessWidget
 {
-  AppLoadingState loadState;
   AvmeWallet appState;
   @override
   Widget build(BuildContext context) {
-    loadState = Provider.of<AppLoadingState>(context, listen: false);
     appState = Provider.of<AvmeWallet>(context, listen: false);
     return
       ListView(
@@ -135,7 +133,7 @@ class Options extends StatelessWidget
 
   btnMakeAccount(BuildContext context) async
   {
-    List<String> ret = await appState.walletManager.makeAccount("abacaxi",appState, loadState);
+    List<String> ret = await appState.walletManager.makeAccount("abacaxi",appState);
     snack(ret, context);
   }
 }

@@ -8,12 +8,10 @@ class NewPassword extends StatelessWidget
   final field1 = TextEditingController();
   final field2 = TextEditingController();
   AvmeWallet appState;
-  AppLoadingState loadingState;
   String description1 = "Please use a dificult passphrase, it will be used to enter the Wallet";
   @override
   Widget build(BuildContext context) {
     appState = Provider.of<AvmeWallet>(context);
-    loadingState = Provider.of<AppLoadingState>(context);
     ListView _view = forms([
       commonText("Please type a passphrase in both fields!"),
       //Field1
@@ -106,7 +104,7 @@ class NewPassword extends StatelessWidget
     );
 
     // Creates the user account
-    await appState.walletManager.makeAccount(field1.text, appState, loadingState);
+    await appState.walletManager.makeAccount(field1.text, appState);
     // if(globals.walletManager.logged())
     // {
       // Navigator.of(context).pop();

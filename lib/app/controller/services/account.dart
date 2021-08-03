@@ -9,7 +9,7 @@ import 'package:web3dart/web3dart.dart';
 List<Isolate> isolateList = [];
 ServiceData genericThreadData;
 
-Future<bool> loadWalletAccounts(Map<int, String> accountPathList, String password, AvmeWallet appState, AppLoadingState loadState) async
+Future<bool> loadWalletAccounts(Map<int, String> accountPathList, String password, AvmeWallet appState) async
 {
   ReceivePort receivePort = ReceivePort();
 
@@ -17,8 +17,16 @@ Future<bool> loadWalletAccounts(Map<int, String> accountPathList, String passwor
   bool inProgress = true;
   accountPathList.forEach((index,pathEntity) async
   {
-    loadState.total = (index + 1);
-    genericThreadData = new ServiceData({"index":index,"walletPath":pathEntity,"password":password,"walletManager":appState.walletManager}, receivePort.sendPort);
+    appState.accountsState.total = (index + 1);
+
+    genericThreadData = new ServiceData(
+        {
+          "index":index,
+          "walletPath":pathEntity,
+          "password":password,
+          "walletManager":appState.walletManager
+        }, receivePort.sendPort);
+
     isolateList.add(await Isolate.spawn(createAccountList, genericThreadData));
   });
 
@@ -28,14 +36,14 @@ Future<bool> loadWalletAccounts(Map<int, String> accountPathList, String passwor
     appState.addToAccountList(response[0],response[1]);
     progress++;
     print(progress);
-    loadState.progress = progress;
+    appState.accountsState.progress = progress;
     if(progress >= accountPathList.length)
     {
       inProgress = false;
       print(accountPathList.length);
       // if(accountPathList.length != 1)
       // {
-      loadState.loadedAccounts = true;
+      appState.accountsState.loadedAccounts = true;
       // }
       stopLoadWalletAccountsThreads();
     }

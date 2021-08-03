@@ -2,60 +2,17 @@ import 'dart:isolate';
 
 import 'package:avme_wallet/app/controller/file_manager.dart';
 import 'package:avme_wallet/app/controller/wallet_manager.dart';
-import 'package:avme_wallet/app/model/boxes.dart';
-import 'package:avme_wallet/app/model/metacoin.dart';
-import 'package:avme_wallet/app/model/token.dart';
-import 'package:avme_wallet/app/model/token_chart.dart';
-import 'package:avme_wallet/app/model/transaction_information.dart';
+import 'boxes.dart';
+import 'metacoin.dart';
+import 'token.dart';
+import 'token_chart.dart';
+import 'transaction_information.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:web3dart/credentials.dart';
 
 import 'account_item.dart';
-
-class AppLoadingState extends ChangeNotifier
-{
-  int _progress = 0;
-  int _total = 0;
-  bool _inProgress = true;
-  bool _loadedAccounts = false;
-  bool _defaultAccount = false;
-
-  set progress (int value)
-  {
-    _progress = value;
-    notifyListeners();
-  }
-
-  set total (int value)
-  {
-    _total = value;
-    notifyListeners();
-  }
-
-  set inProgress (bool value)
-  {
-    _inProgress = value;
-    notifyListeners();
-  }
-
-  set loadedAccounts (bool value)
-  {
-    _loadedAccounts = value;
-    notifyListeners();
-  }
-
-  set defaultAccountLoaded (bool value)
-  {
-    _defaultAccount = value;
-    notifyListeners();
-  }
-
-  int get progress => _progress;
-  int get total => total;
-  bool get accountsWasLoaded => _loadedAccounts;
-  bool get defaultAccountWasLoaded => _defaultAccount;
-}
+import 'accounts_state.dart';
 
 class AvmeWallet extends ChangeNotifier
 {
@@ -90,6 +47,7 @@ class AvmeWallet extends ChangeNotifier
 
   Token token = Token();
   MetaCoin metaCoin = MetaCoin();
+  AccountsState accountsState = AccountsState();
 
   Box<TokenChart> dashboardBox = Boxes.getHistory();
 
@@ -167,6 +125,13 @@ class AvmeWallet extends ChangeNotifier
   void watchAccountBalanceUpdates(int pos)
   {
     accountList[pos].addListener(() {
+      notifyListeners();
+    });
+  }
+
+  void watchAccountsStateChanges()
+  {
+    accountsState.addListener(() {
       notifyListeners();
     });
   }

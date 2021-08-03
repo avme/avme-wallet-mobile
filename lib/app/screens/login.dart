@@ -124,7 +124,6 @@ class _LoginState extends State<Login> {
   void authenticate(BuildContext context) async
   {
     bool empty = (_passphrase == null || _passphrase.text.length == 0) ? true : false;
-    AppLoadingState loadState = Provider.of<AppLoadingState>(context, listen: false);
     AvmeWallet appState = Provider.of<AvmeWallet>(context, listen: false);
 
     BuildContext _loadingPopupContext;
@@ -135,9 +134,8 @@ class _LoginState extends State<Login> {
           _loadingPopupContext = context;
 
           // Always get the provider inside the build method
-          AppLoadingState provider = Provider.of<AppLoadingState>(context);
-          return CircularLoading(text: "${(provider.progress*100)}% Loading accounts.");
-          return LoadingPopUp(text:"${provider.progress} Loading, please wait...");
+          AvmeWallet provider = Provider.of<AvmeWallet>(context);
+          return CircularLoading(text: "${(provider.accountsState.progress*100)}% Loading accounts.");
         }
     );
 
@@ -155,7 +153,7 @@ class _LoginState extends State<Login> {
       return;
     }
 
-    Map data = await appState.walletManager.authenticate(_passphrase.text, appState, loadState);
+    Map data = await appState.walletManager.authenticate(_passphrase.text, appState);
     if(data["status"] != 200)
     {
       Navigator.pop(_loadingPopupContext);

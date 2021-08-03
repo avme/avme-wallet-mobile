@@ -1,4 +1,5 @@
 import 'package:avme_wallet/app/lib/utils.dart';
+import 'package:avme_wallet/app/model/accounts_state.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:flutter/material.dart';
 import 'package:avme_wallet/app/screens/widgets/custom_widgets.dart';
@@ -30,7 +31,6 @@ class AccountsOld extends StatefulWidget{
 class _AccountsState extends State<AccountsOld>
 {
   AvmeWallet wallet;
-  AppLoadingState loadState;
   BuildContext loadingDialog;
 
   @override
@@ -42,9 +42,8 @@ class _AccountsState extends State<AccountsOld>
   Widget build(BuildContext context) {
 
     wallet = Provider.of<AvmeWallet>(context);
-    loadState = Provider.of<AppLoadingState>(context);
 
-    if(!loadState.accountsWasLoaded && loadingDialog == null)
+    if(!wallet.accountsState.accountsWasLoaded && loadingDialog == null)
     {
       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
         showDialog(
@@ -60,12 +59,12 @@ class _AccountsState extends State<AccountsOld>
     return SingleChildScrollView(
       child: Container(
         child:
-        Selector<AppLoadingState, bool>
+        Selector<AvmeWallet, AccountsState>
           (
-          selector: (context, model) => model.accountsWasLoaded,
-          builder: (context, loaded, child)
+          selector: (context, model) => model.accountsState,
+          builder: (context, accountsState, child)
           {
-            if(loaded && _accounts.length < wallet.accountList.length)
+            if(accountsState.accountsWasLoaded && _accounts.length < wallet.accountList.length)
             {
               wallet.accountList.forEach((key, element) {
                 _accounts.add(

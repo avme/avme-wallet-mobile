@@ -19,7 +19,6 @@ main() async{
   runApp(MultiProvider(
       providers: [
         ChangeNotifierProvider<AvmeWallet>(create:(_) => AvmeWallet()),
-        ChangeNotifierProvider<AppLoadingState>(create:(_) => AppLoadingState())
       ],
     child: AvmeWalletApp(),
     )

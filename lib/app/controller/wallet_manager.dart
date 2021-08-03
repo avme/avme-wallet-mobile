@@ -112,7 +112,7 @@ class WalletManager
     return mnemonic;
   }
 
-  Future<List<String>> makeAccount(String password, AvmeWallet wallet, AppLoadingState state, {bool first = true, String title}) async
+  Future<List<String>> makeAccount(String password, AvmeWallet appState, {bool first = true, String title}) async
   {
     List<String> ret = [];
     String mnemonic = await newMnemonic(password);
@@ -141,9 +141,9 @@ class WalletManager
 
     String json = encoder.convert(walletObject);
     File savedPath = await writeWalletJson(json);
-    wallet.w3dartWallet = _wallet;
+    appState.w3dartWallet = _wallet;
     ret.add(savedPath.path);
-    await authenticate(password, wallet, state);
+    await authenticate(password, appState);
 
     return ret;
   }
@@ -164,7 +164,7 @@ class WalletManager
     }
   }
 
-  Future<Map> authenticate(String password, AvmeWallet wallet, AppLoadingState state) async
+  Future<Map> authenticate(String password, AvmeWallet wallet) async
   {
     Map ret = {"status":400,"message":"Wrong password."};
     bool mnemonicUnlocked = await decryptAesWallet(password);
@@ -176,7 +176,7 @@ class WalletManager
     }
     try
     {
-      await loadWalletAccounts(password, wallet, state);
+      await loadWalletAccounts(password, wallet);
       wallet.w3dartWallet = wallet.accountList[0].account;
       wallet.eAddress = await wallet.getW3DartWallet.privateKey.extractAddress();
       ret["status"] = 200;
@@ -207,19 +207,19 @@ class WalletManager
     return files;
   }
 
-  Future<bool> loadWalletAccounts(String password, AvmeWallet wallet, AppLoadingState state) async
+  Future<bool> loadWalletAccounts(String password, AvmeWallet appState) async
   {
     //Priority to account #0 or preferred in options menu
     //TODO: get the last account and set to default
-    Map<int, String> accounts = await wallet.walletManager.getAccounts();
+    Map<int, String> accounts = await appState.walletManager.getAccounts();
     int lastAccount = 0;
     Map<int, String> defaultAccount = {lastAccount:accounts[lastAccount]};
     print(defaultAccount);
     accounts.remove(lastAccount);
 
-    await services.loadWalletAccounts(defaultAccount,password, wallet, state);
+    await services.loadWalletAccounts(defaultAccount,password, appState);
     //Loads all the accounts
-    await services.loadWalletAccounts(accounts,password, wallet, state);
+    await services.loadWalletAccounts(accounts,password, appState);
     return false;
   }
 
