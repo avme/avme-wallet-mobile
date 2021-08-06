@@ -6,12 +6,19 @@ class AccountObject extends ChangeNotifier
   AccountObject({
     this.account,
     this.address,
+    this.slot,
+    this.derived,
+    this.title
   });
 
   Wallet account;
   String address;
   BigInt _weiBalance;
   BigInt _tokenWeiBalance;
+
+  int slot;
+  int derived;
+  String title;
 
   set updateTokenBalance(BigInt value)
   {

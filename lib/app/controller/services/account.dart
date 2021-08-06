@@ -8,60 +8,44 @@ import 'package:avme_wallet/app/model/service_data.dart';
 import 'package:web3dart/web3dart.dart';
 
 List<Isolate> isolateList = [];
-ServiceData genericThreadData;
+ServiceData serviceData;
 
 Future<bool> loadWalletAccounts(List accounts, String password, AvmeWallet appState) async
 {
   ReceivePort receivePort = ReceivePort();
-
-  int progress = 0;
-  bool inProgress = true;
-
+  //Total amount of accounts to be loaded
+  appState.accountsState.total = accounts.length;
   accounts.asMap().forEach((index,accountData) async
   {
-    print(index);
-    print(accountData["data"]);
-    //TODO: move to receivePort
-    appState.accountsState.total = (index + 1);
+    // print("accountData:");
+    // print(jsonEncode(accountData));
+    serviceData = new ServiceData(
+      {
+        "index": index,
+        "accountData": accountData,
+        "password": password,
+        "walletManager": appState.walletManager
+      }, receivePort.sendPort);
 
-    genericThreadData = new ServiceData(
-        {
-          "index":index,
-          "accountData": jsonEncode(accountData["data"]),
-          "password":password,
-          "walletManager":appState.walletManager
-        }, receivePort.sendPort);
-
-    isolateList.add(await Isolate.spawn(buildAccountObjectList, genericThreadData));
+    isolateList.add(await Isolate.spawn(buildAccountObjectList, serviceData));
   });
 
   // Listens the threads...
-
-  receivePort.listen((response){
+  int progress = 0;
+  await for (List response in receivePort)
+  {
     appState.addToAccountList(response[0],response[1]);
     progress++;
-    print(progress);
+    // print(progress);
     appState.accountsState.progress = progress;
     if(progress >= accounts.length)
     {
-      inProgress = false;
-      print(accounts.length);
-      // if(accountPathList.length != 1)
-      // {
       appState.accountsState.loadedAccounts = true;
-      // }
       stopLoadWalletAccountsThreads();
+      return true;
     }
-  });
-
-  ///Remove this implementation, is lazy and inapropiate,
-  ///please use FutureBuilder at Widget/UI level
-
-  if(accounts.length == 1)
-  {
-    await waitWhile(() => inProgress);
   }
-  return true;
+  return false;
 }
 
 void stopLoadWalletAccountsThreads()
@@ -75,14 +59,18 @@ void stopLoadWalletAccountsThreads()
       isolateList[i] = null;
     }
   }
+  isolateList = [];
 }
 
 void buildAccountObjectList(ServiceData param) async
 {
-  print(param.data);
   ReceivePort response = new ReceivePort();
+  Map _accountData = param.data["accountData"];
+  String _walletData = jsonEncode(_accountData["data"]);
+  // print("wallet data:");
+  // print(_walletData);
   //Wallet.fromJson can take up to 2 seconds per operation!
-  Wallet _wallet = Wallet.fromJson(param.data["accountData"], param.data["password"]);
+  Wallet _wallet = Wallet.fromJson(_walletData, param.data["password"]);
   EthereumAddress _ethAddress = await _wallet.privateKey.extractAddress();
   //Return a AccountItem object to be added in the accountList
   param.sendPort.send(
@@ -90,25 +78,12 @@ void buildAccountObjectList(ServiceData param) async
       param.data["index"],
       AccountObject(
         account: _wallet,
-        address: _ethAddress.hex
+        address: _ethAddress.hex,
+        slot: _accountData["slot"],
+        derived: _accountData["derived"],
+        title: _accountData["title"]
       )
     ]
   );
   return response.first;
-}
-
-// Solution used:
-// URL:https://stackoverflow.com/questions/47776045/is-there-a-good-way-to-write-wait-for-variables-to-change-in-darts-async-meth
-
-Future waitWhile(bool test(), [Duration pollInterval = Duration.zero]) {
-  var completer = new Completer();
-  check() {
-    if (!test()) {
-      completer.complete();
-    } else {
-      new Timer(pollInterval, check);
-    }
-  }
-  check();
-  return completer.future;
 }

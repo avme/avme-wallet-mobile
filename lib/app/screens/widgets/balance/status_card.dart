@@ -75,16 +75,7 @@ class _StatusCardState extends State<StatusCard> {
                                 builder:(context, data, child)
                                 {
                                   widget.appState.watchBalanceUpdates();
-
-                                  String avmeValue = "";
-                                  if (widget.appState.currentAccount.rawTokenBalance ==
-                                      null) {
-                                    avmeValue = "0.00000";
-                                  } else {
-                                    avmeValue = shortAmount(
-                                        widget.appState.currentAccount.tokenBalance);
-                                  }
-                                  return Text("$avmeValue AVME",
+                                  return Text("${shortAmount(widget.appState.currentAccount.tokenBalance)} AVME",
                                       style: TextStyle(fontSize: 12));
                                 }
                             )
@@ -103,9 +94,7 @@ class _StatusCardState extends State<StatusCard> {
                               selector: (context, token) => token.token,
                               builder: (context, token, child) {
                                 widget.appState.watchTokenValueChanges();
-                                String _text;
-                                _text = token.value != null ? shortAmount(token.value,length: 4, comma: true) : "0,00";
-                                return Text("$_text USD",style: TextStyle(fontSize: 12));
+                                return Text("${shortAmount(token.value,length: 4, comma: true)} USD",style: TextStyle(fontSize: 12));
                               },),
                           ],
                         ),
@@ -142,16 +131,7 @@ class _StatusCardState extends State<StatusCard> {
                                 builder:(context, data, child)
                                 {
                                   widget.appState.watchBalanceUpdates();
-
-                                  String avmeValue = "";
-                                  if (widget.appState.currentAccount.waiBalance ==
-                                      null) {
-                                    avmeValue = "0.00000";
-                                  } else {
-                                    avmeValue = shortAmount(
-                                        widget.appState.currentAccount.balance);
-                                  }
-                                  return Text("$avmeValue AVAX",
+                                  return Text("${shortAmount(widget.appState.currentAccount.balance)} AVAX",
                                       style: TextStyle(fontSize: 12));
                                 }
                             ),
@@ -169,9 +149,7 @@ class _StatusCardState extends State<StatusCard> {
                             Selector<AvmeWallet, MetaCoin>(
                                 selector: (context, model) => model.metaCoin,
                                 builder:(context, metaCoin, child) {
-                                  String _text;
-                                  _text = metaCoin.value != null ? shortAmount(metaCoin.value, length: 3, comma: true) : "0,00";
-                                  return Text("$_text USD", style: TextStyle(fontSize: 12),);
+                                  return Text("${shortAmount(metaCoin.value, length: 3, comma: true)} USD", style: TextStyle(fontSize: 12),);
                               }
                             )
                             // Text("1.85 USD", style: TextStyle(fontSize: 12)),

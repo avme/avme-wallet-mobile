@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:avme_wallet/app/lib/utils.dart';
+import 'package:avme_wallet/app/model/account_item.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/screens/widgets/custom_widgets.dart';
 import 'package:avme_wallet/app/screens/widgets/shimmer.dart';
@@ -13,55 +16,10 @@ class Accounts extends StatefulWidget {
 
 class _AccountsState extends State<Accounts> {
   AvmeWallet appState;
-  int accounts = 2;
   @override
   Widget build(BuildContext context) {
     appState = Provider.of<AvmeWallet>(context);
     print(appState.accountList.keys);
-
-    List<Widget> accounts = repeatWidgetList(AccountCard(loading: true,), this.accounts)
-    ..add(
-      Padding(
-        padding: const EdgeInsets.only(top: 8.0, bottom: 16),
-        child: Center(child:
-          Container(
-            // color: Colors.red,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: avmeTheme.cardColor,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black45,
-                  spreadRadius: 0,
-                  offset: Offset(0,5),
-                  blurRadius: 10,
-                )
-              ]
-            ),
-            child: SizedBox(
-              width: 60,
-              height: 60,
-              child: TextButton(
-                style: TextButton.styleFrom(
-                  primary: Colors.white
-                ),
-                onPressed: () async{
-                  await appState.walletManager.makeAccount("abacaxi", appState, title: "Account #500", );
-                  setState(() {
-                    // Creates the user account
-
-
-                    // this.accounts++;
-                  });
-                },
-                child: Icon(Icons.add),
-              ),
-            ),
-          ),
-        ),
-      )
-    );
-
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
       child: Column(
@@ -74,25 +32,94 @@ class _AccountsState extends State<Accounts> {
               )
             ],
           ),
-          SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height / 2),
-              child: ListView(
-                  children: accounts
+          Shimmer(
+            linearGradient: shimmerGradientDefault,
+            child: SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height / 2),
+                // child: ListView(
+                //     children: accounts
+                // ),
+                child: FutureBuilder<List>(
+                  future: accountsList(),
+                  builder: (context, snapshot) {
+                    if(snapshot.data == null)
+                    {
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: 3,
+                        itemBuilder: (BuildContext context, int index) {
+                          return AccountCard(loading: true,);
+                        },
+                      );
+                    }
+                    else
+                    {
+                      snapshot.data
+                        .add(Padding(
+                          padding: const EdgeInsets.only(top: 8.0, bottom: 16),
+                          child: Center(
+                            child:
+                            Container(
+                              // color: Colors.red,
+                              decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: avmeTheme.cardColor,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black45,
+                                      spreadRadius: 0,
+                                      offset: Offset(0,5),
+                                      blurRadius: 10,
+                                    )
+                                  ]
+                              ),
+                              child: SizedBox(
+                                width: 60,
+                                height: 60,
+                                child: TextButton(
+                                  style: TextButton.styleFrom(
+                                      primary: Colors.white
+                                  ),
+                                  onPressed: () async{
+                                    await appState.walletManager.makeAccount("abacaxi", appState, title: "Account #500", );
+                                    setState(() {
+                                      // Creates the user account
+
+
+                                      // this.accounts++;
+                                    });
+                                  },
+                                  child: Icon(Icons.add),
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                      );
+                      return ListView(
+                        children: snapshot.data,
+                      );
+                    }
+                  }
+                ),
               ),
-              // child: FutureProvider(
-              //   future: null,
-              //   builder: (context, snapshot) {
-              //     return ListView(
-              //         children: accounts
-              //     );
-              //   }
-              // ),
             ),
           ),
         ],
       ),
     );
+  }
+
+  Future<List> accountsList() async
+  {
+    List<Widget> ret = [];
+    await Future.delayed(Duration(seconds: 1));
+    appState.accountList.forEach((key,account) {
+      if(key == 3) ret.add(AccountCard(data: account, selected: true,));
+      else ret.add(AccountCard(data: account,));
+    });
+    return ret;
   }
 
   List<Widget> repeatWidgetList(Widget widget, int amount)
@@ -120,8 +147,9 @@ class AccountCard extends StatefulWidget {
 
   /// Widget State
   final bool loading;
-  final Map<String, dynamic> data;
-  AccountCard({this.loading = false, this.data});
+  final AccountObject data;
+  final bool selected;
+  AccountCard({this.loading = false, this.data, this.selected = false});
 
   @override
   _AccountCardState createState() => _AccountCardState();
@@ -132,7 +160,7 @@ class _AccountCardState extends State<AccountCard> {
   @override
   Widget build(BuildContext context) {
     double textWidth = MediaQuery.of(context).size.width / 2.33;
-    if(widget.loading)
+    if(!widget.loading)
     {
       return Card(
         elevation: 8.0,
@@ -149,7 +177,7 @@ class _AccountCardState extends State<AccountCard> {
                 height: 20,
                 width: 20,
                 child: CustomPaint(
-                  painter: !widget.loading ? ListIndicator() : null,
+                  painter: !widget.loading ? ListIndicator(selected:widget.selected) : null,
                 ),
               ),
               Container(
@@ -161,9 +189,9 @@ class _AccountCardState extends State<AccountCard> {
                     children: [
                       Row(
                         children: [
-                          LabelText("#0"),
+                          LabelText("${widget.data.slot}"),
                           Text(" - "),
-                          Text("[Account Label Here]"),
+                          Text("${widget.data.title}"),
                         ],
                       ),
                       SizedBox(height: labelSpacing,)
@@ -176,7 +204,7 @@ class _AccountCardState extends State<AccountCard> {
                     children: [
                       Row(
                         children: [
-                          Text("0xFFFFF0F0FFFF0F0FA0CCCFCAFFF")
+                          Text("${widget.data.address}")
                         ],
                       ),
                       SizedBox(height: labelSpacing,),
@@ -184,11 +212,11 @@ class _AccountCardState extends State<AccountCard> {
                         children: [
                           LabelText("Meta Coin:"),
                           SizedBox(width: labelSpacing,),
-                          Text("36615.0"),
+                          Text("${shortAmount(widget.data.balance)}"),
                           SizedBox(width: labelSpacing,),
                           LabelText("Token:"),
                           SizedBox(width: labelSpacing,),
-                          Text("12345.6789"),
+                          Text("${shortAmount(widget.data.tokenBalance)}"),
                         ],
                       ),
                     ],
@@ -213,14 +241,6 @@ class _AccountCardState extends State<AccountCard> {
           borderRadius: cardRadius,
           child: Stack(
             children: [
-              ///Container to indicate what is the selected account
-              Container(
-                height: 20,
-                width: 20,
-                child: CustomPaint(
-                  painter: !widget.loading ? ListIndicator() : null,
-                ),
-              ),
               Container(
                 // decoration: BoxDecoration(color: Color.fromRGBO(64, 75, 96, .9)),
                 child: ListTile(
@@ -228,6 +248,7 @@ class _AccountCardState extends State<AccountCard> {
                   title: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      /*Erro aqui*/
                       Row(
                         children: [
                           ShimmerLoadingEffect(
@@ -261,6 +282,7 @@ class _AccountCardState extends State<AccountCard> {
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      /*Erro aqui*/
                       Row(
                         children: [
                           ShimmerLoadingEffect(
@@ -276,6 +298,7 @@ class _AccountCardState extends State<AccountCard> {
                         ],
                       ),
                       SizedBox(height: labelSpacing,),
+                      /*Erro aqui*/
                       Row(
                         children: [
                           ShimmerLoadingEffect(
@@ -305,7 +328,7 @@ class _AccountCardState extends State<AccountCard> {
 }
 
 class ListIndicator extends CustomPainter {
-  bool selected;
+  final bool selected;
   final Color red = Color(0xFF890000);
   final Color green = Color(0xFF458900);
 

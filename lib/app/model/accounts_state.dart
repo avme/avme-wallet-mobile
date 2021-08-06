@@ -39,7 +39,7 @@ class AccountsState extends ChangeNotifier
   }
 
   int get progress => _progress;
-  int get total => total;
+  int get total => _total;
   bool get accountsWasLoaded => _loadedAccounts;
   bool get defaultAccountWasLoaded => _defaultAccount;
 }

@@ -19,10 +19,18 @@ String hexRandBytes({int size = 4}) {
   return HEX.encode(bytes);
 }
 
-String shortAmount(String amount, {int length, bool comma = false})
+String shortAmount(String amount, {int length = 6, bool comma = false})
 {
+  if(amount == null)
+  {
+    String ret = "0";
+    ret += comma ? "," : ".";
+    for(int i = 0; i < length; i++) ret += "0";
+    return ret;
+  }
   int dotIndex = amount.indexOf(".");
-  int maxSize = dotIndex + (length ?? 6);
+  // int maxSize = dotIndex + (length ?? 6);
+  int maxSize = dotIndex + length;
   return comma ? amount.substring(0, maxSize).replaceAll(r".", ",") : amount.substring(0, maxSize);
 }
 

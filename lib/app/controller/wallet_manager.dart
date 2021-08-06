@@ -115,9 +115,6 @@ class WalletManager
   Future<List<String>> makeAccount(String password, AvmeWallet appState, {String title = ""}) async
   {
     List<String> ret = [];
-    print("keys:");
-    print(appState.accountList.keys);
-    return ret;
     String mnemonic;
     if(appState.accountList.isEmpty)
     {
@@ -133,7 +130,7 @@ class WalletManager
     Random _rng = new Random.secure();
     JsonEncoder encoder = JsonEncoder.withIndent('  ');
 
-    int slot = (appState.accountList.keys.length);
+    int slot = appState.accountList.keys.length;
 
     if(slot > 9)
     {
@@ -145,8 +142,6 @@ class WalletManager
 
     Credentials credentFromHex = EthPrivateKey.fromHex(privateKey);
     Wallet _wallet = Wallet.createNew(credentFromHex,password, _rng);
-    // Map walletObject = jsonDecode(_wallet.toJson());
-    // int slot = ((await getAccounts()).keys.length - 1);
 
     Map accountObject = {
       "slot" : slot,
@@ -167,10 +162,7 @@ class WalletManager
       walletObject = jsonDecode(await readWalletJson());
       walletObject.add(accountObject);
     }
-
     String json = encoder.convert(walletObject);
-    // print(json);
-
     File savedPath = await writeWalletJson(json);
     appState.w3dartWallet = _wallet;
     ret.add(savedPath.path);

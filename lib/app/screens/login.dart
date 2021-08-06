@@ -134,8 +134,12 @@ class _LoginState extends State<Login> {
           _loadingPopupContext = context;
 
           // Always get the provider inside the build method
-          AvmeWallet provider = Provider.of<AvmeWallet>(context);
-          return CircularLoading(text: "${(provider.accountsState.progress*100)}% Loading accounts.");
+          AvmeWallet appState = Provider.of<AvmeWallet>(context);
+          appState.watchAccountsStateChanges();
+          int progress = appState.accountsState.progress == 0 ? 0 : (( appState.accountsState.progress / appState.accountsState.total) * 100).toInt();
+          return CircularLoading(
+            text: "$progress% Loading accounts."
+          );
         }
     );
 
