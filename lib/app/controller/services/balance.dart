@@ -22,7 +22,7 @@ void updateBalanceService(AvmeWallet appState, {Map <String, dynamic> accountDat
   if(accountData == null)
   {
     accountData = {
-      "slot" : appState.currentAccount.slot,
+      "slot" : appState.currentWalletId,
       "address" : EthereumAddress.fromHex(appState.currentAccount.address),
       "updateIn" : 10,
     };

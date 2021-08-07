@@ -206,7 +206,6 @@ class WalletManager
     }
     try
     {
-      print("TENTANDO LOADAR WALLET ACC");
       await loadWalletAccounts(password, wallet);
       if(wallet.accountList[0].account != null)
       {
@@ -226,55 +225,17 @@ class WalletManager
     }
   }
 
-  // Future<Map<int, String>> getAccounts() async
-  // {
-  //   Map<int, String> files = {};
-  //   RegExp regex = new RegExp(r'.aes$', caseSensitive: false, multiLine: false);
-  //   Directory directoryRes = new Directory(this._fileManager.filesFolder());
-  //   int index = 0;
-  //   await for (FileSystemEntity entity in directoryRes.list(recursive: true, followLinks: false))
-  //   {
-  //     if(regex.hasMatch(entity.path)){
-  //       continue;
-  //     }
-  //     files[index] = entity.path;
-  //     index++;
-  //   }
-  //   return files;
-  // }
-
-  // Future<bool> loadWalletAccounts(String password, AvmeWallet appState) async
-  // {
-  //   //Priority to account #0 or preferred in options menu
-  //   //TODO: get the last account and set to default
-  //   Map<int, String> accounts = await appState.walletManager.getAccounts();
-  //   int lastAccount = 0;
-  //   Map<int, String> defaultAccount = {lastAccount:accounts[lastAccount]};
-  //   print(defaultAccount);
-  //   accounts.remove(lastAccount);
-  //
-  //   await services.loadWalletAccounts(defaultAccount,password, appState);
-  //   //Loads all the accounts
-  //   await services.loadWalletAccounts(accounts,password, appState);
-  //   return false;
-  // }
-
   Future<bool> loadWalletAccounts(String password, AvmeWallet appState) async
   {
     List<dynamic> file = jsonDecode(await readWalletJson());
-    print("THIS IS THE FILE ${jsonEncode(file)}");
     return await services.loadWalletAccounts(file,password, appState);
   }
-
-  void getBalance(AvmeWallet wallet)
+  /// Causing out of memory
+  void startBalanceSubscription(AvmeWallet wallet)
   {
     if (!wallet.services.containsKey("${wallet.currentAccount}#watchBalanceChanges")) {
       services.updateBalanceService(wallet);
     }
-  }
-
-  void getBalanceToAllAccounts(AvmeWallet wallet)
-  {
     wallet.accountList.keys.forEach((key) {
       if(!wallet.services.containsKey("$key#watchBalanceChanges"))
       {
@@ -287,6 +248,26 @@ class WalletManager
         );
       }
     });
+  }
+
+  void stopBalanceSubscription(AvmeWallet wallet)
+  {
+    wallet.accountList.keys.forEach((key) {
+      if(wallet.services.containsKey("$key#watchBalanceChanges"))
+      {
+        wallet.killService("$key#watchBalanceChanges");
+        wallet.killService("$key#watchTokenChanges");
+      }
+    });
+  }
+
+  void setCurrentWallet(AvmeWallet wallet, int id)
+  {
+    wallet.changeCurrentWalletId = id;
+    wallet.walletManager.stopBalanceSubscription(wallet);
+    wallet.walletManager.startBalanceSubscription(wallet);
+
+    print(wallet.services.keys);
   }
 
   Future<Map<String,dynamic>> sendTransaction(AvmeWallet wallet, String address, BigInt amount) async

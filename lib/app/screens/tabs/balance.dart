@@ -19,8 +19,11 @@ class _BalanceState extends State<Balance> {
   Widget build(BuildContext context) {
 
     appState = Provider.of<AvmeWallet>(context);
-    appState.walletManager.getBalance(appState);
+    // appState.walletManager.startBalanceSubscription(appState);
     appState.displayTokenChart();
+    appState.services.keys.forEach((key) {
+      print("KEYS:$key");
+    });
     return Scrollbar(
       child: ListView(
         children:
