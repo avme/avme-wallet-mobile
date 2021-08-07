@@ -13,13 +13,17 @@ class Accounts extends StatefulWidget {
   @override
   _AccountsState createState() => _AccountsState();
 }
-
+//TODO: Refactor this code
 class _AccountsState extends State<Accounts> {
   AvmeWallet appState;
+
+  GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
     appState = Provider.of<AvmeWallet>(context);
     print(appState.accountList.keys);
+    appState.walletManager.getBalanceToAllAccounts(appState);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
       child: Column(
@@ -37,9 +41,6 @@ class _AccountsState extends State<Accounts> {
             child: SingleChildScrollView(
               child: ConstrainedBox(
                 constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height / 2),
-                // child: ListView(
-                //     children: accounts
-                // ),
                 child: FutureBuilder<List>(
                   future: accountsList(),
                   builder: (context, snapshot) {
@@ -56,7 +57,7 @@ class _AccountsState extends State<Accounts> {
                     else
                     {
                       snapshot.data
-                        .add(Padding(
+                        ..add(Padding(
                           padding: const EdgeInsets.only(top: 8.0, bottom: 16),
                           child: Center(
                             child:
@@ -81,15 +82,7 @@ class _AccountsState extends State<Accounts> {
                                   style: TextButton.styleFrom(
                                       primary: Colors.white
                                   ),
-                                  onPressed: () async{
-                                    await appState.walletManager.makeAccount("abacaxi", appState, title: "Account #500", );
-                                    setState(() {
-                                      // Creates the user account
-
-
-                                      // this.accounts++;
-                                    });
-                                  },
+                                  onPressed: () async => await newAccountDialog(context),
                                   child: Icon(Icons.add),
                                 ),
                               ),
@@ -97,6 +90,16 @@ class _AccountsState extends State<Accounts> {
                           ),
                         )
                       );
+                      //   ..add(
+                      //   Center(
+                      //     child: ElevatedButton(child: Text("Spawn Isolates"),
+                      //       onPressed: (){
+                      //         appState.walletManager.getBalanceToAllAccounts(appState);
+                      //       },
+                      //     ),
+                      //   )
+                      // );
+
                       return ListView(
                         children: snapshot.data,
                       );
@@ -116,7 +119,8 @@ class _AccountsState extends State<Accounts> {
     List<Widget> ret = [];
     await Future.delayed(Duration(seconds: 1));
     appState.accountList.forEach((key,account) {
-      if(key == 3) ret.add(AccountCard(data: account, selected: true,));
+      appState.watchAccountBalanceUpdates(key);
+      if(key == 0) ret.add(AccountCard(data: account, selected: true,));
       else ret.add(AccountCard(data: account,));
     });
     return ret;
@@ -129,17 +133,109 @@ class _AccountsState extends State<Accounts> {
     return ret;
   }
 
-  Future<Widget> accountList() async
+  Future<void> newAccountDialog(BuildContext context) async
   {
-    await Future.delayed(Duration(seconds: 3));
-    return ListView(
-      children: [
-        Text("data"),
-        Text("data"),
-        Text("data"),
-        Text("data"),
-      ],
-    );
+    return await showDialog(context: context,
+      builder: (context)
+      {
+        final TextEditingController _title = TextEditingController();
+        final TextEditingController _password = TextEditingController();
+        _title.text = "My Account";
+        _password.text = "abacaxi";
+        bool isChecked = false;
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              content: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextFormField(
+                      controller: _title,
+                      validator: (value)
+                      {
+                        return value.isEmpty ? "Invalid Label" : null;
+                      },
+                      decoration: InputDecoration(hintText: "Account Label"),
+                    ),
+                    TextFormField(
+                      obscureText: true,
+                      controller: _password,
+                      validator: (value)
+                      {
+                        return value.isEmpty ? "Please enter your password." : null;
+                      },
+                      decoration: InputDecoration(hintText: "Password",),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text("Make this my default account"),
+                        Checkbox(
+                          value: isChecked,
+                          onChanged: (value) {
+                            setState((){
+                              isChecked = value;
+                            });
+                        })
+                      ],
+                    )
+                  ],
+                ),),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: (){
+                    Navigator.of(context).pop();
+                  },
+                  child: Text("Cancel")
+                ),
+                TextButton(
+                  onPressed: () async {
+                    if(_formKey.currentState.validate())
+                    {
+                      Map ret = await appState.walletManager.authenticate(_password.text, appState);
+                      print(jsonEncode(ret));
+                      if(ret["status"] != 200)
+                      {
+                        await showDialog<void>(
+                          context: context,
+                          builder: (BuildContext context) =>
+                            SimpleWarning(
+                              title: "Warning",
+                              text:
+                              // "Wrong password, try again."
+                              ret["message"]
+                            )
+                        );
+                      }
+                      else
+                      {
+                        await appState.walletManager.makeAccount(_password.text, appState, title: _title.text);
+                        Navigator.of(context).pop();
+                        await showDialog<void>(
+                          context: context,
+                          builder: (BuildContext context) =>
+                            SimpleWarning(title: "Attention!", text: "A new account was added!",)
+                        );
+                      }
+                    }
+                  },
+                  child: Text("OK")
+                ),
+              ],
+            );
+          }
+        );
+    });
+    // await appState.walletManager.makeAccount("abacaxi", appState, title: "Account #500", );
+    // setState(() {
+    //   // Creates the user account
+    //
+    //
+    //   // this.accounts++;
+    // });
+
   }
 }
 
@@ -198,7 +294,6 @@ class _AccountCardState extends State<AccountCard> {
                     ],
                   ),
                   // subtitle: Text("Intermediate", style: TextStyle(color: Colors.white)),
-
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -210,11 +305,11 @@ class _AccountCardState extends State<AccountCard> {
                       SizedBox(height: labelSpacing,),
                       Row(
                         children: [
-                          LabelText("Meta Coin:"),
+                          LabelText("AVAX:"),
                           SizedBox(width: labelSpacing,),
                           Text("${shortAmount(widget.data.balance)}"),
                           SizedBox(width: labelSpacing,),
-                          LabelText("Token:"),
+                          LabelText("AVME:"),
                           SizedBox(width: labelSpacing,),
                           Text("${shortAmount(widget.data.tokenBalance)}"),
                         ],

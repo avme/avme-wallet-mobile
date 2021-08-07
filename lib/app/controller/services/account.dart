@@ -12,40 +12,54 @@ ServiceData serviceData;
 
 Future<bool> loadWalletAccounts(List accounts, String password, AvmeWallet appState) async
 {
-  ReceivePort receivePort = ReceivePort();
-  //Total amount of accounts to be loaded
-  appState.accountsState.total = accounts.length;
-  accounts.asMap().forEach((index,accountData) async
-  {
-    // print("accountData:");
-    // print(jsonEncode(accountData));
-    serviceData = new ServiceData(
-      {
-        "index": index,
-        "accountData": accountData,
-        "password": password,
-        "walletManager": appState.walletManager
-      }, receivePort.sendPort);
-
-    isolateList.add(await Isolate.spawn(buildAccountObjectList, serviceData));
-  });
-
-  // Listens the threads...
-  int progress = 0;
-  await for (List response in receivePort)
-  {
-    appState.addToAccountList(response[0],response[1]);
-    progress++;
-    // print(progress);
-    appState.accountsState.progress = progress;
-    if(progress >= accounts.length)
+  // print("1#1");
+  // print("accounts ${accounts.length}");
+  if(accounts.length != appState.accountList.length) {
+    // print("NEW ACCOUNT GENERATED ${accounts.length - 1} AND LOADING");
+    ReceivePort receivePort = ReceivePort();
+    //Total amount of accounts to be loaded
+    appState.accountsState.total = accounts.length;
+    int pending = 0;
+    accounts.asMap().forEach((index, accountData) async
     {
-      appState.accountsState.loadedAccounts = true;
-      stopLoadWalletAccountsThreads();
-      return true;
+      ///We add only the unloaded account, doing this will prevent the original
+      ///reference in memory, and keep our notifiers alive!
+      if(appState.accountList[index] == null)
+      {
+        pending++;
+        // print("accountData:");
+        // print(jsonEncode(accountData));
+        serviceData = new ServiceData(
+          {
+            "index": index,
+            "accountData": accountData,
+            "password": password,
+            "walletManager": appState.walletManager
+          }, receivePort.sendPort);
+        // print("Spawning isolate $index");
+        isolateList.add(await Isolate.spawn(buildAccountObjectList, serviceData));
+      }
+    });
+
+    // Listens the threads...
+    int progress = 0;
+    await for (List response in receivePort) {
+      appState.addToAccountList(response[0], response[1]);
+      progress++;
+      // print(progress);
+      // print("${response[0]} returned something...");
+      appState.accountsState.progress = progress;
+      // print("$progress >= $pending");
+      if (progress >= pending) {
+        appState.accountsState.loadedAccounts = true;
+        stopLoadWalletAccountsThreads();
+        return true;
+      }
     }
   }
+  print("ended");
   return false;
+
 }
 
 void stopLoadWalletAccountsThreads()

@@ -19,7 +19,7 @@ class _BalanceState extends State<Balance> {
   Widget build(BuildContext context) {
 
     appState = Provider.of<AvmeWallet>(context);
-    balanceServiceIsRunning(appState);
+    appState.walletManager.getBalance(appState);
     appState.displayTokenChart();
     return Scrollbar(
       child: ListView(
@@ -60,11 +60,5 @@ class _BalanceState extends State<Balance> {
     await Clipboard.setData(
         ClipboardData(text: appState.currentAccount.address));
     snack("Address copied to clipboard", context);
-  }
-
-  void balanceServiceIsRunning(AvmeWallet appState) {
-    if (!appState.services.containsKey("watchBalanceChanges")) {
-      appState.walletManager.getBalance(appState);
-    }
   }
 }

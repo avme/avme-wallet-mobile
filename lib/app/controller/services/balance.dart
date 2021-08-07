@@ -16,38 +16,52 @@ import 'package:web3dart/web3dart.dart';
 import 'package:decimal/decimal.dart';
 
 ///Spawns two threads to listen, and update our appState
-void updateBalanceService(AvmeWallet appState) async
+void updateBalanceService(AvmeWallet appState, {Map <String, dynamic> accountData}) async
 {
-  AccountObject accountWallet = appState.currentAccount;
+  ///Validating if is the default or a specific account to keep track of!
+  if(accountData == null)
+  {
+    accountData = {
+      "slot" : appState.currentAccount.slot,
+      "address" : EthereumAddress.fromHex(appState.currentAccount.address),
+      "updateIn" : 10,
+    };
+  }
   ServiceData balanceData;
   ServiceData tokenData;
   ReceivePort balancePort = ReceivePort();
   ReceivePort tokenPort = ReceivePort();
 
-  EthereumAddress address = await accountWallet.account.privateKey.extractAddress();
-
   Map <String, dynamic> data = {
-    "etheriumAddress" : address,
+    "etheriumAddress" : accountData['address'],
     "url" : env['NETWORK_URL']
   };
 
-   data = {
-    "etheriumAddress" : address,
-    "contractAddress" : EthereumAddress.fromHex(env["CONTRACT_ADDRESS"]),
-    "url" : env['NETWORK_URL']
+  data = {
+    "etheriumAddress" : accountData['address'],
+    "contractAddress" : EthereumAddress.fromHex(env['CONTRACT_ADDRESS']),
+    "url" : env['NETWORK_URL'],
+    "seconds" : accountData["updateIn"]
   };
+
+  // print("updateBalanceService spawned for address ${accountData['address']}");
   balanceData = ServiceData(data, balancePort.sendPort);
-  appState.services["watchBalanceChanges"] = await Isolate.spawn(watchBalanceChanges,balanceData);
+  appState.services["${accountData["slot"]}#watchBalanceChanges"] = await Isolate.spawn(watchBalanceChanges,balanceData);
   balancePort.listen((data) {
-    if(accountWallet.waiBalance != data["balance"]) accountWallet.updateAccountBalance = data["balance"];
+    // print("watchBalanceChanges returned ${data["balance"]}");
+    // print("using AccountObject ID #${accountData['slot']}");
+    if(appState.accountList[accountData['slot']].waiBalance != data["balance"]) appState.accountList[accountData['slot']].updateAccountBalance = data["balance"];
   });
 
   tokenData = ServiceData(data, tokenPort.sendPort);
-  appState.services["watchTokenChanges"] = await Isolate.spawn(watchTokenChanges, tokenData);
+  appState.services["${accountData["slot"]}#watchTokenChanges"] = await Isolate.spawn(watchTokenChanges, tokenData);
   tokenPort.listen((data){
-    if(accountWallet.rawTokenBalance != data["tokenBalance"]) accountWallet.updateTokenBalance = data["tokenBalance"];
+    // print("watchTokenChanges returned ${data["tokenBalance"]}");
+    // print("using AccountObject ID #${accountData['slot']}");
+    if(appState.accountList[accountData['slot']].rawTokenBalance != data["tokenBalance"]) appState.accountList[accountData['slot']].updateTokenBalance = data["tokenBalance"];
   });
 }
+
 ///Isolated function to watch balance changes
 void watchBalanceChanges(ServiceData param) async
 {
@@ -60,11 +74,11 @@ void watchBalanceChanges(ServiceData param) async
     await Future.delayed(Duration(seconds: seconds), () async{
       EtherAmount balance = await ethClient.getBalance(address);
       param.sendPort.send(
-          {
-            "balance" : balance.getInWei
-          }
+        {
+          "balance" : balance.getInWei
+        }
       );
-      if(seconds == 0) seconds = 10;
+      if(seconds == 0) seconds = param.data["seconds"];
     });
   }
 }
@@ -85,7 +99,7 @@ void watchTokenChanges(ServiceData param) async
           "tokenBalance" : tokenBalance
         }
       );
-      if(seconds == 0) seconds = 10;
+      if(seconds == 0) seconds = param.data["seconds"];
     });
   }
 }

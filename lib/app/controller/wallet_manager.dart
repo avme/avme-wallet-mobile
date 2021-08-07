@@ -32,7 +32,9 @@ class WalletManager
   {
     final File file = await this._fileManager.accountFile();
     // print("$json");
-    return file.writeAsString("$json");
+    await file.writeAsString("$json");
+    print("writeWalletJson has finished");
+    return file;
   }
 
   Future<String> readWalletJson({position = -1}) async
@@ -114,6 +116,10 @@ class WalletManager
 
   Future<List<String>> makeAccount(String password, AvmeWallet appState, {String title = ""}) async
   {
+    // print("password?");
+    // print(password);
+    // await Future.delayed(Duration(seconds: 10));
+    // return [];
     List<String> ret = [];
     String mnemonic;
     if(appState.accountList.isEmpty)
@@ -145,7 +151,7 @@ class WalletManager
 
     Map accountObject = {
       "slot" : slot,
-      "title" : (appState.accountList.isEmpty ? "Account #0" : title),
+      "title" : (appState.accountList.isEmpty ? "Default Account" : title),
       "derived" : slot,
       "token" : "",
       "data" : jsonDecode(_wallet.toJson())
@@ -166,8 +172,10 @@ class WalletManager
     File savedPath = await writeWalletJson(json);
     appState.w3dartWallet = _wallet;
     ret.add(savedPath.path);
-    await authenticate(password, appState);
-
+    print("chamando auth do makeaccount");
+    Map auth = await authenticate(password, appState);
+    print("auth?${jsonEncode(auth)}");
+    // print("auth? no");
     return ret;
   }
 
@@ -183,7 +191,7 @@ class WalletManager
     }
     on AesCryptDataException
     {
-      return shouldReturnMnemonicFile ? "" : true;
+      return shouldReturnMnemonicFile ? "" : false;
     }
   }
 
@@ -191,7 +199,6 @@ class WalletManager
   {
     Map ret = {"status":400,"message":"Wrong password."};
     bool mnemonicUnlocked = await decryptAesWallet(password);
-
     if (!mnemonicUnlocked)
     {
       ret["message"] = "[Error: 1] "+ret["message"];
@@ -199,10 +206,16 @@ class WalletManager
     }
     try
     {
+      print("TENTANDO LOADAR WALLET ACC");
       await loadWalletAccounts(password, wallet);
-      wallet.w3dartWallet = wallet.accountList[0].account;
-      wallet.eAddress = await wallet.getW3DartWallet.privateKey.extractAddress();
+      if(wallet.accountList[0].account != null)
+      {
+        wallet.w3dartWallet = wallet.accountList[0].account;
+        wallet.eAddress = await wallet.getW3DartWallet.privateKey.extractAddress();
+
+      }
       ret["status"] = 200;
+      ret["message"] = "";
       return ret;
     }
     catch(e)
@@ -249,13 +262,31 @@ class WalletManager
   Future<bool> loadWalletAccounts(String password, AvmeWallet appState) async
   {
     List<dynamic> file = jsonDecode(await readWalletJson());
-    await services.loadWalletAccounts(file,password, appState);
-    return false;
+    print("THIS IS THE FILE ${jsonEncode(file)}");
+    return await services.loadWalletAccounts(file,password, appState);
   }
 
   void getBalance(AvmeWallet wallet)
   {
-    services.updateBalanceService(wallet);
+    if (!wallet.services.containsKey("${wallet.currentAccount}#watchBalanceChanges")) {
+      services.updateBalanceService(wallet);
+    }
+  }
+
+  void getBalanceToAllAccounts(AvmeWallet wallet)
+  {
+    wallet.accountList.keys.forEach((key) {
+      if(!wallet.services.containsKey("$key#watchBalanceChanges"))
+      {
+        services.updateBalanceService(wallet,
+          accountData: {
+            "slot" : key,
+            "updateIn" : 30,
+            "address" : EthereumAddress.fromHex(wallet.accountList[key].address),
+          }
+        );
+      }
+    });
   }
 
   Future<Map<String,dynamic>> sendTransaction(AvmeWallet wallet, String address, BigInt amount) async
