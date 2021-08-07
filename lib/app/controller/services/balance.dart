@@ -31,7 +31,7 @@ void updateBalanceService(AvmeWallet appState, {Map <String, dynamic> accountDat
   ServiceData tokenData;
   ReceivePort balancePort = ReceivePort();
   ReceivePort tokenPort = ReceivePort();
-
+  // int idRet = 0;
   Map <String, dynamic> data = {
     "etheriumAddress" : accountData['address'],
     "url" : env['NETWORK_URL']
@@ -48,6 +48,8 @@ void updateBalanceService(AvmeWallet appState, {Map <String, dynamic> accountDat
   balanceData = ServiceData(data, balancePort.sendPort);
   appState.services["${accountData["slot"]}#watchBalanceChanges"] = await Isolate.spawn(watchBalanceChanges,balanceData);
   balancePort.listen((data) {
+    // idRet++;
+    // print("ID Ret: $idRet");
     // print("watchBalanceChanges returned ${data["balance"]}");
     // print("using AccountObject ID #${accountData['slot']}");
     if(appState.accountList[accountData['slot']].waiBalance != data["balance"]) appState.accountList[accountData['slot']].updateAccountBalance = data["balance"];
@@ -56,6 +58,8 @@ void updateBalanceService(AvmeWallet appState, {Map <String, dynamic> accountDat
   tokenData = ServiceData(data, tokenPort.sendPort);
   appState.services["${accountData["slot"]}#watchTokenChanges"] = await Isolate.spawn(watchTokenChanges, tokenData);
   tokenPort.listen((data){
+    // idRet++;
+    // print("ID Ret: $idRet");
     // print("watchTokenChanges returned ${data["tokenBalance"]}");
     // print("using AccountObject ID #${accountData['slot']}");
     if(appState.accountList[accountData['slot']].rawTokenBalance != data["tokenBalance"]) appState.accountList[accountData['slot']].updateTokenBalance = data["tokenBalance"];

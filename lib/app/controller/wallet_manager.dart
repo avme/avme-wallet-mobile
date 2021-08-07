@@ -230,15 +230,16 @@ class WalletManager
     List<dynamic> file = jsonDecode(await readWalletJson());
     return await services.loadWalletAccounts(file,password, appState);
   }
-  /// Causing out of memory
   void startBalanceSubscription(AvmeWallet wallet)
   {
-    if (!wallet.services.containsKey("${wallet.currentAccount}#watchBalanceChanges")) {
+    if (!wallet.services.containsKey("${wallet.currentWalletId}#watchBalanceChanges")) {
+      print("Spawning main balance subscription: ID#" + "${wallet.currentWalletId}#watchBalanceChanges");
       services.updateBalanceService(wallet);
     }
     wallet.accountList.keys.forEach((key) {
-      if(!wallet.services.containsKey("$key#watchBalanceChanges"))
+      if(!wallet.services.containsKey("$key#watchBalanceChanges") && key != wallet.currentWalletId)
       {
+        print("Spawning less important balance subscription: ID#" + "$key#watchBalanceChanges");
         services.updateBalanceService(wallet,
           accountData: {
             "slot" : key,
