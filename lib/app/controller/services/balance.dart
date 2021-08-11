@@ -27,6 +27,7 @@ void updateBalanceService(AvmeWallet appState, {Map <String, dynamic> accountDat
       "updateIn" : 10,
     };
   }
+
   ServiceData balanceData;
   ServiceData tokenData;
   ReceivePort balancePort = ReceivePort();

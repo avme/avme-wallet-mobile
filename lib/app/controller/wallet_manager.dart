@@ -1,14 +1,11 @@
 import 'dart:convert';
 import 'dart:math';
-import 'dart:typed_data';
-import 'package:avme_wallet/app/model/account_item.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:bip32/bip32.dart';
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:bip32/bip32.dart' as bip32;
 import 'dart:io';
 import 'package:hex/hex.dart';
-import 'package:http/http.dart';
 import 'package:web3dart/credentials.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:aes_crypt/aes_crypt.dart';
@@ -153,7 +150,6 @@ class WalletManager
       "slot" : slot,
       "title" : (appState.accountList.isEmpty ? "Default Account" : title),
       "derived" : slot,
-      "token" : "",
       "data" : jsonDecode(_wallet.toJson())
     };
 
@@ -225,11 +221,14 @@ class WalletManager
     }
   }
 
+  ///Decrypt accounts in a separated thread
   Future<bool> loadWalletAccounts(String password, AvmeWallet appState) async
   {
     List<dynamic> file = jsonDecode(await readWalletJson());
     return await services.loadWalletAccounts(file,password, appState);
   }
+
+  ///Start balance update "subscription"
   void startBalanceSubscription(AvmeWallet wallet)
   {
     if (!wallet.services.containsKey("${wallet.currentWalletId}#watchBalanceChanges")) {

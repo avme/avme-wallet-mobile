@@ -119,31 +119,31 @@ class _LoginState extends State<Login> {
     if(!empty)
     {
       showDialog<void>(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext context) {
-            _loadingPopupContext = context;
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          _loadingPopupContext = context;
 
-            // Always get the provider inside the build method
-            AvmeWallet appState = Provider.of<AvmeWallet>(context);
-            appState.watchAccountsStateChanges();
-            int progress = appState.accountsState.progress == 0 ? 0 : (( appState.accountsState.progress / appState.accountsState.total) * 100).toInt();
-            return CircularLoading(
-                text: "$progress% Loading accounts."
-            );
-          }
+          // Always get the provider inside the build method
+          AvmeWallet appState = Provider.of<AvmeWallet>(context);
+          appState.watchAccountsStateChanges();
+          int progress = appState.accountsState.progress == 0 ? 0 : (( appState.accountsState.progress / appState.accountsState.total) * 100).toInt();
+          return CircularLoading(
+              text: "$progress% Loading accounts."
+          );
+        }
       );
     }
     else
     {
       await showDialog<void>(
-          context: context,
-          builder: (BuildContext context) =>
-              SimpleWarning(
-                  title: "Warning",
-                  text:
-                  "The passphrase field cannot be empty."
-              )
+        context: context,
+        builder: (BuildContext context) =>
+          SimpleWarning(
+            title: "Warning",
+            text:
+            "The passphrase field cannot be empty."
+          )
       );
       return;
     }
@@ -153,14 +153,14 @@ class _LoginState extends State<Login> {
     {
       Navigator.pop(_loadingPopupContext);
       await showDialog<void>(
-          context: context,
-          builder: (BuildContext context) =>
-              SimpleWarning(
-                  title: "Warning",
-                  text:
-                  // "Wrong password, try again."
-                  data["message"]
-              )
+        context: context,
+        builder: (BuildContext context) =>
+          SimpleWarning(
+            title: "Warning",
+            text:
+            // "Wrong password, try again."
+            data["message"]
+          )
       );
       _passphrase.text = "";
       return;
@@ -193,9 +193,9 @@ class LoginIndicator extends CustomPainter {
     canvas.drawLine(Offset(0, 8), Offset(size.width, 8), mainPainter);
 
     canvas.drawLine(
-        Offset(size.width * 1.1 / 4, 10),
-        Offset(size.width * 2.9 / 4, 10),
-        secondaryPainter);
+      Offset(size.width * 1.1 / 4, 10),
+      Offset(size.width * 2.9 / 4, 10),
+      secondaryPainter);
   }
 
   @override
