@@ -1,6 +1,7 @@
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/screens/widgets/custom_widgets.dart';
+import 'package:avme_wallet/app/screens/widgets/screen_indicator.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -17,7 +18,6 @@ class _LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
 
-    Color textFieldColor = Color(0xFF706E87);
     double height = MediaQuery.of(context).size.height * 1 / 3;
     double width = MediaQuery.of(context).size.width * 1 / 1.25;
 
@@ -61,27 +61,25 @@ class _LoginState extends State<Login> {
                               SizedBox(
                                 height: 14,
                               ),
-                              Container(
-                                width: constraints.maxWidth,
+                              ScreenIndicator(
                                 height: 20,
-                                // color: Colors.black,
-                                child:CustomPaint(painter: LoginIndicator(),),
+                                width: constraints.maxWidth,
                               ),
                               SizedBox(
                                 height: 20,
                               ),
                               TextField(
-                                  cursorColor: textFieldColor,
+                                  cursorColor: AppColors.labelDefaultColor,
                                   controller: _passphrase,
                                   obscureText: true,
                                   decoration: InputDecoration(
                                     labelText: "Please type your passphrase.",
                                     labelStyle: TextStyle(
-                                        color: textFieldColor
+                                        color: AppColors.labelDefaultColor
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderSide: BorderSide(width: 1,
-                                          color: textFieldColor
+                                          color: AppColors.labelDefaultColor
                                       ),
                                     ),
                                   )
@@ -176,31 +174,3 @@ class _LoginState extends State<Login> {
 }
 
 
-class LoginIndicator extends CustomPainter {
-
-  LoginIndicator();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    Paint mainPainter = Paint()
-      ..color = AppColors.purple
-      ..strokeWidth = 2;
-
-    Paint secondaryPainter = Paint()
-      ..color = AppColors.purple
-      ..strokeWidth = 4;
-
-    canvas.drawLine(Offset(0, 8), Offset(size.width, 8), mainPainter);
-
-    canvas.drawLine(
-        Offset(size.width * 1.1 / 4, 10),
-        Offset(size.width * 2.9 / 4, 10),
-        secondaryPainter);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return false;
-  }
-
-}

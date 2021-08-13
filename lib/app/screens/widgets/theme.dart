@@ -28,11 +28,14 @@ class AppColors {
     static const lightBlue1 = Color(0xFF77C2EC);
     static const loading1 = Color(0x607684BA);
     static const loading2 = Color(0x607F8CC2);
-    static const purple = Color(0xFF9400F7);
+    static const purple = Color(0xFF9300F5);
     static const purpleVariant1 = Color(0xff8a0df2);
     static const purpleDark1 = Color(0xFF7238AD);
     static const purpleDark2 = Color(0xFF12013A);
-    static const cardBlue = Color(0xFF1F1E2C);
+    static const cardBlue = Color(0xFF151420);
+    static const darkBlue = Color.fromRGBO(22, 20, 32, 1.0);
+    static const labelDefaultColor = Color(0xFF8077A3);
+    static const cardDefaultColor = Color(0xFF201E2C);
 }
 
 
@@ -72,11 +75,12 @@ BoxDecoration backgroundImage = BoxDecoration(
 ThemeData avmeTheme = ThemeData(
     // Define the default brightness and colors.
     brightness: Brightness.dark,
-    primaryColor: AppColors.primaryColor,
+    primaryColor: AppColors.purple,
     accentColor: AppColors.purpleDark1,
     // Define the default font family.
     fontFamily:  'Roboto Mono',
-    scaffoldBackgroundColor: AppColors.blue1,
+    // scaffoldBackgroundColor: AppColors.blue1,
+    scaffoldBackgroundColor: AppColors.darkBlue,
     indicatorColor: AppColors.lightBlue1,
     cardColor: AppColors.blue2,
     cardTheme: CardTheme(
@@ -90,5 +94,13 @@ ThemeData avmeTheme = ThemeData(
         style: ButtonStyle(
             backgroundColor:MaterialStateProperty.all<Color>(AppColors.purple),
         )
-    )
+    ),
+    textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+            primary: AppColors.labelDefaultColor, // This is a custom color variable
+        ),
+    ),
+    appBarTheme: AppBarTheme(
+        backgroundColor: AppColors.darkBlue
+    ),
   );

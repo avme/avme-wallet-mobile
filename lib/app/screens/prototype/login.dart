@@ -17,7 +17,6 @@ class _LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
 
-    Color textFieldColor = Color(0xFF706E87);
     double height = MediaQuery.of(context).size.height * 1 / 3;
     double width = MediaQuery.of(context).size.width * 1 / 1.25;
 
@@ -71,17 +70,17 @@ class _LoginState extends State<Login> {
                                 height: 20,
                               ),
                               TextField(
-                                  cursorColor: textFieldColor,
+                                  cursorColor: AppColors.labelDefaultColor,
                                   controller: _passphrase,
                                   obscureText: true,
                                   decoration: InputDecoration(
                                     labelText: "Please type your passphrase.",
                                     labelStyle: TextStyle(
-                                        color: textFieldColor
+                                        color: AppColors.labelDefaultColor
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderSide: BorderSide(width: 1,
-                                          color: textFieldColor
+                                          color: AppColors.labelDefaultColor
                                       ),
                                     ),
                                   )

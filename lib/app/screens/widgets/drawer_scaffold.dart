@@ -114,15 +114,6 @@ class _AppDrawerState extends State<AppDrawer> {
         ),
         child: Text("Welcome"),
       ),
-
-      // ListTile(
-      //   title: const Text('Item 2'),
-      //   onTap: () {
-      //     // Update the state of the app.
-      //     // ...
-      //   },
-      // ),
-      // ,
     ];
 
     widget.routes.forEach((key, value) {
@@ -130,7 +121,8 @@ class _AppDrawerState extends State<AppDrawer> {
         ListTile(
           title: Text(key),
           onTap: () {
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => value));
+            // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => value));
+            Navigator.push(context, MaterialPageRoute(builder: (context) => value));
           }
         )
       );
