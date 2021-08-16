@@ -1,36 +1,68 @@
+import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/screens/widgets/custom_widgets.dart';
 import 'package:avme_wallet/app/screens/widgets/drawer_scaffold.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
 
 class AppScaffold extends StatelessWidget {
+
+  final double appBarWidth = 12;
+  // final ButtonStyle appBarButtonStyle = TextButton.styleFrom(
+  //   padding: EdgeInsets.all(0),
+  //   backgroundColor: Colors.red,
+  //   textStyle: TextStyle(
+  //   ),
+  //   minimumSize: Size(0,10)
+  // );
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         iconTheme: IconThemeData(
           color: AppColors.labelDefaultColor
         ),
-        title:
-          Center(
-            child: Image.asset(
-              'assets/resized-newlogo02-trans.png',
-              width: MediaQuery.of(context).padding.top + kToolbarHeight * 1 / 8,
-              fit: BoxFit.fitHeight,)
-          ),
-        ///Changing Icon in the second drawer
+        titleSpacing: appBarWidth,
+        /// We're populating this property with a Row widget and a Pad widget to
+        ///match the original design, since flutter doesn't allow any widget
+        ///besides PreferredSizeWidet and AppState.
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Builder(
+              builder: (BuildContext context) {
+                return AppBarButton(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  onPressed: (){
+                    Scaffold.of(context).openDrawer();
+                  },
+                  icon: Icon(Icons.menu, size: 34,),
+                );
+              },
+            ),
+            Center(
+                child: Image.asset(
+                  'assets/resized-newlogo02-trans.png',
+                  width: MediaQuery.of(context).padding.top + kToolbarHeight * 1 / 8,
+                  fit: BoxFit.fitHeight,)
+            ),
+            ///Changing Icon in the second drawer
+            Builder(
+              builder: (BuildContext context) {
+                return AppBarButton(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  onPressed: (){
+                    Scaffold.of(context).openEndDrawer();
+                  },
+                  icon: Icon(Icons.account_circle_outlined, size: 34,),
+                );
+              },
+            ),
+          ],
+        ),
+        ///We set a empty container to overwrite the "auto" hamburger/menu icon
         actions: [
-          Builder(
-            builder: (BuildContext context) {
-              return TextButton(
-                onPressed: (){
-                  Scaffold.of(context).openEndDrawer();
-                },
-                child: Icon(Icons.account_circle_outlined,
-                  size: 38,)
-              );
-            },
-          )
+          Container(),
         ],
       ),
       ///Drawer in the Left Side
@@ -38,6 +70,7 @@ class AppScaffold extends StatelessWidget {
       ///Drawer in the Right Side
       endDrawer: AppDrawer({"Example 1" : Container()}),
       body: AppTabBar(
+        padding: appBarWidth,
         tabs: {
           'About' : Center(
             child: Text(
@@ -66,17 +99,45 @@ class AppScaffold extends StatelessWidget {
               ),
             ),
           ),
-
         }
       ),
     );
   }
 }
 
+class AppBarButton extends StatelessWidget {
+
+  final Function onPressed;
+  final MainAxisAlignment mainAxisAlignment;
+  final Icon icon;
+  const AppBarButton({@required this.onPressed, @required this.mainAxisAlignment, @required this.icon});
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+      onTap: this.onPressed,
+      child: SizedBox(
+        width: MediaQuery.of(context).padding.top + kToolbarHeight * 1 / 1.5,
+        height: MediaQuery.of(context).padding.top + kToolbarHeight * 1 / 2,
+        child: Container(
+            child: Row(
+              mainAxisAlignment: this.mainAxisAlignment,
+              children: [
+                this.icon
+              ],
+            )
+        ),
+      ),
+    );
+  }
+}
+
+
 class AppTabBar extends StatefulWidget {
   final Map<String, Widget> tabs;
-
-  const AppTabBar({@required this.tabs});
+  final double padding;
+  const AppTabBar({@required this.tabs, @required this.padding});
   @override
   _AppTabBarState createState() => _AppTabBarState();
 }
@@ -87,7 +148,11 @@ class _AppTabBarState extends State<AppTabBar>
   TabController _tabController;
   @override
   void initState() {
-    _tabController = TabController(length: widget.tabs.length, vsync: this);
+    _tabController = TabController(
+      length: widget.tabs.length,
+      vsync: this,
+      initialIndex: 1,
+    );
     _tabController.addListener(() {
       ///Empty setstate to update our selected tab
       setState(() {});
@@ -103,12 +168,14 @@ class _AppTabBarState extends State<AppTabBar>
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        children: [
-          Container(
+    return Column(
+      children: [
+        Padding(
+          // padding: const EdgeInsets.all(8.0),
+          padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: widget.padding),
+          child: Container(
             decoration: BoxDecoration(
+              // color: Colors.red,
               border: Border(
                 top: BorderSide(
                     color: AppColors.purple,
@@ -121,36 +188,39 @@ class _AppTabBarState extends State<AppTabBar>
                 splashColor: Colors.transparent,
                 highlightColor: Colors.transparent,
               ),
-              child: TabBar(
-                labelPadding: EdgeInsets.only(top:8),
-                controller: _tabController,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom:16.0),
+                child: TabBar(
+                  labelPadding: EdgeInsets.only(top:8),
+                  controller: _tabController,
 
-                indicator: BoxDecoration(
-                  border: Border(
-                    top: BorderSide(
-                      color: AppColors.purple,
-                      width: 2
+                  indicator: BoxDecoration(
+                    border: Border(
+                      top: BorderSide(
+                        color: AppColors.purple,
+                        width: 2
+                      )
                     )
-                  )
+                  ),
+                  labelColor: Colors.white,
+                  unselectedLabelColor: AppColors.labelDefaultColor,
+                  tabs: getTabLabels(_tabController)
                 ),
-                labelColor: Colors.white,
-                unselectedLabelColor: AppColors.labelDefaultColor,
-                tabs: getTabLabels(_tabController)
               ),
             ),
           ),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: getTabList()
-            ),
+        ),
+        Expanded(
+          child: TabBarView(
+            controller: _tabController,
+            children: getTabWidgets()
           ),
-        ]
-      )
+        ),
+      ]
     );
   }
 
-  List<Widget> getTabList()
+  List<Widget> getTabWidgets()
   {
     List<Widget> _tabs = [];
     widget.tabs.forEach((key, widget) {
@@ -169,7 +239,7 @@ class _AppTabBarState extends State<AppTabBar>
           child:
             Row(
               // crossAxisAlignment: CrossAxisAlignment,
-              mainAxisAlignment: pos == 0 ? MainAxisAlignment.start : pos == 1 ? MainAxisAlignment.center : pos == 2 ? MainAxisAlignment.end : null,
+              mainAxisAlignment: pos == 0 ? MainAxisAlignment.start : pos != widget.tabs.length - 1 ? MainAxisAlignment.center : MainAxisAlignment.end,
               // mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
@@ -196,7 +266,6 @@ class _AppTabBarState extends State<AppTabBar>
         );
       pos++;
     });
-
     return _labels;
   }
 }

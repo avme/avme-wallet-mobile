@@ -1,6 +1,5 @@
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/screens/prototype/app_scaffold.dart';
-import 'package:avme_wallet/app/screens/prototype/tab_bar_controller.dart';
 import 'package:avme_wallet/app/screens/tabs/accounts_old.dart';
 import 'package:avme_wallet/app/screens/widgets/drawer_scaffold.dart';
 // import 'package:avme_wallet/app/screens/widgets/tab_scaffold.dart';
@@ -20,7 +19,6 @@ class _TabsWalletState extends State<TabsWallet>{
   // List of Tabs
   final Map<String,Widget> routes = {
     "PROTOTYPE: APP SCAFFOLD" : AppScaffold(),
-    "PROTOTYPE: APP TAB BAR" : StackOver(),
     "ACCOUNTS OLD" : AccountsOld(),
     "ACCOUNTS" : Accounts(),
     "BALANCE" : Balance(),
