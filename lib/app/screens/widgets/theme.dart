@@ -28,14 +28,19 @@ class AppColors {
     static const lightBlue1 = Color(0xFF77C2EC);
     static const loading1 = Color(0x607684BA);
     static const loading2 = Color(0x607F8CC2);
+    static const lightBlue = Color(0xFF2CE8F4);
     static const purple = Color(0xFF9300F5);
-    static const purpleVariant1 = Color(0xff8a0df2);
+    static const purpleVariant1 = Color(0xFF8a0df2);
+    static const purpleVariant2 = Color(0xffab01f9);
     static const purpleDark1 = Color(0xFF7238AD);
     static const purpleDark2 = Color(0xFF12013A);
     static const cardBlue = Color(0xFF151420);
-    static const darkBlue = Color.fromRGBO(22, 20, 32, 1.0);
+    // static const darkBlue = Color.fromRGBO(22, 20, 32, 1.0);
+    static const darkBlue = Color(0xFF16141F);
     static const labelDefaultColor = Color(0xFF8077A3);
-    static const cardDefaultColor = Color(0xFF201E2C);
+    static const labelDisabledColor = Color(0xFF88878E);
+    // static const cardDefaultColor = Color(0xFF201E2C);
+    static const cardDefaultColor = Color(0xFF201E2B);
 }
 
 

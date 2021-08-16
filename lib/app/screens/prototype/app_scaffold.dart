@@ -1,3 +1,4 @@
+import 'package:avme_wallet/app/config/routes.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/screens/widgets/custom_widgets.dart';
 import 'package:avme_wallet/app/screens/widgets/drawer_scaffold.dart';
@@ -6,14 +7,8 @@ import 'package:flutter/material.dart';
 
 class AppScaffold extends StatelessWidget {
 
-  final double appBarWidth = 12;
-  // final ButtonStyle appBarButtonStyle = TextButton.styleFrom(
-  //   padding: EdgeInsets.all(0),
-  //   backgroundColor: Colors.red,
-  //   textStyle: TextStyle(
-  //   ),
-  //   minimumSize: Size(0,10)
-  // );
+  final double appBarWidth = 24;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,9 +18,11 @@ class AppScaffold extends StatelessWidget {
           color: AppColors.labelDefaultColor
         ),
         titleSpacing: appBarWidth,
+
         /// We're populating this property with a Row widget and a Pad widget to
         ///match the original design, since flutter doesn't allow any widget
-        ///besides PreferredSizeWidet and AppState.
+        ///besides PreferredSizeWidget and AppState.
+
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -71,35 +68,7 @@ class AppScaffold extends StatelessWidget {
       endDrawer: AppDrawer({"Example 1" : Container()}),
       body: AppTabBar(
         padding: appBarWidth,
-        tabs: {
-          'About' : Center(
-            child: Text(
-              'About',
-              style: TextStyle(
-                fontSize: 25,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          'Overview' : Center(
-            child: Text(
-              'Overview',
-              style: TextStyle(
-                fontSize: 25,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          'History' : Center(
-            child: Text(
-              'History',
-              style: TextStyle(
-                fontSize: 25,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        }
+        tabs: tabRoute
       ),
     );
   }
@@ -171,11 +140,9 @@ class _AppTabBarState extends State<AppTabBar>
     return Column(
       children: [
         Padding(
-          // padding: const EdgeInsets.all(8.0),
           padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: widget.padding),
           child: Container(
             decoration: BoxDecoration(
-              // color: Colors.red,
               border: Border(
                 top: BorderSide(
                     color: AppColors.purple,
@@ -188,24 +155,21 @@ class _AppTabBarState extends State<AppTabBar>
                 splashColor: Colors.transparent,
                 highlightColor: Colors.transparent,
               ),
-              child: Padding(
-                padding: const EdgeInsets.only(bottom:16.0),
-                child: TabBar(
-                  labelPadding: EdgeInsets.only(top:8),
-                  controller: _tabController,
+              child: TabBar(
+                labelPadding: EdgeInsets.only(top:8),
+                controller: _tabController,
 
-                  indicator: BoxDecoration(
-                    border: Border(
-                      top: BorderSide(
-                        color: AppColors.purple,
-                        width: 2
-                      )
+                indicator: BoxDecoration(
+                  border: Border(
+                    top: BorderSide(
+                      color: AppColors.purple,
+                      width: 2
                     )
-                  ),
-                  labelColor: Colors.white,
-                  unselectedLabelColor: AppColors.labelDefaultColor,
-                  tabs: getTabLabels(_tabController)
+                  )
                 ),
+                labelColor: Colors.white,
+                unselectedLabelColor: AppColors.labelDisabledColor,
+                tabs: getTabLabels(_tabController)
               ),
             ),
           ),
