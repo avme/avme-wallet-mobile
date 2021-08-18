@@ -1,3 +1,4 @@
+import 'package:avme_wallet/app/screens/prototype/app_scaffold.dart';
 import 'package:avme_wallet/app/screens/prototype/login.dart' as pl;
 import 'package:avme_wallet/app/screens/prototype/overview.dart';
 import 'package:flutter/material.dart';
@@ -24,7 +25,8 @@ Map<String,WidgetBuilder> routes =
 
   ///Prototype routes
 
-  'test/login' : (context) => pl.Login()
+  'test/login' : (context) => pl.Login(),
+  'test/preview' : (context) => AppScaffold()
 };
 
 /// TabController reads the named Widgets from the list,

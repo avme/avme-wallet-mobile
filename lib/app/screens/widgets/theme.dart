@@ -39,6 +39,7 @@ class AppColors {
     static const darkBlue = Color(0xFF16141F);
     static const labelDefaultColor = Color(0xFF8077A3);
     static const labelDisabledColor = Color(0xFF88878E);
+    static const labelDisabledTransparent = Color(0xCCFFFFFF);
     // static const cardDefaultColor = Color(0xFF201E2C);
     static const cardDefaultColor = Color(0xFF201E2B);
 }
