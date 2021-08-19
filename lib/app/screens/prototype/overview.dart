@@ -12,6 +12,9 @@ import 'widgets/history_snippet.dart';
 
 
 class Overview extends StatelessWidget {
+  final TabController appScaffoldTabController;
+
+  const Overview({Key key, @required this.appScaffoldTabController}) : super(key: key);
   @override
   Widget build(BuildContext context) {
 
@@ -43,50 +46,7 @@ class Overview extends StatelessWidget {
           marketValue: "1631,76",
           valueDifference: "8,669",
         ),
-        AppCard(
-          child: Column(
-            children: [
-              Text("History"),
-              SizedBox(
-                height: 12,
-              ),
-              Container(
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    color: AppColors.darkBlue
-                ),
-                child: Column(
-                  children: [
-                    HistorySnippet(
-                      amount: "32,30",
-                      sent: true,
-                    ),
-                    HistorySnippet(
-                      amount: "12,99",
-                      sent: false,
-                    ),
-                    HistorySnippet(
-                      amount: "2,12",
-                      sent: false,
-                    ),
-                    HistorySnippet(
-                      amount: "15,13",
-                      sent: true,
-                    ),
-                    HistorySnippet(
-                      amount: "0,37",
-                      sent: true,
-                    ),
-                  ],
-                )
-              ),
-              SizedBox(
-                height: 12,
-              ),
-              AppNeonButton(onPressed: (){}, text: "SHOW FULL HISTORY"),
-            ],
-          ),
-        )
+        HistorySnippet(appScaffoldTabController: appScaffoldTabController)
       ],
     );
   }

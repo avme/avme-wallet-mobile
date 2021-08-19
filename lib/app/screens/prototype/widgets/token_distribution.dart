@@ -10,10 +10,10 @@ class TokenDistribution extends StatefulWidget {
   final Map<String, List<dynamic>> dataPie = {
     "AVME": [5, AppColors.lightBlue],
     "AVAX": [3, Colors.redAccent],
-    "FUT": [2, Colors.green],
-    "AGO": [1, Colors.indigo],
-    "STO": [0.5, Colors.purple],
-    "SAA": [0.15, Colors.white],
+    "BRL": [2, Colors.green],
+    "EUR": [1, Colors.indigo],
+    "USD": [0.5, Colors.purple],
+    // "SAA": [0.15, Colors.white],
   };
   @override
   _TokenDistributionState createState() => _TokenDistributionState();
@@ -93,7 +93,7 @@ class _TokenDistributionState extends State<TokenDistribution> {
           SizedBox(
             height: 12,
           ),
-          AppNeonButton(onPressed: (){}, text: "SHOW AVALAIBLE TOKENS"),
+          AppNeonButton(onPressed: (){}, text: "SHOW AVAILABLE TOKENS"),
         ],
       ),
     );

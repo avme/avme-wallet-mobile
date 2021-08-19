@@ -1,3 +1,6 @@
+import 'package:avme_wallet/app/lib/utils.dart';
+import 'package:avme_wallet/app/screens/receive.dart';
+import 'package:avme_wallet/app/screens/send.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
 
@@ -6,7 +9,6 @@ import 'card.dart';
 import 'gradient_container.dart';
 
 class OverviewAndButtons extends StatefulWidget {
-
   final DecorationTween balanceTween = DecorationTween(
       begin: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
@@ -110,7 +112,8 @@ class _OverviewAndButtonsState extends State<OverviewAndButtons> {
             children: [
               Expanded(
                 child: AppNeonButton(
-                  onPressed: (){},
+                  onPressed: () => Navigator.push(
+                      context, MaterialPageRoute(builder: (builder) => Send())),
                   text: "SEND",
                   iconData: Icons.upload_sharp,
                 ),
@@ -120,7 +123,8 @@ class _OverviewAndButtonsState extends State<OverviewAndButtons> {
               ),
               Expanded(
                 child: AppNeonButton(
-                  onPressed: (){},
+                  onPressed: () => Navigator.push(
+                      context, MaterialPageRoute(builder: (builder) => Receive())),
                   text: "RECEIVE",
                   iconData: Icons.download_sharp,
                 ),
@@ -130,7 +134,7 @@ class _OverviewAndButtonsState extends State<OverviewAndButtons> {
               ),
               Expanded(
                 child: AppNeonButton(
-                  onPressed: (){},
+                  onPressed: () => snack("Not implemented", context),
                   text: "BUY",
                   iconData: Icons.shopping_cart,
                 ),

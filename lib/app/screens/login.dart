@@ -168,8 +168,8 @@ class _LoginState extends State<Login> {
       Navigator.pop(_loadingPopupContext);
       appState.changeCurrentWalletId = 0;
       snack("Account #0 selected", context);
-      // Navigator.pushReplacementNamed(context, "/home");
-      Navigator.pushReplacementNamed(context, "test/preview");
+      Navigator.pushReplacementNamed(context, "/home");
+      // Navigator.pushReplacementNamed(context, "test/preview");
     }
   }
 }

@@ -28,28 +28,3 @@ Map<String,WidgetBuilder> routes =
   'test/login' : (context) => pl.Login(),
   'test/preview' : (context) => AppScaffold()
 };
-
-/// TabController reads the named Widgets from the list,
-/// and assembles the AppScaffold
-
-Map <String, Widget> tabRoute = {
-  'About' : Center(
-    child: Text(
-      'About',
-      style: TextStyle(
-        fontSize: 25,
-        fontWeight: FontWeight.w600,
-      ),
-    ),
-  ),
-  'Overview' : Overview(),
-  'History' : Center(
-    child: Text(
-      'History',
-      style: TextStyle(
-        fontSize: 25,
-        fontWeight: FontWeight.w600,
-      ),
-    ),
-  ),
-};
