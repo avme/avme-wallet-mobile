@@ -49,11 +49,9 @@ class _InitialLoadingState extends State<InitialLoading>{
   {
     AvmeWallet wallet = Provider.of<AvmeWallet>(context);
     wallet.init();
-    if (!wallet.services.containsKey("tokenPriceHistory"))
-      getTokenPriceHistory(wallet);
 
-    if (!wallet.services.containsKey("updateCoinValues"))
-      updateCoinValues(wallet);
+    if (!wallet.services.containsKey("valueSubscription"))
+      valueSubscription(wallet);
 
     await wallet.fileManager.getDocumentsFolder();
 

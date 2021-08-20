@@ -135,13 +135,13 @@ class _LoginState extends State<Login> {
     else
     {
       await showDialog<void>(
-          context: context,
-          builder: (BuildContext context) =>
-              SimpleWarning(
-                  title: "Warning",
-                  text:
-                  "The passphrase field cannot be empty."
-              )
+        context: context,
+        builder: (BuildContext context) =>
+          SimpleWarning(
+            title: "Warning",
+            text:
+            "The passphrase field cannot be empty."
+          )
       );
       return;
     }
@@ -151,25 +151,25 @@ class _LoginState extends State<Login> {
     {
       Navigator.pop(_loadingPopupContext);
       await showDialog<void>(
-          context: context,
-          builder: (BuildContext context) =>
-              SimpleWarning(
-                  title: "Warning",
-                  text:
-                  // "Wrong password, try again."
-                  data["message"]
-              )
+        context: context,
+        builder: (BuildContext context) =>
+          SimpleWarning(
+            title: "Warning",
+            text:
+            // "Wrong password, try again."
+            data["message"]
+          )
       );
       _passphrase.text = "";
       return;
     }
     else
     {
-      Navigator.pop(_loadingPopupContext);
-      appState.changeCurrentWalletId = 0;
-      snack("Account #0 selected", context);
-      Navigator.pushReplacementNamed(context, "/home");
-      // Navigator.pushReplacementNamed(context, "test/preview");
+        Navigator.pop(_loadingPopupContext);
+        appState.changeCurrentWalletId = 0;
+        snack("Account #0 selected", context);
+        Navigator.pushReplacementNamed(context, "/home");
+        // Navigator.pushReplacementNamed(context, "test/preview");
     }
   }
 }

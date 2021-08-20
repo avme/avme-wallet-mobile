@@ -1,13 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:isolate';
 import 'package:avme_wallet/app/model/account_item.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/model/boxes.dart';
 import 'package:avme_wallet/app/model/service_data.dart';
 import 'package:avme_wallet/app/model/token_chart.dart';
-import 'package:avme_wallet/app/packages/services.dart';
 import 'package:avme_wallet/external/contracts/avme_contract.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive/hive.dart';
@@ -15,62 +13,81 @@ import 'package:http/http.dart' as http;
 import 'package:web3dart/web3dart.dart';
 import 'package:decimal/decimal.dart';
 
-///Spawns two threads to listen, and update our appState
-void updateBalanceService(AvmeWallet appState, {Map <String, dynamic> accountData}) async
+///Spawns a single thread to listen, and update our appState
+void balanceSubscription(AvmeWallet appState, Map<int,AccountObject> accounts, int posCurrentAccount) async
 {
-  ///Validating if is the default or a specific account to keep track of!
-  if(accountData == null)
+  ///Validating if is the default/selected or a specific account to keep track of!
+
+  List<Map<String, dynamic>> accountSpawnData = [];
+
+  for(int pos = 0; pos < accounts.length; pos++)
   {
-    accountData = {
-      "slot" : appState.currentWalletId,
-      "address" : EthereumAddress.fromHex(appState.currentAccount.address),
-      "updateIn" : 10,
-    };
+    if(pos == posCurrentAccount)
+    {
+      accountSpawnData.add({
+        "id" : posCurrentAccount,
+        "updateIn" : 10,
+        "address" : EthereumAddress.fromHex(appState.currentAccount.address),
+      });
+    }
+    else
+    {
+      accountSpawnData.add({
+        "id" : pos ,
+        "updateIn" : 30,
+        "address" : EthereumAddress.fromHex(appState.accountList[pos].address),
+      });
+    }
   }
+  print("Account to be processed");
+  print(accountSpawnData);
 
-  ServiceData balanceData;
-  ServiceData tokenData;
-  ReceivePort balancePort = ReceivePort();
-  ReceivePort tokenPort = ReceivePort();
-  // int idRet = 0;
   Map <String, dynamic> data = {
-    "etheriumAddress" : accountData['address'],
-    "url" : env['NETWORK_URL']
-  };
-
-  data = {
-    "etheriumAddress" : accountData['address'],
-    "contractAddress" : EthereumAddress.fromHex(env['CONTRACT_ADDRESS']),
+    "accounts" : accountSpawnData,
     "url" : env['NETWORK_URL'],
-    "seconds" : accountData["updateIn"]
+    "contractAddress" : EthereumAddress.fromHex(env['CONTRACT_ADDRESS']),
   };
 
-  // print("updateBalanceService spawned for address ${accountData['address']}");
-  balanceData = ServiceData(data, balancePort.sendPort);
-  appState.services["${accountData["slot"]}#watchBalanceChanges"] = await Isolate.spawn(watchBalanceChanges,balanceData);
-  balancePort.listen((data) {
-    // idRet++;
-    // print("ID Ret: $idRet");
-    // print("watchBalanceChanges returned ${data["balance"]}");
-    // print("using AccountObject ID #${accountData['slot']}");
-    if(appState.accountList[accountData['slot']].waiBalance != data["balance"]) appState.accountList[accountData['slot']].updateAccountBalance = data["balance"];
-  });
+  ReceivePort receivePort = ReceivePort();
+  ServiceData serviceData = ServiceData(data,receivePort.sendPort);
 
-  tokenData = ServiceData(data, tokenPort.sendPort);
-  appState.services["${accountData["slot"]}#watchTokenChanges"] = await Isolate.spawn(watchTokenChanges, tokenData);
-  tokenPort.listen((data){
-    // idRet++;
-    // print("ID Ret: $idRet");
-    // print("watchTokenChanges returned ${data["tokenBalance"]}");
-    // print("using AccountObject ID #${accountData['slot']}");
-    if(appState.accountList[accountData['slot']].rawTokenBalance != data["tokenBalance"]) appState.accountList[accountData['slot']].updateTokenBalance = data["tokenBalance"];
+  appState.services["balanceSubscription"] = await Isolate.spawn(
+    startBalanceSubscription,
+    serviceData
+  );
+
+  receivePort.listen((data) {
+    print(data);
+    Map response;
+    ///We validate who is returning data, since we don't use multiple Isolates,
+    ///for the same purpose (like previously seen) to save memory! @_@
+    if(data.containsKey("metacoin"))
+    {
+      response = data["metacoin"];
+      if(appState.accountList[response['id']].waiBalance != response["balance"]) appState.accountList[response['id']].updateAccountBalance = response["balance"];
+    }
+    if(data.containsKey("token"))
+    {
+      response = data["token"];
+      if(appState.accountList[response['id']].rawTokenBalance != response["tokenBalance"]) appState.accountList[response['id']].updateTokenBalance = response["tokenBalance"];
+    }
+  });
+}
+
+void startBalanceSubscription(ServiceData param)
+{
+  param.data["accounts"].forEach((account) {
+    account["url"] = param.data["url"];
+    account["contractAddress"] = param.data["contractAddress"];
+    watchBalanceChanges(ServiceData(account,param.sendPort));
+    watchTokenChanges(ServiceData(account,param.sendPort));
   });
 }
 
 ///Isolated function to watch balance changes
 void watchBalanceChanges(ServiceData param) async
 {
-  EthereumAddress address = param.data["etheriumAddress"];
+  EthereumAddress address = param.data["address"];
   http.Client httpClient = http.Client();
   Web3Client ethClient = Web3Client(param.data["url"], httpClient);
   int seconds = 0;
@@ -80,17 +97,18 @@ void watchBalanceChanges(ServiceData param) async
       EtherAmount balance = await ethClient.getBalance(address);
       param.sendPort.send(
         {
-          "balance" : balance.getInWei
+          "metacoin": {"balance" : balance.getInWei, "id" : param.data["id"]}
         }
       );
-      if(seconds == 0) seconds = param.data["seconds"];
+      if(seconds == 0) seconds = param.data["updateIn"];
     });
   }
 }
+
 ///Isolated function to watch token balance changes
 void watchTokenChanges(ServiceData param) async
 {
-  EthereumAddress address = param.data["etheriumAddress"];
+  EthereumAddress address = param.data["address"];
   http.Client httpClient = http.Client();
   Web3Client ethClient = Web3Client(param.data["url"], httpClient);
   AvmeContract contract = AvmeContract(address: param.data["contractAddress"],client: ethClient, chainId: 43113);
@@ -101,60 +119,90 @@ void watchTokenChanges(ServiceData param) async
       BigInt tokenBalance = await contract.balanceOf(address);
       param.sendPort.send(
         {
-          "tokenBalance" : tokenBalance
+          "token": {"tokenBalance" : tokenBalance, "id" : param.data["id"]}
         }
       );
-      if(seconds == 0) seconds = param.data["seconds"];
+      if(seconds == 0) seconds = param.data["updateIn"];
     });
   }
 }
 
-void getTokenPriceHistory(AvmeWallet appState) async
+void valueSubscription(AvmeWallet appState) async
 {
   ReceivePort isolatePort = ReceivePort();
 
-  Map <String, dynamic> data =
-  {
-    "url" : env["MAINNET_URL"] + ":${env["MAINNET_PORT"]}" + env["MAINNET_VALUEPATH"],
-    "tokenBodyRequest" : {"query": "{tokenDayDatas(first: 30,orderBy: date,orderDirection: desc,where:{token: \"0x1ecd47ff4d9598f89721a2866bfeb99505a413ed\"}) { date priceUSD }}"},
-    "metaCoinBodyRequest" : {"query": "{tokenDayDatas(first: 30,orderBy: date,orderDirection: desc,where:{token: \"0xde3a24028580884448a5397872046a019649b084\"}) { date priceUSD }}"},
-  };
-
-  ServiceData isolateData = ServiceData(data, isolatePort.sendPort);
+  Map <String, dynamic> data = {"env":env};
   Box<TokenChart> box = Boxes.getHistory();
-  appState.services["tokenPriceHistory"] = await Isolate.spawn(watchTokenPriceHistory,isolateData);
+  ServiceData isolateData = ServiceData(data,isolatePort.sendPort);
+  appState.services["valueSubscription"] = await Isolate.spawn(startValueSubscription,isolateData);
 
   isolatePort.listen((data) {
-    // print(data['tokenChart']["data"].runtimeType);
-    // print(response);
-    TokenChart dashboardChart = TokenChart();
 
-    Map tokenMap = {};
-    Map metaCoinMap = {};
+    ///We validate who is returning data, since we don't use multiple Isolates,
+    ///for the same purpose (like previously seen) to save memory! @_@
 
-    List tokenList = data['tokenChart']['data']['tokenDayDatas'];
-    List metaCoinList =  data['metaCoinHistory']['data']['tokenDayDatas'];
+    Map response;
 
-    tokenList.forEach((element) {
-      tokenMap[element["date"]] = element["priceUSD"];
-    });
-    metaCoinList.forEach((element) {
-      metaCoinMap[element["date"]] = element["priceUSD"];
-    });
+    if(data.containsKey("watchTokenPriceHistory"))
+    {
+      response = data["watchTokenPriceHistory"];
+      print(response['tokenChart']["data"].runtimeType);
+      TokenChart dashboardChart = TokenChart();
+      Map tokenMap = {};
+      Map metaCoinMap = {};
 
-    tokenMap.forEach((key, value) {
-      Decimal metaCoinValue = Decimal.fromInt(1) / Decimal.parse(metaCoinMap[key]);
-      Decimal tokenValue = metaCoinValue * Decimal.parse(value);
-      // print("$key: value:$tokenValue");
-      dashboardChart.addToList(key, tokenValue.toString());
-    });
+      List tokenList = response['tokenChart']['data']['tokenDayDatas'];
+      List metaCoinList =  response['metaCoinHistory']['data']['tokenDayDatas'];
 
-    box.put(0,dashboardChart);
+      tokenList.forEach((element) {
+        tokenMap[element["date"]] = element["priceUSD"];
+      });
+      metaCoinList.forEach((element) {
+        metaCoinMap[element["date"]] = element["priceUSD"];
+      });
 
-    // print(box.values.elementAt(0).tokenList[1624060800]);
-    // print(box.values.elementAt(0).tokenList[1624060800].runtimeType);
+      tokenMap.forEach((key, value) {
+        Decimal metaCoinValue = Decimal.fromInt(1) / Decimal.parse(metaCoinMap[key]);
+        Decimal tokenValue = metaCoinValue * Decimal.parse(value);
+        // print("$key: value:$tokenValue");
+        dashboardChart.addToList(key, tokenValue.toString());
+      });
+      box.put(0,dashboardChart);
+    }
+
+    if(data.containsKey("watchCoinValueChanges"))
+    {
+      response = data["watchCoinValueChanges"];
+      appState.metaCoin.value = response["avax"];
+      appState.token.value = response["avme"];
+    }
   });
 }
+
+void startValueSubscription(ServiceData param)
+{
+  String url = param.data["env"]["MAINNET_URL"] + ":${param.data["env"]["MAINNET_PORT"]}" + param.data["env"]["MAINNET_VALUEPATH"];
+
+  print("Spawning watchTokenPriceHistory");
+
+  watchTokenPriceHistory(
+    ServiceData({
+        "url" : url,
+        "tokenBodyRequest" : {"query": "{tokenDayDatas(first: 30,orderBy: date,orderDirection: desc,where:{token: \"0x1ecd47ff4d9598f89721a2866bfeb99505a413ed\"}) { date priceUSD }}"},
+        "metaCoinBodyRequest" : {"query": "{tokenDayDatas(first: 30,orderBy: date,orderDirection: desc,where:{token: \"0xde3a24028580884448a5397872046a019649b084\"}) { date priceUSD }}"},
+      }
+    ,param.sendPort));
+
+  print("Spawning watchCoinValueChanges");
+  watchCoinValueChanges(
+      ServiceData({
+        "url" : url,
+        "avaxBodyRequest" : {"query": "{pair(id: \"0x9ee0a4e21bd333a6bb2ab298194320b8daa26516\") {token0 {symbol} token1 {symbol} token0Price token1Price}}"},
+        "tokenBodyRequest" : {"query": "{token(id: \"0x1ecd47ff4d9598f89721a2866bfeb99505a413ed\"){symbol derivedETH}}"}
+      }
+    ,param.sendPort));
+}
+
 
 void watchTokenPriceHistory(ServiceData param) async
 {
@@ -172,38 +220,16 @@ void watchTokenPriceHistory(ServiceData param) async
       tokenHistory = await getTokenChartHistory(tokenBodyRequest, url);
       metaCoinHistory = await getTokenChartHistory(metaCoinBodyRequest, url);
 
-      param.sendPort.send(
-        {
-          "tokenChart" : json.decode(tokenHistory),
-          "metaCoinHistory" : json.decode(metaCoinHistory)
+      param.sendPort.send({
+          "watchTokenPriceHistory":{
+            "tokenChart": json.decode(tokenHistory),
+            "metaCoinHistory": json.decode(metaCoinHistory)
+          }
         }
       );
     });
     if(seconds == 0) seconds = 3600;
-    // if(seconds == 0) seconds = 5;
   }
-}
-
-void updateCoinValues(AvmeWallet appState) async
-{
-  ReceivePort isolatePort = ReceivePort();
-
-  // Nosso map é os parametros q vai pro isolate
-  Map <String, dynamic> data =
-  {
-    "url" : env["MAINNET_URL"] + ":${env["MAINNET_PORT"]}" + env["MAINNET_VALUEPATH"],
-    "avaxBodyRequest" : {"query": "{pair(id: \"0x9ee0a4e21bd333a6bb2ab298194320b8daa26516\") {token0 {symbol} token1 {symbol} token0Price token1Price}}"},
-    "tokenBodyRequest" : {"query": "{token(id: \"0x1ecd47ff4d9598f89721a2866bfeb99505a413ed\"){symbol derivedETH}}"}
-  };
-
-  ServiceData isolateData = ServiceData(data, isolatePort.sendPort);
-
-  appState.services["updateCoinValues"] = await Isolate.spawn(watchCoinValueChanges,isolateData);
-  isolatePort.listen((data) {
-    //Atualiza o nosso model
-    appState.metaCoin.value = data["avax"];
-    appState.token.value = data["avme"];
-  });
 }
 
 void watchCoinValueChanges(ServiceData param) async
@@ -221,11 +247,8 @@ void watchCoinValueChanges(ServiceData param) async
       avmePrice = await getAVMEPriceUSD(avaxPrice, url, tokenBodyRequest);
 
       param.sendPort.send(
-        {
-          "avax" : avaxPrice,
-          "avme" : avmePrice
-        }
-      );
+        {"watchCoinValueChanges": {"avax": avaxPrice, "avme": avmePrice}
+      });
     });
     if(seconds == 0) seconds = 5;
   }

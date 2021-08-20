@@ -229,36 +229,20 @@ class WalletManager
   }
 
   ///Start balance update "subscription"
-  void startBalanceSubscription(AvmeWallet wallet)
+  void startBalanceSubscription(AvmeWallet appState)
   {
-    if (!wallet.services.containsKey("${wallet.currentWalletId}#watchBalanceChanges")) {
-      print("Spawning main balance subscription: ID#" + "${wallet.currentWalletId}#watchBalanceChanges");
-      services.updateBalanceService(wallet);
+    if(!appState.services.containsKey("balanceSubscription"))
+    {
+      services.balanceSubscription(appState, appState.accountList, appState.currentWalletId);
     }
-    wallet.accountList.keys.forEach((key) {
-      if(!wallet.services.containsKey("$key#watchBalanceChanges") && key != wallet.currentWalletId)
-      {
-        print("Spawning less important balance subscription: ID#" + "$key#watchBalanceChanges");
-        services.updateBalanceService(wallet,
-          accountData: {
-            "slot" : key,
-            "updateIn" : 30,
-            "address" : EthereumAddress.fromHex(wallet.accountList[key].address),
-          }
-        );
-      }
-    });
   }
 
-  void stopBalanceSubscription(AvmeWallet wallet)
+  void stopBalanceSubscription(AvmeWallet appState)
   {
-    wallet.accountList.keys.forEach((key) {
-      if(wallet.services.containsKey("$key#watchBalanceChanges"))
-      {
-        wallet.killService("$key#watchBalanceChanges");
-        wallet.killService("$key#watchTokenChanges");
-      }
-    });
+    if(appState.services.containsKey("balanceSubscription"))
+    {
+      appState.killService("balanceSubscription");
+    }
   }
 
   void setCurrentWallet(AvmeWallet wallet, int id)
