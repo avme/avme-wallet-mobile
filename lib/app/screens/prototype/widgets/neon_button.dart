@@ -6,8 +6,17 @@ class AppNeonButton extends StatelessWidget {
   final String text;
   final IconData iconData;
   final double height;
+  final MainAxisAlignment mainAxisAlignment;
+  final double paddingBetweenIcons;
 
-  const AppNeonButton({@required this.onPressed, @required this.text, this.iconData, this.height = 45});
+  const AppNeonButton({
+    @required this.onPressed,
+    @required this.text,
+    this.iconData,
+    this.mainAxisAlignment,
+    this.paddingBetweenIcons,
+    this.height = 45,
+  });
   @override
   Widget build(BuildContext context) {
 
@@ -17,6 +26,13 @@ class AppNeonButton extends StatelessWidget {
     {
       children.add(
         Icon(this.iconData, color: AppColors.purple,)
+      );
+    }
+
+    if(this.mainAxisAlignment == MainAxisAlignment.start)
+    {
+      children.add(
+        Padding(padding: EdgeInsets.only(left: this.paddingBetweenIcons ?? 8),)
       );
     }
 
@@ -31,7 +47,7 @@ class AppNeonButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: this.onPressed,
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisAlignment: this.mainAxisAlignment ?? MainAxisAlignment.spaceAround,
           children: children
         ),
         style: ButtonStyle(

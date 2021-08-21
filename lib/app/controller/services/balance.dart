@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:isolate';
+import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/account_item.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/model/boxes.dart';
@@ -61,15 +62,36 @@ void balanceSubscription(AvmeWallet appState, Map<int,AccountObject> accounts, i
     Map response;
     ///We validate who is returning data, since we don't use multiple Isolates,
     ///for the same purpose (like previously seen) to save memory! @_@
+    /*
+      appState.metaCoin.value = response["avax"];
+      appState.token.value = response["avme"];
+    */
+
     if(data.containsKey("metacoin"))
     {
       response = data["metacoin"];
-      if(appState.accountList[response['id']].waiBalance != response["balance"]) appState.accountList[response['id']].updateAccountBalance = response["balance"];
+      if(appState.accountList[response['id']].waiBalance != response["balance"])
+        appState.accountList[response['id']].updateAccountBalance = response["balance"];
+
+      double balanceFromBigInt =
+        double.tryParse(weiToFixedPoint(response["balance"].toString()));
+
+      double metacoinValue = double.tryParse(appState.metaCoin.value);
+      double result = balanceFromBigInt * metacoinValue;
+      appState.accountList[response['id']].currencyBalance = result;
     }
     if(data.containsKey("token"))
     {
       response = data["token"];
-      if(appState.accountList[response['id']].rawTokenBalance != response["tokenBalance"]) appState.accountList[response['id']].updateTokenBalance = response["tokenBalance"];
+      if(appState.accountList[response['id']].rawTokenBalance != response["tokenBalance"])
+        appState.accountList[response['id']].updateTokenBalance = response["tokenBalance"];
+
+      double tokenFromBigInt =
+      double.tryParse(weiToFixedPoint(response["tokenBalance"].toString()));
+
+      double tokenMarketValue = double.tryParse(appState.token.value);
+      double result = tokenFromBigInt * tokenMarketValue;
+      appState.accountList[response['id']].currencyTokenBalance = result;
     }
   });
 }
@@ -142,7 +164,7 @@ void valueSubscription(AvmeWallet appState) async
     ///for the same purpose (like previously seen) to save memory! @_@
 
     Map response;
-
+    print(data);
     if(data.containsKey("watchTokenPriceHistory"))
     {
       response = data["watchTokenPriceHistory"];

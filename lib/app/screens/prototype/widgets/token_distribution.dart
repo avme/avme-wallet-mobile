@@ -7,14 +7,17 @@ import 'card.dart';
 
 
 class TokenDistribution extends StatefulWidget {
-  final Map<String, List<dynamic>> dataPie = {
-    "AVME": [5, AppColors.lightBlue],
-    "AVAX": [3, Colors.redAccent],
-    "BRL": [2, Colors.green],
-    "EUR": [1, Colors.indigo],
-    "USD": [0.5, Colors.purple],
-    // "SAA": [0.15, Colors.white],
-  };
+  // final Map<String, List<dynamic>> dataPie = {
+  //   "AVME": [5, AppColors.lightBlue],
+  //   "AVAX": [3, Colors.redAccent],
+  //   "BRL": [2, Colors.green],
+  //   "EUR": [1, Colors.indigo],
+  //   "USD": [0.5, Colors.purple],
+  //   // "SAA": [0.15, Colors.white],
+  // };
+  final Map<String, List<dynamic>> chartData;
+
+  const TokenDistribution({Key key, @required this.chartData}) : super(key: key);
   @override
   _TokenDistributionState createState() => _TokenDistributionState();
 }
@@ -46,13 +49,13 @@ class _TokenDistributionState extends State<TokenDistribution> {
                         child: Stack(
                           children: [
                             PieChart.PieChart(
-                              dataMap: extractValues(widget.dataPie),
+                              dataMap: extractValues(widget.chartData),
                               initialAngleInDegree: 270,
                               legendOptions: PieChart.LegendOptions(
                                 showLegends: false,
                               ),
                               ringStrokeWidth: 12,
-                              colorList: extractColorList(widget.dataPie),
+                              colorList: extractColorList(widget.chartData),
                               chartType: PieChart.ChartType.ring,
                               chartRadius: 180,
                               chartValuesOptions: PieChart.ChartValuesOptions(
@@ -72,7 +75,7 @@ class _TokenDistributionState extends State<TokenDistribution> {
                                 // color: Colors.red,
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
-                                  children: buildChartPercentages(extractPercentage(widget.dataPie)),
+                                  children: buildChartPercentages(extractPercentage(widget.chartData)),
                                 ),
                               ),
                             )
@@ -84,7 +87,7 @@ class _TokenDistributionState extends State<TokenDistribution> {
                 Expanded(
                     flex:4,
                     child: Column(
-                      children: buildChartLegend(widget.dataPie),
+                      children: buildChartLegend(widget.chartData),
                     )
                 ),
               ],

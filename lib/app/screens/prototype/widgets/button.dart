@@ -6,8 +6,16 @@ class AppButton extends StatelessWidget {
   final String text;
   final IconData iconData;
   final double height;
+  final MainAxisAlignment mainAxisAlignment;
+  final double paddingBetweenIcons;
 
-  const AppButton({@required this.onPressed, @required this.text, this.iconData, this.height = 45});
+  const AppButton({
+    @required this.onPressed,
+    @required this.text,
+    this.iconData,
+    @required this.mainAxisAlignment,
+    @required this.paddingBetweenIcons,
+    this.height = 45});
   @override
   Widget build(BuildContext context) {
 
@@ -17,6 +25,13 @@ class AppButton extends StatelessWidget {
     {
       children.add(
         Icon(this.iconData, color: Colors.white,)
+      );
+    }
+
+    if(this.mainAxisAlignment == MainAxisAlignment.start)
+    {
+      children.add(
+          Padding(padding: EdgeInsets.only(left: this.paddingBetweenIcons ?? 8),)
       );
     }
 
@@ -31,7 +46,7 @@ class AppButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: this.onPressed,
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisAlignment: this.mainAxisAlignment ?? MainAxisAlignment.spaceAround,
           children: children
         ),
         style: ButtonStyle(

@@ -20,6 +20,21 @@ class AccountObject extends ChangeNotifier
   int derived;
   String title;
 
+  double _currencyBalance;
+  double _currencyTokenBalance;
+
+  set currencyBalance(double value)
+  {
+    _currencyBalance = value;
+    notifyListeners();
+  }
+
+  set currencyTokenBalance(double value)
+  {
+    _currencyTokenBalance = value;
+    notifyListeners();
+  }
+
   set updateTokenBalance(BigInt value)
   {
     _tokenWeiBalance = value;
@@ -43,6 +58,16 @@ class AccountObject extends ChangeNotifier
     if(_weiBalance == null) return null;
     if(_weiBalance.toDouble() != 0) return weiToFixedPoint(_weiBalance.toString());
     else return "0.0000";
+  }
+
+  double get currencyTokenBalance
+  {
+    return _currencyTokenBalance;
+  }
+
+  double get currencyBalance
+  {
+    return _currencyBalance;
   }
 
   BigInt get waiBalance => _weiBalance;

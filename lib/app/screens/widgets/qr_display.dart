@@ -1,23 +1,32 @@
-import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-class QrDisplay extends StatelessWidget {
 
-  QrDisplay({this.stringToRender, this.size});
+class QrDisplay extends StatefulWidget {
 
   final String stringToRender;
   final double size;
+  final Function onPressed;
 
+  QrDisplay({
+    @required this.stringToRender,
+    this.onPressed,
+    this.size
+  });
+
+  @override
+  _QrDisplayState createState() => _QrDisplayState();
+}
+
+class _QrDisplayState extends State<QrDisplay> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap:() => _copyToClipboard(context),
+      onTap:widget.onPressed,
       child: QrImage(
         backgroundColor: Colors.white,
-        data: this.stringToRender,
+        data: widget.stringToRender,
         version: QrVersions.auto,
-        size: size ?? getQrSize(context),
+        size: widget.size ?? getQrSize(context),
       ),
     );
   }
@@ -27,10 +36,5 @@ class QrDisplay extends StatelessWidget {
     double qrSize = MediaQuery.of(context).size.width <= 200 ?
     MediaQuery.of(context).size.width * 0.5 : MediaQuery.of(context).size.width * 0.6;
     return qrSize;
-  }
-
-  Future<void> _copyToClipboard(BuildContext context) async {
-    await Clipboard.setData(ClipboardData(text: this.stringToRender));
-    snack("Address copied to clipboard",context);
   }
 }

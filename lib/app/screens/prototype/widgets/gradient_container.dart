@@ -7,8 +7,9 @@ class GradientContainer extends StatefulWidget {
   ///Tween are "state" or states of the transition our explicit transition
   ///will animate.
   final DecorationTween decorationTween;
+  final Function onPressed;
 
-  const GradientContainer({@required this.child, @required this.decorationTween});
+  const GradientContainer({@required this.child, @required this.decorationTween, @required this.onPressed});
   @override
   _GradientContainerState createState() => _GradientContainerState();
 }
@@ -62,11 +63,14 @@ class _GradientContainerState extends State<GradientContainer>
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: DecoratedBoxTransition(
-        position: DecorationPosition.background,
-        decoration: widget.decorationTween.animate(_controller),
-        child: Container(child: widget.child),
+    return GestureDetector(
+      onTap: widget.onPressed,
+      child: Container(
+        child: DecoratedBoxTransition(
+          position: DecorationPosition.background,
+          decoration: widget.decorationTween.animate(_controller),
+          child: Container(child: widget.child),
+        ),
       ),
     );
   }
