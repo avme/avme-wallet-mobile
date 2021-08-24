@@ -8,7 +8,7 @@ class AppNeonButton extends StatelessWidget {
   final double height;
   final MainAxisAlignment mainAxisAlignment;
   final double paddingBetweenIcons;
-
+  final TextStyle textStyle;
   const AppNeonButton({
     @required this.onPressed,
     @required this.text,
@@ -16,6 +16,7 @@ class AppNeonButton extends StatelessWidget {
     this.mainAxisAlignment,
     this.paddingBetweenIcons,
     this.height = 45,
+    this.textStyle,
   });
   @override
   Widget build(BuildContext context) {
@@ -37,9 +38,11 @@ class AppNeonButton extends StatelessWidget {
     }
 
     children.add(
-      Text(text, style: TextStyle(
-        color: AppColors.purple
-      ),)
+      Text(text, style: this.textStyle ??
+        TextStyle(
+          color: AppColors.purple
+        ),
+      )
     );
 
     return SizedBox(

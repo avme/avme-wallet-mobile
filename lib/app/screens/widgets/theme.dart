@@ -34,6 +34,7 @@ class AppColors {
     static const purpleVariant2 = Color(0xffab01f9);
     static const purpleDark1 = Color(0xFF7238AD);
     static const purpleDark2 = Color(0xFF12013A);
+    static const purpleBlue = Color(0xFF2C0092);
     static const cardBlue = Color(0xFF151420);
     // static const darkBlue = Color.fromRGBO(22, 20, 32, 1.0);
     static const darkBlue = Color(0xFF16141F);

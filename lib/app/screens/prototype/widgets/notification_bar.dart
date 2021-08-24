@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 class NotificationBar {
   void show(BuildContext context, {Function onPressed, String text})
   {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(

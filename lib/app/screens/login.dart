@@ -17,72 +17,115 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
-
-    double height = MediaQuery.of(context).size.height * 1 / 3;
-    double width = MediaQuery.of(context).size.width * 1 / 1.25;
-
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
-            gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: <Color>[
-                  AppColors.purpleVariant1,
-                  AppColors.purpleDark2
-                ]
-            )
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: <Color>[
+              AppColors.purpleVariant1,
+              AppColors.purpleBlue
+            ]
+          )
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Center(
-                child: Card(
-                  color: AppColors.cardBlue,
-                  child: Container(
-                    height: height * 1.125,
-                    width: width,
-                    child: LayoutBuilder(
-                      builder: (BuildContext context, BoxConstraints constraints)
-                      {
-                        return Padding(
-                          padding: EdgeInsets.symmetric(
-                            vertical: constraints.maxHeight * 1 / 8,
-                            horizontal: constraints.maxHeight * 1 / 8,
+            Padding(
+              padding: EdgeInsets.all(
+                  (MediaQuery.of(context).size.width * 0.1).toDouble()
+              ),
+              child: Card(
+                color: AppColors.cardBlue,
+                child: Container(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      vertical: 32,
+                      horizontal: 32,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        ///Header
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  ///Close button
+                                  GestureDetector(
+                                    child: Container(
+                                      color: Colors.transparent,
+                                      // color: Colors.red,
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(
+                                          top: 16,
+                                          bottom: 10,
+                                          // left: 16,
+                                          right: 16
+                                        ),
+                                        child: Icon(
+                                          Icons.arrow_back,
+                                          size: 32,
+                                          color: AppColors.labelDefaultColor,
+                                        ),
+                                      ),
+                                    ),
+                                    onTap: (){
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Expanded(
+                              flex: 2,
+                              child: Column(
+                                children: [
+                                  Text(
+                                    "Load",
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold, fontSize: 28)
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Expanded(
+                              child: Container(),
+                            )
+                          ],
+                        ),
+                        ScreenIndicator(
+                          height: 20,
+                          width: MediaQuery.of(context).size.width,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 16,
                           ),
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Text(
-                                  "Load",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold, fontSize: 28)
-                              ),
-                              SizedBox(
-                                height: 14,
-                              ),
-                              ScreenIndicator(
-                                height: 20,
-                                width: constraints.maxWidth,
-                              ),
                               SizedBox(
                                 height: 20,
                               ),
                               TextField(
-                                  cursorColor: AppColors.labelDefaultColor,
-                                  controller: _passphrase,
-                                  obscureText: true,
-                                  decoration: InputDecoration(
-                                    labelText: "Please type your passphrase.",
-                                    labelStyle: TextStyle(
+                                cursorColor: AppColors.labelDefaultColor,
+                                controller: _passphrase,
+                                obscureText: true,
+                                decoration: InputDecoration(
+                                  labelText: "Please type your passphrase.",
+                                  labelStyle: TextStyle(
+                                      color: AppColors.labelDefaultColor
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderSide: BorderSide(width: 1,
                                         color: AppColors.labelDefaultColor
                                     ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderSide: BorderSide(width: 1,
-                                          color: AppColors.labelDefaultColor
-                                      ),
-                                    ),
-                                  )
+                                  ),
+                                )
                               ),
                               SizedBox(
                                 height: 32,
@@ -98,10 +141,12 @@ class _LoginState extends State<Login> {
                               ),
                             ],
                           ),
-                        );
-                      },),
-                  ),
-                )
+                        )
+                      ],
+                    ),
+                  )
+                ),
+              ),
             ),
           ],
         ),

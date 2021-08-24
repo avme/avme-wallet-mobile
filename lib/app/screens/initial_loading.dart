@@ -1,6 +1,8 @@
 import 'package:avme_wallet/app/controller/services/balance.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/app.dart';
+import 'package:avme_wallet/app/screens/prototype/widgets/notification_bar.dart';
+import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -34,11 +36,36 @@ class _InitialLoadingState extends State<InitialLoading>{
     startWalletServices(context);
     return Scaffold(
       body: Container(
-        // color: theme.defaultTheme().scaffoldBackgroundColor,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: <Color>[
+              AppColors.purpleVariant1,
+              AppColors.purpleBlue
+            ]
+          )
+        ),
         child: Center(
-          child: SpinKitDualRing(
-            color: Colors.white,
-            size: 50.0,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset(
+                'assets/resized-newlogo02-trans.png',
+                width: MediaQuery.of(context).size.width * 1 / 4.5,
+                fit: BoxFit.fitHeight,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 18),
+                child: Text(
+                  "AVME",
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w700
+                  ),
+                ),
+              )
+            ],
           ),
         ),
       ),
@@ -66,8 +93,12 @@ class _InitialLoadingState extends State<InitialLoading>{
       welcomeDialog();
 
     else
-      Navigator.pushReplacementNamed(context, "/login");
-    snack("Wallet already created previously? \"$hasWallet\"", context);
+    {
+      // Navigator.pushReplacementNamed(context, "/login");
+      Navigator.pushReplacementNamed(context, "/welcome");
+    }
+    NotificationBar().show(context, text: "Wallet already created previously? \"$hasWallet\"");
+    // snack("Wallet already created previously? \"$hasWallet\"", context);
   }
 
   Future<void> welcomeDialog() async {

@@ -2,6 +2,7 @@ import 'package:avme_wallet/app/screens/prototype/app_scaffold.dart';
 import 'package:avme_wallet/app/screens/prototype/login.dart' as pl;
 import 'package:avme_wallet/app/screens/prototype/overview.dart';
 import 'package:avme_wallet/app/screens/qrcode_reader.dart';
+import 'package:avme_wallet/app/screens/welcome.dart';
 import 'package:flutter/material.dart';
 import 'package:avme_wallet/app/screens/tabswallet.dart';
 import 'package:avme_wallet/app/screens/initial_loading.dart';
@@ -23,6 +24,7 @@ Map<String,WidgetBuilder> routes =
   '/debugOptions' : (context) => Options(),
   '/old' : (context) => LoginOld(),
   '/login' : (context) =>Login(),
+  '/welcome' : (context) =>Welcome(),
   '/qrScanner':(context) => QRScanner(),
 
   ///Prototype routes

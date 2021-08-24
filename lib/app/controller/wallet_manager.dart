@@ -82,7 +82,7 @@ class WalletManager
     return crypt.decryptTextFromFileSync(documentsPath + this._fileManager.accountFolder + mnemonicFile, utf16: true);
   }
 
-  Future<String> newMnemonic(String password) async
+  String newMnemonic()
   {
     // Gera mnemomic
     String mnemonic =
@@ -90,38 +90,33 @@ class WalletManager
 
     // UNCOMMENT THE NEXT LINE TO GENERATE ANOTHER
     // String mnemonic = bip39.generateMnemonic();
-    print(mnemonic);
+    // print(mnemonic);
 
-
-    // documents folder:
-    String documentsPath = this._fileManager.documentsFolder;
-
-    AesCrypt crypt = AesCrypt();
-
-    // String salt = hexRandBytes();
-
-    // Setting the main Password to encrypt the file, remember to use
-    // the same parameter if you're planning to use it again, like uncrypt...
-    crypt.setPassword(password);
-    print("AES: "+documentsPath + this._fileManager.accountFolder + mnemonicFile);
-
-    // Saving file with the method 'encryptTextToFileSync' from the Lib "aes_crypt"
-
-    crypt.encryptTextToFileSync(mnemonic, documentsPath + this._fileManager.accountFolder + mnemonicFile,utf16: true);
     return mnemonic;
   }
 
-  Future<List<String>> makeAccount(String password, AvmeWallet appState, {String title = ""}) async
+  Future<List<String>> makeAccount(String password, AvmeWallet appState,{String mnemonic, String title = ""}) async
   {
-    // print("password?");
-    // print(password);
-    // await Future.delayed(Duration(seconds: 10));
-    // return [];
     List<String> ret = [];
-    String mnemonic;
+
     if(appState.accountList.isEmpty)
     {
-      mnemonic = await newMnemonic(password);
+      mnemonic = mnemonic ?? newMnemonic();
+
+      String documentsPath = this._fileManager.documentsFolder;
+
+      AesCrypt crypt = AesCrypt();
+
+      // Setting the main Password to encrypt the file, remember to use
+      // the same parameter if you're planning to use it again, like uncrypt...
+
+      crypt.setPassword(password);
+      print("AES: "+documentsPath + this._fileManager.accountFolder + mnemonicFile);
+
+      // Saving file with the method 'encryptTextToFileSync' from the Lib "aes_crypt"
+
+      crypt.encryptTextToFileSync(mnemonic, documentsPath + this._fileManager.accountFolder + mnemonicFile,utf16: true);
+
     }
     else
     {
@@ -168,9 +163,9 @@ class WalletManager
     File savedPath = await writeWalletJson(json);
     appState.w3dartWallet = _wallet;
     ret.add(savedPath.path);
-    print("chamando auth do makeaccount");
+    // print("chamando auth do make account");
     Map auth = await authenticate(password, appState);
-    print("auth?${jsonEncode(auth)}");
+    // print("auth?${jsonEncode(auth)}");
     // print("auth? no");
     return ret;
   }

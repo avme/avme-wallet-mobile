@@ -13,8 +13,8 @@ class AppButton extends StatelessWidget {
     @required this.onPressed,
     @required this.text,
     this.iconData,
-    @required this.mainAxisAlignment,
-    @required this.paddingBetweenIcons,
+    this.mainAxisAlignment,
+    this.paddingBetweenIcons,
     this.height = 45});
   @override
   Widget build(BuildContext context) {
