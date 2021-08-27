@@ -104,7 +104,7 @@ ThemeData avmeTheme = ThemeData(
     ),
     textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-            primary: AppColors.labelDefaultColor, // This is a custom color variable
+            primary: AppColors.purple, // This is a custom color variable
         ),
     ),
     appBarTheme: AppBarTheme(

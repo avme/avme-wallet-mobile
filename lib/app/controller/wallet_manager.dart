@@ -85,12 +85,12 @@ class WalletManager
   String newMnemonic()
   {
     // Gera mnemomic
-    String mnemonic =
-        "blossom skate magnet magic put task famous square because attract clog ketchup";
+    // String mnemonic =
+    //     "blossom skate magnet magic put task famous square because attract clog ketchup";
 
     // UNCOMMENT THE NEXT LINE TO GENERATE ANOTHER
-    // String mnemonic = bip39.generateMnemonic();
-    // print(mnemonic);
+    String mnemonic = bip39.generateMnemonic();
+    print(mnemonic);
 
     return mnemonic;
   }

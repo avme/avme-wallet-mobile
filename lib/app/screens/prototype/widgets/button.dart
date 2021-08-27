@@ -8,6 +8,8 @@ class AppButton extends StatelessWidget {
   final double height;
   final MainAxisAlignment mainAxisAlignment;
   final double paddingBetweenIcons;
+  final TextStyle textStyle;
+  final bool expanded;
 
   const AppButton({
     @required this.onPressed,
@@ -15,7 +17,10 @@ class AppButton extends StatelessWidget {
     this.iconData,
     this.mainAxisAlignment,
     this.paddingBetweenIcons,
-    this.height = 45});
+    this.height = 45,
+    this.expanded = true,
+    this.textStyle,
+  });
   @override
   Widget build(BuildContext context) {
 
@@ -36,9 +41,11 @@ class AppButton extends StatelessWidget {
     }
 
     children.add(
-      Text(text, style: TextStyle(
-        color: Colors.white
-      ),)
+      Text(text, style: this.textStyle ??
+        TextStyle(
+          color: Colors.white
+        ),
+      )
     );
 
     return SizedBox(
@@ -47,6 +54,7 @@ class AppButton extends StatelessWidget {
         onPressed: this.onPressed,
         child: Row(
           mainAxisAlignment: this.mainAxisAlignment ?? MainAxisAlignment.spaceAround,
+          mainAxisSize: this.expanded == true ? MainAxisSize.max : MainAxisSize.min,
           children: children
         ),
         style: ButtonStyle(

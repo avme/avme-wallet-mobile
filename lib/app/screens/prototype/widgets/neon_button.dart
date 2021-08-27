@@ -9,6 +9,8 @@ class AppNeonButton extends StatelessWidget {
   final MainAxisAlignment mainAxisAlignment;
   final double paddingBetweenIcons;
   final TextStyle textStyle;
+  final bool expanded;
+
   const AppNeonButton({
     @required this.onPressed,
     @required this.text,
@@ -16,6 +18,7 @@ class AppNeonButton extends StatelessWidget {
     this.mainAxisAlignment,
     this.paddingBetweenIcons,
     this.height = 45,
+    this.expanded = true,
     this.textStyle,
   });
   @override
@@ -51,6 +54,7 @@ class AppNeonButton extends StatelessWidget {
         onPressed: this.onPressed,
         child: Row(
           mainAxisAlignment: this.mainAxisAlignment ?? MainAxisAlignment.spaceAround,
+          mainAxisSize: this.expanded == true ? MainAxisSize.max : MainAxisSize.min,
           children: children
         ),
         style: ButtonStyle(
