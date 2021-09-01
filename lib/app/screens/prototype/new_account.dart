@@ -18,7 +18,8 @@ class NewAccount extends StatefulWidget {
 
 class _NewAccountState extends State<NewAccount> {
 
-  final _formKey = GlobalKey<FormState>();
+  final _phraseFormState = GlobalKey<FormState>();
+  final _rephraseFormState = GlobalKey<FormState>();
 
   // FocusNode seedFocusNode = new FocusNode();
   FocusNode phraseFocusNode = new FocusNode();
@@ -78,206 +79,222 @@ class _NewAccountState extends State<NewAccount> {
           child: ListView(
             shrinkWrap: true,
             children: [
-              Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.all(
-                        (MediaQuery.of(context).size.width * 0.1).toDouble()
-                      ),
-                      child: Card(
-                        color: AppColors.cardBlue,
-                        child: Container(
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(
-                                vertical: 32,
-                                horizontal: 32,
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  ///Header
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            ///Close button
-                                            GestureDetector(
-                                              child: Container(
-                                                color: Colors.transparent,
-                                                // color: Colors.red,
-                                                child: Padding(
-                                                  padding: const EdgeInsets.only(
-                                                      top: 16,
-                                                      bottom: 10,
-                                                      // left: 16,
-                                                      right: 16
-                                                  ),
-                                                  child: Icon(
-                                                    Icons.arrow_back,
-                                                    size: 32,
-                                                    color: AppColors.labelDefaultColor,
-                                                  ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.all(
+                      (MediaQuery.of(context).size.width * 0.1).toDouble()
+                    ),
+                    child: Card(
+                      color: AppColors.cardBlue,
+                      child: Container(
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                              vertical: 32,
+                              horizontal: 32,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                ///Header
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          ///Close button
+                                          GestureDetector(
+                                            child: Container(
+                                              color: Colors.transparent,
+                                              // color: Colors.red,
+                                              child: Padding(
+                                                padding: const EdgeInsets.only(
+                                                    top: 16,
+                                                    bottom: 10,
+                                                    // left: 16,
+                                                    right: 16
+                                                ),
+                                                child: Icon(
+                                                  Icons.arrow_back,
+                                                  size: 32,
+                                                  color: AppColors.labelDefaultColor,
                                                 ),
                                               ),
-                                              onTap: (){
-                                                Navigator.of(context).pop();
-                                              },
                                             ),
-                                          ],
-                                        ),
+                                            onTap: (){
+                                              Navigator.of(context).pop();
+                                            },
+                                          ),
+                                        ],
                                       ),
-                                      Expanded(
-                                        flex: 4,
-                                        child: Column(
-                                          children: [
-                                            Text(
-                                              "Create New",
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.bold, fontSize: 28)
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Expanded(child: Container())
-                                    ],
-                                  ),
-                                  ScreenIndicator(
-                                    height: 20,
-                                    width: MediaQuery.of(context).size.width,
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 16,
                                     ),
-                                    child: Column(
-                                      children: [
-                                        ///Seed Phrase
-                                        Padding(
-                                          padding: const EdgeInsets.only(top:16),
-                                          // padding: EdgeInsets.zero,
-                                          child: Stack(
-                                            children: [
-                                              GestureDetector(
-                                                onTap: () {
-                                                  // NotificationBar().show(context, text: "Display the full Seed");
-                                                  AppPopup().show(
-                                                    context: context,
-                                                    canClose: true,
-                                                    title: Text("This is your key phrase",
-                                                      textAlign: TextAlign.center,
-                                                      style: TextStyle(
-                                                        fontSize: 24,
-                                                        fontWeight: FontWeight.w500,
-                                                      ),
-                                                    ),
-                                                    padding: EdgeInsets.only(
-                                                      left: 32,
-                                                      right: 32,
-                                                      top: 16,
-                                                      bottom: 8
-                                                    ),
-                                                    children: [
-                                                      Text(this.warning1),
-                                                      Padding(
-                                                        padding: const EdgeInsets.symmetric(vertical: 12),
-                                                        child: Divider(color: Colors.white,),
-                                                      ),
-                                                      seedList(this.walletSeed),
-                                                      Padding(
-                                                        // padding: const EdgeInsets.symmetric(vertical: 32),
-                                                        padding: EdgeInsets.only(top: 24),
-                                                        child: Text(this.warning2),
-                                                      )
-                                                    ],
-                                                    actions: [
-                                                      AppNeonButton(
-                                                        text: "Ok",
-                                                        expanded: false,
-                                                        onPressed: () => Navigator.of(context).pop(),
-                                                      )
-                                                    ]
-                                                  );
-                                                },
-                                                child: TextField(
-                                                  controller: new TextEditingController(
-                                                    text:
-                                                    this.walletSeed.substring(0, maxCharacteresInsideTextField(context)).trim() + "..."
-                                                  ),
-                                                  enabled: false,
-                                                  cursorColor: AppColors.labelDefaultColor,
-                                                  decoration: InputDecoration(
-                                                    disabledBorder: OutlineInputBorder(
-                                                      borderSide: BorderSide(width: 2,
-                                                        color: Colors.grey[600]
-                                                      )
-                                                    ),
-                                                    labelText: "Seed",
-                                                    floatingLabelBehavior: FloatingLabelBehavior.always,
-                                                    border: OutlineInputBorder(
-                                                      borderSide: BorderSide(width: 2,
-                                                        color: AppColors.labelDefaultColor
-                                                      )
-                                                    ),
-                                                    labelStyle: TextStyle(
-                                                      color: Colors.grey[600],
+                                    Expanded(
+                                      flex: 4,
+                                      child: Column(
+                                        children: [
+                                          Text(
+                                            "Create New",
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold, fontSize: 28)
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Expanded(child: Container())
+                                  ],
+                                ),
+                                ScreenIndicator(
+                                  height: 20,
+                                  width: MediaQuery.of(context).size.width,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      ///Seed Phrase
+                                      Padding(
+                                        padding: const EdgeInsets.only(top:16),
+                                        // padding: EdgeInsets.zero,
+                                        child: Stack(
+                                          children: [
+                                            GestureDetector(
+                                              onTap: () {
+                                                // NotificationBar().show(context, text: "Display the full Seed");
+                                                AppPopup().show(
+                                                  context: context,
+                                                  canClose: true,
+                                                  title: Text("This is your key phrase",
+                                                    textAlign: TextAlign.center,
+                                                    style: TextStyle(
+                                                      fontSize: 24,
                                                       fontWeight: FontWeight.w500,
-                                                      fontSize: 20
                                                     ),
-                                                    focusedBorder: OutlineInputBorder(
-                                                      borderSide: BorderSide(width: 2,
-                                                        color: Colors.white
-                                                      ),
+                                                  ),
+                                                  padding: EdgeInsets.only(
+                                                    left: 32,
+                                                    right: 32,
+                                                    top: 16,
+                                                    bottom: 8
+                                                  ),
+                                                  children: [
+                                                    Text(this.warning1),
+                                                    Padding(
+                                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                                      child: Divider(color: Colors.white,),
                                                     ),
-                                                  )
+                                                    seedList(this.walletSeed),
+                                                    Padding(
+                                                      // padding: const EdgeInsets.symmetric(vertical: 32),
+                                                      padding: EdgeInsets.only(top: 24),
+                                                      child: Text(this.warning2),
+                                                    )
+                                                  ],
+                                                  actions: [
+                                                    AppNeonButton(
+                                                      text: "Ok",
+                                                      expanded: false,
+                                                      onPressed: () => Navigator.of(context).pop(),
+                                                    )
+                                                  ]
+                                                );
+                                              },
+                                              child: TextField(
+                                                controller: new TextEditingController(
+                                                  text:
+                                                  this.walletSeed.substring(0, maxCharacteresInsideTextField(context)).trim() + "..."
                                                 ),
-                                              ),
-                                              Positioned.fill(
-                                                child: Align(
-                                                  alignment: Alignment.centerRight,
-                                                  child: SizedBox(
-                                                    height: double.infinity,
-                                                    width: 48,
-                                                    child: IconButton(
-                                                      onPressed: () {
-                                                        NotificationBar().show(context, text: "A new key phrase was generated");
-                                                        setState(() {
-                                                          this.walletSeed = appWalletManager.newMnemonic();
-                                                        });
-                                                      },
-                                                      icon: Icon(Icons.refresh),
-                                                      splashColor: Colors.transparent,
-                                                      highlightColor: Colors.transparent,
+                                                enabled: false,
+                                                cursorColor: AppColors.labelDefaultColor,
+                                                decoration: InputDecoration(
+                                                  disabledBorder: OutlineInputBorder(
+                                                    borderSide: BorderSide(width: 2,
+                                                      color: Colors.grey[600]
+                                                    )
+                                                  ),
+                                                  labelText: "Seed",
+                                                  floatingLabelBehavior: FloatingLabelBehavior.always,
+                                                  border: OutlineInputBorder(
+                                                    borderSide: BorderSide(width: 2,
+                                                      color: AppColors.labelDefaultColor
+                                                    )
+                                                  ),
+                                                  labelStyle: TextStyle(
+                                                    color: Colors.grey[600],
+                                                    fontWeight: FontWeight.w500,
+                                                    fontSize: 20
+                                                  ),
+                                                  focusedBorder: OutlineInputBorder(
+                                                    borderSide: BorderSide(width: 2,
+                                                      color: Colors.white
                                                     ),
-                                                  )
+                                                  ),
                                                 )
                                               ),
-                                            ],
-                                          ),
+                                            ),
+                                            Positioned.fill(
+                                              child: Align(
+                                                alignment: Alignment.centerRight,
+                                                child: SizedBox(
+                                                  height: double.infinity,
+                                                  width: 48,
+                                                  child: IconButton(
+                                                    onPressed: () {
+                                                      NotificationBar().show(context, text: "A new key phrase was generated");
+                                                      setState(() {
+                                                        this.walletSeed = appWalletManager.newMnemonic();
+                                                      });
+                                                    },
+                                                    icon: Icon(Icons.refresh),
+                                                    splashColor: Colors.transparent,
+                                                    highlightColor: Colors.transparent,
+                                                  ),
+                                                )
+                                              )
+                                            ),
+                                          ],
                                         ),
-                                        ///Passphrase
-                                        Padding(
+                                      ),
+                                      ///Passphrase
+                                      Form(
+                                        key: _phraseFormState,
+                                        child: Padding(
                                           padding: const EdgeInsets.only(top:32),
                                           child: Stack(
                                             children: [
-                                              TextField(
+                                              TextFormField(
+                                                validator: (string) {
+                                                  if(string.length  <=5)
+                                                    return "This field cannot be empty";
+                                                  else
+                                                    return null;
+                                                },
                                                 controller: this.phraseController,
                                                 cursorColor: AppColors.labelDefaultColor,
                                                 obscureText: true,
                                                 focusNode: phraseFocusNode,
-                                                  onChanged: (string) {
-                                                    if(string.length > 5)
-                                                      this.phraseIcon = new Icon(Icons.done_sharp, color: Colors.green,);
-                                                    else
-                                                      this.phraseIcon = new Icon(Icons.close_rounded, color: Colors.red,);
-                                                    setState(() => null);
-                                                  },
+                                                onChanged: (string) {
+                                                  if(string.length > 5)
+                                                    this.phraseIcon = new Icon(Icons.done_sharp, color: Colors.green,);
+                                                  else
+                                                    this.phraseIcon = new Icon(Icons.close_rounded, color: Colors.red,);
+                                                  setState(() => null);
+                                                },
                                                 decoration: InputDecoration(
+                                                  focusedErrorBorder: OutlineInputBorder(
+                                                      borderSide: BorderSide(width: 2,
+                                                          color: Colors.red
+                                                      )
+                                                  ),
+                                                  errorBorder: OutlineInputBorder(
+                                                      borderSide: BorderSide(width: 2,
+                                                          color: AppColors.labelDefaultColor
+                                                      )
+                                                  ),
                                                   labelText: "Passphrase",
                                                   floatingLabelBehavior: FloatingLabelBehavior.always,
                                                   contentPadding: textFieldButtonPadding,
@@ -306,10 +323,28 @@ class _NewAccountState extends State<NewAccount> {
                                                     child: SizedBox(
                                                       // height: 12,
                                                       width: 48,
-                                                      child: Padding(
-                                                        padding: const EdgeInsets.all(8.0),
-                                                        child: this.phraseIcon,
+                                                      child: Column(
+                                                        mainAxisSize: MainAxisSize.min,
+                                                        children: [
+                                                          SizedBox(
+                                                            width: 48,
+                                                            child: Padding(
+                                                              padding: const EdgeInsets.all(8.0),
+                                                              child: this.phraseIcon,
+                                                            ),
+                                                          ),
+                                                          SizedBox(
+                                                            height:
+                                                            (_phraseFormState.currentState != null ?
+                                                            (_phraseFormState.currentState.validate() == true ? null : 20) :
+                                                            null),
+                                                          )
+                                                        ],
                                                       ),
+                                                      // child: Padding(
+                                                      //   padding: const EdgeInsets.all(8.0),
+                                                      //   child: this.phraseIcon,
+                                                      // ),
                                                     ),
                                                   )
                                                 )
@@ -317,8 +352,11 @@ class _NewAccountState extends State<NewAccount> {
                                             ],
                                           ),
                                         ),
-                                        ///Confirm Passphrase
-                                        Padding(
+                                      ),
+                                      ///Confirm Passphrase
+                                      Form(
+                                        key: _rephraseFormState,
+                                        child: Padding(
                                           padding: const EdgeInsets.only(top:32),
                                           child: Stack(
                                             children: [
@@ -343,20 +381,20 @@ class _NewAccountState extends State<NewAccount> {
                                                 },
                                                 decoration: InputDecoration(
                                                   focusedErrorBorder: OutlineInputBorder(
-                                                      borderSide: BorderSide(width: 2,
-                                                          color: Colors.red
-                                                      )
+                                                    borderSide: BorderSide(width: 2,
+                                                      color: Colors.red
+                                                    )
                                                   ),
                                                   errorBorder: OutlineInputBorder(
-                                                      borderSide: BorderSide(width: 2,
-                                                          color: AppColors.labelDefaultColor
-                                                      )
+                                                    borderSide: BorderSide(width: 2,
+                                                      color: AppColors.labelDefaultColor
+                                                    )
                                                   ),
                                                   labelText: "Confirm passphrase",
                                                   floatingLabelBehavior: FloatingLabelBehavior.always,
                                                   enabledBorder: OutlineInputBorder(
                                                     borderSide: BorderSide(width: 2,
-                                                        color: AppColors.labelDefaultColor
+                                                      color: AppColors.labelDefaultColor
                                                     )
                                                   ),
                                                   labelStyle: TextStyle(
@@ -375,7 +413,6 @@ class _NewAccountState extends State<NewAccount> {
                                                 child: Align(
                                                   alignment: Alignment.centerRight,
                                                   child: Container(
-                                                    // color: Color.fromRGBO(255, 50, 50, 0.2),
                                                     child: Column(
                                                       mainAxisSize: MainAxisSize.min,
                                                       children: [
@@ -388,8 +425,8 @@ class _NewAccountState extends State<NewAccount> {
                                                         ),
                                                         SizedBox(
                                                           height:
-                                                          (_formKey.currentState != null ?
-                                                            (_formKey.currentState.validate() == true ? null : 20) :
+                                                          (_rephraseFormState.currentState != null ?
+                                                            (_rephraseFormState.currentState.validate() == true ? null : 20) :
                                                             null),
                                                         )
                                                       ],
@@ -400,68 +437,71 @@ class _NewAccountState extends State<NewAccount> {
                                             ],
                                           ),
                                         ),
-                                        SizedBox(
-                                          height: 32,
-                                        ),
-                                        ElevatedButton(
-                                          // onPressed: () => createNewAccount(context),
-                                          onPressed: () {
-                                            if(_formKey.currentState.validate() == true)
-                                            {
-                                              NotificationBar().show(context,text: "Creating account.");
-                                              AppPopup().show(
-                                                context: context,
-                                                canClose: false,
-                                                title: Text("Warning",
-                                                  style: TextStyle(
-                                                      fontSize: 24,
-                                                      fontWeight: FontWeight.w500
-                                                  ),
+                                      ),
+                                      SizedBox(
+                                        height: 32,
+                                      ),
+                                      ElevatedButton(
+                                        // onPressed: () => createNewAccount(context),
+                                        onPressed: () {
+                                          if(_phraseFormState.currentState.validate() == true && _rephraseFormState.currentState.validate() == true)
+                                          {
+                                            FocusScopeNode currentFocus = FocusScope.of(context);
+                                            currentFocus.unfocus();
+                                            NotificationBar().show(context,text: "Creating account.");
+                                            // return ;
+                                            AppPopup().show(
+                                              context: context,
+                                              canClose: false,
+                                              title: Text("Warning",
+                                                style: TextStyle(
+                                                    fontSize: 24,
+                                                    fontWeight: FontWeight.w500
                                                 ),
-                                                padding: EdgeInsets.only(
-                                                    left: 32,
-                                                    right: 32,
-                                                    top: 16,
-                                                    bottom: 8
+                                              ),
+                                              padding: EdgeInsets.only(
+                                                  left: 32,
+                                                  right: 32,
+                                                  top: 16,
+                                                  bottom: 8
+                                              ),
+                                              children: [
+                                                Text(this.warning1),
+                                                Padding(
+                                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                                  child: Divider(color: Colors.white,),
                                                 ),
-                                                children: [
-                                                  Text(this.warning1),
-                                                  Padding(
-                                                    padding: const EdgeInsets.symmetric(vertical: 12),
-                                                    child: Divider(color: Colors.white,),
-                                                  ),
-                                                  seedList(this.walletSeed),
-                                                  Padding(
-                                                    // padding: const EdgeInsets.symmetric(vertical: 32),
-                                                    padding: EdgeInsets.only(top: 24),
-                                                    child: Text(this.warning2),
-                                                  )
-                                                ],
-                                                actions: [
-                                                  AppNeonButton(
-                                                    text: "Continue",
-                                                    expanded: false,
-                                                    onPressed: () {
-                                                      Navigator.of(context).pop();
-                                                    },
-                                                  )
-                                                ]
-                                              );
-                                            }
-                                          },
-                                          child: Text("CREATE ACCOUNT"),
-                                        ),
-                                      ],
-                                    ),
-                                  )
-                                ],
-                              ),
-                            )
-                        ),
+                                                seedList(this.walletSeed),
+                                                Padding(
+                                                  // padding: const EdgeInsets.symmetric(vertical: 32),
+                                                  padding: EdgeInsets.only(top: 24),
+                                                  child: Text(this.warning2),
+                                                )
+                                              ],
+                                              actions: [
+                                                AppNeonButton(
+                                                  text: "Continue",
+                                                  expanded: false,
+                                                  onPressed: () {
+                                                    Navigator.of(context).pop();
+                                                  },
+                                                )
+                                              ]
+                                            );
+                                          }
+                                        },
+                                        child: Text("CREATE ACCOUNT"),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              ],
+                            ),
+                          )
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ],
           ),

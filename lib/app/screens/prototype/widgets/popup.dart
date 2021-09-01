@@ -5,16 +5,17 @@ import 'package:flutter/material.dart';
 import 'notification_bar.dart';
 
 class AppPopup {
-  void show({
+  Future<void> show({
     @required BuildContext context,
     Widget title = const Text("App Popup Widget Title"),
     List<Widget> children,
     EdgeInsets padding,
     actions = const [],
     canClose = true,
-  })
+  }) async
   {
     List<Widget> popupActions = [];
+
     if(actions.length > 0)
       actions.asMap().forEach((key, widget) {
         if(key.remainder(2) == 0)
@@ -30,56 +31,59 @@ class AppPopup {
           );
       });
 
-    showDialog(
-      context: context,
-      builder: (context) {
-        return GestureDetector(
-          onTap: (){
-            Navigator.of(context).pop();
-          },
-          child: Scaffold (
-            backgroundColor: Colors.transparent,
-            body: Builder(
-              builder: (context) => GestureDetector(
-                onTap: () => null,
-                child: !canClose
+    Future.delayed(Duration(milliseconds: 200), ()
+    {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return GestureDetector(
+            onTap: () {
+              Navigator.of(context).pop();
+            },
+            child: Scaffold(
+              backgroundColor: Colors.transparent,
+              body: Builder(
+                builder: (context) =>
+                  GestureDetector(
+                    onTap: () => null,
+                    child: !canClose
                     /// Restrained popup
                     ? WillPopScope(
-                    onWillPop: () async {
-                      NotificationBar().show(
-                          context,
-                          text: "You can't go back now"
-                      );
-                      return false;
-                    },
-                    child: StatefulBuilder(builder: (builder, setState) {
-                      return AppPopupWidget(
-                          children: children,
-                          title: title,
-                          padding: padding,
-                          actions: actions,
-                          canClose: canClose
-                      );
-                    }),
-                  )
+                      onWillPop: () async {
+                        NotificationBar().show(
+                            context,
+                            text: "You can't go back now"
+                        );
+                        return false;
+                      },
+                      child: StatefulBuilder(
+                        builder: (builder, setState) {
+                          return AppPopupWidget(
+                            children: children,
+                            title: title,
+                            padding: padding,
+                            actions: actions,
+                            canClose: canClose
+                          );
+                        }),
+                    )
                     /// Normal popup
                     : StatefulBuilder(builder: (builder, setState) {
-                  return AppPopupWidget(
-                      children: children,
-                      title: title,
-                      padding: padding,
-                      actions: actions,
-                      canClose: canClose
-                  );
-                })
+                    return AppPopupWidget(
+                        children: children,
+                        title: title,
+                        padding: padding,
+                        actions: actions,
+                        canClose: canClose
+                    );
+                  })
+                ),
               ),
             ),
-          ),
-        );
-      }
-
-
-    );
+          );
+        }
+      );
+    });
   }
 }
 
