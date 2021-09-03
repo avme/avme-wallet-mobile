@@ -39,16 +39,23 @@ class _NewAccountState extends State<NewAccount> {
   Icon rePhraseIcon = Icon(Icons.refresh, color: Colors.transparent,);
 
   String walletSeed;
+  Map walletSeedMap;
+
   WalletManager appWalletManager;
 
   String warning1 = " Use these words in sequential order to recover your AVME Wallet";
   String warning2 = " STORE THIS KEY PHRASE IN A SECURE LOCATION. ANYONE WITH THIS KEY PHRASE CAN ACCESS YOUR AVALANCHE WALLET. THERE IS NO WAY TO RECOVER LOST KEY PHRASES.";
+
+  int mnemonicValidated = -1;
+
+  FormMnemonic formMnemonic;
+
   @override
   initState() {
 
     appWalletManager = Provider.of<AvmeWallet>(context, listen: false).walletManager;
     this.walletSeed = this.walletSeed ?? appWalletManager.newMnemonic();
-
+    this.walletSeedMap = this.walletSeed.split(' ').asMap();
     phraseFocusNode.addListener(() {
       setState(() => null);
     });
@@ -62,6 +69,30 @@ class _NewAccountState extends State<NewAccount> {
 
   @override
   Widget build(BuildContext context) {
+
+    TextField textField = TextField(
+      controller: new TextEditingController(
+          text: "text"
+      ),
+      style: TextStyle(
+          color: Colors.white70,
+          fontWeight: FontWeight.bold
+      ),
+        enabled: false,
+        decoration: InputDecoration(
+          floatingLabelBehavior: FloatingLabelBehavior.always,
+          contentPadding: EdgeInsets.all(0),
+          disabledBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: AppColors.purple)
+          ),
+          labelStyle: TextStyle(
+            color: phraseFocusNode.hasFocus ? Colors.white : AppColors.labelDefaultColor,
+            fontWeight: phraseFocusNode.hasFocus ? FontWeight.w900 : FontWeight.w500,
+            fontSize: 20
+          ),
+        )
+
+    );
 
     return Scaffold(
       body: Container(
@@ -156,6 +187,7 @@ class _NewAccountState extends State<NewAccount> {
                                   ),
                                   child: Column(
                                     children: [
+                                      textField,
                                       ///Seed Phrase
                                       Padding(
                                         padding: const EdgeInsets.only(top:16),
@@ -165,8 +197,7 @@ class _NewAccountState extends State<NewAccount> {
                                             GestureDetector(
                                               onTap: () {
                                                 // NotificationBar().show(context, text: "Display the full Seed");
-                                                AppPopup().show(
-                                                  context: context,
+                                                AppPopup(context).show(
                                                   canClose: true,
                                                   title: Text("This is your key phrase",
                                                     textAlign: TextAlign.center,
@@ -187,7 +218,7 @@ class _NewAccountState extends State<NewAccount> {
                                                       padding: const EdgeInsets.symmetric(vertical: 12),
                                                       child: Divider(color: Colors.white,),
                                                     ),
-                                                    seedList(this.walletSeed),
+                                                    getSeedList(this.walletSeedMap),
                                                     Padding(
                                                       // padding: const EdgeInsets.symmetric(vertical: 32),
                                                       padding: EdgeInsets.only(top: 24),
@@ -247,6 +278,7 @@ class _NewAccountState extends State<NewAccount> {
                                                       NotificationBar().show(context, text: "A new key phrase was generated");
                                                       setState(() {
                                                         this.walletSeed = appWalletManager.newMnemonic();
+                                                        this.walletSeedMap = this.walletSeed.split(' ').asMap();
                                                       });
                                                     },
                                                     icon: Icon(Icons.refresh),
@@ -341,10 +373,6 @@ class _NewAccountState extends State<NewAccount> {
                                                           )
                                                         ],
                                                       ),
-                                                      // child: Padding(
-                                                      //   padding: const EdgeInsets.all(8.0),
-                                                      //   child: this.phraseIcon,
-                                                      // ),
                                                     ),
                                                   )
                                                 )
@@ -442,28 +470,24 @@ class _NewAccountState extends State<NewAccount> {
                                         height: 32,
                                       ),
                                       ElevatedButton(
-                                        // onPressed: () => createNewAccount(context),
                                         onPressed: () {
                                           if(_phraseFormState.currentState.validate() == true && _rephraseFormState.currentState.validate() == true)
                                           {
-                                            FocusScopeNode currentFocus = FocusScope.of(context);
-                                            currentFocus.unfocus();
                                             NotificationBar().show(context,text: "Creating account.");
-                                            // return ;
-                                            AppPopup().show(
-                                              context: context,
+
+                                            ///First we gathered the keys to hide and make the user verify
+
+                                            formMnemonic = new FormMnemonic(mnemonic: this.walletSeed);
+                                            print(formMnemonic.mnemonicDict);
+                                            print(formMnemonic.removedKeys);
+
+                                            AppPopup(context).show(
                                               canClose: false,
                                               title: Text("Warning",
                                                 style: TextStyle(
-                                                    fontSize: 24,
-                                                    fontWeight: FontWeight.w500
+                                                  fontSize: 24,
+                                                  fontWeight: FontWeight.w500
                                                 ),
-                                              ),
-                                              padding: EdgeInsets.only(
-                                                  left: 32,
-                                                  right: 32,
-                                                  top: 16,
-                                                  bottom: 8
                                               ),
                                               children: [
                                                 Text(this.warning1),
@@ -471,9 +495,8 @@ class _NewAccountState extends State<NewAccount> {
                                                   padding: const EdgeInsets.symmetric(vertical: 12),
                                                   child: Divider(color: Colors.white,),
                                                 ),
-                                                seedList(this.walletSeed),
+                                                getSeedList(this.walletSeedMap),
                                                 Padding(
-                                                  // padding: const EdgeInsets.symmetric(vertical: 32),
                                                   padding: EdgeInsets.only(top: 24),
                                                   child: Text(this.warning2),
                                                 )
@@ -483,6 +506,55 @@ class _NewAccountState extends State<NewAccount> {
                                                   text: "Continue",
                                                   expanded: false,
                                                   onPressed: () {
+                                                    // getVerifyMnemonicWidget(this.walletSeed);
+                                                    // dynamic myWidget = getVerifyMnemonicWidget(this.walletSeed, selectedKeys);
+                                                    AppPopup(context).show(
+                                                      title: Text("Verify Mnemonic",
+                                                        style: TextStyle(
+                                                          fontSize: 24,
+                                                          fontWeight: FontWeight.w500,
+                                                        ),
+                                                      ),
+                                                      margin: EdgeInsets.symmetric(horizontal: 8),
+                                                      children: [
+                                                        Text("Fill in Mnemonic Phrase Below"),
+                                                        // Padding(
+                                                        //   padding: const EdgeInsets.only(top: 16),
+                                                        //   child: myWidget,
+                                                        // ),
+                                                        // data["widget"]
+                                                        Padding(
+                                                          padding: const EdgeInsets.only(top: 16),
+                                                          child: formMnemonic.build(),
+                                                        ),
+                                                        // Text(
+                                                        //   (mnemonicValidated != -1 ? "Oops, looks like you forgot to fill number $mnemonicValidated" :
+                                                        //   ""), style: TextStyle(
+                                                        //   color: Colors.red
+                                                        // ),)
+                                                        Text(mnemonicValidated.toString())
+                                                      ],
+                                                      actions: [
+                                                        AppNeonButton(
+                                                            onPressed: () => Navigator.of(context).pop(),
+                                                            expanded: false,
+                                                            text: "CANCEL"
+                                                        ),
+
+                                                        AppNeonButton(
+                                                            onPressed: () {
+                                                              // mnemonicValidated = formMnemonic.validate();
+                                                              setState(() {
+                                                                mnemonicValidated = formMnemonic.validate();
+                                                              });
+                                                              // mnemonicValidated = formMnemonic.validate();
+                                                              print(mnemonicValidated);
+                                                            },
+                                                            expanded: false,
+                                                            text: "VERIFY"
+                                                        ),
+                                                      ]
+                                                    );
                                                     Navigator.of(context).pop();
                                                   },
                                                 )
@@ -516,7 +588,24 @@ class _NewAccountState extends State<NewAccount> {
     return size;
   }
 
-  Widget seedList(String seed)
+  List<int> selectedMnemonicWords(String seed)
+  {
+    Random random = Random();
+    Map words = seed.split(' ').asMap();
+    List<int> keys = [];
+    while(keys.length < 3)
+    {
+      int key = random.nextInt(words.length);
+      if (!keys.contains(key))
+        keys.add(key);
+    }
+
+    // print(keys);
+    // print(words.length);
+    return keys;
+  }
+
+  Widget getVerifyMnemonicWidget(String seed, List<int> selectedKeys)
   {
     Map<int,List<Widget>> columnMap = {};
     int row = 0;
@@ -528,32 +617,105 @@ class _NewAccountState extends State<NewAccount> {
 
       columnMap[row] = columnMap[row] ?? [];
       columnMap[row].add(
-          Row(
+        Padding(
+          padding: row > 0 ? const EdgeInsets.only(left:8) : const EdgeInsets.only(right:8),
+          child: Row(
             children: [
-              Text(" ${key+1}. ",
-                style: TextStyle(
-                    color: Colors.blue
+              Text(" ${key+1}." + (key > 8 ? "  " : "   "),
+                  style: TextStyle(
+                      color: Colors.blue
+                  ),
+              ),
+              Expanded(
+                child: TextField(
+                  controller: new TextEditingController(
+                      text: selectedKeys.contains(key) ? null : value,
+                  ),
+                  enabled: selectedKeys.contains(key),
+                  style: TextStyle(
+                      color: Colors.white70,
+                      fontWeight: FontWeight.bold
+                  ),
+                  decoration: InputDecoration(
+                      floatingLabelBehavior: FloatingLabelBehavior.always,
+                      contentPadding: EdgeInsets.all(0),
+                      disabledBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey, width: 1),
+                      ),
+                      enabledBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: Colors.white, width: 2)
+                      ),
+                      labelStyle: TextStyle(
+                          color: phraseFocusNode.hasFocus ? Colors.white : AppColors.labelDefaultColor,
+                          fontWeight: phraseFocusNode.hasFocus ? FontWeight.w900 : FontWeight.w500,
+                          fontSize: 20
+                      ),
+                  )
                 ),
               ),
-              Text(value,
-                style: TextStyle(
-                    color: Colors.white70,
-                    fontWeight: FontWeight.bold
-                ),),
             ],
-          )
+          ),
+        ),
       );
       print("row[$row] ${key+1} - $value");
     });
 
     List<Widget> columnWidgets = [];
-    columnMap.keys.forEach((key) {
+    columnMap.forEach((index,value) {
       columnWidgets.add(
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.max,
-            children: columnMap[key].toList(),
+            children: value,
+          ),
+        )
+      );
+    });
+
+    return Row(children: columnWidgets);
+  }
+
+  Widget getSeedList(Map seed)
+  {
+
+    Map<int,List<Widget>> columnMap = {};
+    int row = 0;
+
+    seed.forEach((key, value) {
+
+      if(key.remainder(6) == 0 && key != 0)
+        row++;
+
+      columnMap[row] = columnMap[row] ?? [];
+      columnMap[row].add(
+        Row(
+          children: [
+            Text(" ${key+1}. ",
+              style: TextStyle(
+                color: Colors.blue
+              ),
+            ),
+            Text(value,
+              style: TextStyle(
+                color: Colors.white70,
+                fontWeight: FontWeight.bold
+              ),
+            ),
+          ],
+        )
+      );
+      print("row[$row] ${key+1} - $value");
+    });
+
+    List<Widget> columnWidgets = [];
+    columnMap.values.forEach((value) {
+      columnWidgets.add(
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.max,
+            children: value.toList(),
           ),
         )
       );
@@ -561,11 +723,8 @@ class _NewAccountState extends State<NewAccount> {
 
     return Row(
       children: columnWidgets,
-      // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
     );
   }
-
-
 
   void createNewAccount(BuildContext context) async
   {
@@ -635,3 +794,114 @@ class _NewAccountState extends State<NewAccount> {
     // return;
   }
 }
+
+class FormMnemonic {
+
+  final String mnemonic;
+
+  List<int> removedKeys = [];
+  Map<int, String> mnemonicDict = {};
+  Map<int, TextEditingController> mnemonicControlDict = {};
+
+  FormMnemonic({this.mnemonic}) {
+    Random random = new Random();
+
+    this.mnemonicDict = this.mnemonic.split(" ").asMap();
+
+    ///Selecting what keys the user must fill
+    while(this.removedKeys.length < 3)
+    {
+      int key = random.nextInt(this.mnemonicDict.length);
+      if (!this.removedKeys.contains(key))
+        this.removedKeys.add(key);
+    }
+
+    ///We're populating our dictionary of TextController to use later
+    this.mnemonicDict.forEach((key, value) {
+      mnemonicControlDict[key] = new TextEditingController(
+        text: this.removedKeys.contains(key) ? null : value,
+      );
+    });
+  }
+
+  int validate()
+  {
+    int validated = -1;
+    this.removedKeys.forEach((key) {
+      if(this.mnemonicControlDict[key].text != this.mnemonicDict[key])
+        validated = key;
+    });
+    // print("is validated? $validated");
+    return validated;
+  }
+
+  Widget build()
+  {
+    Map<int,List<Widget>> columnMap = {};
+    int row = 0;
+
+    this.mnemonicDict.forEach((key, value) {
+
+      if(key.remainder(6) == 0 && key != 0)
+        row++;
+
+      columnMap[row] = columnMap[row] ?? [];
+      columnMap[row].add(
+        Padding(
+          padding: row > 0 ? const EdgeInsets.only(left:8) : const EdgeInsets.only(right:8),
+          child:Row(
+            children: [
+              Text(" ${key+1}." + (key > 8 ? "  " : "   "),
+                style: TextStyle(
+                  color: Colors.blue
+                ),
+              ),
+              Expanded(
+                child: TextField(
+                  controller: this.mnemonicControlDict[key],
+                  enabled: this.removedKeys.contains(key),
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontWeight: FontWeight.bold
+                  ),
+                  decoration: InputDecoration(
+                    floatingLabelBehavior: FloatingLabelBehavior.always,
+                    contentPadding: EdgeInsets.all(0),
+                    disabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey, width: 1),
+                    ),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white, width: 2)
+                    ),
+                    labelStyle: TextStyle(
+                      color: AppColors.labelDefaultColor,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 20
+                    ),
+                  )
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+      print("row[$row] ${key+1} - $value");
+    });
+
+    List<Widget> columnWidgets = [];
+    columnMap.forEach((index,value) {
+      columnWidgets.add(
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.max,
+            children: value,
+          ),
+        )
+      );
+    });
+
+    return Row(children: columnWidgets);
+  }
+}
+

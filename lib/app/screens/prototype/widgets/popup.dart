@@ -2,18 +2,46 @@ import 'package:avme_wallet/app/screens/widgets/screen_indicator.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
 
+import 'neon_button.dart';
 import 'notification_bar.dart';
 
 class AppPopup {
+
+  BuildContext context;
+
+  AppPopup(this.context);
+
   Future<void> show({
-    @required BuildContext context,
     Widget title = const Text("App Popup Widget Title"),
+    ///The widget children will be stacked inside a Column widget
     List<Widget> children,
-    EdgeInsets padding,
-    actions = const [],
-    canClose = true,
+    ///This is the default content padding
+    EdgeInsets padding = const EdgeInsets.only(
+      left: 32,
+      right: 32,
+      top: 16,
+      bottom: 8
+    ),
+    ///This is the distance the popup has between
+    ///itself and the device's dimentions
+    EdgeInsets margin,
+    ///Actions (buttons) the dev can provide
+    ///to the popup
+    List actions = const [],
+    bool canClose = true,
   }) async
   {
+    FocusScopeNode currentFocus = FocusScope.of(this.context);
+    currentFocus.unfocus();
+
+    if(actions.length == 0)
+      AppNeonButton(
+        onPressed: () => Navigator.of(this.context).pop(),
+        expanded: false,
+        text: "CANCEL"
+      );
+
+
     List<Widget> popupActions = [];
 
     if(actions.length > 0)
@@ -34,7 +62,7 @@ class AppPopup {
     Future.delayed(Duration(milliseconds: 200), ()
     {
       showDialog(
-        context: context,
+        context: this.context,
         builder: (context) {
           return GestureDetector(
             onTap: () {
@@ -44,40 +72,49 @@ class AppPopup {
               backgroundColor: Colors.transparent,
               body: Builder(
                 builder: (context) =>
-                  GestureDetector(
-                    onTap: () => null,
-                    child: !canClose
-                    /// Restrained popup
-                    ? WillPopScope(
-                      onWillPop: () async {
-                        NotificationBar().show(
-                            context,
-                            text: "You can't go back now"
-                        );
-                        return false;
-                      },
-                      child: StatefulBuilder(
-                        builder: (builder, setState) {
+                  Center(
+                    child: ListView(
+                      shrinkWrap: true,
+                      children: [
+                        GestureDetector(
+                          onTap: () => null,
+                          child: !canClose
+                          /// Restrained popup
+                          ? WillPopScope(
+                            onWillPop: () async {
+                              NotificationBar().show(
+                                  context,
+                                  text: "You can't go back now"
+                              );
+                              return false;
+                            },
+                            child: StatefulBuilder(
+                              builder: (builder, setState) {
+                                return AppPopupWidget(
+                                  children: children,
+                                  title: title,
+                                  padding: padding,
+                                  actions: popupActions,
+                                  canClose: canClose,
+                                  margin: margin
+                                );
+                              }),
+                          )
+                          /// Normal popup
+                          : StatefulBuilder(builder: (builder, setState) {
                           return AppPopupWidget(
-                            children: children,
-                            title: title,
-                            padding: padding,
-                            actions: actions,
-                            canClose: canClose
+                              children: children,
+                              title: title,
+                              padding: padding,
+                              actions: popupActions,
+                              canClose: canClose,
+                              margin: margin
                           );
-                        }),
-                    )
-                    /// Normal popup
-                    : StatefulBuilder(builder: (builder, setState) {
-                    return AppPopupWidget(
-                        children: children,
-                        title: title,
-                        padding: padding,
-                        actions: actions,
-                        canClose: canClose
-                    );
-                  })
+                        })
                 ),
+                      ],
+                    ),
+                  ),
               ),
             ),
           );
@@ -94,12 +131,13 @@ class AppPopupWidget extends StatefulWidget {
   final EdgeInsets padding;
   final List<Widget> actions;
   final bool canClose;
-
+  final EdgeInsets margin;
   const AppPopupWidget({
     Key key,
     @required this.title,
     @required this.children,
     this.padding,
+    this.margin,
     this.actions,
     this.canClose
   }) : super(key: key);
@@ -114,6 +152,7 @@ class _AppPopupWidgetState extends State<AppPopupWidget> {
   Widget build(BuildContext context) {
 
     return AlertDialog(
+      insetPadding: widget.margin ?? Dialog().insetPadding,
       buttonPadding: const EdgeInsets.all(0),
       actionsPadding: EdgeInsets.only(
         right: widget.padding.right,
@@ -167,12 +206,12 @@ class _AppPopupWidgetState extends State<AppPopupWidget> {
               ],
             ),
           ),
-          ScreenIndicator(
-            height: 20,
-            width: MediaQuery
-                .of(context)
-                .size
-                .width * 1 / 1.8,
+          FractionallySizedBox(
+            widthFactor: 0.8,
+            child: ScreenIndicator(
+              height: 20,
+              width: MediaQuery.of(context).size.width,
+            ),
           ),
           Padding(
             padding: widget.padding ?? const EdgeInsets.all(32),
