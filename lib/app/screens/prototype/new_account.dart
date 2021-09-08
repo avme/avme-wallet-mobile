@@ -44,9 +44,10 @@ class _NewAccountState extends State<NewAccount> {
   WalletManager appWalletManager;
 
   String warning1 = " Use these words in sequential order to recover your AVME Wallet";
+  String warningMnemonic = " Oops, looks like you forgot to fill number ";
   String warning2 = " STORE THIS KEY PHRASE IN A SECURE LOCATION. ANYONE WITH THIS KEY PHRASE CAN ACCESS YOUR AVALANCHE WALLET. THERE IS NO WAY TO RECOVER LOST KEY PHRASES.";
 
-  int mnemonicValidated = -1;
+  int wrongMnemonic = -1;
 
   FormMnemonic formMnemonic;
 
@@ -187,7 +188,6 @@ class _NewAccountState extends State<NewAccount> {
                                   ),
                                   child: Column(
                                     children: [
-                                      textField,
                                       ///Seed Phrase
                                       Padding(
                                         padding: const EdgeInsets.only(top:16),
@@ -196,43 +196,39 @@ class _NewAccountState extends State<NewAccount> {
                                           children: [
                                             GestureDetector(
                                               onTap: () {
-                                                // NotificationBar().show(context, text: "Display the full Seed");
-                                                AppPopup(context).show(
-                                                  canClose: true,
-                                                  title: Text("This is your key phrase",
-                                                    textAlign: TextAlign.center,
-                                                    style: TextStyle(
-                                                      fontSize: 24,
-                                                      fontWeight: FontWeight.w500,
+                                                showDialog(context: context, builder: (_) =>
+                                                  AppPopupWidget(
+                                                    canClose: true,
+                                                    title: "This is your key phrase",
+                                                    padding: EdgeInsets.only(
+                                                        left: 32,
+                                                        right: 32,
+                                                        top: 16,
+                                                        bottom: 8
                                                     ),
-                                                  ),
-                                                  padding: EdgeInsets.only(
-                                                    left: 32,
-                                                    right: 32,
-                                                    top: 16,
-                                                    bottom: 8
-                                                  ),
-                                                  children: [
-                                                    Text(this.warning1),
-                                                    Padding(
-                                                      padding: const EdgeInsets.symmetric(vertical: 12),
-                                                      child: Divider(color: Colors.white,),
-                                                    ),
-                                                    getSeedList(this.walletSeedMap),
-                                                    Padding(
-                                                      // padding: const EdgeInsets.symmetric(vertical: 32),
-                                                      padding: EdgeInsets.only(top: 24),
-                                                      child: Text(this.warning2),
-                                                    )
-                                                  ],
-                                                  actions: [
-                                                    AppNeonButton(
-                                                      text: "Ok",
-                                                      expanded: false,
-                                                      onPressed: () => Navigator.of(context).pop(),
-                                                    )
-                                                  ]
+                                                    children: [
+                                                      Text(this.warning1),
+                                                      Padding(
+                                                        padding: const EdgeInsets.symmetric(vertical: 12),
+                                                        child: Divider(color: Colors.white,),
+                                                      ),
+                                                      getSeedList(this.walletSeedMap),
+                                                      Padding(
+                                                        // padding: const EdgeInsets.symmetric(vertical: 32),
+                                                        padding: EdgeInsets.only(top: 24),
+                                                        child: Text(this.warning2),
+                                                      )
+                                                    ],
+                                                    actions: [
+                                                      AppNeonButton(
+                                                        text: "Ok",
+                                                        expanded: false,
+                                                        onPressed: () => Navigator.of(context).pop(),
+                                                      )
+                                                    ]
+                                                  )
                                                 );
+
                                               },
                                               child: TextField(
                                                 controller: new TextEditingController(
@@ -480,86 +476,81 @@ class _NewAccountState extends State<NewAccount> {
                                             formMnemonic = new FormMnemonic(mnemonic: this.walletSeed);
                                             print(formMnemonic.mnemonicDict);
                                             print(formMnemonic.removedKeys);
+                                            String invalidMnemonic = "";
 
-                                            AppPopup(context).show(
-                                              canClose: false,
-                                              title: Text("Warning",
-                                                style: TextStyle(
-                                                  fontSize: 24,
-                                                  fontWeight: FontWeight.w500
-                                                ),
-                                              ),
-                                              children: [
-                                                Text(this.warning1),
-                                                Padding(
-                                                  padding: const EdgeInsets.symmetric(vertical: 12),
-                                                  child: Divider(color: Colors.white,),
-                                                ),
-                                                getSeedList(this.walletSeedMap),
-                                                Padding(
-                                                  padding: EdgeInsets.only(top: 24),
-                                                  child: Text(this.warning2),
-                                                )
-                                              ],
-                                              actions: [
-                                                AppNeonButton(
-                                                  text: "Continue",
-                                                  expanded: false,
-                                                  onPressed: () {
-                                                    // getVerifyMnemonicWidget(this.walletSeed);
-                                                    // dynamic myWidget = getVerifyMnemonicWidget(this.walletSeed, selectedKeys);
-                                                    AppPopup(context).show(
-                                                      title: Text("Verify Mnemonic",
-                                                        style: TextStyle(
-                                                          fontSize: 24,
-                                                          fontWeight: FontWeight.w500,
-                                                        ),
+                                            FocusScopeNode currentFocus = FocusScope.of(this.context);
+                                            currentFocus.unfocus();
+                                            Future.delayed(Duration(milliseconds: 200), (){
+                                              showDialog(context: context, builder: (_) =>
+                                                StatefulBuilder(builder: (builder, setState) =>
+                                                  AppPopupWidget(
+                                                    title: "Warning",
+                                                    canClose: false,
+                                                    children: [
+                                                      Text(this.warning1),
+                                                      Padding(
+                                                        padding: const EdgeInsets.symmetric(vertical: 12),
+                                                        child: Divider(color: Colors.white,),
                                                       ),
-                                                      margin: EdgeInsets.symmetric(horizontal: 8),
-                                                      children: [
-                                                        Text("Fill in Mnemonic Phrase Below"),
-                                                        // Padding(
-                                                        //   padding: const EdgeInsets.only(top: 16),
-                                                        //   child: myWidget,
-                                                        // ),
-                                                        // data["widget"]
-                                                        Padding(
-                                                          padding: const EdgeInsets.only(top: 16),
-                                                          child: formMnemonic.build(),
-                                                        ),
-                                                        // Text(
-                                                        //   (mnemonicValidated != -1 ? "Oops, looks like you forgot to fill number $mnemonicValidated" :
-                                                        //   ""), style: TextStyle(
-                                                        //   color: Colors.red
-                                                        // ),)
-                                                        Text(mnemonicValidated.toString())
-                                                      ],
-                                                      actions: [
-                                                        AppNeonButton(
-                                                            onPressed: () => Navigator.of(context).pop(),
-                                                            expanded: false,
-                                                            text: "CANCEL"
-                                                        ),
+                                                      getSeedList(this.walletSeedMap),
+                                                      Padding(
+                                                        padding: EdgeInsets.only(top: 24),
+                                                        child: Text(this.warning2),
+                                                      ),
+                                                    ],
+                                                    actions: [
+                                                      AppNeonButton(
+                                                        expanded: false,
+                                                        onPressed: () async {
+                                                          await showDialog(context: context, builder: (_) =>
+                                                            StatefulBuilder(builder: (builder, setState) =>
+                                                              AppPopupWidget(
+                                                                title: "Verify Mnemonic",
+                                                                margin: EdgeInsets.symmetric(horizontal: 8),
+                                                                children: [
+                                                                  Text("Fill in Mnemonic Phrase Below"),
+                                                                  Padding(
+                                                                    padding: const EdgeInsets.only(top: 16),
+                                                                    child: formMnemonic.build(),
+                                                                  ),
+                                                                  Padding(
+                                                                    padding: const EdgeInsets.only(top: 16.0),
+                                                                    child: Text(invalidMnemonic,
+                                                                      style: TextStyle(color: Colors.red),),
+                                                                  ),
+                                                                ],
+                                                                actions: [
+                                                                  AppNeonButton(
+                                                                    onPressed: () => Navigator.of(context).pop(),
+                                                                    expanded: false,
+                                                                    text: "CANCEL"
+                                                                  ),
 
-                                                        AppNeonButton(
-                                                            onPressed: () {
-                                                              // mnemonicValidated = formMnemonic.validate();
-                                                              setState(() {
-                                                                mnemonicValidated = formMnemonic.validate();
-                                                              });
-                                                              // mnemonicValidated = formMnemonic.validate();
-                                                              print(mnemonicValidated);
-                                                            },
-                                                            expanded: false,
-                                                            text: "VERIFY"
-                                                        ),
-                                                      ]
-                                                    );
-                                                    Navigator.of(context).pop();
-                                                  },
+                                                                  AppNeonButton(
+                                                                    onPressed: () {
+                                                                      wrongMnemonic = formMnemonic.validate();
+                                                                      if(wrongMnemonic > -1)
+                                                                      {
+                                                                        setState((){
+                                                                          invalidMnemonic = warningMnemonic+wrongMnemonic.toString();
+                                                                        });
+                                                                      }
+                                                                    },
+                                                                    expanded: false,
+                                                                    text: "VERIFY"
+                                                                  ),
+                                                                ]
+                                                              )
+                                                            )
+                                                          );
+                                                          Navigator.of(context).pop();
+                                                        },
+                                                        text: "Continue",)
+                                                    ]
+                                                  )
                                                 )
-                                              ]
-                                            );
+                                              );
+                                            });
                                           }
                                         },
                                         child: Text("CREATE ACCOUNT"),
@@ -728,63 +719,22 @@ class _NewAccountState extends State<NewAccount> {
 
   void createNewAccount(BuildContext context) async
   {
-    bool empty = (phraseController == null || rePhraseController == null) ? true : false;
-    bool notEqual = (phraseController.text != rePhraseController.text) ? true : false;
-    bool short = (phraseController.text.length <= 5 || rePhraseController.text.length <= 5) ? true : false;
 
-    if(short)
-    {
-      await showDialog<void>(
-          context: context,
-          builder: (BuildContext context) =>
-              SimpleWarning(
-                  title: "Warning",
-                  text:
-                  "Your passphrase is too short!")
-      );
-      return;
-    }
-    if(empty)
-    {
-      await showDialog<void>(
-          context: context,
-          builder: (BuildContext context) =>
-              SimpleWarning(
-                  title: "Warning",
-                  text:
-                  "Please, fill in all fields!")
-      );
-      return;
-    }
-    if(notEqual)
-    {
-      await showDialog<void>(
-          context: context,
-          builder: (BuildContext context) =>
-              SimpleWarning(
-                  title: "Warning",
-                  text:
-                  "Passphrases don't match."
-                      +"\n"+
-                      "Please check your inputs.")
-      );
-      return;
-    }
     BuildContext _loadingPopupContext;
 
     showDialog<void>(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          _loadingPopupContext = context;
-          return LoadingPopUp(
-              text:
-              "Loading, please wait."
-          );
-        }
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        _loadingPopupContext = context;
+        return LoadingPopUp(
+            text:
+            "Loading, please wait."
+        );
+      }
     );
-
-    // Creates the user account
+    //
+    // // Creates the user account
     //
     // await appState.walletManager.makeAccount(field1.text, appState);
     // Navigator.pop(_loadingPopupContext);
@@ -811,7 +761,8 @@ class FormMnemonic {
     ///Selecting what keys the user must fill
     while(this.removedKeys.length < 3)
     {
-      int key = random.nextInt(this.mnemonicDict.length);
+      // int key = random.nextInt(this.mnemonicDict.length);
+      int key = random.nextInt(3);
       if (!this.removedKeys.contains(key))
         this.removedKeys.add(key);
     }
@@ -824,14 +775,15 @@ class FormMnemonic {
     });
   }
 
+  ///Returns the wrong label position
   int validate()
   {
     int validated = -1;
     this.removedKeys.forEach((key) {
-      if(this.mnemonicControlDict[key].text != this.mnemonicDict[key])
+      print("${this.mnemonicControlDict[key].text} != ${this.mnemonicDict[key]}");
+      if(this.mnemonicControlDict[key].text != this.mnemonicDict[key] && validated == -1)
         validated = key;
     });
-    // print("is validated? $validated");
     return validated;
   }
 
