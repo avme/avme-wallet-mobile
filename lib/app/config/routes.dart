@@ -30,5 +30,5 @@ Map<String,WidgetBuilder> routes =
   ///Prototype routes
 
   'test/login' : (context) => pl.Login(),
-  'test/preview' : (context) => AppScaffold()
+  'test/preview' : (context) => AppScaffold(),
 };

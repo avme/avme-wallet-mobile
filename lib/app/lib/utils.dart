@@ -21,7 +21,7 @@ String hexRandBytes({int size = 4}) {
 
 String shortAmount(String amount, {int length = 6, bool comma = false})
 {
-  if(amount == null)
+  if(amount == null || double.tryParse(amount) == 0)
   {
     String ret = "0";
     ret += comma ? "," : ".";

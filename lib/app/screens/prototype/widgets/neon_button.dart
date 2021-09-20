@@ -10,6 +10,7 @@ class AppNeonButton extends StatelessWidget {
   final double paddingBetweenIcons;
   final TextStyle textStyle;
   final bool expanded;
+  final bool enabled;
 
   const AppNeonButton({
     @required this.onPressed,
@@ -19,6 +20,7 @@ class AppNeonButton extends StatelessWidget {
     this.paddingBetweenIcons,
     this.height = 45,
     this.expanded = true,
+    this.enabled = true,
     this.textStyle,
   });
   @override
@@ -51,7 +53,7 @@ class AppNeonButton extends StatelessWidget {
     return SizedBox(
       height: this.height,
       child: ElevatedButton(
-        onPressed: this.onPressed,
+        onPressed: this.enabled ? this.onPressed : null,
         child: Row(
           mainAxisAlignment: this.mainAxisAlignment ?? MainAxisAlignment.spaceAround,
           mainAxisSize: this.expanded == true ? MainAxisSize.max : MainAxisSize.min,
@@ -63,7 +65,7 @@ class AppNeonButton extends StatelessWidget {
           shape: MaterialStateProperty.all<RoundedRectangleBorder>(
             RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(6.0),
-                side: BorderSide(width: 2, color: AppColors.purple)
+                side: BorderSide(width: 2, color: this.enabled ? AppColors.purple : Colors.grey)
             )
           )
         )

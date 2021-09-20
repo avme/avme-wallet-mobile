@@ -1,5 +1,6 @@
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/app.dart';
+import 'package:avme_wallet/app/screens/prototype/widgets/notification_bar.dart';
 import 'package:avme_wallet/app/screens/widgets/custom_widgets.dart';
 import 'package:avme_wallet/app/screens/widgets/screen_indicator.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
@@ -212,8 +213,11 @@ class _LoginState extends State<Login> {
     {
         Navigator.pop(_loadingPopupContext);
         appState.changeCurrentWalletId = 0;
-        snack("Account #0 selected", context);
-        Navigator.pushReplacementNamed(context, "/home");
+        // snack("Account #0 selected", context);
+        // snack("Account #0 selected", context);
+        NotificationBar().show(context,text:"Account #0 selected");
+        // Navigator.pushReplacementNamed(context, "/home");
+        Navigator.pushReplacementNamed(context, "test/preview");
         // Navigator.pushReplacementNamed(context, "test/preview");
     }
   }

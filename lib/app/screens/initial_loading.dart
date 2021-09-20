@@ -79,25 +79,30 @@ class _InitialLoadingState extends State<InitialLoading>{
 
     if (!wallet.services.containsKey("valueSubscription"))
       valueSubscription(wallet);
-
     await wallet.fileManager.getDocumentsFolder();
 
-    if(env["ALWAYS_RESET"].toString().toUpperCase() == "TRUE")
-    {
-      wallet.walletManager.deletePreviousWallet();
-    }
+    // await wallet.fileManager.getDocumentsFolder();
+    //
+    // if(env["ALWAYS_RESET"].toString().toUpperCase() == "TRUE")
+    // {
+    //   wallet.walletManager.deletePreviousWallet();
+    // }
 
-    bool hasWallet = await wallet.walletManager.walletAlreadyExists();
+    Navigator.pushReplacementNamed(context, "/welcome");
 
-    if(hasWallet == false)
-      welcomeDialog();
+    //
+    // bool hasWallet = await wallet.walletManager.walletAlreadyExists();
+    //
+    // if(hasWallet == false)
+    //   welcomeDialog();
+    //
+    // else
+    // {
+    //   // Navigator.pushReplacementNamed(context, "/login");
+    //   Navigator.pushReplacementNamed(context, "/welcome");
+    // }
 
-    else
-    {
-      // Navigator.pushReplacementNamed(context, "/login");
-      Navigator.pushReplacementNamed(context, "/welcome");
-    }
-    NotificationBar().show(context, text: "Wallet already created previously? \"$hasWallet\"");
+    // NotificationBar().show(context, text: "Wallet already created previously? \"$hasWallet\"");
     // snack("Wallet already created previously? \"$hasWallet\"", context);
   }
 

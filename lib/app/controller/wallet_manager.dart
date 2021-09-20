@@ -67,7 +67,7 @@ class WalletManager
       file.delete();
 
       File mnemonic = new File(this._fileManager.documentsFolder + this._fileManager.accountFolder + mnemonicFile);
-      print("MEME MONIC: "+mnemonic.path);
+      print("MNEMONIC FILE PATH: "+mnemonic.path);
       mnemonic.delete();
     }
   }
@@ -84,12 +84,12 @@ class WalletManager
 
   String newMnemonic()
   {
-    // Gera mnemomic
-    // String mnemonic =
-    //     "blossom skate magnet magic put task famous square because attract clog ketchup";
+    // Gera mnemomics
+    String mnemonic =
+        "blossom skate magnet magic put task famous square because attract clog ketchup";
 
     // UNCOMMENT THE NEXT LINE TO GENERATE ANOTHER
-    String mnemonic = bip39.generateMnemonic();
+    // String mnemonic = bip39.generateMnemonic();
     print(mnemonic);
 
     return mnemonic;

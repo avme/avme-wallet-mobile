@@ -30,6 +30,11 @@ class _OverviewState extends State<Overview> {
   @override
   Widget build(BuildContext context) {
     appState = Provider.of<AvmeWallet>(context);
+    appState.walletManager.startBalanceSubscription(appState);
+    appState.displayTokenChart();
+    appState.services.keys.forEach((key) {
+      print("KEYS:$key");
+    });
     return ListView(
       children: [
         Selector<AvmeWallet,AccountObject>(
@@ -38,8 +43,9 @@ class _OverviewState extends State<Overview> {
             appState.watchBalanceUpdates();
             return OverviewAndButtons(
               totalBalance:
-              "${shortAmount((appState.currentAccount.currencyBalance +
-                appState.currentAccount.currencyTokenBalance).toString(),comma: true, length: 7)}",
+                  appState.currentAccount.currencyBalance == null || appState.currentAccount.currencyTokenBalance == null ? "0,0000000" :
+                  "${shortAmount((appState.currentAccount.currencyBalance +
+                    appState.currentAccount.currencyTokenBalance).toString(),comma: true, length: 7)}",
               address: appState.currentAccount.address,
               onPressed: () {
                 NotificationBar().show(
@@ -115,11 +121,13 @@ class _OverviewState extends State<Overview> {
         TokenDistribution(
           chartData: {
             "AVAX": [
-              appState.currentAccount.currencyBalance,
+              appState.currentAccount.currencyBalance == null ? 0 :
+                appState.currentAccount.currencyBalance,
               AppColors.purple
             ],
             "AVME": [
-              appState.currentAccount.currencyTokenBalance,
+              appState.currentAccount.currencyTokenBalance == null ? 0 :
+                appState.currentAccount.currencyTokenBalance,
               AppColors.lightBlue
             ]
           }

@@ -1,3 +1,4 @@
+import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/screens/prototype/new_account.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/button.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/neon_button.dart';
@@ -5,6 +6,7 @@ import 'package:avme_wallet/app/screens/widgets/screen_indicator.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class Welcome extends StatefulWidget {
   @override
@@ -14,7 +16,6 @@ class Welcome extends StatefulWidget {
 class _WelcomeState extends State<Welcome> {
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -82,6 +83,7 @@ class _WelcomeState extends State<Welcome> {
                               textStyle: TextStyle(
                                   color: Colors.white
                               ),
+                              enabled: false,
                             ),
                             SizedBox(
                               height: 32,

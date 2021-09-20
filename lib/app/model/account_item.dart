@@ -51,13 +51,13 @@ class AccountObject extends ChangeNotifier
   {
     if(_tokenWeiBalance == null) return null;
     if(_tokenWeiBalance.toDouble() != 0) return weiToFixedPoint(_tokenWeiBalance.toString());
-    else return "";
+    else return "0";
   }
 
   String get balance {
     if(_weiBalance == null) return null;
     if(_weiBalance.toDouble() != 0) return weiToFixedPoint(_weiBalance.toString());
-    else return "0.0000";
+    else return "0";
   }
 
   double get currencyTokenBalance

@@ -24,7 +24,15 @@ class TokenDistribution extends StatefulWidget {
 
 class _TokenDistributionState extends State<TokenDistribution> {
   @override
+
+  Map<String, List<dynamic>> dataPie = {
+    "AVME": [0, AppColors.lightBlue],
+    "AVAX": [0, Colors.redAccent],
+    // "SAA": [0.15, Colors.white],
+  };
+
   Widget build(BuildContext context) {
+
     return AppCard(
       child: Column(
         children: [
@@ -37,7 +45,12 @@ class _TokenDistributionState extends State<TokenDistribution> {
                 borderRadius: BorderRadius.circular(8),
                 color: AppColors.darkBlue
             ),
-            child: Row(
+            child: totalValue(widget.chartData) == 0 ? Padding(
+              padding: const EdgeInsets.symmetric(vertical: 32.0),
+              child: Center(child: Text("No Data to be shown."),),
+            )
+            :
+              Row(
               children: [
                 Expanded(
                     flex:6,
@@ -134,6 +147,13 @@ class _TokenDistributionState extends State<TokenDistribution> {
   {
     String ret = ((value / total) * 100).toStringAsFixed(1).toString();
     return ret.substring(ret.indexOf('.'), ret.length) == ".0" ? ret.substring(0,ret.indexOf('.')) : ret;
+  }
+
+  double totalValue(Map<String,List> data)
+  {
+    double ret = 0;
+    data.values.forEach((value) => ret +=value[0]);
+    return ret;
   }
 }
 

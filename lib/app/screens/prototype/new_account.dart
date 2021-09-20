@@ -41,7 +41,7 @@ class _NewAccountState extends State<NewAccount> {
   String walletSeed;
   Map walletSeedMap;
 
-  WalletManager appWalletManager;
+  AvmeWallet appWalletManager;
 
   String warning1 = " Use these words in sequential order to recover your AVME Wallet";
   String warningMnemonic = " Oops, looks like you forgot to fill number ";
@@ -54,8 +54,8 @@ class _NewAccountState extends State<NewAccount> {
   @override
   initState() {
 
-    appWalletManager = Provider.of<AvmeWallet>(context, listen: false).walletManager;
-    this.walletSeed = this.walletSeed ?? appWalletManager.newMnemonic();
+    appWalletManager = Provider.of<AvmeWallet>(context, listen: false);
+    this.walletSeed = this.walletSeed ?? appWalletManager.walletManager.newMnemonic();
     this.walletSeedMap = this.walletSeed.split(' ').asMap();
     phraseFocusNode.addListener(() {
       setState(() => null);
@@ -110,6 +110,7 @@ class _NewAccountState extends State<NewAccount> {
         child: Center(
           child: ListView(
             shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
             children: [
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -273,7 +274,7 @@ class _NewAccountState extends State<NewAccount> {
                                                     onPressed: () {
                                                       NotificationBar().show(context, text: "A new key phrase was generated");
                                                       setState(() {
-                                                        this.walletSeed = appWalletManager.newMnemonic();
+                                                        this.walletSeed = appWalletManager.walletManager.newMnemonic();
                                                         this.walletSeedMap = this.walletSeed.split(' ').asMap();
                                                       });
                                                     },
@@ -469,7 +470,7 @@ class _NewAccountState extends State<NewAccount> {
                                         onPressed: () {
                                           if(_phraseFormState.currentState.validate() == true && _rephraseFormState.currentState.validate() == true)
                                           {
-                                            NotificationBar().show(context,text: "Creating account.");
+                                            // NotificationBar().show(context,text: "Creating account.");
 
                                             ///First we gathered the keys to hide and make the user verify
 
@@ -502,6 +503,7 @@ class _NewAccountState extends State<NewAccount> {
                                                       AppNeonButton(
                                                         expanded: false,
                                                         onPressed: () async {
+                                                          Navigator.of(context).pop();
                                                           await showDialog(context: context, builder: (_) =>
                                                             StatefulBuilder(builder: (builder, setState) =>
                                                               AppPopupWidget(
@@ -527,13 +529,45 @@ class _NewAccountState extends State<NewAccount> {
                                                                   ),
 
                                                                   AppNeonButton(
-                                                                    onPressed: () {
+                                                                    onPressed: () async {
                                                                       wrongMnemonic = formMnemonic.validate();
                                                                       if(wrongMnemonic > -1)
                                                                       {
                                                                         setState((){
-                                                                          invalidMnemonic = warningMnemonic+wrongMnemonic.toString();
+                                                                          invalidMnemonic = warningMnemonic+(wrongMnemonic+1).toString();
                                                                         });
+                                                                      }
+                                                                      else
+                                                                      {
+                                                                        //TODO: Refactor the account creation code
+                                                                        setState((){
+                                                                          invalidMnemonic = "";
+                                                                        });
+                                                                        Navigator.of(context).pop();
+                                                                        BuildContext _loadingPopupContext;
+
+                                                                        showDialog<void>(
+                                                                            context: context,
+                                                                            barrierDismissible: false,
+                                                                            builder: (BuildContext context) {
+                                                                              _loadingPopupContext = context;
+                                                                              return LoadingPopUp(
+                                                                                  text:
+                                                                                  "Loading, please wait."
+                                                                              );
+                                                                            }
+                                                                        );
+
+                                                                        // Creates the user account
+                                                                        await appWalletManager.walletManager.makeAccount(phraseController.text, appWalletManager,mnemonic: this.walletSeed);
+                                                                        // if(globals.walletManager.logged())
+                                                                        // {
+                                                                        // Navigator.of(context).pop();
+                                                                        Navigator.pop(_loadingPopupContext);
+                                                                        Navigator.pushReplacementNamed(context, "test/preview");
+                                                                        appWalletManager.changeCurrentWalletId = 0;
+                                                                        NotificationBar().show(context, text: "Account #0 selected");
+                                                                        return;
                                                                       }
                                                                     },
                                                                     expanded: false,
@@ -543,7 +577,7 @@ class _NewAccountState extends State<NewAccount> {
                                                               )
                                                             )
                                                           );
-                                                          Navigator.of(context).pop();
+                                                          // Navigator.of(context).pop();
                                                         },
                                                         text: "Continue",)
                                                     ]
@@ -761,8 +795,8 @@ class FormMnemonic {
     ///Selecting what keys the user must fill
     while(this.removedKeys.length < 3)
     {
-      // int key = random.nextInt(this.mnemonicDict.length);
-      int key = random.nextInt(3);
+      int key = random.nextInt(this.mnemonicDict.length);
+      // int key = random.nextInt(3);
       if (!this.removedKeys.contains(key))
         this.removedKeys.add(key);
     }
