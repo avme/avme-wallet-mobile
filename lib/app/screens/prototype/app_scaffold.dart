@@ -2,6 +2,7 @@ import 'package:avme_wallet/app/screens/widgets/drawer_scaffold.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
 
+import 'app_drawer.dart';
 import 'overview.dart';
 
 
@@ -134,9 +135,10 @@ class _State extends State<AppScaffold>
         ],
       ),
       ///Drawer in the Left Side
-      drawer: AppDrawer({"Example 1" : Container()}),
+      // drawer: AppDrawer({"Example 1" : Container()}),
       ///Drawer in the Right Side
-      endDrawer: AppDrawer({"Example 1" : Container()}),
+      // endDrawer: AppDrawer({"Example 1" : Container()}),
+      endDrawer: AppDrawer({}),
       body: AppTabBar(
           padding: appBarWidth,
           routeLabels: this.routeLabels,

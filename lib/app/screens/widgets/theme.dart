@@ -110,4 +110,5 @@ ThemeData avmeTheme = ThemeData(
     appBarTheme: AppBarTheme(
         backgroundColor: AppColors.darkBlue
     ),
-  );
+    canvasColor: AppColors.cardBlue
+);

@@ -11,6 +11,7 @@ class AppNeonButton extends StatelessWidget {
   final TextStyle textStyle;
   final bool expanded;
   final bool enabled;
+  final EdgeInsets paddingText;
 
   const AppNeonButton({
     @required this.onPressed,
@@ -22,6 +23,7 @@ class AppNeonButton extends StatelessWidget {
     this.expanded = true,
     this.enabled = true,
     this.textStyle,
+    this.paddingText = const EdgeInsets.all(0),
   });
   @override
   Widget build(BuildContext context) {
@@ -43,9 +45,12 @@ class AppNeonButton extends StatelessWidget {
     }
 
     children.add(
-      Text(text, style: this.textStyle ??
-        TextStyle(
-          color: AppColors.purple
+      Padding(
+        padding: this.paddingText,
+        child: Text(text, style: this.textStyle ??
+          TextStyle(
+            color: AppColors.purple
+          ),
         ),
       )
     );

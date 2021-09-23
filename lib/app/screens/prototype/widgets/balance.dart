@@ -18,31 +18,6 @@ class OverviewAndButtons extends StatefulWidget {
   final Function onReceivePressed;
   final Function onBuyPressed;
 
-  final DecorationTween balanceTween = DecorationTween(
-      begin: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          gradient: LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: <Color>[
-                AppColors.purpleVariant2,
-                AppColors.lightBlue,
-              ]
-          )
-      ),
-      end: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          gradient: LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: <Color>[
-                AppColors.lightBlue,
-                AppColors.purpleVariant2,
-              ]
-          )
-      )
-  );
-
   OverviewAndButtons({
     Key key,
     @required this.totalBalance,
@@ -55,6 +30,31 @@ class OverviewAndButtons extends StatefulWidget {
     this.difference = "+18,69%",
   }) : super(key: key);
 
+  final DecorationTween balanceTween = DecorationTween(
+    begin: BoxDecoration(
+      borderRadius: BorderRadius.circular(8),
+      gradient: LinearGradient(
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
+        colors: <Color>[
+          AppColors.purpleVariant2,
+          AppColors.lightBlue,
+        ]
+      )
+    ),
+    end: BoxDecoration(
+      borderRadius: BorderRadius.circular(8),
+      gradient: LinearGradient(
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
+        colors: <Color>[
+          AppColors.lightBlue,
+          AppColors.purpleVariant2,
+        ]
+      )
+    )
+  );
+
   @override
   _OverviewAndButtonsState createState() => _OverviewAndButtonsState();
 }
@@ -66,73 +66,73 @@ class _OverviewAndButtonsState extends State<OverviewAndButtons> {
       child: Column(
         children: [
           GradientContainer(
-              decorationTween: widget.balanceTween,
-              onPressed: (){},
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  children: [
-                    ///Fist Column with Data.
-                    Flexible(
-                      child: GestureDetector(
-                        onTap: widget.onPressed,
-                        child: Container(
-                          color:Colors.transparent,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+            decorationTween: widget.balanceTween,
+            onPressed: (){},
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                children: [
+                ///Fist Column with Data.
+                Flexible(
+                  child: GestureDetector(
+                    onTap: widget.onPressed,
+                    child: Container(
+                      color:Colors.transparent,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("Total Balance"),
+                          SizedBox(height: 8,),
+                          Text("\$${widget.totalBalance}",
+                            style: TextStyle(
+                              fontSize: 26,
+                            ),),
+                          SizedBox(height: 8,),
+                          Text("${widget.difference}",
+                              style: TextStyle(
+                                fontSize: 12,
+                              )),
+                          SizedBox(height: 18,),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Text("Total Balance"),
-                              SizedBox(height: 8,),
-                              Text("\$${widget.totalBalance}",
-                                style: TextStyle(
-                                  fontSize: 26,
-                                ),),
-                              SizedBox(height: 8,),
-                              Text("${widget.difference}",
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                  )),
-                              SizedBox(height: 18,),
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.all(1.0),
-                                    child: Icon(Icons.copy),
-                                  ),
-                                  SizedBox(width: 8,),
-                                  Flexible(
-                                    child: Column(
-                                      children: [
-                                        Text("${widget.address}",
-                                          style: TextStyle(
-                                              fontSize: 12
-                                          ),),
-                                      ],
-                                    ),
-                                  )
-                                ],
+                              Padding(
+                                padding: const EdgeInsets.all(1.0),
+                                child: Icon(Icons.copy),
+                              ),
+                              SizedBox(width: 8,),
+                              Flexible(
+                                child: Column(
+                                  children: [
+                                    Text("${widget.address}",
+                                      style: TextStyle(
+                                          fontSize: 12
+                                      ),),
+                                  ],
+                                ),
                               )
                             ],
-                          ),
-                        ),
+                          )
+                        ],
                       ),
                     ),
-                    ///This is the second column, icon only
-                    Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(left:8.0),
-                          child: TextButton(
-                            child: Icon(Icons.qr_code_scanner, size: 64,color: Colors.white,),
-                            onPressed: widget.onIconPressed,
-                          ),
-                        ),
-                      ],
-                    )
-                  ],
+                  ),
                 ),
-              )
+                ///This is the second column, icon only
+                Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(left:8.0),
+                      child: TextButton(
+                        child: Icon(Icons.qr_code_scanner, size: 64,color: Colors.white,),
+                        onPressed: widget.onIconPressed,
+                      ),
+                    ),
+                  ],
+                )
+              ],
+              ),
+            )
           ),
           SizedBox(
             height: 16,

@@ -146,51 +146,51 @@ class _NewAccountState extends State<NewAccount> {
   {
     return [
       Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ///Close button
-              GestureDetector(
-                child: Container(
-                  color: Colors.transparent,
-                  // color: Colors.red,
-                  child: Padding(
-                    padding: const EdgeInsets.only(
-                        top: 16,
-                        bottom: 10,
-                        // left: 16,
-                        right: 16
-                    ),
-                    child: Icon(
-                      Icons.arrow_back,
-                      size: 32,
-                      color: AppColors.labelDefaultColor,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ///Close button
+                GestureDetector(
+                  child: Container(
+                    color: Colors.transparent,
+                    // color: Colors.red,
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                          top: 16,
+                          bottom: 10,
+                          // left: 16,
+                          right: 16
+                      ),
+                      child: Icon(
+                        Icons.arrow_back,
+                        size: 32,
+                        color: AppColors.labelDefaultColor,
+                      ),
                     ),
                   ),
+                  onTap: (){
+                    Navigator.of(context).pop();
+                  },
                 ),
-                onTap: (){
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-        Expanded(
-          flex: 4,
-          child: Column(
-            children: [
-              Text(
-                  "Create New",
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 28)
-              ),
-            ],
+          Expanded(
+            flex: 4,
+            child: Column(
+              children: [
+                Text(
+                    "Create New",
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 28)
+                ),
+              ],
+            ),
           ),
-        ),
-        Expanded(child: Container())
+          Expanded(child: Container())
       ],
     ),
     ScreenIndicator(

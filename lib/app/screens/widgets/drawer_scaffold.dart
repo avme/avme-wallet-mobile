@@ -1,4 +1,5 @@
 import 'package:avme_wallet/app/lib/utils.dart';
+import 'package:avme_wallet/app/screens/prototype/app_drawer.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
 
@@ -91,57 +92,4 @@ List<Widget> buildTabBarView(int type, Map pages)
     _list.add(Padding(padding: EdgeInsets.zero, child: value));
   });
   return _list;
-}
-
-class AppDrawer extends StatefulWidget {
-
-  final Map<String,Widget> routes;
-
-  const AppDrawer(this.routes);
-
-  @override
-  _AppDrawerState createState() => _AppDrawerState();
-}
-
-class _AppDrawerState extends State<AppDrawer> {
-  @override
-  Widget build(BuildContext context) {
-
-    List<Widget> drawerElements = [
-      const DrawerHeader(
-        decoration: BoxDecoration(
-          color: AppColors.secondaryColor,
-        ),
-        child: Text("Welcome"),
-      ),
-    ];
-
-    widget.routes.forEach((key, value) {
-      drawerElements.add(
-        ListTile(
-          title: Text(key),
-          onTap: () {
-            // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => value));
-            Navigator.push(context, MaterialPageRoute(builder: (context) => value));
-          }
-        )
-      );
-    });
-
-    drawerElements.add(
-      ListTile(
-        title: const Text('Close'),
-        onTap: () {
-          Navigator.pop(context);
-        },
-      )
-    );
-
-    return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: drawerElements,
-      ),
-    );
-  }
 }

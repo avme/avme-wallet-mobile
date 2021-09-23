@@ -43,9 +43,9 @@ class _OverviewState extends State<Overview> {
             appState.watchBalanceUpdates();
             return OverviewAndButtons(
               totalBalance:
-                  appState.currentAccount.currencyBalance == null || appState.currentAccount.currencyTokenBalance == null ? "0,0000000" :
-                  "${shortAmount((appState.currentAccount.currencyBalance +
-                    appState.currentAccount.currencyTokenBalance).toString(),comma: true, length: 7)}",
+                appState.currentAccount.currencyBalance == null || appState.currentAccount.currencyTokenBalance == null ? "0,0000000" :
+                "${shortAmount((appState.currentAccount.currencyBalance +
+                  appState.currentAccount.currencyTokenBalance).toString(),comma: true, length: 7)}",
               address: appState.currentAccount.address,
               onPressed: () {
                 NotificationBar().show(

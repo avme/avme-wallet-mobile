@@ -10,6 +10,7 @@ class AppButton extends StatelessWidget {
   final double paddingBetweenIcons;
   final TextStyle textStyle;
   final bool expanded;
+  final EdgeInsets paddingText;
 
   const AppButton({
     @required this.onPressed,
@@ -20,6 +21,7 @@ class AppButton extends StatelessWidget {
     this.height = 45,
     this.expanded = true,
     this.textStyle,
+    this.paddingText = const EdgeInsets.all(0),
   });
   @override
   Widget build(BuildContext context) {
@@ -41,9 +43,12 @@ class AppButton extends StatelessWidget {
     }
 
     children.add(
-      Text(text, style: this.textStyle ??
-        TextStyle(
-          color: Colors.white
+      Padding(
+        padding: this.paddingText,
+        child: Text(text, style: this.textStyle ??
+          TextStyle(
+            color: Colors.white
+          ),
         ),
       )
     );
