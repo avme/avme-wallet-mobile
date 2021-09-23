@@ -21,7 +21,6 @@ class _NewAccountState extends State<NewAccount> {
   final _phraseFormState = GlobalKey<FormState>();
   final _rephraseFormState = GlobalKey<FormState>();
 
-  // FocusNode seedFocusNode = new FocusNode();
   FocusNode phraseFocusNode = new FocusNode();
   FocusNode rePhraseFocusNode = new FocusNode();
 
@@ -71,30 +70,6 @@ class _NewAccountState extends State<NewAccount> {
   @override
   Widget build(BuildContext context) {
 
-    TextField textField = TextField(
-      controller: new TextEditingController(
-          text: "text"
-      ),
-      style: TextStyle(
-          color: Colors.white70,
-          fontWeight: FontWeight.bold
-      ),
-        enabled: false,
-        decoration: InputDecoration(
-          floatingLabelBehavior: FloatingLabelBehavior.always,
-          contentPadding: EdgeInsets.all(0),
-          disabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: AppColors.purple)
-          ),
-          labelStyle: TextStyle(
-            color: phraseFocusNode.hasFocus ? Colors.white : AppColors.labelDefaultColor,
-            fontWeight: phraseFocusNode.hasFocus ? FontWeight.w900 : FontWeight.w500,
-            fontSize: 20
-          ),
-        )
-
-    );
-
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -131,58 +106,8 @@ class _NewAccountState extends State<NewAccount> {
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 ///Header
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          ///Close button
-                                          GestureDetector(
-                                            child: Container(
-                                              color: Colors.transparent,
-                                              // color: Colors.red,
-                                              child: Padding(
-                                                padding: const EdgeInsets.only(
-                                                    top: 16,
-                                                    bottom: 10,
-                                                    // left: 16,
-                                                    right: 16
-                                                ),
-                                                child: Icon(
-                                                  Icons.arrow_back,
-                                                  size: 32,
-                                                  color: AppColors.labelDefaultColor,
-                                                ),
-                                              ),
-                                            ),
-                                            onTap: (){
-                                              Navigator.of(context).pop();
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Expanded(
-                                      flex: 4,
-                                      child: Column(
-                                        children: [
-                                          Text(
-                                            "Create New",
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold, fontSize: 28)
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Expanded(child: Container())
-                                  ],
-                                ),
-                                ScreenIndicator(
-                                  height: 20,
-                                  width: MediaQuery.of(context).size.width,
-                                ),
+                                Column(children: header(context),),
+                                ///Fields
                                 Padding(
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 16,
@@ -190,405 +115,15 @@ class _NewAccountState extends State<NewAccount> {
                                   child: Column(
                                     children: [
                                       ///Seed Phrase
-                                      Padding(
-                                        padding: const EdgeInsets.only(top:16),
-                                        // padding: EdgeInsets.zero,
-                                        child: Stack(
-                                          children: [
-                                            GestureDetector(
-                                              onTap: () {
-                                                showDialog(context: context, builder: (_) =>
-                                                  AppPopupWidget(
-                                                    canClose: true,
-                                                    title: "This is your key phrase",
-                                                    padding: EdgeInsets.only(
-                                                        left: 32,
-                                                        right: 32,
-                                                        top: 16,
-                                                        bottom: 8
-                                                    ),
-                                                    children: [
-                                                      Text(this.warning1),
-                                                      Padding(
-                                                        padding: const EdgeInsets.symmetric(vertical: 12),
-                                                        child: Divider(color: Colors.white,),
-                                                      ),
-                                                      getSeedList(this.walletSeedMap),
-                                                      Padding(
-                                                        // padding: const EdgeInsets.symmetric(vertical: 32),
-                                                        padding: EdgeInsets.only(top: 24),
-                                                        child: Text(this.warning2),
-                                                      )
-                                                    ],
-                                                    actions: [
-                                                      AppNeonButton(
-                                                        text: "Ok",
-                                                        expanded: false,
-                                                        onPressed: () => Navigator.of(context).pop(),
-                                                      )
-                                                    ]
-                                                  )
-                                                );
-
-                                              },
-                                              child: TextField(
-                                                controller: new TextEditingController(
-                                                  text:
-                                                  this.walletSeed.substring(0, maxCharacteresInsideTextField(context)).trim() + "..."
-                                                ),
-                                                enabled: false,
-                                                cursorColor: AppColors.labelDefaultColor,
-                                                decoration: InputDecoration(
-                                                  disabledBorder: OutlineInputBorder(
-                                                    borderSide: BorderSide(width: 2,
-                                                      color: Colors.grey[600]
-                                                    )
-                                                  ),
-                                                  labelText: "Seed",
-                                                  floatingLabelBehavior: FloatingLabelBehavior.always,
-                                                  border: OutlineInputBorder(
-                                                    borderSide: BorderSide(width: 2,
-                                                      color: AppColors.labelDefaultColor
-                                                    )
-                                                  ),
-                                                  labelStyle: TextStyle(
-                                                    color: Colors.grey[600],
-                                                    fontWeight: FontWeight.w500,
-                                                    fontSize: 20
-                                                  ),
-                                                  focusedBorder: OutlineInputBorder(
-                                                    borderSide: BorderSide(width: 2,
-                                                      color: Colors.white
-                                                    ),
-                                                  ),
-                                                )
-                                              ),
-                                            ),
-                                            Positioned.fill(
-                                              child: Align(
-                                                alignment: Alignment.centerRight,
-                                                child: SizedBox(
-                                                  height: double.infinity,
-                                                  width: 48,
-                                                  child: IconButton(
-                                                    onPressed: () {
-                                                      NotificationBar().show(context, text: "A new key phrase was generated");
-                                                      setState(() {
-                                                        this.walletSeed = appWalletManager.walletManager.newMnemonic();
-                                                        this.walletSeedMap = this.walletSeed.split(' ').asMap();
-                                                      });
-                                                    },
-                                                    icon: Icon(Icons.refresh),
-                                                    splashColor: Colors.transparent,
-                                                    highlightColor: Colors.transparent,
-                                                  ),
-                                                )
-                                              )
-                                            ),
-                                          ],
-                                        ),
-                                      ),
+                                      seedField(context),
                                       ///Passphrase
-                                      Form(
-                                        key: _phraseFormState,
-                                        child: Padding(
-                                          padding: const EdgeInsets.only(top:32),
-                                          child: Stack(
-                                            children: [
-                                              TextFormField(
-                                                validator: (string) {
-                                                  if(string.length  <=5)
-                                                    return "This field cannot be empty";
-                                                  else
-                                                    return null;
-                                                },
-                                                controller: this.phraseController,
-                                                cursorColor: AppColors.labelDefaultColor,
-                                                obscureText: true,
-                                                focusNode: phraseFocusNode,
-                                                onChanged: (string) {
-                                                  if(string.length > 5)
-                                                    this.phraseIcon = new Icon(Icons.done_sharp, color: Colors.green,);
-                                                  else
-                                                    this.phraseIcon = new Icon(Icons.close_rounded, color: Colors.red,);
-                                                  setState(() => null);
-                                                },
-                                                decoration: InputDecoration(
-                                                  focusedErrorBorder: OutlineInputBorder(
-                                                      borderSide: BorderSide(width: 2,
-                                                          color: Colors.red
-                                                      )
-                                                  ),
-                                                  errorBorder: OutlineInputBorder(
-                                                      borderSide: BorderSide(width: 2,
-                                                          color: AppColors.labelDefaultColor
-                                                      )
-                                                  ),
-                                                  labelText: "Passphrase",
-                                                  floatingLabelBehavior: FloatingLabelBehavior.always,
-                                                  contentPadding: textFieldButtonPadding,
-                                                  enabledBorder: OutlineInputBorder(
-                                                    borderSide: BorderSide(width: 2,
-                                                      color: AppColors.labelDefaultColor,
-                                                    ),
-                                                  ),
-                                                  labelStyle: TextStyle(
-                                                    color: phraseFocusNode.hasFocus ? Colors.white : AppColors.labelDefaultColor,
-                                                    fontWeight: phraseFocusNode.hasFocus ? FontWeight.w900 : FontWeight.w500,
-                                                    fontSize: 20
-                                                  ),
-                                                  focusedBorder: OutlineInputBorder(
-                                                    borderSide: BorderSide(width: 2,
-                                                        color: Colors.white
-                                                    ),
-                                                  ),
-                                                )
-                                              ),
-                                              Positioned.fill(
-                                                child: Align(
-                                                  alignment: Alignment.centerRight,
-                                                  child: Container(
-                                                    // color: Color.fromRGBO(255, 50, 50, 0.2),
-                                                    child: SizedBox(
-                                                      // height: 12,
-                                                      width: 48,
-                                                      child: Column(
-                                                        mainAxisSize: MainAxisSize.min,
-                                                        children: [
-                                                          SizedBox(
-                                                            width: 48,
-                                                            child: Padding(
-                                                              padding: const EdgeInsets.all(8.0),
-                                                              child: this.phraseIcon,
-                                                            ),
-                                                          ),
-                                                          SizedBox(
-                                                            height:
-                                                            (_phraseFormState.currentState != null ?
-                                                            (_phraseFormState.currentState.validate() == true ? null : 20) :
-                                                            null),
-                                                          )
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  )
-                                                )
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
+                                      passPhrase(context),
                                       ///Confirm Passphrase
-                                      Form(
-                                        key: _rephraseFormState,
-                                        child: Padding(
-                                          padding: const EdgeInsets.only(top:32),
-                                          child: Stack(
-                                            children: [
-                                              TextFormField(
-                                                validator: (string) {
-                                                  if(string == this.phraseController.text)
-                                                    return null;
-                                                  else
-                                                    return "Passphrases don't match";
-                                                },
-                                                controller: this.rePhraseController,
-                                                cursorColor: AppColors.labelDefaultColor,
-                                                obscureText: true,
-                                                focusNode: rePhraseFocusNode,
-                                                onChanged: (string) {
-                                                  // print("${this.phraseController.text} | $string");
-                                                  if(string.length > 5 && string == this.phraseController.text)
-                                                    this.rePhraseIcon = new Icon(Icons.done_sharp, color: Colors.green,);
-                                                  else
-                                                    this.rePhraseIcon = new Icon(Icons.close_rounded, color: Colors.red,);
-                                                  setState(() => null);
-                                                },
-                                                decoration: InputDecoration(
-                                                  focusedErrorBorder: OutlineInputBorder(
-                                                    borderSide: BorderSide(width: 2,
-                                                      color: Colors.red
-                                                    )
-                                                  ),
-                                                  errorBorder: OutlineInputBorder(
-                                                    borderSide: BorderSide(width: 2,
-                                                      color: AppColors.labelDefaultColor
-                                                    )
-                                                  ),
-                                                  labelText: "Confirm passphrase",
-                                                  floatingLabelBehavior: FloatingLabelBehavior.always,
-                                                  enabledBorder: OutlineInputBorder(
-                                                    borderSide: BorderSide(width: 2,
-                                                      color: AppColors.labelDefaultColor
-                                                    )
-                                                  ),
-                                                  labelStyle: TextStyle(
-                                                    color: rePhraseFocusNode.hasFocus ? Colors.white : AppColors.labelDefaultColor,
-                                                    fontWeight: rePhraseFocusNode.hasFocus ? FontWeight.w900 : FontWeight.w500,
-                                                    fontSize: 20
-                                                  ),
-                                                  focusedBorder: OutlineInputBorder(
-                                                    borderSide: BorderSide(width: 2,
-                                                        color: Colors.white
-                                                    ),
-                                                  ),
-                                                )
-                                              ),
-                                              Positioned.fill(
-                                                child: Align(
-                                                  alignment: Alignment.centerRight,
-                                                  child: Container(
-                                                    child: Column(
-                                                      mainAxisSize: MainAxisSize.min,
-                                                      children: [
-                                                        SizedBox(
-                                                          width: 48,
-                                                          child: Padding(
-                                                            padding: const EdgeInsets.all(8.0),
-                                                            child: this.rePhraseIcon,
-                                                          ),
-                                                        ),
-                                                        SizedBox(
-                                                          height:
-                                                          (_rephraseFormState.currentState != null ?
-                                                            (_rephraseFormState.currentState.validate() == true ? null : 20) :
-                                                            null),
-                                                        )
-                                                      ],
-                                                    ),
-                                                  )
-                                                )
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
+                                      rePassphrase(context),
                                       SizedBox(
                                         height: 32,
                                       ),
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          if(_phraseFormState.currentState.validate() == true && _rephraseFormState.currentState.validate() == true)
-                                          {
-                                            // NotificationBar().show(context,text: "Creating account.");
-
-                                            ///First we gathered the keys to hide and make the user verify
-
-                                            formMnemonic = new FormMnemonic(mnemonic: this.walletSeed);
-                                            print(formMnemonic.mnemonicDict);
-                                            print(formMnemonic.removedKeys);
-                                            String invalidMnemonic = "";
-
-                                            FocusScopeNode currentFocus = FocusScope.of(this.context);
-                                            currentFocus.unfocus();
-                                            Future.delayed(Duration(milliseconds: 200), (){
-                                              showDialog(context: context, builder: (_) =>
-                                                StatefulBuilder(builder: (builder, setState) =>
-                                                  AppPopupWidget(
-                                                    title: "Warning",
-                                                    canClose: false,
-                                                    children: [
-                                                      Text(this.warning1),
-                                                      Padding(
-                                                        padding: const EdgeInsets.symmetric(vertical: 12),
-                                                        child: Divider(color: Colors.white,),
-                                                      ),
-                                                      getSeedList(this.walletSeedMap),
-                                                      Padding(
-                                                        padding: EdgeInsets.only(top: 24),
-                                                        child: Text(this.warning2),
-                                                      ),
-                                                    ],
-                                                    actions: [
-                                                      AppNeonButton(
-                                                        expanded: false,
-                                                        onPressed: () async {
-                                                          Navigator.of(context).pop();
-                                                          await showDialog(context: context, builder: (_) =>
-                                                            StatefulBuilder(builder: (builder, setState) =>
-                                                              AppPopupWidget(
-                                                                title: "Verify Mnemonic",
-                                                                margin: EdgeInsets.symmetric(horizontal: 8),
-                                                                children: [
-                                                                  Text("Fill in Mnemonic Phrase Below"),
-                                                                  Padding(
-                                                                    padding: const EdgeInsets.only(top: 16),
-                                                                    child: formMnemonic.build(),
-                                                                  ),
-                                                                  Padding(
-                                                                    padding: const EdgeInsets.only(top: 16.0),
-                                                                    child: Text(invalidMnemonic,
-                                                                      style: TextStyle(color: Colors.red),),
-                                                                  ),
-                                                                ],
-                                                                actions: [
-                                                                  AppNeonButton(
-                                                                    onPressed: () => Navigator.of(context).pop(),
-                                                                    expanded: false,
-                                                                    text: "CANCEL"
-                                                                  ),
-
-                                                                  AppNeonButton(
-                                                                    onPressed: () async {
-                                                                      wrongMnemonic = formMnemonic.validate();
-                                                                      if(wrongMnemonic > -1)
-                                                                      {
-                                                                        setState((){
-                                                                          invalidMnemonic = warningMnemonic+(wrongMnemonic+1).toString();
-                                                                        });
-                                                                      }
-                                                                      else
-                                                                      {
-                                                                        //TODO: Refactor the account creation code
-                                                                        setState((){
-                                                                          invalidMnemonic = "";
-                                                                        });
-                                                                        Navigator.of(context).pop();
-                                                                        BuildContext _loadingPopupContext;
-
-                                                                        showDialog<void>(
-                                                                            context: context,
-                                                                            barrierDismissible: false,
-                                                                            builder: (BuildContext context) {
-                                                                              _loadingPopupContext = context;
-                                                                              return LoadingPopUp(
-                                                                                  text:
-                                                                                  "Loading, please wait."
-                                                                              );
-                                                                            }
-                                                                        );
-
-                                                                        // Creates the user account
-                                                                        await appWalletManager.walletManager.makeAccount(phraseController.text, appWalletManager,mnemonic: this.walletSeed);
-                                                                        // if(globals.walletManager.logged())
-                                                                        // {
-                                                                        // Navigator.of(context).pop();
-                                                                        Navigator.pop(_loadingPopupContext);
-                                                                        Navigator.pushReplacementNamed(context, "test/preview");
-                                                                        appWalletManager.changeCurrentWalletId = 0;
-                                                                        NotificationBar().show(context, text: "Account #0 selected");
-                                                                        return;
-                                                                      }
-                                                                    },
-                                                                    expanded: false,
-                                                                    text: "VERIFY"
-                                                                  ),
-                                                                ]
-                                                              )
-                                                            )
-                                                          );
-                                                          // Navigator.of(context).pop();
-                                                        },
-                                                        text: "Continue",)
-                                                    ]
-                                                  )
-                                                )
-                                              );
-                                            });
-                                          }
-                                        },
-                                        child: Text("CREATE ACCOUNT"),
-                                      ),
+                                      createAccount(),
                                     ],
                                   ),
                                 )
@@ -605,6 +140,63 @@ class _NewAccountState extends State<NewAccount> {
         ),
       ),
     );
+  }
+
+  List<Widget> header(BuildContext context)
+  {
+    return [
+      Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ///Close button
+              GestureDetector(
+                child: Container(
+                  color: Colors.transparent,
+                  // color: Colors.red,
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                        top: 16,
+                        bottom: 10,
+                        // left: 16,
+                        right: 16
+                    ),
+                    child: Icon(
+                      Icons.arrow_back,
+                      size: 32,
+                      color: AppColors.labelDefaultColor,
+                    ),
+                  ),
+                ),
+                onTap: (){
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          flex: 4,
+          child: Column(
+            children: [
+              Text(
+                  "Create New",
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 28)
+              ),
+            ],
+          ),
+        ),
+        Expanded(child: Container())
+      ],
+    ),
+    ScreenIndicator(
+      height: 20,
+      width: MediaQuery.of(context).size.width,
+    ),];
   }
 
   int maxCharacteresInsideTextField(BuildContext context)
@@ -636,10 +228,8 @@ class _NewAccountState extends State<NewAccount> {
     int row = 0;
 
     seed.split(' ').asMap().forEach((key, value) {
-
       if(key.remainder(6) == 0 && key != 0)
         row++;
-
       columnMap[row] = columnMap[row] ?? [];
       columnMap[row].add(
         Padding(
@@ -647,34 +237,34 @@ class _NewAccountState extends State<NewAccount> {
           child: Row(
             children: [
               Text(" ${key+1}." + (key > 8 ? "  " : "   "),
-                  style: TextStyle(
-                      color: Colors.blue
-                  ),
+                style: TextStyle(
+                  color: Colors.blue
+                ),
               ),
               Expanded(
                 child: TextField(
                   controller: new TextEditingController(
-                      text: selectedKeys.contains(key) ? null : value,
+                    text: selectedKeys.contains(key) ? null : value,
                   ),
                   enabled: selectedKeys.contains(key),
                   style: TextStyle(
-                      color: Colors.white70,
-                      fontWeight: FontWeight.bold
+                    color: Colors.white70,
+                    fontWeight: FontWeight.bold
                   ),
                   decoration: InputDecoration(
-                      floatingLabelBehavior: FloatingLabelBehavior.always,
-                      contentPadding: EdgeInsets.all(0),
-                      disabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.grey, width: 1),
-                      ),
-                      enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.white, width: 2)
-                      ),
-                      labelStyle: TextStyle(
-                          color: phraseFocusNode.hasFocus ? Colors.white : AppColors.labelDefaultColor,
-                          fontWeight: phraseFocusNode.hasFocus ? FontWeight.w900 : FontWeight.w500,
-                          fontSize: 20
-                      ),
+                    floatingLabelBehavior: FloatingLabelBehavior.always,
+                    contentPadding: EdgeInsets.all(0),
+                    disabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey, width: 1),
+                    ),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white, width: 2)
+                    ),
+                    labelStyle: TextStyle(
+                      color: phraseFocusNode.hasFocus ? Colors.white : AppColors.labelDefaultColor,
+                      fontWeight: phraseFocusNode.hasFocus ? FontWeight.w900 : FontWeight.w500,
+                      fontSize: 20
+                    ),
                   )
                 ),
               ),
@@ -682,7 +272,7 @@ class _NewAccountState extends State<NewAccount> {
           ),
         ),
       );
-      print("row[$row] ${key+1} - $value");
+      // print("row[$row] ${key+1} - $value");
     });
 
     List<Widget> columnWidgets = [];
@@ -730,7 +320,7 @@ class _NewAccountState extends State<NewAccount> {
           ],
         )
       );
-      print("row[$row] ${key+1} - $value");
+      // print("row[$row] ${key+1} - $value");
     });
 
     List<Widget> columnWidgets = [];
@@ -751,31 +341,400 @@ class _NewAccountState extends State<NewAccount> {
     );
   }
 
-  void createNewAccount(BuildContext context) async
-  {
-
-    BuildContext _loadingPopupContext;
-
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        _loadingPopupContext = context;
-        return LoadingPopUp(
-            text:
-            "Loading, please wait."
-        );
-      }
+  Padding seedField(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top:16),
+      // padding: EdgeInsets.zero,
+      child: Stack(
+        children: [
+          GestureDetector(
+            onTap: () {
+              showDialog(context: context, builder: (_) {
+                return AppPopupWidget(
+                  canClose: true,
+                  title: "This is your key phrase",
+                  padding: EdgeInsets.only(
+                    left: 32,
+                    right: 32,
+                    top: 16,
+                    bottom: 8
+                  ),
+                  children: [
+                    Text(this.warning1),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 12),
+                      child: Divider(color: Colors.white,),
+                    ),
+                    getSeedList(this.walletSeedMap),
+                    Padding(
+                      // padding: const EdgeInsets.symmetric(vertical: 32),
+                      padding: EdgeInsets.only(top: 24),
+                      child: Text(this.warning2),
+                    )
+                  ],
+                  actions: [
+                    AppNeonButton(
+                      text: "Ok",
+                      expanded: false,
+                      onPressed: () => Navigator.of(context).pop(),
+                    )
+                  ]
+                );
+              }
+            );
+            },
+            child: TextField(
+              controller: new TextEditingController(
+                text:
+                this.walletSeed.substring(0, maxCharacteresInsideTextField(context)).trim() + "..."
+              ),
+              enabled: false,
+              cursorColor: AppColors.labelDefaultColor,
+              decoration: InputDecoration(
+                disabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(width: 2,
+                    color: Colors.grey[600]
+                  )
+                ),
+                labelText: "Seed",
+                floatingLabelBehavior: FloatingLabelBehavior.always,
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(width: 2,
+                    color: AppColors.labelDefaultColor
+                  )
+                ),
+                labelStyle: TextStyle(
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w500,
+                  fontSize: 20
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(width: 2,
+                    color: Colors.white
+                  ),
+                ),
+              )
+            ),
+          ),
+          Positioned.fill(
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: SizedBox(
+                height: double.infinity,
+                width: 48,
+                child: IconButton(
+                  onPressed: () {
+                    NotificationBar().show(context, text: "A new key phrase was generated");
+                    setState(() {
+                      this.walletSeed = appWalletManager.walletManager.newMnemonic();
+                      this.walletSeedMap = this.walletSeed.split(' ').asMap();
+                    });
+                  },
+                  icon: Icon(Icons.refresh),
+                  splashColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                ),
+              )
+            )
+          ),
+        ],
+      ),
     );
-    //
-    // // Creates the user account
-    //
-    // await appState.walletManager.makeAccount(field1.text, appState);
-    // Navigator.pop(_loadingPopupContext);
-    // Navigator.pushReplacementNamed(context, "/home");
-    // appState.changeCurrentWalletId = 0;
-    // snack("Account #0 selected", context);
-    // return;
+  }
+
+  Form passPhrase(BuildContext context) {
+    return Form(
+      key: _phraseFormState,
+      child: Padding(
+        padding: const EdgeInsets.only(top:32),
+        child: Stack(
+          children: [
+            TextFormField(
+              validator: (string) {
+                if(string.length  <=5)
+                  return "This field cannot be empty";
+                else
+                  return null;
+              },
+              controller: this.phraseController,
+              cursorColor: AppColors.labelDefaultColor,
+              obscureText: true,
+              focusNode: phraseFocusNode,
+              onChanged: (string) {
+                if(string.length > 5)
+                  this.phraseIcon = new Icon(Icons.done_sharp, color: Colors.green,);
+                else
+                  this.phraseIcon = new Icon(Icons.close_rounded, color: Colors.red,);
+                setState(() => null);
+              },
+              decoration: InputDecoration(
+                focusedErrorBorder: OutlineInputBorder(
+                  borderSide: BorderSide(width: 2,
+                    color: Colors.red
+                  )
+                ),
+                errorBorder: OutlineInputBorder(
+                  borderSide: BorderSide(width: 2,
+                    color: AppColors.labelDefaultColor
+                  )
+                ),
+                labelText: "Passphrase",
+                floatingLabelBehavior: FloatingLabelBehavior.always,
+                contentPadding: textFieldButtonPadding,
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(width: 2,
+                    color: AppColors.labelDefaultColor,
+                  ),
+                ),
+                labelStyle: TextStyle(
+                  color: phraseFocusNode.hasFocus ? Colors.white : AppColors.labelDefaultColor,
+                  fontWeight: phraseFocusNode.hasFocus ? FontWeight.w900 : FontWeight.w500,
+                  fontSize: 20
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(width: 2,
+                    color: Colors.white
+                  ),
+                ),
+              )
+            ),
+            Positioned.fill(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Container(
+                  // color: Color.fromRGBO(255, 50, 50, 0.2),
+                  child: SizedBox(
+                    // height: 12,
+                    width: 48,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          width: 48,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: this.phraseIcon,
+                          ),
+                        ),
+                        SizedBox(
+                          height:
+                          (_phraseFormState.currentState != null ?
+                          (_phraseFormState.currentState.validate() == true ? null : 20) :
+                          null),
+                        )
+                      ],
+                    ),
+                  ),
+                )
+              )
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Form rePassphrase(BuildContext context) {
+    return Form(
+      key: _rephraseFormState,
+      child: Padding(
+        padding: const EdgeInsets.only(top:32),
+        child: Stack(
+          children: [
+            TextFormField(
+              validator: (string) {
+                if(string == this.phraseController.text)
+                  return null;
+                else
+                  return "Passphrases don't match";
+              },
+              controller: this.rePhraseController,
+              cursorColor: AppColors.labelDefaultColor,
+              obscureText: true,
+              focusNode: rePhraseFocusNode,
+              onChanged: (string) {
+                // print("${this.phraseController.text} | $string");
+                if(string.length > 5 && string == this.phraseController.text)
+                  this.rePhraseIcon = new Icon(Icons.done_sharp, color: Colors.green,);
+                else
+                  this.rePhraseIcon = new Icon(Icons.close_rounded, color: Colors.red,);
+                setState(() => null);
+              },
+              decoration: InputDecoration(
+                focusedErrorBorder: OutlineInputBorder(
+                  borderSide: BorderSide(width: 2,
+                    color: Colors.red
+                  )
+                ),
+                errorBorder: OutlineInputBorder(
+                  borderSide: BorderSide(width: 2,
+                    color: AppColors.labelDefaultColor
+                  )
+                ),
+                labelText: "Confirm passphrase",
+                floatingLabelBehavior: FloatingLabelBehavior.always,
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(width: 2,
+                    color: AppColors.labelDefaultColor
+                  )
+                ),
+                labelStyle: TextStyle(
+                  color: rePhraseFocusNode.hasFocus ? Colors.white : AppColors.labelDefaultColor,
+                  fontWeight: rePhraseFocusNode.hasFocus ? FontWeight.w900 : FontWeight.w500,
+                  fontSize: 20
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(width: 2,
+                    color: Colors.white
+                  ),
+                ),
+              )
+            ),
+            Positioned.fill(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Container(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: 48,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: this.rePhraseIcon,
+                        ),
+                      ),
+                      SizedBox(
+                        height:
+                        (_rephraseFormState.currentState != null ?
+                        (_rephraseFormState.currentState.validate() == true ? null : 20) :
+                        null),
+                      )
+                    ],
+                  ),
+                )
+              )
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  ElevatedButton createAccount() {
+    return ElevatedButton(
+      onPressed: () {
+        if(_phraseFormState.currentState.validate() == true && _rephraseFormState.currentState.validate() == true)
+        {
+          ///First we gathered the keys to hide and make the user verify
+          formMnemonic = new FormMnemonic(mnemonic: this.walletSeed);
+          String invalidMnemonic = "";
+          FocusScopeNode currentFocus = FocusScope.of(this.context);
+          currentFocus.unfocus();
+          Future.delayed(Duration(milliseconds: 200), (){
+            showDialog(context: context, builder: (_) =>
+              StatefulBuilder(builder: (builder, setState) =>
+                AppPopupWidget(
+                  title: "Warning",
+                  canClose: false,
+                  children: [
+                    Text(this.warning1),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Divider(color: Colors.white,),
+                    ),
+                    getSeedList(this.walletSeedMap),
+                    Padding(
+                      padding: EdgeInsets.only(top: 24),
+                      child: Text(this.warning2),
+                    ),
+                  ],
+                  actions: [
+                    AppNeonButton(
+                      expanded: false,
+                      onPressed: () async {
+                        Navigator.of(context).pop();
+                        await showDialog(context: context, builder: (_) =>
+                          StatefulBuilder(builder: (builder, setState) =>
+                            AppPopupWidget(
+                              title: "Verify Mnemonic",
+                              margin: EdgeInsets.symmetric(horizontal: 8),
+                              children: [
+                                Text("Fill in Mnemonic Phrase Below"),
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 16),
+                                  child: formMnemonic.build(),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 16.0),
+                                  child: Text(invalidMnemonic,
+                                    style: TextStyle(color: Colors.red),),
+                                ),
+                              ],
+                              actions: [
+                                AppNeonButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  expanded: false,
+                                  text: "CANCEL"
+                                ),
+                                AppNeonButton(
+                                  onPressed: () async {
+                                    wrongMnemonic = formMnemonic.validate();
+                                    if(wrongMnemonic > -1)
+                                    {
+                                      setState((){
+                                        invalidMnemonic = warningMnemonic+(wrongMnemonic+1).toString();
+                                      });
+                                    }
+                                    else
+                                    {
+                                      setState((){
+                                        invalidMnemonic = "";
+                                      });
+                                      Navigator.of(context).pop();
+                                      BuildContext _loadingPopupContext;
+
+                                      showDialog<void>(
+                                        context: context,
+                                        barrierDismissible: false,
+                                        builder: (BuildContext context) {
+                                          _loadingPopupContext = context;
+                                          return LoadingPopUp(
+                                            text:
+                                            "Loading, please wait."
+                                          );
+                                        }
+                                      );
+                                      // Creates the user account
+                                      await appWalletManager.walletManager.makeAccount(phraseController.text, appWalletManager,mnemonic: this.walletSeed);
+                                      Navigator.pop(_loadingPopupContext);
+                                      Navigator.pushReplacementNamed(context, "test/preview");
+                                      appWalletManager.changeCurrentWalletId = 0;
+                                      NotificationBar().show(context, text: "Account #0 selected");
+                                      return;
+                                    }
+                                  },
+                                  expanded: false,
+                                  text: "VERIFY"
+                                ),
+                              ]
+                            )
+                          )
+                        );
+                        // Navigator.of(context).pop();
+                      },
+                      text: "Continue",
+                    )
+                  ]
+                )
+              )
+            );
+          });
+        }
+      },
+      child: Text("CREATE ACCOUNT"),
+    );
   }
 }
 
