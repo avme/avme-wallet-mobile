@@ -35,6 +35,8 @@ class _OverviewState extends State<Overview> {
     appState.services.keys.forEach((key) {
       print("KEYS:$key");
     });
+    print("ACCOUNT SIZE:");
+    print(appState.accountList.length);
     return ListView(
       children: [
         Selector<AvmeWallet,AccountObject>(

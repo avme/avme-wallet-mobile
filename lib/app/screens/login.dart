@@ -216,8 +216,8 @@ class _LoginState extends State<Login> {
         // snack("Account #0 selected", context);
         // snack("Account #0 selected", context);
         NotificationBar().show(context,text:"Account #0 selected");
-        // Navigator.pushReplacementNamed(context, "/home");
-        Navigator.pushReplacementNamed(context, "test/preview");
+        Navigator.pushReplacementNamed(context, "/home");
+        // Navigator.pushReplacementNamed(context, "test/preview");
         // Navigator.pushReplacementNamed(context, "test/preview");
     }
   }

@@ -149,8 +149,9 @@ class _State extends State<AppScaffold>
   }
 }
 
-class AppBarButton extends StatelessWidget {
 
+
+class AppBarButton extends StatelessWidget {
   final Function onPressed;
   final MainAxisAlignment mainAxisAlignment;
   final Icon icon;

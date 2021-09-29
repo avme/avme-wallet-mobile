@@ -12,7 +12,7 @@ class GradientCard extends StatefulWidget {
   final Function onIconPressed;
   final String balance;
   final String label;
-
+  final AppColors appColors;
 
   GradientCard(
   {
@@ -21,33 +21,34 @@ class GradientCard extends StatefulWidget {
     @required this.onIconPressed,
     @required this.balance,
     @required this.label,
-    Key key}
-  ) : super(key: key);
+    @required this.appColors,
+    Key key,
+  }) : super(key: key);
 
-  final DecorationTween balanceTween = DecorationTween(
-    begin: BoxDecoration(
-      borderRadius: BorderRadius.circular(8),
-      gradient: LinearGradient(
-        begin: Alignment.centerLeft,
-        end: Alignment.centerRight,
-        colors: <Color>[
-          AppColors.purpleVariant2,
-          AppColors.lightBlue,
-        ]
-      )
-    ),
-    end: BoxDecoration(
-      borderRadius: BorderRadius.circular(8),
-      gradient: LinearGradient(
-        begin: Alignment.centerLeft,
-        end: Alignment.centerRight,
-        colors: <Color>[
-          AppColors.lightBlue,
-          AppColors.purpleVariant2,
-        ]
-      )
-    )
-  );
+  // final DecorationTween balanceTween = DecorationTween(
+  //   begin: BoxDecoration(
+  //     borderRadius: BorderRadius.circular(8),
+  //     gradient: LinearGradient(
+  //       begin: Alignment.centerLeft,
+  //       end: Alignment.centerRight,
+  //       colors: <Color>[
+  //         AppColors.purpleVariant2,
+  //         AppColors.lightBlue,
+  //       ]
+  //     )
+  //   ),
+  //   end: BoxDecoration(
+  //     borderRadius: BorderRadius.circular(8),
+  //     gradient: LinearGradient(
+  //       begin: Alignment.centerLeft,
+  //       end: Alignment.centerRight,
+  //       colors: <Color>[
+  //         AppColors.lightBlue,
+  //         AppColors.purpleVariant2,
+  //       ]
+  //     )
+  //   )
+  // );
 
 
   @override
@@ -55,10 +56,42 @@ class GradientCard extends StatefulWidget {
 }
 
 class _GradientCardState extends State<GradientCard> {
+
   @override
   Widget build(BuildContext context) {
+
+    Color startColorLeft = widget.appColors.randomColor();
+    Color startColorRight = widget.appColors.randomColor(ignore:true);
+    Color endColorLeft = widget.appColors.randomColor(ignore: true);
+    Color endColorRight = widget.appColors.randomColor(ignore: true);
+
+    DecorationTween balanceTween = DecorationTween(
+        begin: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            gradient: LinearGradient(
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+                colors: <Color>[
+                  startColorLeft,
+                  startColorRight,
+                ]
+            )
+        ),
+        end: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            gradient: LinearGradient(
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+                colors: <Color>[
+                  endColorLeft,
+                  endColorRight,
+                ]
+            )
+        )
+    );
+
     return GradientContainer(
-        decorationTween: widget.balanceTween,
+        decorationTween: balanceTween,
         onPressed: (){},
         child: Padding(
           padding: const EdgeInsets.only(

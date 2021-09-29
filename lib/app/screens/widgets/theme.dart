@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -43,6 +45,43 @@ class AppColors {
     static const labelDisabledTransparent = Color(0xCCFFFFFF);
     // static const cardDefaultColor = Color(0xFF201E2C);
     static const cardDefaultColor = Color(0xFF201E2B);
+
+    Map<int,Color> pickedColors = {};
+
+    List<Color> availableColors = [
+        Colors.red,
+        Colors.blue,
+        Colors.green,
+        Colors.deepOrange,
+        AppColors.lightBlue,
+        AppColors.purple,
+        Colors.deepOrangeAccent,
+        Colors.pinkAccent,
+        // Colors.lightGreenAccent
+        AppColors.purpleBlue
+    ];
+
+    Color randomColor({bool ignore = false})
+    {
+        Random random = Random();
+        int tries = 0;
+        if(ignore)
+            return availableColors[random.nextInt(availableColors.length)];
+        else
+        while(true)
+        {
+            if (tries >= availableColors.length) return Colors.black;
+            int key = random.nextInt(availableColors.length);
+            // pickedColors[key] = availableColors[key];
+            // return availableColors[key];
+            if (pickedColors[key] == null)
+            {
+                pickedColors[key] = availableColors[key];
+                return availableColors[key];
+            }
+            else tries++;
+        }
+    }
 }
 
 
@@ -70,7 +109,6 @@ final double labelHeight = 16;
 final double labelSpacing = 6.5;
 final BorderRadius labelRadius = BorderRadius.circular(16);
 final BorderRadius cardRadius = BorderRadius.all(Radius.circular(4.0));
-
 
 BoxDecoration backgroundImage = BoxDecoration(
     image: DecorationImage(

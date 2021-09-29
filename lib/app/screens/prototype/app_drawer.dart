@@ -45,33 +45,56 @@ class _AppDrawerState extends State<AppDrawer> {
     //   )
     // );
 
+    AppColors appColors = new AppColors();
+
     drawerElements.add(
-      GradientCard(
-        address: "0x000000000000000000000000000000",
-        onPressed: () => NotificationBar().show(context, text:"Item Taped"),
-        onIconPressed: () {},
-        balance: "32 60,032621000",
-        label: "Account #1")
+        GradientCard(
+            address: "0x000000000000000000000000000000",
+            onPressed: () => NotificationBar().show(context, text:"Item Taped"),
+            onIconPressed: () {},
+            balance: "32 60,032621000",
+            label: "Account #1",
+            appColors: appColors)
     );
 
     drawerElements.add(
-      GradientCard(
-        address: "0x000000000000000000000000000000",
-        onPressed: () => NotificationBar().show(context, text:"Item Taped"),
-        onIconPressed: () {},
-        balance: "69 696,96900000",
-        label: "Account #2")
+        GradientCard(
+            address: "0x000000000000000000000000000000",
+            onPressed: () => NotificationBar().show(context, text:"Item Taped"),
+            onIconPressed: () {},
+            balance: "69 696,96900000",
+            label: "Account #2",
+            appColors: appColors)
     );
 
     drawerElements.add(
-      GradientCard(
-        address: "0x000000000000000000000000000000",
-        onPressed: () => NotificationBar().show(context, text:"Item Taped"),
-        onIconPressed: () {},
-        balance: "2 332,632621000",
-        label: "Account #3")
+        GradientCard(
+            address: "0x000000000000000000000000000000",
+            onPressed: () => NotificationBar().show(context, text:"Item Taped"),
+            onIconPressed: () {},
+            balance: "2 332,632621000",
+            label: "Account #3",
+            appColors: appColors)
+    );
+    drawerElements.add(
+        GradientCard(
+            address: "0x000000000000000000000000000000",
+            onPressed: () => NotificationBar().show(context, text:"Item Taped"),
+            onIconPressed: () {},
+            balance: "2 332,632621000",
+            label: "Account #3",
+            appColors: appColors)
     );
 
+    drawerElements.add(
+        GradientCard(
+            address: "0x000000000000000000000000000000",
+            onPressed: () => NotificationBar().show(context, text:"Item Taped"),
+            onIconPressed: () {},
+            balance: "32 60,032621000",
+            label: "Account #1",
+            appColors: appColors)
+    );
     drawerElements.add(
       footer(context)
     );
@@ -79,7 +102,8 @@ class _AppDrawerState extends State<AppDrawer> {
     List<Widget> finalDrawer = [];
 
     drawerElements.asMap().forEach((pos,element) {
-      if(pos == 0 || (pos + 1) == drawerElements.length)
+      // if(pos == 0 || (pos + 1) == drawerElements.length)
+      if(pos == 0)
         finalDrawer.add(element);
       else
         finalDrawer.add(Padding(
