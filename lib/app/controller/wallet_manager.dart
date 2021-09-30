@@ -202,8 +202,6 @@ class WalletManager
       if(wallet.accountList[0].account != null)
       {
         wallet.w3dartWallet = wallet.accountList[0].account;
-        wallet.eAddress = await wallet.getW3DartWallet.privateKey.extractAddress();
-
       }
       ret["status"] = 200;
       ret["message"] = "";

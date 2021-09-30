@@ -24,6 +24,11 @@ class _BalanceState extends State<Balance> {
     appState.services.keys.forEach((key) {
       print("KEYS:$key");
     });
+    print("ACCOUNT LIST:");
+    print(appState.accountList);
+    print(appState.accountList.length);
+    print("ACCOUNT #0");
+    print(appState.accountList[0]);
     return Scrollbar(
       child: ListView(
         children:

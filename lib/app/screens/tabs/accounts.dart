@@ -118,7 +118,6 @@ class _AccountsState extends State<Accounts> {
     List<Widget> ret = [];
     await Future.delayed(Duration(seconds: 1));
     appState.accountList.forEach((key,account) {
-      appState.watchAccountBalanceUpdates(key);
       bool selected = key == appState.currentWalletId ? true : false;
       ret.add(
           GestureDetector(

@@ -11,9 +11,9 @@ import 'package:flutter/material.dart';
 
 class AccountsDrawer extends StatefulWidget {
 
-  final AvmeWallet appState;
+  final AvmeWallet app;
 
-  const AccountsDrawer({Key key, @required this.appState}) : super(key: key);
+  const AccountsDrawer({Key key, @required this.app}) : super(key: key);
 
   @override
   _AccountsDrawerState createState() => _AccountsDrawerState();
@@ -28,9 +28,39 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
     ];
 
     List<Widget> ret = [];
-    widget.appState.accountList.forEach((key,accountObject) {
-      widget.appState.watchAccountBalanceUpdates(key);
-      bool selected = key == widget.appState.currentWalletId ? true : false;
+    widget.app.accountList.forEach((key,accountObject) {
+      bool selected = key == widget.app.currentWalletId ? true : false;
+
+      // Color startColorLeft = appColors.randomColor();
+      // Color startColorRight = appColors.randomColor(ignore:true);
+      // Color endColorLeft = appColors.randomColor(ignore: true);
+      // Color endColorRight = appColors.randomColor(ignore: true);
+
+      DecorationTween balanceTween = DecorationTween(
+          begin: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              gradient: LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: <Color>[
+                    appColors.preColorList[key][0],
+                    appColors.preColorList[key][1]
+                  ]
+              )
+          ),
+          end: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              gradient: LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: <Color>[
+                    appColors.preColorList[key][2],
+                    appColors.preColorList[key][3]
+                  ]
+              )
+          )
+      );
+
       drawerElements.add(
         GradientCard(
           address: accountObject.address,
@@ -40,19 +70,10 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
           "${shortAmount((accountObject.currencyBalance +
               accountObject.currencyTokenBalance).toString(),comma: true, length: 7)}",
           label: accountObject.title,
-          appColors: appColors)
+          balanceTween: balanceTween,
+        )
       );
     });
-
-    // drawerElements.add(
-    //   GradientCard(
-    //     address: "0x000000000000000000000000000000",
-    //     onPressed: () => NotificationBar().show(context, text:"Item Taped"),
-    //     onIconPressed: () {},
-    //     balance: "32 60,032621000",
-    //     label: "Account #1",
-    //     appColors: appColors)
-    // );
 
     drawerElements.add(
         footer(context)

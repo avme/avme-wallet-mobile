@@ -46,19 +46,34 @@ class AppColors {
     // static const cardDefaultColor = Color(0xFF201E2C);
     static const cardDefaultColor = Color(0xFF201E2B);
 
+    List preColorList = [
+        [availableColors[0],availableColors[1], availableColors[2], availableColors[3]],
+        [availableColors[1],availableColors[2], availableColors[3], availableColors[4]],
+        [availableColors[2],availableColors[3], availableColors[4], availableColors[5]],
+        [availableColors[6],availableColors[7], availableColors[8], availableColors[9]],
+        [availableColors[9],availableColors[8], availableColors[7], availableColors[6]],
+        [availableColors[5],availableColors[4], availableColors[3], availableColors[2]],
+        [availableColors[1],availableColors[0], availableColors[5], availableColors[6]],
+        [availableColors[8],availableColors[5], availableColors[0], availableColors[1]],
+        [availableColors[7],availableColors[6], availableColors[1], availableColors[7]],
+    ];
+
     Map<int,Color> pickedColors = {};
 
-    List<Color> availableColors = [
-        Colors.red,
+    static const availableColors = [
+        Colors.pinkAccent,
         Colors.blue,
+        Colors.red,
+
         Colors.green,
         Colors.deepOrange,
         AppColors.lightBlue,
         AppColors.purple,
         Colors.deepOrangeAccent,
-        Colors.pinkAccent,
+
         // Colors.lightGreenAccent
-        AppColors.purpleBlue
+        AppColors.purpleBlue,
+        Colors.blue
     ];
 
     Color randomColor({bool ignore = false})

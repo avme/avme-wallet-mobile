@@ -3,6 +3,7 @@ import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/accounts_drawer.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'overview.dart';
 
 
@@ -138,7 +139,11 @@ class _State extends State<AppScaffold>
       // drawer: AppDrawer({"Example 1" : Container()}),
       ///Drawer in the Right Side
       // endDrawer: AppDrawer({"Example 1" : Container()}),
-      endDrawer: AccountsDrawer(appState: getAppState(context),),
+      endDrawer: Consumer<AvmeWallet>(
+        builder: (context, app, _){
+          return AccountsDrawer(app: app,);
+        },
+      ),
       body: AppTabBar(
         padding: appBarWidth,
         routeLabels: this.routeLabels,

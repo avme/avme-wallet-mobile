@@ -12,7 +12,7 @@ class GradientCard extends StatefulWidget {
   final Function onIconPressed;
   final String balance;
   final String label;
-  final AppColors appColors;
+  final DecorationTween balanceTween;
 
   GradientCard(
   {
@@ -21,7 +21,7 @@ class GradientCard extends StatefulWidget {
     @required this.onIconPressed,
     @required this.balance,
     @required this.label,
-    @required this.appColors,
+    @required this.balanceTween,
     Key key,
   }) : super(key: key);
 
@@ -50,48 +50,80 @@ class GradientCard extends StatefulWidget {
   //   )
   // );
 
-
   @override
   _GradientCardState createState() => _GradientCardState();
 }
 
 class _GradientCardState extends State<GradientCard> {
 
+  // DecorationTween balanceTween = DecorationTween(
+  //     begin: BoxDecoration(
+  //         borderRadius: BorderRadius.circular(8),
+  //         gradient: LinearGradient(
+  //             begin: Alignment.centerLeft,
+  //             end: Alignment.centerRight,
+  //             colors: <Color>[
+  //               AppColors.purpleVariant2,
+  //               AppColors.lightBlue,
+  //             ]
+  //         )
+  //     ),
+  //     end: BoxDecoration(
+  //         borderRadius: BorderRadius.circular(8),
+  //         gradient: LinearGradient(
+  //             begin: Alignment.centerLeft,
+  //             end: Alignment.centerRight,
+  //             colors: <Color>[
+  //               AppColors.lightBlue,
+  //               AppColors.purpleVariant2,
+  //             ]
+  //         )
+  //     )
+  // );
+
+  @override
+  void initState() {
+
+
+
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
 
-    Color startColorLeft = widget.appColors.randomColor();
-    Color startColorRight = widget.appColors.randomColor(ignore:true);
-    Color endColorLeft = widget.appColors.randomColor(ignore: true);
-    Color endColorRight = widget.appColors.randomColor(ignore: true);
+    // Color startColorLeft = widget.appColors.randomColor();
+    // Color startColorRight = widget.appColors.randomColor(ignore:true);
+    // Color endColorLeft = widget.appColors.randomColor(ignore: true);
+    // Color endColorRight = widget.appColors.randomColor(ignore: true);
 
-    DecorationTween balanceTween = DecorationTween(
-        begin: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            gradient: LinearGradient(
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-                colors: <Color>[
-                  startColorLeft,
-                  startColorRight,
-                ]
-            )
-        ),
-        end: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            gradient: LinearGradient(
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-                colors: <Color>[
-                  endColorLeft,
-                  endColorRight,
-                ]
-            )
-        )
-    );
+    // DecorationTween balanceTween = DecorationTween(
+    //     begin: BoxDecoration(
+    //         borderRadius: BorderRadius.circular(8),
+    //         gradient: LinearGradient(
+    //             begin: Alignment.centerLeft,
+    //             end: Alignment.centerRight,
+    //             colors: <Color>[
+    //               widget.colors[0],
+    //               widget.colors[1],
+    //             ]
+    //         )
+    //     ),
+    //     end: BoxDecoration(
+    //         borderRadius: BorderRadius.circular(8),
+    //         gradient: LinearGradient(
+    //             begin: Alignment.centerLeft,
+    //             end: Alignment.centerRight,
+    //             colors: <Color>[
+    //               widget.colors[2],
+    //               widget.colors[3],
+    //             ]
+    //         )
+    //     )
+    // );
 
     return GradientContainer(
-        decorationTween: balanceTween,
+        decorationTween: widget.balanceTween,
         onPressed: (){},
         child: Padding(
           padding: const EdgeInsets.only(

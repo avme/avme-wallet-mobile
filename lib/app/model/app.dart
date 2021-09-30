@@ -26,19 +26,25 @@ class AvmeWallet extends ChangeNotifier
   Wallet get getW3DartWallet => _w3dartWallet;
   set w3dartWallet (Wallet value) => _w3dartWallet = value;
 
-  EthereumAddress _eAddress;
-  set eAddress (EthereumAddress value) => _eAddress = value;
 
   Map<int,AccountObject> _accountList = {};
-  set setAccountList (Map<int,AccountObject> value) => _accountList = value;
+  set setAccountList (Map<int,AccountObject> value) {
+    _accountList = value;
+    notifyListeners();
+  }
+
   Map<int,AccountObject> get accountList => _accountList;
 
   AccountObject get currentAccount => _accountList[currentWalletId];
 
   String appTitle = "AVME Wallet";
-
   int _currentWalletId;
-  set changeCurrentWalletId (int value) => _currentWalletId = value;
+
+  set changeCurrentWalletId (int value){
+    _currentWalletId = value;
+    notifyListeners();
+  }
+
   int get currentWalletId => _currentWalletId;
 
   Map<String, Isolate> services = {};
@@ -101,13 +107,6 @@ class AvmeWallet extends ChangeNotifier
 
   ///Listeners
 
-  void watchBalanceUpdates()
-  {
-    currentAccount.addListener(() {
-      notifyListeners();
-    });
-  }
-
   void watchMetaCoinValueChanges()
   {
     metaCoin.addListener(() {
@@ -122,17 +121,16 @@ class AvmeWallet extends ChangeNotifier
     });
   }
 
-  void watchAccountBalanceUpdates(int pos)
-  {
-    accountList[pos].addListener(() {
-      notifyListeners();
-    });
-  }
-
   void watchAccountsStateChanges()
   {
     accountsState.addListener(() {
       notifyListeners();
     });
+  }
+
+  void updateAccountBalance(id, AccountObject accountObject)
+  {
+    accountList[id] = accountObject;
+    notifyListeners();
   }
 }

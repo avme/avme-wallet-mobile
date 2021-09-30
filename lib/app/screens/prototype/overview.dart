@@ -25,62 +25,50 @@ class Overview extends StatefulWidget {
 
 class _OverviewState extends State<Overview> {
 
-  AvmeWallet appState;
-
   @override
   Widget build(BuildContext context) {
-    appState = Provider.of<AvmeWallet>(context);
-    appState.walletManager.startBalanceSubscription(appState);
-    appState.displayTokenChart();
-    appState.services.keys.forEach((key) {
-      print("KEYS:$key");
-    });
-    print("ACCOUNT SIZE:");
-    print(appState.accountList.length);
-    return ListView(
-      children: [
-        Selector<AvmeWallet,AccountObject>(
-          selector: (context, model) => model.currentAccount,
-          builder: (context, data, child){
-            appState.watchBalanceUpdates();
-            return OverviewAndButtons(
+    return Consumer<AvmeWallet>(
+      builder: (context, app, _){
+        return ListView(
+          children: [
+            OverviewAndButtons(
               totalBalance:
-                appState.currentAccount.currencyBalance == null || appState.currentAccount.currencyTokenBalance == null ? "0,0000000" :
-                "${shortAmount((appState.currentAccount.currencyBalance +
-                  appState.currentAccount.currencyTokenBalance).toString(),comma: true, length: 7)}",
-              address: appState.currentAccount.address,
+              app.currentAccount.currencyBalance == null || app.currentAccount.currencyTokenBalance == null ? "0,0000000" :
+              "${shortAmount((app.currentAccount.currencyBalance +
+                  app.currentAccount.currencyTokenBalance).toString(),comma: true, length: 7)}",
+              address: app.currentAccount.address,
               onPressed: () {
                 NotificationBar().show(
-                  context,
-                  text: "Address copied to clipboard",
-                  onPressed: () async {
-                  await Clipboard.setData(
-                    ClipboardData(text: appState.currentAccount.address));
-                  }
+                    context,
+                    text: "Address copied to clipboard",
+                    onPressed: () async {
+                      await Clipboard.setData(
+                          ClipboardData(text: app.currentAccount.address));
+                    }
                 );
               },
               onIconPressed: () async {
                 // NotificationBar().show(context,text: "Show RECEIVE widgets");
                 await showDialog(
-                  context: context,
-                  builder: (context) {
-                    return StatefulBuilder(builder: (builder, setState){
-                      return ReceivePopup(
-                        title: "Share QR Address",
-                        address: appState.currentAccount.address,
-                        onQrPressed: () {
-                          NotificationBar().show(
-                            context,
-                            text: "Address copied to clipboard",
-                            onPressed: () async {
-                              await Clipboard.setData(
-                                ClipboardData(text: appState.currentAccount.address));
-                            }
-                          );
-                        },
-                      );
-                    });
-                  }
+                    context: context,
+                    builder: (context) {
+                      return StatefulBuilder(builder: (builder, setState){
+                        return ReceivePopup(
+                          title: "Share QR Address",
+                          address: app.currentAccount.address,
+                          onQrPressed: () {
+                            NotificationBar().show(
+                                context,
+                                text: "Address copied to clipboard",
+                                onPressed: () async {
+                                  await Clipboard.setData(
+                                      ClipboardData(text: app.currentAccount.address));
+                                }
+                            );
+                          },
+                        );
+                      });
+                    }
                 );
               },
               onReceivePressed: () async {
@@ -90,14 +78,14 @@ class _OverviewState extends State<Overview> {
                       return StatefulBuilder(builder: (builder, setState){
                         return ReceivePopup(
                           title: "Share QR Address",
-                          address: appState.currentAccount.address,
+                          address: app.currentAccount.address,
                           onQrPressed: () {
                             NotificationBar().show(
                                 context,
                                 text: "Address copied to clipboard",
                                 onPressed: () async {
                                   await Clipboard.setData(
-                                      ClipboardData(text: appState.currentAccount.address));
+                                      ClipboardData(text: app.currentAccount.address));
                                 }
                             );
                           },
@@ -112,65 +100,53 @@ class _OverviewState extends State<Overview> {
               },
               onBuyPressed: () {
                 NotificationBar().show(
-                  context,
-                  text: "Not implemented"
+                    context,
+                    text: "Not implemented"
                 );
               },
-            );
-          },
-        ),
-        // OverviewAndButtons(),
-        TokenDistribution(
-          chartData: {
-            "AVAX": [
-              appState.currentAccount.currencyBalance == null ? 0 :
-                appState.currentAccount.currencyBalance,
-              AppColors.purple
-            ],
-            "AVME": [
-              appState.currentAccount.currencyTokenBalance == null ? 0 :
-                appState.currentAccount.currencyTokenBalance,
-              AppColors.lightBlue
-            ]
-          }
-        ),
+            ),
 
-        ///AVAX Token Card
-        Selector<AvmeWallet,AccountObject>(
-          selector: (context, model) => model.currentAccount,
-          builder: (context, data, child){
-            appState.watchBalanceUpdates();
-            return TokenValue(
+            TokenDistribution(
+                chartData: {
+                  "AVAX": [
+                    app.currentAccount.currencyBalance == null ? 0 :
+                    app.currentAccount.currencyBalance,
+                    AppColors.purple
+                  ],
+                  "AVME": [
+                    app.currentAccount.currencyTokenBalance == null ? 0 :
+                    app.currentAccount.currencyTokenBalance,
+                    AppColors.lightBlue
+                  ]
+                }
+            ),
+
+            ///AVAX Token Card
+            TokenValue(
               image:
               Image.asset(
                 'assets/avax_logo.png',
                 fit: BoxFit.fitHeight,),
               name: 'AVAX',
-              amount: "${shortAmount(appState.currentAccount.balance)}",
-              marketValue: "${shortAmount(appState.currentAccount.currencyBalance.toString(),comma: true, length: 3)}",
+              amount: "${shortAmount(app.currentAccount.balance)}",
+              marketValue: "${shortAmount(app.currentAccount.currencyBalance.toString(),comma: true, length: 3)}",
               valueDifference: "2,013",
-            );
-          },
-        ),
-        ///AVME Token Card
-        Selector<AvmeWallet,AccountObject>(
-          selector: (context, model) => model.currentAccount,
-          builder: (context, data, child){
-            appState.watchBalanceUpdates();
-            return TokenValue(
+            ),
+            ///AVME Token Card
+            TokenValue(
               image:
               Image.asset(
                 'assets/resized-newlogo02-trans.png',
                 fit: BoxFit.fitHeight,),
               name: 'AVME',
-              amount: "${shortAmount(appState.currentAccount.tokenBalance)}",
-              marketValue: "${shortAmount(appState.currentAccount.currencyTokenBalance.toString(),comma: true, length: 3)}",
+              amount: "${shortAmount(app.currentAccount.tokenBalance)}",
+              marketValue: "${shortAmount(app.currentAccount.currencyTokenBalance.toString(),comma: true, length: 3)}",
               valueDifference: "8,669",
-            );
-          },
-        ),
-        HistorySnippet(appScaffoldTabController: widget.appScaffoldTabController)
-      ],
+            ),
+            HistorySnippet(appScaffoldTabController: widget.appScaffoldTabController)
+          ],
+        );
+      },
     );
   }
 }

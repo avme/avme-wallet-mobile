@@ -60,38 +60,57 @@ void balanceSubscription(AvmeWallet appState, Map<int,AccountObject> accounts, i
   receivePort.listen((data) {
     print(data);
     Map response;
+
     ///We validate who is returning data, since we don't use multiple Isolates,
     ///for the same purpose (like previously seen) to save memory! @_@
     /*
       appState.metaCoin.value = response["avax"];
       appState.token.value = response["avme"];
     */
-
+    // print("ID /listen/");
+    // print(response['id']);
+    // print("SIZE:");
+    // print(appState.accountList.length);
+    // print("APPSTATE OBJECTS");
+    // print(appState.accountList);
+    // print("OBJECT:");
+    // print(appState.accountList[response['id']]);
+    // AccountObject accountUpdate = appState.accountList[response['id']];
     if(data.containsKey("metacoin"))
     {
       response = data["metacoin"];
-      if(appState.accountList[response['id']].waiBalance != response["balance"])
-        appState.accountList[response['id']].updateAccountBalance = response["balance"];
+      AccountObject accountUpdate = appState.accountList[response['id']];
+
+      if(accountUpdate.waiBalance != response["balance"])
+        accountUpdate.updateAccountBalance = response["balance"];
 
       double balanceFromBigInt =
         double.tryParse(weiToFixedPoint(response["balance"].toString()));
 
       double metacoinValue = double.tryParse(appState.metaCoin.value);
       double result = balanceFromBigInt * metacoinValue;
-      appState.accountList[response['id']].currencyBalance = result;
+
+      accountUpdate.currencyBalance = result;
+      appState.updateAccountBalance(response["id"], accountUpdate);
+      // appState.accountList[response['id']].currencyBalance = result;
+
     }
     if(data.containsKey("token"))
     {
       response = data["token"];
-      if(appState.accountList[response['id']].rawTokenBalance != response["tokenBalance"])
-        appState.accountList[response['id']].updateTokenBalance = response["tokenBalance"];
+      AccountObject accountUpdate = appState.accountList[response['id']];
+      if(accountUpdate.rawTokenBalance != response["tokenBalance"])
+        accountUpdate.updateTokenBalance = response["tokenBalance"];
 
       double tokenFromBigInt =
       double.tryParse(weiToFixedPoint(response["tokenBalance"].toString()));
 
       double tokenMarketValue = double.tryParse(appState.token.value);
       double result = tokenFromBigInt * tokenMarketValue;
-      appState.accountList[response['id']].currencyTokenBalance = result;
+      // appState.accountList[response['id']].currencyTokenBalance = result;
+
+      accountUpdate.currencyTokenBalance = result;
+      appState.updateAccountBalance(response["id"], accountUpdate);
     }
   });
 }

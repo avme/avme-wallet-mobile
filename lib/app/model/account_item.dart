@@ -1,7 +1,7 @@
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:web3dart/credentials.dart';
-class AccountObject extends ChangeNotifier
+class AccountObject
 {
   AccountObject({
     this.account,
@@ -26,25 +26,21 @@ class AccountObject extends ChangeNotifier
   set currencyBalance(double value)
   {
     _currencyBalance = value;
-    notifyListeners();
   }
 
   set currencyTokenBalance(double value)
   {
     _currencyTokenBalance = value;
-    notifyListeners();
   }
 
   set updateTokenBalance(BigInt value)
   {
     _tokenWeiBalance = value;
-    notifyListeners();
   }
 
   set updateAccountBalance(BigInt value)
   {
     _weiBalance = value;
-    notifyListeners();
   }
 
   String get tokenBalance

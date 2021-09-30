@@ -74,7 +74,6 @@ class _StatusCardState extends State<StatusCard> {
                                 selector: (context, model) => model.currentAccount,
                                 builder:(context, data, child)
                                 {
-                                  widget.appState.watchBalanceUpdates();
                                   return Text("${shortAmount(widget.appState.currentAccount.tokenBalance)} AVME",
                                       style: TextStyle(fontSize: 12));
                                 }
@@ -130,7 +129,6 @@ class _StatusCardState extends State<StatusCard> {
                                 selector: (context, model) => model.currentAccount,
                                 builder:(context, data, child)
                                 {
-                                  widget.appState.watchBalanceUpdates();
                                   return Text("${shortAmount(widget.appState.currentAccount.balance)} AVAX",
                                       style: TextStyle(fontSize: 12));
                                 }
