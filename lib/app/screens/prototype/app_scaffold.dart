@@ -1,8 +1,8 @@
-import 'package:avme_wallet/app/screens/widgets/drawer_scaffold.dart';
+import 'package:avme_wallet/app/lib/utils.dart';
+import 'package:avme_wallet/app/model/app.dart';
+import 'package:avme_wallet/app/screens/prototype/widgets/accounts_drawer.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
-
-import 'app_drawer.dart';
 import 'overview.dart';
 
 
@@ -81,13 +81,13 @@ class _State extends State<AppScaffold>
 
   @override
   Widget build(BuildContext context) {
-
+    print("AppScaffold was builded");
     final double appBarWidth = 24;
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
         iconTheme: IconThemeData(
-            color: AppColors.labelDefaultColor
+          color: AppColors.labelDefaultColor
         ),
         titleSpacing: appBarWidth,
 
@@ -110,10 +110,10 @@ class _State extends State<AppScaffold>
               },
             ),
             Center(
-                child: Image.asset(
-                  'assets/resized-newlogo02-trans.png',
-                  width: MediaQuery.of(context).padding.top + kToolbarHeight * 1 / 8,
-                  fit: BoxFit.fitHeight,)
+              child: Image.asset(
+                'assets/resized-newlogo02-trans.png',
+                width: MediaQuery.of(context).padding.top + kToolbarHeight * 1 / 8,
+                fit: BoxFit.fitHeight,)
             ),
             ///Changing Icon in the second drawer
             Builder(
@@ -138,18 +138,16 @@ class _State extends State<AppScaffold>
       // drawer: AppDrawer({"Example 1" : Container()}),
       ///Drawer in the Right Side
       // endDrawer: AppDrawer({"Example 1" : Container()}),
-      endDrawer: AppDrawer({}),
+      endDrawer: AccountsDrawer(appState: getAppState(context),),
       body: AppTabBar(
-          padding: appBarWidth,
-          routeLabels: this.routeLabels,
-          routeWidgets: this.routeWidgets,
-          appScaffoldTabController: this.appScaffoldTabController,
+        padding: appBarWidth,
+        routeLabels: this.routeLabels,
+        routeWidgets: this.routeWidgets,
+        appScaffoldTabController: this.appScaffoldTabController,
       ),
     );
   }
 }
-
-
 
 class AppBarButton extends StatelessWidget {
   final Function onPressed;
@@ -166,12 +164,12 @@ class AppBarButton extends StatelessWidget {
         width: MediaQuery.of(context).padding.top + kToolbarHeight * 1 / 1.5,
         height: MediaQuery.of(context).padding.top + kToolbarHeight * 1 / 2,
         child: Container(
-            child: Row(
-              mainAxisAlignment: this.mainAxisAlignment,
-              children: [
-                this.icon
-              ],
-            )
+          child: Row(
+            mainAxisAlignment: this.mainAxisAlignment,
+            children: [
+              this.icon
+            ],
+          )
         ),
       ),
     );
@@ -296,4 +294,5 @@ class _AppTabBarState extends State<AppTabBar> {
     return _labels;
   }
 }
+
 

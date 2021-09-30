@@ -99,6 +99,8 @@ class WalletManager
   {
     List<String> ret = [];
 
+    print(appState.accountList.isEmpty);
+
     if(appState.accountList.isEmpty)
     {
       mnemonic = mnemonic ?? newMnemonic();
@@ -111,10 +113,9 @@ class WalletManager
       // the same parameter if you're planning to use it again, like uncrypt...
 
       crypt.setPassword(password);
-      print("AES: "+documentsPath + this._fileManager.accountFolder + mnemonicFile);
 
       // Saving file with the method 'encryptTextToFileSync' from the Lib "aes_crypt"
-
+      await this._fileManager.accountFile();
       crypt.encryptTextToFileSync(mnemonic, documentsPath + this._fileManager.accountFolder + mnemonicFile,utf16: true);
 
     }

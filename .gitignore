@@ -11,6 +11,7 @@
 .history
 .svn/
 .env*
+TODO.md
 
 # IntelliJ related
 *.iml

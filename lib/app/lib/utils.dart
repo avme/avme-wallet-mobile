@@ -1,7 +1,9 @@
 import 'dart:math';
 import 'dart:typed_data';
+import 'package:avme_wallet/app/model/app.dart';
 import 'package:hex/hex.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 void snack(texto, BuildContext context)
 {
@@ -121,4 +123,9 @@ String weiToFixedPoint(String amount, {int digits = 18})
   }
   if (result == "") result = "0";
   return result;
+}
+
+AvmeWallet getAppState(BuildContext context, {listen = false})
+{
+  return Provider.of<AvmeWallet>(context, listen: listen);
 }
