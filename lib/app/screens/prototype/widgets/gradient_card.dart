@@ -56,72 +56,13 @@ class GradientCard extends StatefulWidget {
 
 class _GradientCardState extends State<GradientCard> {
 
-  // DecorationTween balanceTween = DecorationTween(
-  //     begin: BoxDecoration(
-  //         borderRadius: BorderRadius.circular(8),
-  //         gradient: LinearGradient(
-  //             begin: Alignment.centerLeft,
-  //             end: Alignment.centerRight,
-  //             colors: <Color>[
-  //               AppColors.purpleVariant2,
-  //               AppColors.lightBlue,
-  //             ]
-  //         )
-  //     ),
-  //     end: BoxDecoration(
-  //         borderRadius: BorderRadius.circular(8),
-  //         gradient: LinearGradient(
-  //             begin: Alignment.centerLeft,
-  //             end: Alignment.centerRight,
-  //             colors: <Color>[
-  //               AppColors.lightBlue,
-  //               AppColors.purpleVariant2,
-  //             ]
-  //         )
-  //     )
-  // );
-
   @override
   void initState() {
-
-
-
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-
-    // Color startColorLeft = widget.appColors.randomColor();
-    // Color startColorRight = widget.appColors.randomColor(ignore:true);
-    // Color endColorLeft = widget.appColors.randomColor(ignore: true);
-    // Color endColorRight = widget.appColors.randomColor(ignore: true);
-
-    // DecorationTween balanceTween = DecorationTween(
-    //     begin: BoxDecoration(
-    //         borderRadius: BorderRadius.circular(8),
-    //         gradient: LinearGradient(
-    //             begin: Alignment.centerLeft,
-    //             end: Alignment.centerRight,
-    //             colors: <Color>[
-    //               widget.colors[0],
-    //               widget.colors[1],
-    //             ]
-    //         )
-    //     ),
-    //     end: BoxDecoration(
-    //         borderRadius: BorderRadius.circular(8),
-    //         gradient: LinearGradient(
-    //             begin: Alignment.centerLeft,
-    //             end: Alignment.centerRight,
-    //             colors: <Color>[
-    //               widget.colors[2],
-    //               widget.colors[3],
-    //             ]
-    //         )
-    //     )
-    // );
-
     return GradientContainer(
         decorationTween: widget.balanceTween,
         onPressed: (){},

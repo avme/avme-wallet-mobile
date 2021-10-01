@@ -9,11 +9,14 @@ import 'package:flutter/material.dart';
 class ReceivePopup extends StatefulWidget {
   final String title;
   final String address;
+  final String accountTitle;
   final Function onQrPressed;
+
   const ReceivePopup({
     Key key,
     @required this.title,
     @required this.address,
+    @required this.accountTitle,
     @required this.onQrPressed,
   }) : super(key: key);
 
@@ -24,6 +27,7 @@ class ReceivePopup extends StatefulWidget {
 class _ReceivePopupState extends State<ReceivePopup> {
   @override
   Widget build(BuildContext context) {
+    print("TITLE: ${widget.accountTitle}");
     return AlertDialog(
       backgroundColor: AppColors.cardDefaultColor,
       contentPadding: EdgeInsets.all(0),
@@ -129,7 +133,7 @@ class _ReceivePopupState extends State<ReceivePopup> {
                         AppButton(
                           mainAxisAlignment: MainAxisAlignment.start,
                           paddingBetweenIcons: 16,
-                          text: "ACCOUNT 1",
+                          text: "widget.accountTitle",
                           onPressed: () {},
                           iconData: Icons.account_circle_outlined,
                         ),

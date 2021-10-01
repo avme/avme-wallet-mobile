@@ -27,52 +27,49 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
       header(context)
     ];
 
-    List<Widget> ret = [];
     widget.app.accountList.forEach((key,accountObject) {
-      bool selected = key == widget.app.currentWalletId ? true : false;
+        // bool selected = key == widget.app.currentWalletId ? true : false;
+        DecorationTween balanceTween = DecorationTween(
+            begin: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: <Color>[
+                      appColors.preColorList[key][0],
+                      appColors.preColorList[key][1]
+                    ]
+                )
+            ),
+            end: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: <Color>[
+                      appColors.preColorList[key][2],
+                      appColors.preColorList[key][3]
+                    ]
+                )
+            )
+        );
 
-      // Color startColorLeft = appColors.randomColor();
-      // Color startColorRight = appColors.randomColor(ignore:true);
-      // Color endColorLeft = appColors.randomColor(ignore: true);
-      // Color endColorRight = appColors.randomColor(ignore: true);
-
-      DecorationTween balanceTween = DecorationTween(
-          begin: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              gradient: LinearGradient(
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                  colors: <Color>[
-                    appColors.preColorList[key][0],
-                    appColors.preColorList[key][1]
-                  ]
-              )
-          ),
-          end: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              gradient: LinearGradient(
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                  colors: <Color>[
-                    appColors.preColorList[key][2],
-                    appColors.preColorList[key][3]
-                  ]
-              )
-          )
-      );
-
-      drawerElements.add(
-        GradientCard(
-          address: accountObject.address,
-          onPressed: () => NotificationBar().show(context, text:"Item Taped"),
-          onIconPressed: () {},
-          balance: accountObject.currencyBalance == null || accountObject.currencyTokenBalance == null ? "0,0000000" :
-          "${shortAmount((accountObject.currencyBalance +
-              accountObject.currencyTokenBalance).toString(),comma: true, length: 7)}",
-          label: accountObject.title,
-          balanceTween: balanceTween,
-        )
-      );
+        drawerElements.add(
+            GradientCard(
+                address: accountObject.address,
+                onPressed: (){
+                  widget.app.setCurrentWallet(key);
+                  Navigator.of(context).pop();
+                  NotificationBar().show(context, text:"Account \"${widget.app.accountList[key].title}\" selected.");
+                },
+                onIconPressed: () {},
+                balance: accountObject.currencyBalance == null || accountObject.currencyTokenBalance == null ? "0,0000000" :
+                "${shortAmount((accountObject.currencyBalance +
+                    accountObject.currencyTokenBalance).toString(),comma: true, length: 7)}",
+                label: accountObject.title,
+                balanceTween: balanceTween,
+            ),
+        );
     });
 
     drawerElements.add(
@@ -82,7 +79,6 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
     List<Widget> finalDrawer = [];
 
     drawerElements.asMap().forEach((pos,element) {
-      // if(pos == 0 || (pos + 1) == drawerElements.length)
       if(pos == 0)
         finalDrawer.add(element);
       else
@@ -130,7 +126,6 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                       GestureDetector(
                         child: Container(
                           color: Colors.transparent,
-                          // color: Colors.red,
                           child: Padding(
                             padding: const EdgeInsets.only(
                               top: 16,

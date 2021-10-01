@@ -27,11 +27,36 @@ class _OverviewState extends State<Overview> {
 
   @override
   Widget build(BuildContext context) {
+    AppColors appColors = AppColors();
     return Consumer<AvmeWallet>(
       builder: (context, app, _){
         return ListView(
           children: [
             OverviewAndButtons(
+              balanceTween: DecorationTween(
+                  begin: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      gradient: LinearGradient(
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                          colors: <Color>[
+                            appColors.preColorList[app.currentWalletId][0],
+                            appColors.preColorList[app.currentWalletId][1],
+                          ]
+                      )
+                  ),
+                  end: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      gradient: LinearGradient(
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                          colors: <Color>[
+                            appColors.preColorList[app.currentWalletId][2],
+                            appColors.preColorList[app.currentWalletId][3],
+                          ]
+                      )
+                  )
+              ),
               totalBalance:
               app.currentAccount.currencyBalance == null || app.currentAccount.currencyTokenBalance == null ? "0,0000000" :
               "${shortAmount((app.currentAccount.currencyBalance +
@@ -55,6 +80,7 @@ class _OverviewState extends State<Overview> {
                       return StatefulBuilder(builder: (builder, setState){
                         return ReceivePopup(
                           title: "Share QR Address",
+                          accountTitle: app.currentAccount.address,
                           address: app.currentAccount.address,
                           onQrPressed: () {
                             NotificationBar().show(

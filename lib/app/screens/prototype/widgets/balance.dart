@@ -17,6 +17,7 @@ class OverviewAndButtons extends StatefulWidget {
   final Function onSendPressed;
   final Function onReceivePressed;
   final Function onBuyPressed;
+  final DecorationTween balanceTween;
 
   OverviewAndButtons({
     Key key,
@@ -27,33 +28,33 @@ class OverviewAndButtons extends StatefulWidget {
     @required this.onSendPressed,
     @required this.onReceivePressed,
     @required this.onBuyPressed,
-    this.difference = "+18,69%",
+    this.difference = "+18,69%", this.balanceTween,
   }) : super(key: key);
 
-  final DecorationTween balanceTween = DecorationTween(
-    begin: BoxDecoration(
-      borderRadius: BorderRadius.circular(8),
-      gradient: LinearGradient(
-        begin: Alignment.centerLeft,
-        end: Alignment.centerRight,
-        colors: <Color>[
-          AppColors.purpleVariant2,
-          AppColors.lightBlue,
-        ]
-      )
-    ),
-    end: BoxDecoration(
-      borderRadius: BorderRadius.circular(8),
-      gradient: LinearGradient(
-        begin: Alignment.centerLeft,
-        end: Alignment.centerRight,
-        colors: <Color>[
-          AppColors.lightBlue,
-          AppColors.purpleVariant2,
-        ]
-      )
-    )
-  );
+  // final DecorationTween balanceTween = DecorationTween(
+  //   begin: BoxDecoration(
+  //     borderRadius: BorderRadius.circular(8),
+  //     gradient: LinearGradient(
+  //       begin: Alignment.centerLeft,
+  //       end: Alignment.centerRight,
+  //       colors: <Color>[
+  //         AppColors.purpleVariant2,
+  //         AppColors.lightBlue,
+  //       ]
+  //     )
+  //   ),
+  //   end: BoxDecoration(
+  //     borderRadius: BorderRadius.circular(8),
+  //     gradient: LinearGradient(
+  //       begin: Alignment.centerLeft,
+  //       end: Alignment.centerRight,
+  //       colors: <Color>[
+  //         AppColors.lightBlue,
+  //         AppColors.purpleVariant2,
+  //       ]
+  //     )
+  //   )
+  // );
 
   @override
   _OverviewAndButtonsState createState() => _OverviewAndButtonsState();

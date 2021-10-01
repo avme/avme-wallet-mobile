@@ -239,15 +239,6 @@ class WalletManager
     }
   }
 
-  void setCurrentWallet(AvmeWallet wallet, int id)
-  {
-    wallet.changeCurrentWalletId = id;
-    wallet.walletManager.stopBalanceSubscription(wallet);
-    wallet.walletManager.startBalanceSubscription(wallet);
-
-    print(wallet.services.keys);
-  }
-
   Future<Map<String,dynamic>> sendTransaction(AvmeWallet wallet, String address, BigInt amount) async
   {
     if (!await services.hasEnoughBalanceToPayTaxes(wallet.currentAccount.waiBalance))

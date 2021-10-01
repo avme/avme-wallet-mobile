@@ -133,4 +133,11 @@ class AvmeWallet extends ChangeNotifier
     accountList[id] = accountObject;
     notifyListeners();
   }
+
+  void setCurrentWallet(int id)
+  {
+    changeCurrentWalletId = id;
+    walletManager.stopBalanceSubscription(this);
+    walletManager.startBalanceSubscription(this);
+  }
 }
