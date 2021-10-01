@@ -1,5 +1,6 @@
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/app.dart';
+import 'package:avme_wallet/app/screens/prototype/history.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/accounts_drawer.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
@@ -24,8 +25,7 @@ class _State extends State<AppScaffold>
   ///the build method kicks in, we make a Map<String,Widget>
 
   List<String> routeLabels = [
-    'About', 'Overview', 'History'
-  ];
+    'About', 'Overview', 'History', 'Send', 'Exchange'];
 
   List<Widget> routeWidgets;
 
@@ -56,9 +56,23 @@ class _State extends State<AppScaffold>
       ),
 
       //History
+      History(
+        appScaffoldTabController: this.appScaffoldTabController,
+      ),
+
+      //Send
       Center(
         child: Text(
-          'History',
+          'Send',
+          style: TextStyle(
+            fontSize: 25,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+      Center(
+        child: Text(
+          'Exchange',
           style: TextStyle(
             fontSize: 25,
             fontWeight: FontWeight.w600,
@@ -82,7 +96,6 @@ class _State extends State<AppScaffold>
 
   @override
   Widget build(BuildContext context) {
-    print("AppScaffold was builded");
     final double appBarWidth = 24;
     return Scaffold(
       appBar: AppBar(
@@ -224,7 +237,7 @@ class _AppTabBarState extends State<AppTabBar> {
               child: TabBar(
                 labelPadding: EdgeInsets.only(top:8),
                 controller: widget.appScaffoldTabController,
-
+                isScrollable: true,
                 indicator: BoxDecoration(
                   border: Border(
                     top: BorderSide(
@@ -235,7 +248,7 @@ class _AppTabBarState extends State<AppTabBar> {
                 ),
                 labelColor: Colors.white,
                 unselectedLabelColor: AppColors.labelDisabledColor,
-                tabs: getTabLabels(widget.appScaffoldTabController)
+                tabs: getTabLabels(context, widget.appScaffoldTabController)
               ),
             ),
           ),
@@ -249,48 +262,71 @@ class _AppTabBarState extends State<AppTabBar> {
       ]
     );
   }
-
-  // List<Widget> getTabWidgets()
-  // {
-  //   List<Widget> _tabs = [];
-  //   widget.tabs.forEach((key, widget) {
-  //     _tabs.add(widget);
-  //   });
-  //   return _tabs;
-  // }
-
-  List<Widget> getTabLabels(TabController tabController)
+  List<Widget> getTabLabels(BuildContext context, TabController tabController)
   {
     List<Widget> _labels = [];
     int pos = 0;
     widget.routeLabels.forEach((key) {
+      ///Alignment validation
+      MainAxisAlignment alignment = MainAxisAlignment.center;
+      ///Current disabled due to bad usage when rendering, causing misalignment
+      // if (tabController.index > 0 && tabController.index != widget.routeLabels.length - 1)
+      // {
+      //   if(pos == (tabController.index - 1))
+      //   {
+      //     alignment = MainAxisAlignment.start;
+      //   }
+      //   else if(pos == (tabController.index + 1))
+      //   {
+      //     alignment = MainAxisAlignment.end;
+      //   }
+      //   else
+      //   print("im in the between");
+      // }
+      // else if(tabController.index == 0)
+      // {
+      //   if(pos == (tabController.index + 2))
+      //     alignment = MainAxisAlignment.end;
+      //   else if (pos == tabController.index)
+      //     alignment = MainAxisAlignment.start;
+      // }
+      // else
+      // {
+      //   if(pos == (tabController.index - 2))
+      //     alignment = MainAxisAlignment.start;
+      //   else if (pos == tabController.index)
+      //     alignment = MainAxisAlignment.end;
+      // }
+
       _labels.add(
         Tab(
           child:
-            Row(
-              // crossAxisAlignment: CrossAxisAlignment,
-              mainAxisAlignment: pos == 0 ? MainAxisAlignment.start : pos != widget.routeLabels.length - 1 ? MainAxisAlignment.center : MainAxisAlignment.end,
-              // mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(
-                      6.0,
+            Container(
+              width: (MediaQuery.of(context).size.width / 10 * 8.633) / 3,
+              child: Row(
+                // mainAxisAlignment: pos == 0 ? MainAxisAlignment.start : pos != widget.routeLabels.length - 1 ? MainAxisAlignment.center : MainAxisAlignment.end,
+                mainAxisAlignment: alignment,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(
+                        6.0,
+                      ),
+                      color: pos == tabController.index ? AppColors.cardDefaultColor : null,
                     ),
-                    color: pos == tabController.index ? AppColors.cardDefaultColor : null,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4
+                      ),
+                      child: Text(
+                        "$key",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 18),),
                     ),
-                    child: Text(
-                      "$key",
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 18),),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );

@@ -1,7 +1,3 @@
-import 'package:avme_wallet/app/lib/utils.dart';
-import 'package:avme_wallet/app/screens/receive.dart';
-import 'package:avme_wallet/app/screens/send.dart';
-import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
 
 import 'neon_button.dart';
@@ -30,31 +26,6 @@ class OverviewAndButtons extends StatefulWidget {
     @required this.onBuyPressed,
     this.difference = "+18,69%", this.balanceTween,
   }) : super(key: key);
-
-  // final DecorationTween balanceTween = DecorationTween(
-  //   begin: BoxDecoration(
-  //     borderRadius: BorderRadius.circular(8),
-  //     gradient: LinearGradient(
-  //       begin: Alignment.centerLeft,
-  //       end: Alignment.centerRight,
-  //       colors: <Color>[
-  //         AppColors.purpleVariant2,
-  //         AppColors.lightBlue,
-  //       ]
-  //     )
-  //   ),
-  //   end: BoxDecoration(
-  //     borderRadius: BorderRadius.circular(8),
-  //     gradient: LinearGradient(
-  //       begin: Alignment.centerLeft,
-  //       end: Alignment.centerRight,
-  //       colors: <Color>[
-  //         AppColors.lightBlue,
-  //         AppColors.purpleVariant2,
-  //       ]
-  //     )
-  //   )
-  // );
 
   @override
   _OverviewAndButtonsState createState() => _OverviewAndButtonsState();

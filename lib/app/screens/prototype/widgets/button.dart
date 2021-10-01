@@ -6,6 +6,7 @@ class AppButton extends StatelessWidget {
   final String text;
   final IconData iconData;
   final double height;
+  final double width;
   final MainAxisAlignment mainAxisAlignment;
   final double paddingBetweenIcons;
   final TextStyle textStyle;
@@ -19,6 +20,7 @@ class AppButton extends StatelessWidget {
     this.mainAxisAlignment,
     this.paddingBetweenIcons,
     this.height = 45,
+    this.width,
     this.expanded = true,
     this.textStyle,
     this.paddingText = const EdgeInsets.all(0),
@@ -55,6 +57,7 @@ class AppButton extends StatelessWidget {
 
     return SizedBox(
       height: this.height,
+      width: this.width ?? null,
       child: ElevatedButton(
         onPressed: this.onPressed,
         child: Row(
