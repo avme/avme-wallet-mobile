@@ -215,6 +215,7 @@ class _LoginState extends State<Login> {
         appState.changeCurrentWalletId = 0;
         // snack("Account #0 selected", context);
         // snack("Account #0 selected", context);
+        appState.walletManager.startBalanceSubscription(appState);
         NotificationBar().show(context,text:"Account #0 selected");
         Navigator.pushReplacementNamed(context, "/home");
         // Navigator.pushReplacementNamed(context, "test/preview");

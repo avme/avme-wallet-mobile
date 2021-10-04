@@ -33,7 +33,7 @@ class AppNeonButton extends StatelessWidget {
     if(this.iconData != null)
     {
       children.add(
-        Icon(this.iconData, color: AppColors.purple,)
+        Icon(this.iconData, color: this.enabled ? AppColors.purple : Colors.grey,)
       );
     }
 
@@ -49,7 +49,7 @@ class AppNeonButton extends StatelessWidget {
         padding: this.paddingText,
         child: Text(text, style: this.textStyle ??
           TextStyle(
-            color: AppColors.purple
+            color: this.enabled ? AppColors.purple : Colors.grey
           ),
         ),
       )

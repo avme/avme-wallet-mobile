@@ -10,6 +10,7 @@ class AppPopupWidget extends StatefulWidget {
   ///The widget children will be stacked inside a Column widget
   final List<Widget> children;
   final String title;
+  final TextStyle textStyle;
   ///This is the default content padding
   final EdgeInsets padding;
   final List<Widget> actions;
@@ -18,6 +19,7 @@ class AppPopupWidget extends StatefulWidget {
   ///itself and the device's dimensions
   final EdgeInsets margin;
   final bool showIndicator;
+  final bool cancelable;
 
   AppPopupWidget({
     Key key,
@@ -31,8 +33,13 @@ class AppPopupWidget extends StatefulWidget {
     ),
     this.margin,
     this.actions,
+    this.cancelable = true,
     this.canClose = true,
     this.showIndicator = true,
+    this.textStyle = const TextStyle(
+        fontSize: 24,
+        fontWeight: FontWeight.w500
+    ),
   }) : super(key: key);
 
   @override
@@ -44,30 +51,35 @@ class _AppPopupWidgetState extends State<AppPopupWidget> {
   @override
   Widget build(BuildContext context) {
 
-    if(widget.actions.length == 0)
-      widget.actions.add(
-          AppNeonButton(
-              onPressed: () => Navigator.of(this.context).pop(),
-              expanded: false,
-              text: "CANCEL"
-          ));
-
     List<Widget> popupActions = [];
 
-    if(widget.actions.length > 0)
-      widget.actions.asMap().forEach((key, widget) {
-        if(key.remainder(2) == 0)
-          popupActions.add(
-              Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: widget,
-              )
-          );
-        else
-          popupActions.add(
-              widget
-          );
-      });
+    if(widget.cancelable == true)
+    {
+      if(widget.actions.length == 0)
+        widget.actions.add(
+            AppNeonButton(
+                onPressed: () => Navigator.of(this.context).pop(),
+                expanded: false,
+                text: "CANCEL"
+            ));
+      if(widget.actions.length > 0)
+        widget.actions.asMap().forEach((key, widget) {
+          if(key.remainder(2) == 0)
+            popupActions.add(
+                Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: widget,
+                )
+            );
+          else
+            popupActions.add(
+                widget
+            );
+        });
+    }
+    else
+      popupActions = null;
+
 
 
     return GestureDetector(
@@ -111,7 +123,6 @@ class _AppPopupWidgetState extends State<AppPopupWidget> {
                             content: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-
                                 ///Header
                                 Padding(
                                   padding: const EdgeInsets.all(8.0),
@@ -141,10 +152,7 @@ class _AppPopupWidgetState extends State<AppPopupWidget> {
                                           children: [
                                             Text(
                                               widget.title,
-                                              style: TextStyle(
-                                                  fontSize: 24,
-                                                  fontWeight: FontWeight.w500
-                                              ),
+                                              style: widget.textStyle,
                                               textAlign: TextAlign.center,
                                             ),
                                           ],

@@ -80,7 +80,7 @@ class _OverviewState extends State<Overview> {
                       return StatefulBuilder(builder: (builder, setState){
                         return ReceivePopup(
                           title: "Share QR Address",
-                          accountTitle: app.currentAccount.address,
+                          accountTitle: app.currentAccount.title,
                           address: app.currentAccount.address,
                           onQrPressed: () {
                             NotificationBar().show(
@@ -105,6 +105,7 @@ class _OverviewState extends State<Overview> {
                         return ReceivePopup(
                           title: "Share QR Address",
                           address: app.currentAccount.address,
+                          accountTitle: app.currentAccount.title,
                           onQrPressed: () {
                             NotificationBar().show(
                                 context,
@@ -169,7 +170,10 @@ class _OverviewState extends State<Overview> {
               marketValue: "${shortAmount(app.currentAccount.currencyTokenBalance.toString(),comma: true, length: 3)}",
               valueDifference: "8,669",
             ),
-            HistorySnippet(appScaffoldTabController: widget.appScaffoldTabController)
+            HistorySnippet(
+              appScaffoldTabController: widget.appScaffoldTabController,
+              app: app,
+            )
           ],
         );
       },

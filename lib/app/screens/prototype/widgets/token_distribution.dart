@@ -4,6 +4,7 @@ import 'package:pie_chart/pie_chart.dart' as PieChart;
 
 import 'neon_button.dart';
 import 'card.dart';
+import 'notification_bar.dart';
 
 
 class TokenDistribution extends StatefulWidget {
@@ -109,7 +110,12 @@ class _TokenDistributionState extends State<TokenDistribution> {
           SizedBox(
             height: 12,
           ),
-          AppNeonButton(onPressed: (){}, text: "SHOW AVAILABLE TOKENS"),
+          AppNeonButton(onPressed: (){
+            NotificationBar().show(
+                context,
+                text: "Not implemented"
+            );
+          }, text: "SHOW AVAILABLE TOKENS"),
         ],
       ),
     );

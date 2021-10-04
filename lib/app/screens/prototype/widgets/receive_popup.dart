@@ -1,10 +1,14 @@
 import 'package:avme_wallet/app/screens/prototype/widgets/button.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/neon_button.dart';
+import 'package:avme_wallet/app/screens/prototype/widgets/notification_bar.dart';
+import 'package:avme_wallet/app/screens/prototype/widgets/popup.dart';
 import 'package:avme_wallet/app/screens/widgets/custom_widgets.dart';
 import 'package:avme_wallet/app/screens/widgets/qr_display.dart';
 import 'package:avme_wallet/app/screens/widgets/screen_indicator.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 
 class ReceivePopup extends StatefulWidget {
   final String title;
@@ -27,64 +31,20 @@ class ReceivePopup extends StatefulWidget {
 class _ReceivePopupState extends State<ReceivePopup> {
   @override
   Widget build(BuildContext context) {
-    print("TITLE: ${widget.accountTitle}");
-    return AlertDialog(
-      backgroundColor: AppColors.cardDefaultColor,
-      contentPadding: EdgeInsets.all(0),
-      shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8)
+    return AppPopupWidget(
+      padding: EdgeInsets.all(0),
+      cancelable: false,
+      textStyle: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w500
       ),
-      content: Container(
+      margin: EdgeInsets.all(16),
+      title: widget.title,
+      children: [
+        Container(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ///Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ///Close button
-                      GestureDetector(
-                        child: Container(
-                          color: Colors.transparent,
-                          // color: Colors.red,
-                          child: Padding(
-                            padding: const EdgeInsets.only(
-                                top: 16,
-                                bottom: 10,
-                                left: 16,
-                                right: 16
-                            ),
-                            child: Icon(Icons.close),
-                          ),
-                        ),
-                        onTap: (){
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  flex: 2,
-                  child: Column(
-                    children: [
-                      LabelText(widget.title),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Container(),
-                )
-              ],
-            ),
-            ScreenIndicator(
-              height: 20,
-              width: MediaQuery.of(context).size.width * 1 / 1.8,
-            ),
             Padding(
               padding: const EdgeInsets.all(32),
               child: Column(
@@ -105,7 +65,6 @@ class _ReceivePopupState extends State<ReceivePopup> {
                       ),
                     ),
                   ),
-
                   Padding(
                     padding: const EdgeInsets.only(
                       top: 32.0,
@@ -114,26 +73,33 @@ class _ReceivePopupState extends State<ReceivePopup> {
                     ),
                     child: Column(
                       children: [
-                        Row(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(right:12.0),
-                              child: Icon(Icons.copy),
-                            ),
-                            Flexible(
-                              child: Column(
-                                children: [
-                                  Text(widget.address),
-                                ],
+                        GestureDetector(
+                          onTap: () async {
+                            await Clipboard.setData(
+                                ClipboardData(text: widget.address));
+                            NotificationBar().show(context,text: "Copied to clipboard");
+                          },
+                          child: Row(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(right:12.0),
+                                child: Icon(Icons.copy),
                               ),
-                            )
-                          ],
+                              Flexible(
+                                child: Column(
+                                  children: [
+                                    Text(widget.address),
+                                  ],
+                                ),
+                              )
+                            ],
+                          ),
                         ),
                         SizedBox(height: 24,),
                         AppButton(
                           mainAxisAlignment: MainAxisAlignment.start,
                           paddingBetweenIcons: 16,
-                          text: "widget.accountTitle",
+                          text: "${widget.accountTitle}",
                           onPressed: () {},
                           iconData: Icons.account_circle_outlined,
                         ),
@@ -143,7 +109,12 @@ class _ReceivePopupState extends State<ReceivePopup> {
                           paddingBetweenIcons: 16,
                           text: "SHARE",
                           iconData: Icons.share,
-                          onPressed: () {},
+                          onPressed: () {
+                            Share.share(
+                                widget.address,
+                                subject: "Sharing \"${widget.accountTitle}\" address."
+                            );
+                          },
                         )
                       ],
                     ),
@@ -153,7 +124,7 @@ class _ReceivePopupState extends State<ReceivePopup> {
             ),
           ],
         ),
-      )
+      )],
     );
   }
 }

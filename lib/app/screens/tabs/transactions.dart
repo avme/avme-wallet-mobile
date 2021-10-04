@@ -51,9 +51,9 @@ class _TransactionsState extends State<Transactions> {
   {
     await Future.delayed(Duration(seconds: 1), (){});
     TransactionInformation _transactionInformation = TransactionInformation();
-    Map<String, dynamic> transactionsMap = {};
+    ;
     Map<String, dynamic> transactionData = {};
-    transactionsMap = await _transactionInformation.fileTransactions(appState.currentAccount.address);
+    List transactionsMap = await _transactionInformation.fileTransactions(appState.currentAccount.address);
     if(transactionsMap == null)
     {
       return Center(child:
@@ -78,7 +78,7 @@ class _TransactionsState extends State<Transactions> {
       );
 
     }
-    transactions = transactionsMap["transactions"];
+    transactions = transactionsMap;
     RegExp amountValidator = RegExp(r'\((.*?)\)', multiLine: false, caseSensitive: false);
     List<Widget> _widgetsList = [];
 

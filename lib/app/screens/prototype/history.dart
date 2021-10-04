@@ -28,7 +28,7 @@ class History extends StatefulWidget {
 }
 
 class _HistoryState extends State<History> {
-  List<dynamic> transactions;
+
   @override
   Widget build(BuildContext context) {
     AppColors appColors = AppColors();
@@ -151,7 +151,7 @@ class _HistoryState extends State<History> {
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: FutureBuilder(
-                          future: listTransactions(app),
+                          future: listTransactions(app.currentAccount.address),
                           builder: (BuildContext context, snapshot)
                           {
                             if(snapshot.data == null)
@@ -172,14 +172,9 @@ class _HistoryState extends State<History> {
     );
   }
 
-  //TODO: Refactor this function
-  Future<Widget> listTransactions(AvmeWallet app) async
+  Future<Widget> listTransactions(String address) async
   {
-    TransactionInformation _transactionInformation = TransactionInformation();
-    Map<String, dynamic> transactionsMap = {};
-    Map<String, dynamic> transactionData = {};
-    transactionsMap = await _transactionInformation.fileTransactions(app.currentAccount.address);
-    // print(transactionsMap);
+    List transactionsMap = await TransactionInformation().fileTransactions(address);
     if(transactionsMap == null)
     {
       return Center(child:
@@ -190,41 +185,44 @@ class _HistoryState extends State<History> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text("😕 ", style: TextStyle(
-                    fontSize: 22)),
-                Text("No transactions found."),
+                Column(
+                  children: [
+                    Text("😕 ",
+                        style: TextStyle(
+                            fontSize: 22)
+                    ),
+                    SizedBox(height: 6,),
+                    Text("No transactions found."),
+                  ],
+                ),
               ],
             ),
           )
         )
       );
-
     }
-    transactions = transactionsMap["transactions"];
+
     RegExp amountValidator = RegExp(r'\((.*?)\)', multiLine: false, caseSensitive: false);
     List<Widget> _widgetsList = [];
 
-    Map transactionsLoop = transactions.asMap();
-
-    transactionsLoop.forEach((key,card) {
+    transactionsMap.asMap().forEach((key,card) {
       DateTime date = DateTime.fromMicrosecondsSinceEpoch(card["unixDate"],isUtc: false);
       DateFormat dateFormat = DateFormat('MM/dd/yyyy hh:mm:ss');
-      transactionData = card;
-      transactionData["formatedAmount"] = weiToFixedPoint(amountValidator.firstMatch(card["value"]).group(1).replaceAll(" wei", ""));
-      transactionData["date"] = dateFormat.format(date);
+      card["formatedAmount"] = weiToFixedPoint(amountValidator.firstMatch(card["value"]).group(1).replaceAll(" wei", ""));
+      card["date"] = dateFormat.format(date);
       _widgetsList.add(
         HistoryTable(
           sent: true,
-          tokenAmount: "${shortAmount(transactionData["formatedAmount"])} AVME",
+          tokenAmount: "${shortAmount(card["formatedAmount"])} AVME",
           //TODO: Save the amount in money and retrieve to show how much was sent in dollars
           value: "\$50",
-          date: transactionData["date"],
+          date: card["date"],
           onTap: () => {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => TransactionDetails(transactionData)))
+            Navigator.push(context, MaterialPageRoute(builder: (context) => TransactionDetails(card)))
           },
         ),
       );
-      if(key != transactionsLoop.length - 1)
+      if(key != transactionsMap.length - 1)
         _widgetsList.add(
           Divider(color: AppColors.labelDisabledColor,)
         );

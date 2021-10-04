@@ -67,7 +67,7 @@ class TransactionInformation with ChangeNotifier{
     stream.writeAsString(jsonFile);
   }
 
-  Future<Map<dynamic,dynamic>> fileTransactions(String address) async {
+  Future<List> fileTransactions(String address) async {
     FileManager fileManager = FileManager();
     String file = (await fileManager.getDocumentsFolder()) + fileManager.transactions + "$address";
     File dataFile = File(file);
@@ -75,7 +75,7 @@ class TransactionInformation with ChangeNotifier{
     {
       return null;
     }
-    return jsonDecode(await dataFile.readAsString());
+    return jsonDecode(await dataFile.readAsString())["transactions"];
   }
 
   int get qtdTransactions => this.storedTransaction["transactions"].length;

@@ -3,6 +3,7 @@ import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
 
 import 'button.dart';
+import 'notification_bar.dart';
 
 class TokenValue extends StatefulWidget {
   final Image image;
@@ -92,7 +93,12 @@ class _TokenValueState extends State<TokenValue> {
                   Padding(
                     padding: const EdgeInsets.only(right:8.0),
                     child: AppButton(
-                      onPressed: () => snack("Heartbeat!", context),
+                      onPressed: () {
+                        NotificationBar().show(
+                            context,
+                            text: "Not implemented"
+                        );
+                      },
                       text: "BUY",
                       iconData: Icons.shopping_cart,
                     ),

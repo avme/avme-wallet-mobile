@@ -1,12 +1,17 @@
+import 'package:avme_wallet/app/lib/utils.dart';
+import 'package:avme_wallet/app/model/app.dart';
+import 'package:avme_wallet/app/model/transaction_information.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/card.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/neon_button.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
+import 'package:avme_wallet/app/screens/widgets/transaction_details.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class HistorySnippet extends StatefulWidget {
   final TabController appScaffoldTabController;
-
-  const HistorySnippet({Key key, @required this.appScaffoldTabController}) : super(key: key);
+  final AvmeWallet app;
+  const HistorySnippet({Key key, @required this.appScaffoldTabController, @required this.app}) : super(key: key);
 
   @override
   _HistorySnippetState createState() => _HistorySnippetState();
@@ -27,30 +32,17 @@ class _HistorySnippetState extends State<HistorySnippet> {
                   borderRadius: BorderRadius.circular(8),
                   color: AppColors.darkBlue
               ),
-              child: Column(
-                children: [
-                  HistoryTable(
-                    amount: "32,30",
-                    sent: true,
-                  ),
-                  HistoryTable(
-                    amount: "12,99",
-                    sent: false,
-                  ),
-                  HistoryTable(
-                    amount: "2,12",
-                    sent: false,
-                  ),
-                  HistoryTable(
-                    amount: "15,13",
-                    sent: true,
-                  ),
-                  HistoryTable(
-                    amount: "0,37",
-                    sent: true,
-                  ),
-                ],
-              )
+               child: FutureBuilder(
+                 future: listTransactions(widget.app.currentAccount.address),
+                 builder: (BuildContext context, snapshot)
+                 {
+                   if(snapshot.data == null)
+                   {
+                     return Text("loading");
+                   }
+                   else return snapshot.data;
+                 },
+               ),
           ),
           SizedBox(
             height: 12,
@@ -60,6 +52,63 @@ class _HistorySnippetState extends State<HistorySnippet> {
       ),
     );
   }
+
+  Future<Widget> listTransactions(String address) async
+  {
+    List transactionsMap = await TransactionInformation().fileTransactions(address);
+    if(transactionsMap == null)
+    {
+      return Center(child:
+      SizedBox(
+          width: MediaQuery.of(context).size.width * 1 / 2,
+          child:  Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Column(
+                  children: [
+                    Text("😕 ",
+                        style: TextStyle(
+                            fontSize: 22)
+                    ),
+                    SizedBox(height: 6,),
+                    Text("No recent activity to show."),
+                  ],
+                ),
+              ],
+            ),
+          )
+      )
+      );
+    }
+
+    RegExp amountValidator = RegExp(r'\((.*?)\)', multiLine: false, caseSensitive: false);
+    List<Widget> _widgetsList = [];
+
+    transactionsMap.asMap().forEach((key,card) {
+      DateTime date = DateTime.fromMicrosecondsSinceEpoch(card["unixDate"],isUtc: false);
+      DateFormat dateFormat = DateFormat('MM/dd/yyyy');
+      card["formatedAmount"] = shortAmount(weiToFixedPoint(amountValidator.firstMatch(card["value"]).group(1).replaceAll(" wei", ""),),length: 4, comma: true);
+      card["date"] = dateFormat.format(date);
+      _widgetsList.add(
+          HistoryTable(
+            amount: "${shortAmount(card["formatedAmount"])} AVME",
+            sent: true,
+            date: card["date"],
+          ),
+      );
+      if(key != transactionsMap.length - 1)
+        _widgetsList.add(
+            Divider(color: AppColors.labelDisabledColor,)
+        );
+    });
+    return ListView(
+      shrinkWrap: true,
+      children: _widgetsList,
+    );
+  }
+
 }
 
 
@@ -67,8 +116,14 @@ class HistoryTable extends StatefulWidget {
 
   final bool sent;
   final String amount;
-
-  const HistoryTable({Key key, @required this.sent, @required this.amount}) : super(key: key);
+  final String date;
+  const HistoryTable(
+  {
+    Key key,
+    @required this.sent,
+    @required this.amount,
+    @required this.date
+  }) : super(key: key);
 
   @override
   _HistoryTableState createState() => _HistoryTableState();
@@ -93,7 +148,7 @@ class _HistoryTableState extends State<HistoryTable> {
           ),
           Expanded(
             flex: 4,
-            child: Center(child: Text("15/02/22")),
+            child: Center(child: Text(widget.date)),
           ),
           Expanded(
             flex: 4,
@@ -101,8 +156,8 @@ class _HistoryTableState extends State<HistoryTable> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 widget.sent == true ?
-                Text("-\$${widget.amount} (AVAX)", style: TextStyle(color: AppColors.lightBlue),) :
-                Text("+\$${widget.amount} (AVAX)", style: TextStyle(color: AppColors.purple)),
+                Text("-${widget.amount}", style: TextStyle(color: AppColors.lightBlue),) :
+                Text("+${widget.amount}", style: TextStyle(color: AppColors.purple)),
               ],
             ),
           ),
