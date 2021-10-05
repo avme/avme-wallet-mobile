@@ -5,6 +5,7 @@ import 'package:avme_wallet/app/screens/prototype/widgets/accounts_drawer.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:avme_wallet/app/screens/prototype/send.dart';
 import 'overview.dart';
 
 
@@ -61,15 +62,10 @@ class _State extends State<AppScaffold>
       ),
 
       //Send
-      Center(
-        child: Text(
-          'Send',
-          style: TextStyle(
-            fontSize: 25,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+      Send(
+        appScaffoldTabController: this.appScaffoldTabController,
       ),
+
       Center(
         child: Text(
           'Exchange',
