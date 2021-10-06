@@ -35,7 +35,7 @@ class AppTextFormField extends StatelessWidget {
     Color cLabelStyle = AppColors.labelDefaultColor;
     FontWeight fLabelStyle = FontWeight.w900;
     OutlineInputBorder fieldBorder = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(10.0),
+      borderRadius: BorderRadius.circular(6.0),
         borderSide: BorderSide(
           width: 2
         )
@@ -78,7 +78,10 @@ class AppTextFormField extends StatelessWidget {
                     ),
                     labelText: this.labelText,
                     floatingLabelBehavior: FloatingLabelBehavior.always,
-                    // contentPadding: textFieldButtonPadding,
+                    contentPadding: EdgeInsets.symmetric(
+                      vertical: 16,
+                      horizontal: 12
+                    ),
                     enabledBorder: fieldBorder.copyWith(
                       borderSide: BorderSide(
                         width: 2,
