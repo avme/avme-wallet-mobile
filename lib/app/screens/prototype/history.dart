@@ -117,14 +117,23 @@ class _HistoryState extends State<History> {
                 // crossAxisAlignment: CrossAxisAlignment.end,
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  LabelText("Show:"),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 16.0, right:16.0),
-                    child: AppButton(
-                        onPressed: () => {},
-                        text: "All",
-                        paddingText: EdgeInsets.all(0),
-                        height: 36,
+                  Expanded(
+                    flex: 3,
+                    child:Align(
+                    alignment: Alignment.centerRight,
+                      child: LabelText("Show:")
+                    )
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 16.0, right:16.0),
+                      child: AppButton(
+                          onPressed: () => {},
+                          text: "All",
+                          paddingText: EdgeInsets.all(0),
+                          height: 36,
+                      ),
                     ),
                   )
                 ],

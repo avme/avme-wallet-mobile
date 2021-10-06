@@ -12,6 +12,8 @@ class AppButton extends StatelessWidget {
   final TextStyle textStyle;
   final bool expanded;
   final EdgeInsets paddingText;
+  final TextOverflow textOverflow;
+  final int maxLines;
 
   const AppButton({
     @required this.onPressed,
@@ -24,6 +26,8 @@ class AppButton extends StatelessWidget {
     this.expanded = true,
     this.textStyle,
     this.paddingText = const EdgeInsets.all(0),
+    this.textOverflow = TextOverflow.fade,
+    this.maxLines = 1,
   });
   @override
   Widget build(BuildContext context) {
@@ -33,7 +37,7 @@ class AppButton extends StatelessWidget {
     if(this.iconData != null)
     {
       children.add(
-        Icon(this.iconData, color: Colors.white,)
+          Icon(this.iconData, color: Colors.white,)
       );
     }
 
@@ -45,11 +49,15 @@ class AppButton extends StatelessWidget {
     }
 
     children.add(
-      Padding(
-        padding: this.paddingText,
-        child: Text(text, style: this.textStyle ??
-          TextStyle(
-            color: Colors.white
+      Flexible(
+        child: Padding(
+          padding: this.paddingText,
+          child: Text(text, style: this.textStyle ??
+            TextStyle(
+              color: Colors.white
+            ),
+            overflow: this.textOverflow,
+            maxLines: this.maxLines,
           ),
         ),
       )
@@ -57,7 +65,7 @@ class AppButton extends StatelessWidget {
 
     return SizedBox(
       height: this.height,
-      width: this.width ?? null,
+      width: this.width,
       child: ElevatedButton(
         onPressed: this.onPressed,
         child: Row(
