@@ -26,7 +26,7 @@ class AppButton extends StatelessWidget {
     this.expanded = true,
     this.textStyle,
     this.paddingText = const EdgeInsets.all(0),
-    this.textOverflow = TextOverflow.fade,
+    this.textOverflow = TextOverflow.ellipsis,
     this.maxLines = 1,
   });
   @override
