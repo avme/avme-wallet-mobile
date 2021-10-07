@@ -2,10 +2,14 @@ import 'package:avme_wallet/app/screens/prototype/widgets/button.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/card.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/labeltext.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/notification_bar.dart';
+import 'package:avme_wallet/app/screens/prototype/widgets/popup.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/textform.dart';
 import 'package:avme_wallet/app/screens/widgets/custom_widgets.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+import '../qrcode_reader.dart';
 
 class Send extends StatefulWidget {
 
@@ -48,7 +52,14 @@ class _SendState extends State<Send> {
                   key: _addressForm,
                   controller: addressController,
                   icon: new Icon(Icons.qr_code_scanner, color: AppColors.labelDefaultColor, size: 32,),
-                  iconOnTap: () => NotificationBar().show(context, text:"Opening the camera"),
+                  // iconOnTap: () => NotificationBar().show(context, text:"Opening the camera"),
+                  iconOnTap: () async {
+                    String response = await Navigator.push(context, MaterialPageRoute(builder: (context) => QRScanner()));
+                    NotificationBar().show(context, text: "Scanned: \"$response\"");
+                    setState(() {
+                      addressController.text = response;
+                    });
+                  },
                   // labelText: "Dance floor baby",
                 ),
               ],
@@ -279,7 +290,7 @@ class _SendState extends State<Send> {
               Expanded(flex: 3, child: Container(),),
               Expanded(flex: 2,child: AppButton(
                 text: 'CONTINUE',
-                onPressed: () => NotificationBar().show(context, text:"Continuing to details screen"),
+                onPressed: () => displaySendTokens(context),
               ),),
               Expanded(flex: 3, child: Container(),),
             ],
@@ -287,5 +298,269 @@ class _SendState extends State<Send> {
         )
       ]
     );
+  }
+
+  void displaySendTokens(BuildContext context)
+  {
+    NotificationBar().show(context, text:"Continuing to details screen");
+    bool disableGasLimit = true;
+    bool disableGasFee = true;
+    TextEditingController gasLimit = TextEditingController(
+      text: env["MAX_GAS"]
+    );
+    TextEditingController gasFee = TextEditingController(
+      text: env["GAS_PRICE"]
+    );
+    showDialog(context: context, builder: (_) =>
+      StatefulBuilder(builder: (builder, setState) =>
+          AppPopupWidget(
+              title: "SEND TOKENS",
+              canClose: true,
+              margin: EdgeInsets.all(8),
+              cancelable: false,
+              padding: EdgeInsets.symmetric(
+                vertical: 16,
+                horizontal: 32
+              ),
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text("Metacoin",
+                          style: TextStyle(
+                              fontSize: 18
+                          ),
+                        ),
+                        SizedBox(
+                          height: 8,
+                        ),
+                        Text("2",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 64),
+                        ),
+                        SizedBox(
+                          height: 8,
+                        ),
+                        Text("\$ 128.35",
+                          style: TextStyle(
+                            fontSize: 18
+                          ),
+                        ),
+                        SizedBox(
+                          height: 16,
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+
+                /*Gas Limit*/
+
+                Divider(color: Colors.white,),
+                Padding(
+                  padding: const EdgeInsets.only(top: 16, bottom: 8),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: (){
+                            setState((){
+                              disableGasLimit = !disableGasLimit;
+                            });
+                          },
+                          child: Container(
+                            color:Colors.transparent,
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                  height:22,
+                                  width:22,
+                                  child: Checkbox(
+                                    value: disableGasLimit,
+                                    fillColor: MaterialStateProperty.resolveWith(getColor),
+                                    onChanged: (bool value) => setState(() {
+                                      disableGasLimit = value;
+                                      if(value)
+                                      {
+                                        gasLimit.text = env["MAX_GAS"];
+                                      }
+                                    })
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(left:8.0),
+                                  child: Text(
+                                    "Automatic gas limit",
+                                    style: TextStyle(
+                                      fontSize: 12.0
+                                    ),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          mainAxisSize: MainAxisSize.max,
+                          children: [
+                            Text(
+                              "Gas limit in (WEI)",
+                              style: TextStyle(
+                                  fontSize: 12.0
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: Container(),
+                    ),
+                    Expanded(
+                      flex: 2,
+                      child: AppTextFormField(
+                        enabled: !disableGasLimit,
+                        controller: gasLimit,
+                        textAlign: TextAlign.end,
+                        keyboardType: TextInputType.number,
+                        contentPadding: EdgeInsets.symmetric(
+                            vertical: 6,
+                            horizontal: 4
+                        ),
+                        isDense: true,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  height: 16,
+                ),
+                /*Recommended fees*/
+
+                Divider(color: Colors.white,),
+                Padding(
+                  padding: const EdgeInsets.only(top: 16, bottom: 8),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: (){
+                            setState((){
+                              disableGasLimit = !disableGasLimit;
+                            });
+                          },
+                          child: Container(
+                            color:Colors.transparent,
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                  height:22,
+                                  width:22,
+                                  child: Checkbox(
+                                      value: disableGasFee,
+                                      fillColor: MaterialStateProperty.resolveWith(getColor),
+                                      onChanged: (bool value) => setState(() {
+                                        disableGasFee = value;
+                                        if(value)
+                                        {
+                                          gasFee.text = env["GAS_PRICE"];
+                                        }
+                                      })
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(left:8.0),
+                                  child: Text(
+                                    "Recommended fees",
+                                    style: TextStyle(
+                                        fontSize: 12.0
+                                    ),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          mainAxisSize: MainAxisSize.max,
+                          children: [
+                            Text(
+                              "Gas price (In GWEI)",
+                              style: TextStyle(
+                                  fontSize: 12.0
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: Container(),
+                    ),
+                    Expanded(
+                      flex: 2,
+                      child: AppTextFormField(
+                        enabled: !disableGasFee,
+                        controller: gasFee,
+                        textAlign: TextAlign.end,
+                        keyboardType: TextInputType.number,
+                        contentPadding: EdgeInsets.symmetric(
+                            vertical: 6,
+                            horizontal: 4
+                        ),
+                        isDense: true,
+                      ),
+                    ),
+                  ],
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: AppButton(
+                    expanded: false,
+                    onPressed: () async {
+                      Navigator.of(context).pop();
+                    },
+                    text: "CONFIRM",
+                  ),
+                )
+              ],
+              actions: []
+          )
+      )
+    );
+  }
+  Color getColor(Set<MaterialState> states) {
+    const Set<MaterialState> interactiveStates = <MaterialState>{
+      MaterialState.pressed,
+      MaterialState.hovered,
+      MaterialState.focused,
+    };
+    if (states.any(interactiveStates.contains)) {
+      return AppColors.purple;
+    }
+    return AppColors.purple;
   }
 }

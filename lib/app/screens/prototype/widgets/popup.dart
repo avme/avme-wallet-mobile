@@ -165,7 +165,7 @@ class _AppPopupWidgetState extends State<AppPopupWidget> {
                                   ),
                                 ),
                                 widget.showIndicator ? FractionallySizedBox(
-                                  widthFactor: 0.8,
+                                  widthFactor: 0.84,
                                   child: ScreenIndicator(
                                     height: 20,
                                     width: MediaQuery.of(context).size.width,
