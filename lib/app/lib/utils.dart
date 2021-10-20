@@ -129,3 +129,9 @@ AvmeWallet getAppState(BuildContext context, {listen = false})
 {
   return Provider.of<AvmeWallet>(context, listen: listen);
 }
+
+bool isHex(String hex)
+{
+  RegExp regIsAddress = new RegExp(r"^(0x)[a-zA-Z0-9]*$",multiLine: false);
+  return regIsAddress.hasMatch(hex);
+}

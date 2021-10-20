@@ -28,7 +28,11 @@ Future<bool> sendTransaction(AvmeWallet appState, String receiverAddress, BigInt
 
 
   EthereumAddress contractAddress = EthereumAddress.fromHex(env["CONTRACT_ADDRESS"]);
-  AvmeContract avmeContract = AvmeContract(address:contractAddress, client: ethClient, chainId: int.parse(env["CHAIN_ID"]));
+  AvmeContract avmeContract = AvmeContract(
+      address:contractAddress,
+      client: ethClient,
+      chainId: int.parse(env["CHAIN_ID"]),
+  );
   Credentials accountCredentials = await avmeContract.client.credentialsFromPrivateKey(appState.currentAccount.address);
 
   Transaction _transaction = await avmeContract

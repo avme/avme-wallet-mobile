@@ -64,102 +64,99 @@ class AppTextFormField extends StatelessWidget {
       fLabelStyle = this.focusNode.hasFocus ? FontWeight.w900 : FontWeight.w500;
     }
 
-    return Form(
-      key: this.formKey,
-      child: Stack(
-        children: [
-          Column(
-            children: [
-              TextFormField(
-                enabled: this.enabled,
-                validator: this.validator,
-                controller: this.controller,
-                cursorColor: this.cursorColor,
-                obscureText: this.obscureText,
-                initialValue: this.initialValue,
-                textAlign: this.textAlign,
-                focusNode: this.focusNode,
-                keyboardType: this.keyboardType,
-                onChanged: this.onChanged,
-                decoration: InputDecoration(
-                  isDense: true,
-                  filled: true,
-                  fillColor: AppColors.darkBlue,
-                  focusedErrorBorder: fieldBorder.copyWith(
-                      borderSide: BorderSide(
-                        width: 2,
-                        color: Colors.red,
-                      )
-                  ),
-                  errorBorder: fieldBorder.copyWith(
-                      borderSide: BorderSide(
-                        width: 2,
-                        color: AppColors.labelDefaultColor,
-                      )
-                  ),
-                  labelText: this.labelText,
-                  floatingLabelBehavior: this.floatingLabelBehavior,
-                  contentPadding: this.contentPadding,
-                  enabledBorder: fieldBorder.copyWith(
+    return Stack(
+      children: [
+        Column(
+          children: [
+            TextFormField(
+              enabled: this.enabled,
+              validator: this.validator,
+              controller: this.controller,
+              cursorColor: this.cursorColor,
+              obscureText: this.obscureText,
+              initialValue: this.initialValue,
+              textAlign: this.textAlign,
+              focusNode: this.focusNode,
+              keyboardType: this.keyboardType,
+              onChanged: this.onChanged,
+              decoration: InputDecoration(
+                isDense: true,
+                filled: true,
+                fillColor: AppColors.darkBlue,
+                focusedErrorBorder: fieldBorder.copyWith(
                     borderSide: BorderSide(
                       width: 2,
-                      color: cLabelStyle,
-                    ),
-                  ),
-                  disabledBorder: OutlineInputBorder(
-                    borderRadius: fieldBorder.borderRadius,
-                    borderSide: BorderSide(
-                      width: 0,
-                      color: Colors.transparent
+                      color: Colors.red,
                     )
-                  ),
-                  labelStyle: TextStyle(
-                      color: cLabelStyle,
-                      fontWeight: fLabelStyle,
-                      fontSize: 20
-                  ),
-                  focusedBorder: fieldBorder.copyWith(
+                ),
+                errorBorder: fieldBorder.copyWith(
                     borderSide: BorderSide(
-                        width: 2,
-                        color: AppColors.purple
+                      width: 2,
+                      color: AppColors.labelDefaultColor,
+                    )
+                ),
+                labelText: this.labelText,
+                floatingLabelBehavior: this.floatingLabelBehavior,
+                contentPadding: this.contentPadding,
+                enabledBorder: fieldBorder.copyWith(
+                  borderSide: BorderSide(
+                    width: 2,
+                    color: cLabelStyle,
+                  ),
+                ),
+                disabledBorder: OutlineInputBorder(
+                  borderRadius: fieldBorder.borderRadius,
+                  borderSide: BorderSide(
+                    width: 0,
+                    color: Colors.transparent
+                  )
+                ),
+                labelStyle: TextStyle(
+                    color: cLabelStyle,
+                    fontWeight: fLabelStyle,
+                    fontSize: 20
+                ),
+                focusedBorder: fieldBorder.copyWith(
+                  borderSide: BorderSide(
+                      width: 2,
+                      color: AppColors.purple
+                  ),
+                ),
+              )
+            ),
+          ],
+        ),
+        this.icon != null
+        ? Positioned.fill(
+            child: Align(
+                alignment: Alignment.topRight,
+                child: GestureDetector(
+                  onTap: this.iconOnTap,
+                  child: Container(
+                    // color: Color.fromRGBO(255, 50, 50, 0.2),
+                    color: Colors.transparent,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          // width: 48,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Container(
+                              color: AppColors.darkBlue,
+                              child: this.icon)
+                            ,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 )
-              ),
-            ],
-          ),
-          this.icon != null
-          ? Positioned.fill(
-              child: Align(
-                  alignment: Alignment.centerRight,
-                  child: GestureDetector(
-                    onTap: this.iconOnTap,
-                    child: Container(
-                      // color: Color.fromRGBO(255, 50, 50, 0.2),
-                      color: Colors.transparent,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          SizedBox(
-                            // width: 48,
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Container(
-                                color: AppColors.darkBlue,
-                                child: this.icon)
-                              ,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
-              )
-          )
-          : Container()
-        ],
-      ),
+            )
+        )
+        : Container()
+      ],
     );
   }
 }
