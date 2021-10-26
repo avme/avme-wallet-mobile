@@ -10,6 +10,7 @@ class AppButton extends StatelessWidget {
   final MainAxisAlignment mainAxisAlignment;
   final double paddingBetweenIcons;
   final TextStyle textStyle;
+  final EdgeInsets buttonPadding;
   final bool expanded;
   final EdgeInsets paddingText;
   final TextOverflow textOverflow;
@@ -28,6 +29,7 @@ class AppButton extends StatelessWidget {
     this.paddingText = const EdgeInsets.all(0),
     this.textOverflow = TextOverflow.ellipsis,
     this.maxLines = 1,
+    this.buttonPadding,
   });
   @override
   Widget build(BuildContext context) {
@@ -76,7 +78,14 @@ class AppButton extends StatelessWidget {
         style: ButtonStyle(
           backgroundColor: MaterialStateProperty.all<Color>(AppColors.purple),
           shadowColor: MaterialStateProperty.all<Color>(Colors.transparent),
+          padding: MaterialStateProperty.all<EdgeInsets>(
+            this.buttonPadding
+          )
         )
+        // style: ButtonStyle(
+        //   backgroundColor: MaterialStateProperty.all<Color>(AppColors.purple),
+        //   shadowColor: MaterialStateProperty.all<Color>(Colors.transparent),
+        // )
       ),
     );
   }

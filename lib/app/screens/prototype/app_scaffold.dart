@@ -1,5 +1,6 @@
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/app.dart';
+import 'package:avme_wallet/app/screens/prototype/contacts.dart';
 import 'package:avme_wallet/app/screens/prototype/history.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/accounts_drawer.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
@@ -26,7 +27,7 @@ class _State extends State<AppScaffold>
   ///the build method kicks in, we make a Map<String,Widget>
 
   List<String> routeLabels = [
-    'About', 'Overview', 'History', 'Send', 'Exchange'];
+    'About', 'Overview', 'History', 'Send', 'Contacts', 'Exchange'];
 
   List<Widget> routeWidgets;
 
@@ -66,6 +67,12 @@ class _State extends State<AppScaffold>
         appScaffoldTabController: this.appScaffoldTabController,
       ),
 
+      //Contacts
+      Contacts(
+
+      ),
+
+      //Exchange
       Center(
         child: Text(
           'Exchange',

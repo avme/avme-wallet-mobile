@@ -47,7 +47,6 @@ class AppTextFormField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     Color cLabelStyle = AppColors.labelDefaultColor;
     FontWeight fLabelStyle = FontWeight.w900;
     OutlineInputBorder fieldBorder = OutlineInputBorder(
@@ -142,7 +141,7 @@ class AppTextFormField extends StatelessWidget {
                         SizedBox(
                           // width: 48,
                           child: Padding(
-                            padding: const EdgeInsets.all(8.0),
+                            padding: const EdgeInsets.all(9),
                             child: Container(
                               color: AppColors.darkBlue,
                               child: this.icon)
