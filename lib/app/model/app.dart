@@ -16,11 +16,13 @@ import 'accounts_state.dart';
 
 class AvmeWallet extends ChangeNotifier
 {
-  FileManager _fileManager = new FileManager();
-  FileManager get fileManager => _fileManager;
+  final FileManager fileManager;
+  WalletManager walletManager;
 
-  WalletManager _walletManager = new WalletManager();
-  WalletManager get walletManager => _walletManager;
+  AvmeWallet(this.fileManager){
+    print("[AvmeWallet]");
+    this.walletManager = WalletManager(this.fileManager);
+  }
 
   Wallet _w3dartWallet;
   Wallet get getW3DartWallet => _w3dartWallet;
@@ -59,10 +61,10 @@ class AvmeWallet extends ChangeNotifier
 
   TokenChart dashboard = TokenChart();
   
-  void init()
-  {
-    _walletManager.setFileManager(fileManager);
-  }
+  // void init()
+  // {
+  //   _walletManager.setFileManager(fileManager);
+  // }
 
   void displayTokenChart()
   {

@@ -19,15 +19,12 @@ String mnemonicFile = env["MNEMONICFILEPATH"];
 
 class WalletManager
 {
-  FileManager _fileManager;
-  int selectedAccount;
-
-  void setFileManager(FileManager newfileManager) =>
-      this._fileManager = newfileManager;
+  final FileManager fileManager;
+  WalletManager(this.fileManager);
 
   Future<File> writeWalletJson(String json) async
   {
-    final File file = await this._fileManager.accountFile();
+    File file = await this.fileManager.accountFile();
     // print("$json");
     await file.writeAsString("$json");
     print("writeWalletJson has finished");
@@ -39,7 +36,7 @@ class WalletManager
     String content;
     try
     {
-      final file = await this._fileManager.accountFile();
+      final file = await this.fileManager.accountFile();
       List contents = jsonDecode(await file.readAsString());
       content = (position == -1 ? jsonEncode(contents) : jsonEncode(contents[position]["data"]));
     }
@@ -52,7 +49,7 @@ class WalletManager
 
   Future<bool> walletAlreadyExists() async
   {
-    File file = await this._fileManager.accountFile();
+    File file = await this.fileManager.accountFile();
     bool e = await file.exists();
     print("File existis? ${e.toString()}");
     return file.exists();
@@ -63,10 +60,10 @@ class WalletManager
   {
     bool hasFile = await walletAlreadyExists();
     if(hasFile){
-      File file = await this._fileManager.accountFile();
+      File file = await this.fileManager.accountFile();
       file.delete();
 
-      File mnemonic = new File(this._fileManager.documentsFolder + this._fileManager.accountFolder + mnemonicFile);
+      File mnemonic = new File(this.fileManager.documentsFolder + this.fileManager.accountFolder + mnemonicFile);
       print("MNEMONIC FILE PATH: "+mnemonic.path);
       mnemonic.delete();
     }
@@ -74,12 +71,12 @@ class WalletManager
 
   Future<String> decryptAes(String password) async
   {
-    String documentsPath = this._fileManager.documentsFolder;
+    String documentsPath = this.fileManager.documentsFolder;
     AesCrypt crypt = AesCrypt();
 
     // Using the same password to uncrypt the file
     crypt.setPassword(password);
-    return crypt.decryptTextFromFileSync(documentsPath + this._fileManager.accountFolder + mnemonicFile, utf16: true);
+    return crypt.decryptTextFromFileSync(documentsPath + this.fileManager.accountFolder + mnemonicFile, utf16: true);
   }
 
   String newMnemonic()
@@ -105,7 +102,7 @@ class WalletManager
     {
       mnemonic = mnemonic ?? newMnemonic();
 
-      String documentsPath = this._fileManager.documentsFolder;
+      String documentsPath = this.fileManager.documentsFolder;
 
       AesCrypt crypt = AesCrypt();
 
@@ -115,8 +112,8 @@ class WalletManager
       crypt.setPassword(password);
 
       // Saving file with the method 'encryptTextToFileSync' from the Lib "aes_crypt"
-      await this._fileManager.accountFile();
-      crypt.encryptTextToFileSync(mnemonic, documentsPath + this._fileManager.accountFolder + mnemonicFile,utf16: true);
+      await this.fileManager.accountFile();
+      crypt.encryptTextToFileSync(mnemonic, documentsPath + this.fileManager.accountFolder + mnemonicFile,utf16: true);
 
     }
     else
@@ -127,7 +124,6 @@ class WalletManager
     print(mnemonic);
     BIP32 node = bip32.BIP32.fromSeed(bip39.mnemonicToSeed(mnemonic));
     Random _rng = new Random.secure();
-    JsonEncoder encoder = JsonEncoder.withIndent('  ');
 
     int slot = appState.accountList.keys.length;
 
@@ -160,7 +156,8 @@ class WalletManager
       walletObject = jsonDecode(await readWalletJson());
       walletObject.add(accountObject);
     }
-    String json = encoder.convert(walletObject);
+    // String json = encoder.convert(walletObject);
+    String json = this.fileManager.encoder.convert(walletObject);
     File savedPath = await writeWalletJson(json);
     appState.w3dartWallet = _wallet;
     ret.add(savedPath.path);
@@ -175,10 +172,10 @@ class WalletManager
   {
     try
     {
-      String documentsPath = this._fileManager.documentsFolder;
+      String documentsPath = this.fileManager.documentsFolder;
       AesCrypt crypt = AesCrypt();
       crypt.setPassword(password);
-      String ret = crypt.decryptTextFromFileSync(documentsPath + this._fileManager.accountFolder + mnemonicFile, utf16: true);
+      String ret = crypt.decryptTextFromFileSync(documentsPath + this.fileManager.accountFolder + mnemonicFile, utf16: true);
       return shouldReturnMnemonicFile ? ret : true;
     }
     on AesCryptDataException

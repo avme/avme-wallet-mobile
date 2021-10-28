@@ -1,6 +1,5 @@
 import 'dart:io';
-
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'dart:convert';
 import 'package:path_provider/path_provider.dart';
 
 class FileManager
@@ -9,8 +8,9 @@ class FileManager
   String ext = ".json";
   String accountFolder = "Accounts/";
   String transactions = "Transactions/";
+  String contacts = "Contacts/";
   String filename = "accounts";
-
+  JsonEncoder encoder = JsonEncoder.withIndent('  ');
   Future<String> getDocumentsFolder() async
   {
     final directory = await getApplicationDocumentsDirectory();
@@ -18,18 +18,11 @@ class FileManager
     return documentsFolder;
   }
 
-  String filesFolder()
+  Future<File> accountFile() async
   {
-    final path = this.documentsFolder;
-    return "$path$accountFolder";
-  }
-
-  Future<File> accountFile () async
-  {
-    String fullPath;
-    await checkPath(filesFolder());
-    fullPath = filesFolder()+"$filename$ext";
-    return File(fullPath);
+    String fileFolder = "${this.documentsFolder}$accountFolder";
+    await checkPath(fileFolder);
+    return File("$fileFolder$filename$ext");
   }
 
   Future<bool> checkPath(path) async
@@ -41,5 +34,35 @@ class FileManager
       exists = true;
     }
     return exists;
+  }
+
+  Future<File> contactsFile() async
+  {
+    await getDocumentsFolder();
+    String fileFolder = "${this.documentsFolder}$contacts";
+    print(fileFolder);
+    await checkPath(fileFolder);
+    File file = File("${fileFolder}contacts$ext");
+    if(!await file.exists())
+    {
+
+      await file.writeAsString(this.encoder.convert({
+        "contacts" : [
+          {
+            "name": "User One",
+            "address": "0x4214496147525148769976fb554a8388117e25b1"
+          },
+          {
+            "name": "User Two",
+            "address": "0x4214496147525148769976fb554a8388117e25b1"
+          },
+          {
+            "name": "User Three",
+            "address": "0x4214496147525148769976fb554a8388117e25b1"
+          }
+        ]
+      }));
+    }
+    return file;
   }
 }

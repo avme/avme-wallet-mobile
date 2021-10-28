@@ -1,3 +1,4 @@
+import 'package:avme_wallet/app/controller/contacts.dart';
 import 'package:avme_wallet/app/model/token_chart.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
@@ -9,16 +10,19 @@ import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import 'app/controller/file_manager.dart';
+
 main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await DotEnv.load();
   await Hive.initFlutter();
   Hive.registerAdapter(TokenChartAdapter());
   await Hive.openBox<TokenChart>("dashboard_chart");
-
+  FileManager fileManager = FileManager();
   runApp(MultiProvider(
       providers: [
-        ChangeNotifierProvider<AvmeWallet>(create:(_) => AvmeWallet()),
+        ChangeNotifierProvider<AvmeWallet>(create:(_) => AvmeWallet(fileManager)),
+        ChangeNotifierProvider<ContactsController>(create:(_) => ContactsController(fileManager)),
       ],
     child: AvmeWalletApp(),
     )

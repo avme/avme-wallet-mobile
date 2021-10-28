@@ -1,6 +1,7 @@
 class Contact {
-  final String name;
-  final String address;
+  String name;
+  String address;
+
   Contact(
       this.name, this.address
   );

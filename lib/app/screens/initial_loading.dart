@@ -1,3 +1,4 @@
+import 'package:avme_wallet/app/controller/contacts.dart';
 import 'package:avme_wallet/app/controller/services/balance.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/app.dart';
@@ -75,7 +76,7 @@ class _InitialLoadingState extends State<InitialLoading>{
   void startWalletServices(BuildContext context) async
   {
     AvmeWallet wallet = Provider.of<AvmeWallet>(context);
-    wallet.init();
+    ContactsController controller = Provider.of<ContactsController>(context);
 
     if (!wallet.services.containsKey("valueSubscription"))
       valueSubscription(wallet);
