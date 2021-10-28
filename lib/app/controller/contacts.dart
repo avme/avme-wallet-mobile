@@ -10,12 +10,9 @@ class ContactsController extends ChangeNotifier {
 
   ContactsController(this.fileManager)
   {
-    print("[ContactsController]");
     Future<File> fileContacts = this.fileManager.contactsFile();
     fileContacts.then((File file) async {
       Map contents = jsonDecode(await file.readAsString());
-      print("CONTATOS CARREGADOS:");
-      print(contents["contacts"]);
       List lContacts = contents["contacts"];
       lContacts.forEach((contact) {
         contacts.add(Contact(contact["name"], contact["address"]));
