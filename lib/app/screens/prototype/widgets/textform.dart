@@ -15,6 +15,7 @@ class AppTextFormField extends StatelessWidget {
   final Widget icon;
   final Key formKey;
   final String initialValue;
+  final String hintText;
   final FloatingLabelBehavior floatingLabelBehavior;
   final TextInputType keyboardType;
   final EdgeInsets contentPadding;
@@ -39,6 +40,7 @@ class AppTextFormField extends StatelessWidget {
     this.keyboardType,
     this.isDense = false,
     this.textAlign = TextAlign.left,
+    this.hintText,
     this.contentPadding = const EdgeInsets.symmetric(
       vertical: 16,
       horizontal: 12
@@ -81,6 +83,7 @@ class AppTextFormField extends StatelessWidget {
               decoration: InputDecoration(
                 isDense: true,
                 filled: true,
+                hintText: this.hintText,
                 fillColor: AppColors.darkBlue,
                 focusedErrorBorder: fieldBorder.copyWith(
                     borderSide: BorderSide(

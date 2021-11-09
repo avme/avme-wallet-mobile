@@ -76,11 +76,18 @@ class AppButton extends StatelessWidget {
           children: children
         ),
         style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.all<Color>(AppColors.purple),
+          backgroundColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
+            if(states.contains(MaterialState.pressed))
+              return AppColors.purple;
+            else if (states.contains(MaterialState.disabled))
+              return AppColors.violet;
+            return null;
+          }),
           shadowColor: MaterialStateProperty.all<Color>(Colors.transparent),
           padding: MaterialStateProperty.all<EdgeInsets>(
             this.buttonPadding
-          )
+          ),
+
         )
         // style: ButtonStyle(
         //   backgroundColor: MaterialStateProperty.all<Color>(AppColors.purple),

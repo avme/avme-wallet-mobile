@@ -32,6 +32,7 @@ class AppColors {
     static const loading2 = Color(0x607F8CC2);
     static const lightBlue = Color(0xFF2CE8F4);
     static const purple = Color(0xFF9300F5);
+    static const violet = Color(0xFF766597);
     static const purpleVariant1 = Color(0xFF8a0df2);
     static const purpleVariant2 = Color(0xffab01f9);
     static const purpleDark1 = Color(0xFF7238AD);
@@ -143,10 +144,10 @@ ThemeData avmeTheme = ThemeData(
     // scaffoldBackgroundColor: AppColors.blue1,
     scaffoldBackgroundColor: AppColors.darkBlue,
     indicatorColor: AppColors.lightBlue1,
-    cardColor: AppColors.blue2,
-    cardTheme: CardTheme(
-      color:AppColors.blue2,
-    ),
+    cardColor: AppColors.purple.withOpacity(0.85),
+    // cardTheme: CardTheme(
+    //   color:AppColors.blue2,
+    // ),
     textSelectionTheme: TextSelectionThemeData(
         cursorColor: AppColors.purple,
         selectionColor: AppColors.purple

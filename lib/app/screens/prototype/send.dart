@@ -647,16 +647,22 @@ class _SendState extends State<Send> {
                     ),
 
                     Padding(
-                      padding: const EdgeInsets.only(top: 16),
-                      child: AppButton(
-                        expanded: false,
-                        onPressed: () {
-                          // Navigator.of(context).pop();
-                          if (_sendTokenForm.currentState != null && _sendTokenForm.currentState.validate()) {
-                            startTransaction(app, weiValue);
-                          }
-                        },
-                        text: "CONFIRM",
+                      padding: const EdgeInsets.only(top: 32),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        // crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          AppButton(
+                            expanded: false,
+                            onPressed: () {
+                              // Navigator.of(context).pop();
+                              if (_sendTokenForm.currentState != null && _sendTokenForm.currentState.validate()) {
+                                startTransaction(app, weiValue);
+                              }
+                            },
+                            text: "CONFIRM",
+                          ),
+                        ],
                       ),
                     )
                   ],

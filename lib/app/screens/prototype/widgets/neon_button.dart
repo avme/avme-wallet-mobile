@@ -78,7 +78,7 @@ class AppNeonButton extends StatelessWidget {
           shape: MaterialStateProperty.all<RoundedRectangleBorder>(
             RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(6.0),
-                side: BorderSide(width: 2, color: this.enabled ? AppColors.purple : Colors.grey)
+                side: BorderSide(width: 2, color: this.enabled ? AppColors.purple : AppColors.violet)
             )
           )
         )

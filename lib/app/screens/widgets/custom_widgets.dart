@@ -148,12 +148,16 @@ class LoadingPopUpState extends State<LoadingPopUp> {
 
 class LabelText extends StatelessWidget {
   final String text;
-  LabelText(this.text);
+  final double fontSize;
+  LabelText(
+    this.text,
+    {this.fontSize = 16}
+  );
   @override
   Widget build(BuildContext context) {
     return Text(this.text,
         style: TextStyle(
-            fontWeight: FontWeight.bold, fontSize: 16)
+            fontWeight: FontWeight.bold, fontSize: this.fontSize)
     );
   }
 }
