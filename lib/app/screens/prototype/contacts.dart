@@ -13,7 +13,9 @@ import 'package:avme_wallet/app/screens/qrcode_reader.dart';
 import 'package:avme_wallet/app/screens/widgets/custom_widgets.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 class Contacts extends StatefulWidget {
   @override
@@ -24,8 +26,9 @@ class _ContactsState extends State<Contacts> {
 
   final _contactsForm = GlobalKey<FormState>();
 
-  List<Contact> filtered = [];
-  List<bool> checkerList = [];
+  List<int> checkerList = [];
+  // Map<int, bool> checkerList = {};
+  List<int> filter = [];
   bool editMode = false;
   bool deleteMode = false;
   bool editPopupEnabled = true;
@@ -58,13 +61,13 @@ class _ContactsState extends State<Contacts> {
                           // IconButton(onPressed: () {
                           //
                           // }, icon: FaIcon(FontAwesomeIcons.ellipsisV))
-                          options(controller)
+                          options(controller, setState)
                         ],
                       )
                     ),
                     Padding(
                       padding: const EdgeInsets.only(bottom: 24.0),
-                      child: searchBar(controller),
+                      child: searchBar(controller.contacts),
                     ),
                     this.editMode ? Padding(
                       padding: const EdgeInsets.only(bottom: 24.0),
@@ -87,14 +90,9 @@ class _ContactsState extends State<Contacts> {
                                   ///Display edit popup
                                   AppButton(
                                     onPressed: this.editPopupEnabled ? () {
-                                      this.checkerList.asMap().forEach((key, selected) {
-                                        if(selected)
-                                          editPopup(
-                                            controller,
-                                            key: key,
-                                            setter: setState
-                                          );
-                                      });
+                                      this.checkerList.forEach((key) =>
+                                        editPopup(controller, key: key,
+                                          setter: setState));
                                     } : null,
                                     iconData: Icons.edit,
                                     text: "Edit",
@@ -136,7 +134,6 @@ class _ContactsState extends State<Contacts> {
                                                     )
                                                   ]
                                                 ),
-
                                               )
                                             ),
                                             actions: [
@@ -145,21 +142,19 @@ class _ContactsState extends State<Contacts> {
                                                 onPressed: () => Navigator.of(context).pop(),
                                                 text: "Cancel"
                                               ),
-                                              //TODO: Fix the .removeContact method, causing errors due to List range, fix sequence please
                                               AppButton(
                                                 expanded:false,
                                                 onPressed: () {
                                                   Navigator.of(context).pop();
                                                   setState(() {
-                                                    this.checkerList.asMap().forEach((key, selected) {
-                                                      if(selected)
-                                                        controller.removeContact(key);
+                                                    this.checkerList.forEach((selected) {
+                                                      controller.removeContact(selected);
                                                     });
-                                                    this.selected = 0;
                                                     NotificationBar().show(
                                                       context,
                                                       text: selected == 1 ? "$selected Contact was removed." : "$selected Contacts was removed."
                                                     );
+                                                    cancel();
                                                   });
                                                 },
                                                 text: "Delete"
@@ -181,13 +176,7 @@ class _ContactsState extends State<Contacts> {
                                     width: 8,
                                   ),
                                   AppButton(
-                                    onPressed: () => setState(() {
-                                      this.editMode = !this.editMode;
-                                      this.selected = 0;
-                                      this.checkerList.asMap().keys.forEach((key)  =>
-                                        this.checkerList[key] = false
-                                      );
-                                    }),
+                                    onPressed: () => setState(() => cancel()),
                                     iconData: Icons.close,
                                     text: "Cancel",
                                     expanded: false,
@@ -220,7 +209,7 @@ class _ContactsState extends State<Contacts> {
                           child: Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: ConstrainedBox(
-                              constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height / 2),
+                              constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height / 2.2),
                               child:
                                 controller.contacts.length == 0
                                 ? ListView(
@@ -234,26 +223,10 @@ class _ContactsState extends State<Contacts> {
                                     )
                                   ],
                                 )
-                                : ListView.builder(
-                                shrinkWrap: true,
-                                itemCount: filtered.length == 0 ? controller.contacts.length : filtered.length,
-                                itemBuilder: (BuildContext context, index){
-                                  List contactList = filtered.length == 0 ? controller.contacts : filtered;
-                                  final contact = contactList[index];
-
-                                  if(checkerList.length < (index + 1))
-                                    checkerList.add(false);
-
-                                  if(contactList.length > (index + 1))
-                                    return Column(
-                                      children: [
-                                        contactWidget(contact, index),
-                                        Divider(color: AppColors.labelDisabledColor,)
-                                      ],
-                                    );
-                                  return contactWidget(contact, index);
-                                },
-                              ),
+                                : ListView(
+                                  shrinkWrap: true,
+                                  children: contactsList(controller.contacts),
+                                ),
                             ),
                           ),
                         )
@@ -267,7 +240,7 @@ class _ContactsState extends State<Contacts> {
     );
   }
 
-  Widget options(ContactsController controller)
+  Widget options(ContactsController controller, StateSetter setter )
   {
     return Theme(
       data: avmeTheme.copyWith(
@@ -279,18 +252,15 @@ class _ContactsState extends State<Contacts> {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           IconButton(onPressed:() async {
-            String response = await Navigator.push(context, MaterialPageRoute(builder: (context) => QRScanner()));
-            NotificationBar().show(context, text: "Scanned: \"$response\"");
-            setState(() {
-            // addressController.text = response;
-            });
-          }, icon: Icon(Icons.qr_code)),
+            String scanned = await Navigator.push(context, MaterialPageRoute(builder: (context) => QRScanner()));
+            NotificationBar().show(context, text: "Scanned: \"$scanned\"");
+            editPopup(controller, setter: setter, address: scanned);
+          }, icon: Icon(Icons.qr_code_scanner)),
           SizedBox(
             width: 24,
             child: PopupMenuButton(
               padding: EdgeInsets.all(0),
                 onSelected: (value) {
-                  print(value);
                   switch (value) {
                     ///New Contact
                     case 0:
@@ -320,18 +290,18 @@ class _ContactsState extends State<Contacts> {
                     value: 1,
                   ),
 
-                  PopupMenuItem(
-                    child: Text("Share"),
-                    value: 2,
-                  ),
-                  PopupMenuItem(
-                    child: Text("Import Contacts"),
-                    value: 2,
-                  ),
-                  PopupMenuItem(
-                    child: Text("Export Contacts"),
-                    value: 2,
-                  ),
+                  // PopupMenuItem(
+                  //   child: Text("Share"),
+                  //   value: 2,
+                  // ),
+                  // PopupMenuItem(
+                  //   child: Text("Import Contacts"),
+                  //   value: 2,
+                  // ),
+                  // PopupMenuItem(
+                  //   child: Text("Export Contacts"),
+                  //   value: 2,
+                  // ),
                 ]
             ),
           ),
@@ -340,11 +310,11 @@ class _ContactsState extends State<Contacts> {
     );
   }
 
-  void editPopup(ContactsController controller, {int key = -1, StateSetter setter}) {
-    TextEditingController address = TextEditingController(
-      text: key != -1 ? controller.contacts[key].address : null
+  void editPopup(ContactsController controller, {int key = -1, StateSetter setter, String address, String name}) {
+    TextEditingController addressController = TextEditingController(
+      text: key != -1 ? controller.contacts[key].address : address
     );
-    TextEditingController name = TextEditingController(
+    TextEditingController nameController = TextEditingController(
       text: key != -1 ? controller.contacts[key].name : null
     );
     showDialog(context: context, builder:(_) =>
@@ -370,7 +340,7 @@ class _ContactsState extends State<Contacts> {
                   height: 16.0,
                 ),
                 AppTextFormField(
-                  controller: address,
+                  controller: addressController,
                   hintText: "e.g. 0x123456789ABCDEF...",
                   validator: (value) {
                     if (value.length != 42 || !isHex(value)) {
@@ -396,7 +366,7 @@ class _ContactsState extends State<Contacts> {
                   height: 16.0,
                 ),
                 AppTextFormField(
-                  controller: name,
+                  controller: nameController,
                   hintText: "Your contact's name",
                   validator: (value) {
                     if (value.length == 0) {
@@ -438,9 +408,9 @@ class _ContactsState extends State<Contacts> {
                             if(key != -1)
                             {
                               controller.updateContact(
-                                  key,
-                                  name.text,
-                                  address.text
+                                key,
+                                nameController.text,
+                                addressController.text
                               );
                               NotificationBar().show(context, text:"Contact updated!");
                             }
@@ -448,13 +418,14 @@ class _ContactsState extends State<Contacts> {
                             else
                             {
                               controller.addContact(
-                                  name.text,
-                                  address.text
+                                nameController.text,
+                                addressController.text
                               );
                               NotificationBar().show(context, text:"Contact added!");
                             }
                           });
                           Navigator.of(context).pop();
+                          cancel();
                         }
                         else
                         {
@@ -477,20 +448,21 @@ class _ContactsState extends State<Contacts> {
 
   Widget contactWidget(Contact contact, int position) {
     return GestureDetector(
-      onTap: (){
+      onTap: () {
         if(this.editMode)
           setState(() {
-            this.checkerList[position] = !checkerList[position];
-            this.selected = 0;
-            this.checkerList.forEach((selected) {
-              if(selected)
-                this.selected++;
-            });
-            if(this.selected > 1)
-              editPopupEnabled = false;
+            if(this.checkerList.contains(position))
+              this.checkerList.remove(position);
             else
-              editPopupEnabled = true;
+              this.checkerList.add(position);
+            this.selected = this.checkerList.length;
+            editPopupEnabled = this.selected > 1 ? false : true;
           });
+        else
+          Share.share(
+              "${contact.name} : ${contact.address}",
+              subject: "Sharing \"${contact.address}\" address."
+          );
       },
       child: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -512,7 +484,7 @@ class _ContactsState extends State<Contacts> {
                           width: 24,
                           child: Checkbox(
                             fillColor: MaterialStateProperty.resolveWith(getColor),
-                            value: this.checkerList[position],
+                            value: this.checkerList.contains(position),
                             onChanged: (bool value) {},
                           ),
                         ),
@@ -551,27 +523,75 @@ class _ContactsState extends State<Contacts> {
     // Divider(color: AppColors.labelDisabledColor,),
   }
 
-  Widget searchBar(ContactsController controller)
+  List<Widget> contactsList(Map<int,Contact> contacts)
+  {
+    List<Widget> ret = [];
+    if(this.filter.isNotEmpty)
+    {
+      contacts.forEach((int key, Contact contact) {
+        if(this.filter.contains(key))
+        {
+          if(this.filter.last == key){
+            ret.add(
+              contactWidget(contact, key)
+            );
+          }
+          else
+          {
+            ret.add(
+              Column(
+                children: [
+                  contactWidget(contact, key),
+                  Divider(color: AppColors.labelDisabledColor,)
+                ],
+              )
+            );
+          }
+        }
+      });
+    }
+    else
+    {
+      contacts.forEach((int key, Contact contact) {
+        if(contacts.entries.last.value == contact)
+        {
+          ret.add(
+              contactWidget(contact, key)
+          );
+        }
+        else {
+          ret.add(
+              Column(
+                children: [
+                  contactWidget(contact, key),
+                  Divider(color: AppColors.labelDisabledColor,)
+                ],
+              )
+          );
+        }
+      });
+    }
+    return ret;
+  }
+
+  Widget searchBar(Map<int, Contact> contacts)
   {
     return AppTextFormField(
-      onChanged: (String filter) {
-        if(filter.length > 0)
+      onChanged: (String typedText) {
+        if(typedText.length > 0)
         {
-          this.filtered = [];
-          controller.contacts.forEach((Contact contact) {
-            RegExp inFilter = new RegExp(r''+filter+'',multiLine: false, caseSensitive: false);
+          this.filter = [];
+          contacts.forEach((int key,Contact contact) {
+            RegExp inFilter = new RegExp(r''+typedText+'',multiLine: false, caseSensitive: false);
             if(inFilter.hasMatch(contact.name))
-              return this.filtered.add(contact);
+              return this.filter.add(key);
           });
         }
         else
-        {
-          this.filtered = [];
-        }
+          this.filter = [];
         setState((){});
       },
       icon: new Icon(Icons.search, color: AppColors.labelDefaultColor, size: 32,),
-      // iconOnTap: () => NotificationBar().show(context, text:"Opening the camera"),
     );
   }
 
@@ -585,5 +605,12 @@ class _ContactsState extends State<Contacts> {
       return AppColors.purple;
     }
     return AppColors.purple;
+  }
+
+  void cancel() {
+    this.editMode = false;
+    this.checkerList = [];
+    this.selected = 0;
+    this.editPopupEnabled = true;
   }
 }

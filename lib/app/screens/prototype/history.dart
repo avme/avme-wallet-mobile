@@ -101,8 +101,7 @@ class _HistoryState extends State<History> {
                 );
               },
               onSendPressed: () {
-                Navigator.push(
-                    context, MaterialPageRoute(builder: (builder) => Send()));
+                widget.appScaffoldTabController.index = 3;
               },
               onBuyPressed: () {
                 NotificationBar().show(

@@ -6,7 +6,7 @@ import 'dart:convert';
 class ContactsController extends ChangeNotifier {
 
   final FileManager fileManager;
-  List<Contact> contacts = [];
+  Map<int,Contact> contacts = {};
 
   ContactsController(this.fileManager)
   {
@@ -14,21 +14,23 @@ class ContactsController extends ChangeNotifier {
     fileContacts.then((File file) async {
       Map contents = jsonDecode(await file.readAsString());
       List lContacts = contents["contacts"];
-      lContacts.forEach((contact) {
-        contacts.add(Contact(contact["name"], contact["address"]));
+      lContacts.asMap().forEach((key,contact) {
+        contacts[key] = Contact(contact["name"], contact["address"]);
       });
     });
   }
 
   void addContact(String name ,String address)
   {
-    contacts.add(Contact(name, address));
+    int newKey = contacts.keys.last + 1;
+    contacts[newKey] = Contact(name, address);
     _updateContactsFile();
   }
 
   void removeContact(int position)
   {
-    contacts.removeAt(position);
+    contacts.removeWhere((key, value) => key == position);
+    // contacts.removeAt(position);
     _updateContactsFile();
   }
 
@@ -43,7 +45,7 @@ class ContactsController extends ChangeNotifier {
     Future<File> fileContacts = this.fileManager.contactsFile();
     fileContacts.then((File file) async {
       Map<String, List> mContacts = {"contacts" : []};
-      contacts.forEach((Contact contact) {
+      contacts.values.forEach((Contact contact) {
         mContacts["contacts"].add(
           {
             "name" : contact.name,

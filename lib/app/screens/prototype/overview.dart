@@ -1,9 +1,7 @@
 import 'package:avme_wallet/app/lib/utils.dart';
-import 'package:avme_wallet/app/model/account_item.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/notification_bar.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/receive_popup.dart';
-import 'package:avme_wallet/app/screens/send.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -122,8 +120,7 @@ class _OverviewState extends State<Overview> {
                 );
               },
               onSendPressed: () {
-                Navigator.push(
-                    context, MaterialPageRoute(builder: (builder) => Send()));
+                widget.appScaffoldTabController.index = 3;
               },
               onBuyPressed: () {
                 NotificationBar().show(
