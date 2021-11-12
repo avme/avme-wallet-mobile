@@ -184,7 +184,10 @@ class _QRScannerState extends State<QRScanner> {
       {
         result = scanData;
         controller?.pauseCamera();
-        Navigator.pop(context, result.code);
+        Future.delayed(Duration(milliseconds: 250),(){
+          Navigator.pop(_context, result.code);
+        });
+
       }
     });
   }
