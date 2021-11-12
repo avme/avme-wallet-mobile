@@ -247,11 +247,9 @@ class WalletManager
     return {"title": "", "status": 200, "message": ""};
   }
 
-  Future<Map<int,String>> previewAccounts(String password) async
+  Future<Map<int,List>> previewAccounts(String password) async
   {
     String mnemonic = await decryptAesWallet(password, shouldReturnMnemonicFile: true);
-    print("mnemonic decrypted $mnemonic");
-
     BIP32 node = bip32.BIP32.fromSeed(bip39.mnemonicToSeed(mnemonic));
     BIP32 child;
     Credentials credentFromHex;
@@ -261,8 +259,8 @@ class WalletManager
       child = node.derivePath("m/44'/60'/0'/0/$slot");
       credentFromHex = EthPrivateKey.fromHex(HEX.encode(child.privateKey));
       pkeyMap[slot] = (await credentFromHex.extractAddress()).toString();
-      print("Adding to slot #$slot | ${pkeyMap[slot]}");
     }
-    return pkeyMap;
+    Map<int,List> data = await services.requestBalanceByAddress(pkeyMap);
+    return data;
   }
 }
