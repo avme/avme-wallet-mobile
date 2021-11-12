@@ -5,9 +5,11 @@ import 'package:avme_wallet/app/screens/prototype/widgets/button.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/gradient_card.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/neon_button.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/notification_bar.dart';
+import 'package:avme_wallet/app/screens/prototype/widgets/popup.dart';
 import 'package:avme_wallet/app/screens/widgets/screen_indicator.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class AccountsDrawer extends StatefulWidget {
 
@@ -20,6 +22,7 @@ class AccountsDrawer extends StatefulWidget {
 }
 
 class _AccountsDrawerState extends State<AccountsDrawer> {
+  BorderRadius borderRadius = BorderRadius.circular(8);
   @override
   Widget build(BuildContext context) {
     AppColors appColors = AppColors();
@@ -31,7 +34,7 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
         // bool selected = key == widget.app.currentWalletId ? true : false;
         DecorationTween balanceTween = DecorationTween(
             begin: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: borderRadius,
                 gradient: LinearGradient(
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
@@ -42,7 +45,7 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                 )
             ),
             end: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: borderRadius,
                 gradient: LinearGradient(
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
@@ -173,14 +176,126 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
           ),
         ),
         AppButton(
-          onPressed: () => NotificationBar().show(context, text: "New Account was taped"),
-          text: "New",
+          onPressed: () async{
+            final int flexIndex = 1;
+            final int flexAddress = 4;
+            final int flexBalance = 2;
+            final double darkBorderPadding = 8.0;
+            AvmeWallet app = Provider.of<AvmeWallet>(context,listen: false);
+            Map<int,List> pkeys = await app.walletManager.previewAccounts("");
+            showDialog(context: context, builder: (_) =>
+              StatefulBuilder(
+                builder: (builder, setState) =>
+                  AppPopupWidget(
+                    title: "CREATE NEW ACCOUNT",
+                    textStyle: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold
+                    ),
+                    margin: EdgeInsets.all(8),
+                    actions: [],
+                    children: [
+                      Text("Choose an Account from the List"),
+                      SizedBox(
+                        height: 24,
+                      ),
+                      ///Header
+                      Container(
+                        decoration:BoxDecoration(
+                          borderRadius: borderRadius,
+                          color: AppColors.darkBlue
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.all(darkBorderPadding),
+                          child: Row(
+                            children: [
+                              Expanded(flex: flexIndex, child: Text("Index")),
+                              Expanded(flex: flexAddress, child: Text("Account"),),
+                              Expanded(flex: flexBalance, child: Text("AVAX Balance", textAlign: TextAlign.center,),)
+                            ],
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 12,
+                      ),
+                      Container(
+                        decoration:BoxDecoration(
+                          borderRadius: borderRadius,
+                          color: AppColors.darkBlue
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.all(darkBorderPadding),
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              maxHeight: MediaQuery.of(context).size.height * 1 / 3
+                            ),
+                            child: ListView(
+                              shrinkWrap: true,
+                              children: [
+                                ///Account Row
+                                Column(
+                                  children: pkeys.entries.map((publicKeyEntry) {
+                                    return AccountRow(
+                                        flexIndex: flexIndex,
+                                        flexAddress: flexAddress,
+                                        flexBalance: flexBalance,
+                                        index: "${publicKeyEntry.key}",
+                                        address: "${publicKeyEntry.value[0]}",
+                                        balance: "${publicKeyEntry.value[1]}",
+                                      );
+                                  }).toList(),
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+              )
+            );
+          },
+          text: "NEW",
           expanded: false,
           paddingText: EdgeInsets.symmetric(horizontal: 24),
           textStyle: TextStyle(
               color: Colors.white
           ),
         ),
+      ],
+    );
+  }
+}
+
+class AccountRow extends StatelessWidget {
+
+  final int flexIndex;
+  final int flexAddress;
+  final int flexBalance;
+  final String index;
+  final String address;
+  final String balance;
+
+  const AccountRow({
+    @required this.flexIndex,
+    @required this.flexAddress,
+    @required this.flexBalance,
+    @required this.index,
+    @required this.address,
+    @required this.balance
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        ///Index
+        Expanded(flex: flexIndex, child: Text(index),),
+        ///Account Address (Shortened)
+        Expanded(flex: flexAddress, child: Text("${address.substring(0,8)}...${address.substring(34,42)}"),),
+        ///Balance
+        Expanded(flex: flexBalance, child: Text(balance, textAlign: TextAlign.center,),),
       ],
     );
   }
