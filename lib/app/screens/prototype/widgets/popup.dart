@@ -88,39 +88,41 @@ class _AppPopupWidgetState extends State<AppPopupWidget> {
         backgroundColor: Colors.transparent,
         body: Builder(
           builder: (BuildContext context) =>
-              Center(
-                child: ListView(
-                  physics: NeverScrollableScrollPhysics(),
-                  shrinkWrap: true,
-                  children: [
-                    GestureDetector(
-                      onTap: () => null,
-                      child: WillPopScope(
-                        onWillPop: () async {
-                          if(!widget.canClose)
-                          {
-                            NotificationBar().show(
-                                context,
-                                text: "You can't go back now"
-                            );
-                          }
-                          return widget.canClose;
-                        },
-                        child: AlertDialog(
-                            insetPadding: widget.margin ?? Dialog().insetPadding,
-                            buttonPadding: const EdgeInsets.all(0),
-                            actionsPadding: EdgeInsets.only(
-                                right: widget.padding.right,
-                                bottom: widget.padding.top,
-                                top: 16
-                            ),
-                            backgroundColor: AppColors.cardDefaultColor,
-                            contentPadding: EdgeInsets.all(0),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8)
-                            ),
-                            actions: popupActions,
-                            content: Column(
+            Center(
+              child: ListView(
+                physics: NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                children: [
+                  GestureDetector(
+                    onTap: () => null,
+                    child: WillPopScope(
+                      onWillPop: () async {
+                        if(!widget.canClose)
+                        {
+                          NotificationBar().show(
+                              context,
+                              text: "You can't go back now"
+                          );
+                        }
+                        return widget.canClose;
+                      },
+                      child: AlertDialog(
+                          insetPadding: widget.margin ?? Dialog().insetPadding,
+                          buttonPadding: const EdgeInsets.all(0),
+                          actionsPadding: EdgeInsets.only(
+                              right: widget.padding.right,
+                              bottom: widget.padding.top,
+                              top: 16
+                          ),
+                          backgroundColor: AppColors.cardDefaultColor,
+                          contentPadding: EdgeInsets.all(0),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)
+                          ),
+                          actions: popupActions,
+                          content: Container(
+                            width: double.maxFinite,
+                            child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 ///Header
@@ -179,13 +181,14 @@ class _AppPopupWidgetState extends State<AppPopupWidget> {
                                   ),
                                 ),
                               ],
-                            )
-                        ),
+                            ),
+                          )
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
+            ),
         ),
       ),
     );
