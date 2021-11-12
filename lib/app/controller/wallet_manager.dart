@@ -168,7 +168,7 @@ class WalletManager
     return ret;
   }
 
-  Future<dynamic> decryptAesWallet(String password, {bool shouldReturnMnemonicFile = false}) async
+  Future decryptAesWallet(String password, {bool shouldReturnMnemonicFile = false}) async
   {
     try
     {
@@ -245,5 +245,24 @@ class WalletManager
     wallet.lastTransactionWasSucessful.retrievingData = true;
     services.sendTransaction(wallet, address, amount);
     return {"title": "", "status": 200, "message": ""};
+  }
+
+  Future<Map<int,String>> previewAccounts(String password) async
+  {
+    String mnemonic = await decryptAesWallet(password, shouldReturnMnemonicFile: true);
+    print("mnemonic decrypted $mnemonic");
+
+    BIP32 node = bip32.BIP32.fromSeed(bip39.mnemonicToSeed(mnemonic));
+    BIP32 child;
+    Credentials credentFromHex;
+    Map<int, String> pkeyMap = {};
+    for(int slot = 0; slot <= 9; slot++)
+    {
+      child = node.derivePath("m/44'/60'/0'/0/$slot");
+      credentFromHex = EthPrivateKey.fromHex(HEX.encode(child.privateKey));
+      pkeyMap[slot] = (await credentFromHex.extractAddress()).toString();
+      print("Adding to slot #$slot | ${pkeyMap[slot]}");
+    }
+    return pkeyMap;
   }
 }
