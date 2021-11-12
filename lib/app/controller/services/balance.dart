@@ -329,3 +329,24 @@ Future<String> getTokenChartHistory(Map body, url) async
   String response = await httpGetRequest(url, body);
   return response;
 }
+
+Future<Map<int,List>> requestBalanceByAddress(Map<int, String> addresses) async
+{
+  Map<int, List> data = {};
+  await Future.forEach(addresses.entries, (entry) async{
+    EthereumAddress ethereumAddress = EthereumAddress.fromHex(entry.value);
+    String url = env['NETWORK_URL'];
+
+    http.Client httpClient = http.Client();
+    Web3Client ethClient = Web3Client(url, httpClient);
+
+    BigInt balance = (await ethClient.getBalance(ethereumAddress)).getInWei;
+    String convertedBalance = balance.toDouble() != 0 ? weiToFixedPoint(balance.toString()) : "0";
+
+    data[entry.key] = [
+      entry.value,
+      shortAmount(convertedBalance,length: 6),
+    ];
+  });
+  return data;
+}
