@@ -177,81 +177,19 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
         ),
         AppButton(
           onPressed: () async{
-            final int flexIndex = 1;
-            final int flexAddress = 4;
-            final int flexBalance = 2;
-            final double darkBorderPadding = 8.0;
-            AvmeWallet app = Provider.of<AvmeWallet>(context,listen: false);
-            Map<int,List> pkeys = await app.walletManager.previewAccounts("");
             showDialog(context: context, builder: (_) =>
               StatefulBuilder(
                 builder: (builder, setState) =>
-                  AppPopupWidget(
+                  FuturePopupWidget(
                     title: "CREATE NEW ACCOUNT",
                     textStyle: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold
                     ),
                     margin: EdgeInsets.all(8),
-                    actions: [],
-                    children: [
-                      Text("Choose an Account from the List"),
-                      SizedBox(
-                        height: 24,
-                      ),
-                      ///Header
-                      Container(
-                        decoration:BoxDecoration(
-                          borderRadius: borderRadius,
-                          color: AppColors.darkBlue
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.all(darkBorderPadding),
-                          child: Row(
-                            children: [
-                              Expanded(flex: flexIndex, child: Text("Index")),
-                              Expanded(flex: flexAddress, child: Text("Account"),),
-                              Expanded(flex: flexBalance, child: Text("AVAX Balance", textAlign: TextAlign.center,),)
-                            ],
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        height: 12,
-                      ),
-                      Container(
-                        decoration:BoxDecoration(
-                          borderRadius: borderRadius,
-                          color: AppColors.darkBlue
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.all(darkBorderPadding),
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(
-                              maxHeight: MediaQuery.of(context).size.height * 1 / 3
-                            ),
-                            child: ListView(
-                              shrinkWrap: true,
-                              children: [
-                                ///Account Row
-                                Column(
-                                  children: pkeys.entries.map((publicKeyEntry) {
-                                    return AccountRow(
-                                        flexIndex: flexIndex,
-                                        flexAddress: flexAddress,
-                                        flexBalance: flexBalance,
-                                        index: "${publicKeyEntry.key}",
-                                        address: "${publicKeyEntry.value[0]}",
-                                        balance: "${publicKeyEntry.value[1]}",
-                                      );
-                                  }).toList(),
-                                )
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                    cancelable: false,
+                    // future: futureDelayed(seconds: 8),
+                    future: previewAccounts(),
                   )
               )
             );
@@ -265,6 +203,87 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
         ),
       ],
     );
+  }
+
+  Future futureDelayed({int seconds}) async
+  {
+    await Future.delayed(Duration(seconds: seconds ?? 10),(){
+      print("DONE");
+    });
+    return
+    [
+      Center(child:Text("i cant let you go"))
+    ];
+  }
+
+  Future<List<Widget>> previewAccounts() async
+  {
+    final int flexIndex = 1;
+    final int flexAddress = 4;
+    final int flexBalance = 2;
+    final double darkBorderPadding = 8.0;
+    String password;
+    AvmeWallet app = Provider.of<AvmeWallet>(context,listen: false);
+    Map<int,List> pkeys = await app.walletManager.previewAccounts(password);
+
+    return [
+      Text("Choose an Account from the List"),
+      SizedBox(
+        height: 24,
+      ),
+      ///Header
+      Container(
+        decoration:BoxDecoration(
+            borderRadius: borderRadius,
+            color: AppColors.darkBlue
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(darkBorderPadding),
+          child: Row(
+            children: [
+              Expanded(flex: flexIndex, child: Text("Index")),
+              Expanded(flex: flexAddress, child: Text("Account"),),
+              Expanded(flex: flexBalance, child: Text("AVAX Balance", textAlign: TextAlign.center,),)
+            ],
+          ),
+        ),
+      ),
+      SizedBox(
+        height: 12,
+      ),
+      Container(
+        decoration:BoxDecoration(
+            borderRadius: borderRadius,
+            color: AppColors.darkBlue
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(darkBorderPadding),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 1 / 3
+            ),
+            child: ListView(
+              shrinkWrap: true,
+              children: [
+                ///Account Row
+                Column(
+                  children: pkeys.entries.map((publicKeyEntry) {
+                    return AccountRow(
+                      flexIndex: flexIndex,
+                      flexAddress: flexAddress,
+                      flexBalance: flexBalance,
+                      index: "${publicKeyEntry.key}",
+                      address: "${publicKeyEntry.value[0]}",
+                      balance: "${publicKeyEntry.value[1]}",
+                    );
+                  }).toList(),
+                )
+              ],
+            ),
+          ),
+        ),
+      ),
+    ];
   }
 }
 
