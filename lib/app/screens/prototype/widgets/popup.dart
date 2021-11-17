@@ -53,16 +53,33 @@ class _AppPopupWidgetState extends State<AppPopupWidget> {
 
     List<Widget> popupActions = [];
 
-    if(widget.cancelable == true && widget.actions != null)
+    if(widget.actions != null)
     {
-      if(widget.actions.length == 0)
-        widget.actions.add(
+      if(widget.cancelable == true)
+      {
+        widget.actions.insert(
+            0,
             AppNeonButton(
                 onPressed: () => Navigator.of(this.context).pop(),
                 expanded: false,
                 text: "CANCEL"
             ));
-      if(widget.actions.length > 0)
+        if(widget.actions.length > 0)
+          widget.actions.asMap().forEach((key, widget) {
+            if(key.remainder(2) == 0)
+              popupActions.add(
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: widget,
+                  )
+              );
+            else
+              popupActions.add(
+                  widget
+              );
+          });
+      }
+      else
         widget.actions.asMap().forEach((key, widget) {
           if(key.remainder(2) == 0)
             popupActions.add(
@@ -77,6 +94,7 @@ class _AppPopupWidgetState extends State<AppPopupWidget> {
             );
         });
     }
+
 
 
     return GestureDetector(
@@ -246,16 +264,33 @@ class _FuturePopupWidgetState extends State<FuturePopupWidget> with SingleTicker
   Widget build(BuildContext context) {
     List<Widget> popupActions = [];
 
-    if(widget.cancelable == true && widget.actions != null)
+    if(widget.actions != null)
     {
-      if(widget.actions.length == 0)
-        widget.actions.add(
+      if(widget.cancelable == true)
+      {
+        widget.actions.insert(
+            0,
             AppNeonButton(
                 onPressed: () => Navigator.of(this.context).pop(),
                 expanded: false,
                 text: "CANCEL"
             ));
-      if(widget.actions.length > 0)
+        if(widget.actions.length > 0)
+          widget.actions.asMap().forEach((key, widget) {
+            if(key.remainder(2) == 0)
+              popupActions.add(
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: widget,
+                  )
+              );
+            else
+              popupActions.add(
+                  widget
+              );
+          });
+      }
+      else
         widget.actions.asMap().forEach((key, widget) {
           if(key.remainder(2) == 0)
             popupActions.add(
