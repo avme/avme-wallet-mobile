@@ -53,7 +53,7 @@ class _AppPopupWidgetState extends State<AppPopupWidget> {
 
     List<Widget> popupActions = [];
 
-    if(widget.cancelable == true)
+    if(widget.cancelable == true && widget.actions != null)
     {
       if(widget.actions.length == 0)
         widget.actions.add(
@@ -77,9 +77,6 @@ class _AppPopupWidgetState extends State<AppPopupWidget> {
             );
         });
     }
-    else
-      popupActions = null;
-
 
 
     return GestureDetector(
@@ -119,7 +116,15 @@ class _AppPopupWidgetState extends State<AppPopupWidget> {
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8)
                           ),
-                          actions: popupActions,
+                          actions: widget.cancelable &&
+                              widget.actions == null ? [
+                            AppNeonButton(
+                                onPressed: () =>
+                                    Navigator.of(this.context).pop(),
+                                expanded: false,
+                                text: "CANCEL"
+                            )
+                          ] : popupActions,
                           content: Container(
                             width: double.maxFinite,
                             child: Column(
