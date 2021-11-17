@@ -6,6 +6,8 @@ import 'package:avme_wallet/app/screens/prototype/widgets/gradient_card.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/neon_button.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/notification_bar.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/popup.dart';
+import 'package:avme_wallet/app/screens/prototype/widgets/textform.dart';
+import 'package:avme_wallet/app/screens/widgets/custom_widgets.dart';
 import 'package:avme_wallet/app/screens/widgets/screen_indicator.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +25,14 @@ class AccountsDrawer extends StatefulWidget {
 
 class _AccountsDrawerState extends State<AccountsDrawer> {
   BorderRadius borderRadius = BorderRadius.circular(8);
+  int selectedIndex = -1;
+  Map<int,List> generatedKeys = {};
+  // @override
+  // void initState()
+  // {
+  //   selectedIndex = widget.app.currentWalletId;
+  //   super.initState();
+  // }
   @override
   Widget build(BuildContext context) {
     AppColors appColors = AppColors();
@@ -76,7 +86,7 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
     });
 
     drawerElements.add(
-        footer(context)
+      footer(context, widget.app)
     );
 
     List<Widget> finalDrawer = [];
@@ -104,64 +114,64 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
         bottom: 28,
       ),
       child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Expanded(
-                  flex: 4,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                          "Accounts",
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 18)
-                      ),
-                    ],
-                  ),
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                flex: 4,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                        "Accounts",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 18)
+                    ),
+                  ],
                 ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      ///Close button
-                      GestureDetector(
-                        child: Container(
-                          color: Colors.transparent,
-                          child: Padding(
-                            padding: const EdgeInsets.only(
-                              top: 16,
-                              bottom: 10,
-                            ),
-                            child: Icon(
-                              Icons.account_circle_outlined,
-                              size: 36,
-                              color: AppColors.purple,
-                            ),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    ///Close button
+                    GestureDetector(
+                      child: Container(
+                        color: Colors.transparent,
+                        child: Padding(
+                          padding: const EdgeInsets.only(
+                            top: 16,
+                            bottom: 10,
+                          ),
+                          child: Icon(
+                            Icons.account_circle_outlined,
+                            size: 36,
+                            color: AppColors.purple,
                           ),
                         ),
-                        onTap: (){
-                          Navigator.of(context).pop();
-                        },
                       ),
-                    ],
-                  ),
+                      onTap: (){
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            ScreenIndicator(
-              height: 20,
-              width: MediaQuery.of(context).size.width,
-              position: 0,
-              equal: true,
-            ),
-          ]
+              ),
+            ],
+          ),
+          ScreenIndicator(
+            height: 20,
+            width: MediaQuery.of(context).size.width,
+            position: 0,
+            equal: true,
+          ),
+        ]
       ),
     );
   }
 
-  Widget footer(BuildContext context)
+  Widget footer(BuildContext context, AvmeWallet app)
   {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -176,23 +186,8 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
           ),
         ),
         AppButton(
-          onPressed: () async{
-            showDialog(context: context, builder: (_) =>
-              StatefulBuilder(
-                builder: (builder, setState) =>
-                  FuturePopupWidget(
-                    title: "CREATE NEW ACCOUNT",
-                    textStyle: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold
-                    ),
-                    margin: EdgeInsets.all(8),
-                    cancelable: false,
-                    // future: futureDelayed(seconds: 8),
-                    future: previewAccounts(),
-                  )
-              )
-            );
+          onPressed: () async {
+            newAccountPopup(app);
           },
           text: "NEW",
           expanded: false,
@@ -202,6 +197,26 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
           ),
         ),
       ],
+    );
+  }
+
+  void newAccountPopup(AvmeWallet app)
+  {
+    showDialog(context: context, builder: (_) =>
+      StatefulBuilder(
+        builder: (builder, setState) =>
+          FuturePopupWidget(
+            title: "CREATE NEW ACCOUNT",
+            textStyle: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold
+            ),
+            margin: EdgeInsets.all(8),
+            cancelable: false,
+            // future: futureDelayed(seconds: 8),
+            future: previewAccounts(setState, app),
+          )
+      )
     );
   }
 
@@ -216,15 +231,18 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
     ];
   }
 
-  Future<List<Widget>> previewAccounts() async
+  Future<List<Widget>> previewAccounts(StateSetter setter, AvmeWallet app) async
   {
     final int flexIndex = 1;
     final int flexAddress = 4;
     final int flexBalance = 2;
     final double darkBorderPadding = 8.0;
-    String password;
-    AvmeWallet app = Provider.of<AvmeWallet>(context,listen: false);
-    Map<int,List> pkeys = await app.walletManager.previewAccounts(password);
+
+    String password = "abacaxi";
+
+    this.generatedKeys = this.generatedKeys.length > 0
+        ? this.generatedKeys
+        : await app.walletManager.previewAccounts(password);
 
     return [
       Text("Choose an Account from the List"),
@@ -267,55 +285,191 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
               children: [
                 ///Account Row
                 Column(
-                  children: pkeys.entries.map((publicKeyEntry) {
-                    return AccountRow(
+                  children: this.generatedKeys.entries.map((publicKeyEntry) {
+                    return accountRow(
                       flexIndex: flexIndex,
                       flexAddress: flexAddress,
                       flexBalance: flexBalance,
-                      index: "${publicKeyEntry.key}",
+                      index: publicKeyEntry.key,
                       address: "${publicKeyEntry.value[0]}",
                       balance: "${publicKeyEntry.value[1]}",
+                      setter: setter
                     );
                   }).toList(),
-                )
+                ),
               ],
             ),
           ),
         ),
       ),
+      SizedBox(
+        height: 18,
+      ),
+      this.selectedIndex > -1
+      ///Choose this account
+      ? AppButton(
+        text: "CHOOSE THIS ACCOUNT",
+        onPressed: (){
+          TextEditingController addressController = TextEditingController(
+            text: this.generatedKeys[this.selectedIndex][0]
+          );
+          TextEditingController nameController = TextEditingController();
+          Navigator.pop(context);
+          showDialog(context: context, builder: (_) =>
+            StatefulBuilder(
+              builder: (builder, setState) =>
+                AppPopupWidget(
+                  title: "Warning",
+                  margin: EdgeInsets.all(8),
+                  cancelable: true,
+                  padding: EdgeInsets.only(
+                    left: 32,
+                    right: 32,
+                    top: 32,
+                    bottom: 8
+                  ),
+                  actions: [
+                    AppButton(
+                      expanded: false,
+                      onPressed: () async {
+                        Navigator.pop(context);
+                        await createAccount(
+                          name: nameController.text,
+                          app: app,
+                          password: password
+                        );
+                      },
+                      text: "CONFIRM"
+                    )
+                  ],
+                  children: [
+                    Text("Please confirm the selected account and/or assign a name."),
+                    SizedBox(
+                      height: 32,
+                    ),
+                    Row(
+                      children: [
+                        LabelText("Selected Account", fontSize: 18,),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 16.0,
+                    ),
+                    GestureDetector(
+                      onTap: (){
+                        Navigator.pop(context);
+                        newAccountPopup(app);
+                      },
+                      child: AppTextFormField(
+                        controller: addressController,
+                        enabled: false,
+                        contentPadding: EdgeInsets.symmetric(
+                          vertical: 12,
+                          horizontal: 8
+                        ),
+                        isDense: true,
+                      ),
+                    ),
+                    SizedBox(
+                      height: 24.0,
+                    ),
+                    Row(
+                      children: [
+                        LabelText("(OPTIONAL) Name", fontSize: 18,),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 16.0,
+                    ),
+                    AppTextFormField(
+                      controller: nameController,
+                      hintText: "Name for your Account",
+                      contentPadding: EdgeInsets.symmetric(
+                        vertical: 12,
+                        horizontal: 8
+                      ),
+                      isDense: true,
+                    ),
+                    SizedBox(
+                      height: 24.0,
+                    ),
+                    Divider(color: AppColors.labelDisabledColor,),
+                  ],
+                )
+            )
+          );
+        }
+      )
+      : Container()
     ];
   }
-}
 
-class AccountRow extends StatelessWidget {
+  Future<void> createAccount({AvmeWallet app, String password, String name}) async
+  {
+    showDialog(
+      context: context,
+      builder: (_) =>
+        ProgressPopup(
+          title: "Finished",
+          future: app.walletManager.makeAccount(
+              password,
+              app,
+              title: name,
+              slot: this.selectedIndex).then((value) {
+            // Navigator.pop(context);
+            if(name.length == 0)
+            {
+              name = "-unnamed ${this.selectedIndex}-";
+            }
+            return [
+              Text("The Account \"$name\" was added!"),
+            ];
+          })
+        )
+    );
 
-  final int flexIndex;
-  final int flexAddress;
-  final int flexBalance;
-  final String index;
-  final String address;
-  final String balance;
+  }
 
-  const AccountRow({
-    @required this.flexIndex,
-    @required this.flexAddress,
-    @required this.flexBalance,
-    @required this.index,
-    @required this.address,
-    @required this.balance
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        ///Index
-        Expanded(flex: flexIndex, child: Text(index),),
-        ///Account Address (Shortened)
-        Expanded(flex: flexAddress, child: Text("${address.substring(0,8)}...${address.substring(34,42)}"),),
-        ///Balance
-        Expanded(flex: flexBalance, child: Text(balance, textAlign: TextAlign.center,),),
-      ],
+  Widget accountRow({
+    int flexIndex,
+    int flexAddress,
+    int flexBalance,
+    int index,
+    String address,
+    String balance,
+    StateSetter setter
+  }){
+    print("rendering with $selectedIndex");
+    return Padding(
+      padding: const EdgeInsets.all(2.0),
+      child: GestureDetector(
+        onTap: (){
+          print("clicky $selectedIndex , $index");
+          setter((){
+            selectedIndex = selectedIndex != index ? index : -1;
+          });
+        },
+        child: Container(
+          decoration: BoxDecoration(
+              shape: BoxShape.rectangle,
+              color: selectedIndex == index ? AppColors.purple : AppColors.cardDefaultColor
+              // color: AppColors.purple
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 12),
+            child: Row(
+              children: [
+                ///Index
+                Expanded(flex: flexIndex, child: Text(index.toString()),),
+                ///Account Address (Shortened)
+                Expanded(flex: flexAddress, child: Text("${address.substring(0,8)}...${address.substring(34,42)}"),),
+                ///Balance
+                Expanded(flex: flexBalance, child: Text(balance, textAlign: TextAlign.center,),),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
