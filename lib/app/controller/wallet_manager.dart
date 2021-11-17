@@ -4,6 +4,7 @@ import 'package:avme_wallet/app/model/app.dart';
 import 'package:bip32/bip32.dart';
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:bip32/bip32.dart' as bip32;
+import 'package:flutter/foundation.dart';
 import 'dart:io';
 import 'package:hex/hex.dart';
 import 'package:web3dart/credentials.dart';
@@ -122,7 +123,7 @@ class WalletManager
     }
 
     print(mnemonic);
-    BIP32 node = bip32.BIP32.fromSeed(bip39.mnemonicToSeed(mnemonic));
+    BIP32 node = bip32.BIP32.fromSeed(await compute(bip39.mnemonicToSeed,mnemonic));
     Random _rng = new Random.secure();
 
     int slot = appState.accountList.keys.length;
@@ -250,7 +251,7 @@ class WalletManager
   Future<Map<int,List>> previewAccounts(String password) async
   {
     String mnemonic = await decryptAesWallet(password, shouldReturnMnemonicFile: true);
-    BIP32 node = bip32.BIP32.fromSeed(bip39.mnemonicToSeed(mnemonic));
+    BIP32 node = bip32.BIP32.fromSeed(await compute(bip39.mnemonicToSeed,mnemonic));
     BIP32 child;
     Credentials credentFromHex;
     Map<int, String> pkeyMap = {};
