@@ -8,7 +8,6 @@ class GradientContainer extends StatefulWidget {
   ///will animate.
   final DecorationTween decorationTween;
   final Function onPressed;
-
   const GradientContainer({@required this.child, @required this.decorationTween, @required this.onPressed});
   @override
   _GradientContainerState createState() => _GradientContainerState();
@@ -51,7 +50,9 @@ class _GradientContainerState extends State<GradientContainer>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 30),
-    )..repeat(reverse: true);
+    ///Add uncomment this line to enable the transitions
+    // )..repeat(reverse: true);
+    );
   }
 
   @override
