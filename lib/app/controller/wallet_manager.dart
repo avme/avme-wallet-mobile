@@ -93,7 +93,12 @@ class WalletManager
     return mnemonic;
   }
 
-  Future<List<String>> makeAccount(String password, AvmeWallet appState,{String mnemonic, String title = ""}) async
+  Future<List<String>> makeAccount(String password, AvmeWallet appState,
+    {
+      String mnemonic,
+      String title = "",
+      int slot
+    }) async
   {
     List<String> ret = [];
 
@@ -109,13 +114,10 @@ class WalletManager
 
       // Setting the main Password to encrypt the file, remember to use
       // the same parameter if you're planning to use it again, like uncrypt...
-
       crypt.setPassword(password);
-
       // Saving file with the method 'encryptTextToFileSync' from the Lib "aes_crypt"
       await this.fileManager.accountFile();
       crypt.encryptTextToFileSync(mnemonic, documentsPath + this.fileManager.accountFolder + mnemonicFile,utf16: true);
-
     }
     else
     {
@@ -126,9 +128,9 @@ class WalletManager
     BIP32 node = bip32.BIP32.fromSeed(await compute(bip39.mnemonicToSeed,mnemonic));
     Random _rng = new Random.secure();
 
-    int slot = appState.accountList.keys.length;
+    slot = slot ?? appState.accountList.keys.length;
 
-    if(slot > 9)
+    if(appState.accountList.keys.length > 9)
     {
       throw Exception("Limit of 9 accounts reached!");
     }
@@ -138,6 +140,11 @@ class WalletManager
 
     Credentials credentFromHex = EthPrivateKey.fromHex(privateKey);
     Wallet _wallet = Wallet.createNew(credentFromHex,password, _rng);
+
+    if(title.length == 0)
+    {
+      title = "-unnamed $slot-";
+    }
 
     Map accountObject = {
       "slot" : slot,
@@ -162,10 +169,7 @@ class WalletManager
     File savedPath = await writeWalletJson(json);
     appState.w3dartWallet = _wallet;
     ret.add(savedPath.path);
-    // print("chamando auth do make account");
-    Map auth = await authenticate(password, appState);
-    // print("auth?${jsonEncode(auth)}");
-    // print("auth? no");
+    // Map auth = await authenticate(password, appState);
     return ret;
   }
 
