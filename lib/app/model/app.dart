@@ -146,38 +146,44 @@ class AvmeWallet extends ChangeNotifier
     walletManager.startBalanceSubscription(this);
   }
 
-  Future<bool> login(String password, BuildContext context) async {
+  Future<bool> login(String password, BuildContext context, {bool display = false}) async {
     bool auth = false;
     ValueNotifier <String> status = ValueNotifier("Loading - 0%");
-    await showDialog(context: context, builder: (_) =>
-      StatefulBuilder(
-        builder: (builder, setState){
-          return ProgressPopup(
-            labelNotifier: status,
-            future: _initFirstLogin(context, password, status)
-              .then((result) {
-                auth = result[0];
-                return [Text(result[1])];
-              }
-            ),
-            title: "Warning",
-          );
-        },
-      )
-    );
+    if(display)
+      await showDialog(context: context, builder: (_) =>
+        StatefulBuilder(
+          builder: (builder, setState){
+            return ProgressPopup(
+              labelNotifier: status,
+              future: _initFirstLogin(context, password, status, display)
+                .then((result) {
+                  auth = result[0];
+                  return [Text(result[1])];
+                }
+              ),
+              title: "Warning",
+            );
+          },
+        )
+      );
+    else
+      auth = (await _initFirstLogin(context, password, status, display))[0];
     return auth;
   }
 
-  Future<List> _initFirstLogin(BuildContext context, String password, ValueNotifier label) async
+  Future<List> _initFirstLogin(BuildContext context, String password, ValueNotifier label, bool display) async
   {
     label.value = "10% - Authenticating";
     Map authMap = await walletManager.authenticate(password, this);
     if(authMap["status"] == 200)
     {
       label.value = "90% - Retrieving data from Web";
+      walletManager.stopBalanceSubscription(this);
       await walletManager.startBalanceSubscription(this);
+
       await Future.delayed(Duration(milliseconds: 250));
-      Navigator.of(context).pop();
+      if(display)
+        Navigator.of(context).pop();
       return [true];
     }
     else
