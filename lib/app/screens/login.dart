@@ -171,7 +171,7 @@ class _LoginState extends State<Login> {
     else
     {
       AvmeWallet app = Provider.of<AvmeWallet>(context, listen: false);
-      bool valid = await app.login(this._passphrase.text, context);
+      bool valid = await app.login(this._passphrase.text, context, display:true);
       if(valid)
       {
         app.changeCurrentWalletId = 0;

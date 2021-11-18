@@ -415,12 +415,13 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
               password,
               app,
               title: name,
-              slot: this.selectedIndex).then((value) {
+              slot: this.selectedIndex).then((value) async {
             // Navigator.pop(context);
             if(name.length == 0)
             {
               name = "-unnamed ${this.selectedIndex}-";
             }
+            await app.login(password, context);
             return [
               Text("The Account \"$name\" was added!"),
             ];
