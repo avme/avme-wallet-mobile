@@ -27,18 +27,10 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
   BorderRadius borderRadius = BorderRadius.circular(8);
   int selectedIndex = -1;
   Map<int,List> generatedKeys = {};
-  // @override
-  // void initState()
-  // {
-  //   selectedIndex = widget.app.currentWalletId;
-  //   super.initState();
-  // }
   @override
   Widget build(BuildContext context) {
     AppColors appColors = AppColors();
-    List<Widget> drawerElements = [
-      header(context)
-    ];
+    List<Widget> drawerElements = [];
 
     widget.app.accountList.forEach((key,accountObject) {
         // bool selected = key == widget.app.currentWalletId ? true : false;
@@ -85,14 +77,10 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
         );
     });
 
-    drawerElements.add(
-      footer(context, widget.app)
-    );
-
     List<Widget> finalDrawer = [];
 
     drawerElements.asMap().forEach((pos,element) {
-      if(pos == 0)
+      if(pos == (drawerElements.length - 1))
         finalDrawer.add(element);
       else
         finalDrawer.add(Padding(
@@ -101,10 +89,10 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
         ));
     });
 
-    return AppDrawer(finalDrawer.asMap());
+    return AppDrawer(header(),finalDrawer.asMap(),footer(widget.app));
   }
 
-  Widget header(BuildContext context)
+  Widget header()
   {
     return Padding(
       padding: const EdgeInsets.only(
@@ -171,7 +159,7 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
     );
   }
 
-  Widget footer(BuildContext context, AvmeWallet app)
+  Widget footer(AvmeWallet app)
   {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
