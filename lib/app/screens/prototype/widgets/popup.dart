@@ -496,6 +496,7 @@ class _FuturePopupWidgetState extends State<FuturePopupWidget> with SingleTicker
 
 class ProgressPopup extends StatefulWidget {
   final String title;
+  final ValueNotifier labelNotifier;
   final TextStyle textStyle;
   ///This is the default content padding
   final EdgeInsets padding;
@@ -511,6 +512,7 @@ class ProgressPopup extends StatefulWidget {
   ProgressPopup({
     Key key,
     @required this.title,
+    this.labelNotifier,
     @required this.future,
     this.padding = const EdgeInsets.only(
         left: 32,
@@ -532,6 +534,16 @@ class ProgressPopup extends StatefulWidget {
 }
 
 class _ProgressPopupState extends State<ProgressPopup> with SingleTickerProviderStateMixin{
+
+  ValueNotifier _labelNotifier;
+
+  @override
+  void initState()
+  {
+    _labelNotifier = widget.labelNotifier ?? ValueNotifier("Loading");
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     List<Widget> popupActions = [];
@@ -609,7 +621,9 @@ class _ProgressPopupState extends State<ProgressPopup> with SingleTickerProvider
                                                 ),
                                               ),
                                               SizedBox(height: 32),
-                                              Text("Loading")
+                                              ValueListenableBuilder(
+                                                valueListenable: _labelNotifier,
+                                                builder: (BuildContext context, label, Widget child) => Text("$label", textAlign: TextAlign.center,))
                                             ],
                                           ),
                                         ),
