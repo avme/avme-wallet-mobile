@@ -225,11 +225,11 @@ class WalletManager
   }
 
   ///Start balance update "subscription"
-  void startBalanceSubscription(AvmeWallet appState)
+  Future<void> startBalanceSubscription(AvmeWallet appState) async
   {
     if(!appState.services.containsKey("balanceSubscription"))
     {
-      services.balanceSubscription(appState, appState.accountList, appState.currentWalletId);
+      await services.balanceSubscription(appState, appState.accountList, appState.currentWalletId);
     }
   }
 

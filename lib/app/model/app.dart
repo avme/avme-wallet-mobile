@@ -2,6 +2,9 @@ import 'dart:isolate';
 
 import 'package:avme_wallet/app/controller/file_manager.dart';
 import 'package:avme_wallet/app/controller/wallet_manager.dart';
+import 'package:avme_wallet/app/screens/prototype/widgets/popup.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'boxes.dart';
 import 'metacoin.dart';
 import 'token.dart';
@@ -141,5 +144,47 @@ class AvmeWallet extends ChangeNotifier
     changeCurrentWalletId = id;
     walletManager.stopBalanceSubscription(this);
     walletManager.startBalanceSubscription(this);
+  }
+
+  Future<bool> login(String password, BuildContext context) async {
+    bool auth = false;
+    ValueNotifier <String> status = ValueNotifier("Loading - 0%");
+    await showDialog(context: context, builder: (_) =>
+      StatefulBuilder(
+        builder: (builder, setState){
+          return ProgressPopup(
+            labelNotifier: status,
+            future: _initFirstLogin(context, password, status)
+              .then((result) {
+                auth = result[0];
+                return [Text(result[1])];
+              }
+            ),
+            title: "Warning",
+          );
+        },
+      )
+    );
+    return auth;
+  }
+
+  Future<List> _initFirstLogin(BuildContext context, String password, ValueNotifier label) async
+  {
+    label.value = "10% - Authenticating";
+    Map authMap = await walletManager.authenticate(password, this);
+    if(authMap["status"] == 200)
+    {
+      label.value = "90% - Retrieving data from Web";
+      await walletManager.startBalanceSubscription(this);
+      await Future.delayed(Duration(milliseconds: 250));
+      Navigator.of(context).pop();
+      return [true];
+    }
+    else
+    {
+      //...error
+      return [false, authMap["message"]];
+    }
+
   }
 }

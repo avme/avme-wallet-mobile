@@ -15,7 +15,7 @@ import 'package:web3dart/web3dart.dart';
 import 'package:decimal/decimal.dart';
 
 ///Spawns a single thread to listen, and update our appState
-void balanceSubscription(AvmeWallet appState, Map<int,AccountObject> accounts, int posCurrentAccount) async
+Future<void> balanceSubscription(AvmeWallet appState, Map<int,AccountObject> accounts, int posCurrentAccount) async
 {
   ///Validating if is the default/selected or a specific account to keep track of!
 
@@ -113,6 +113,7 @@ void balanceSubscription(AvmeWallet appState, Map<int,AccountObject> accounts, i
       appState.updateAccountBalance(response["id"], accountUpdate);
     }
   });
+  print("{balanceSubscription}");
 }
 
 void startBalanceSubscription(ServiceData param)
