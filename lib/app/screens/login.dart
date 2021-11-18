@@ -158,68 +158,25 @@ class _LoginState extends State<Login> {
   void authenticate(BuildContext context) async
   {
     bool empty = (this._passphrase == null || _passphrase.text.length == 0) ? true : false;
-    AvmeWallet appState = Provider.of<AvmeWallet>(context, listen: false);
-    BuildContext _loadingPopupContext;
-    if(!empty)
-    {
-      showDialog<void>(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext context) {
-            _loadingPopupContext = context;
-
-            // Always get the provider inside the build method
-            AvmeWallet appState = Provider.of<AvmeWallet>(context);
-            appState.watchAccountsStateChanges();
-            int progress = appState.accountsState.progress == 0 ? 0 : (( appState.accountsState.progress / appState.accountsState.total) * 100).toInt();
-            return CircularLoading(
-                text: "$progress% Loading accounts."
-            );
-          }
-      );
-    }
-    else
-    {
-      await showDialog<void>(
+    if(empty)
+      showDialog(
         context: context,
         builder: (BuildContext context) =>
           SimpleWarning(
             title: "Warning",
             text:
-            "The passphrase field cannot be empty."
+            "The Password field cannot be empty."
           )
       );
-      return;
-    }
-
-    Map data = await appState.walletManager.authenticate(_passphrase.text, appState);
-    if(data["status"] != 200)
-    {
-      Navigator.pop(_loadingPopupContext);
-      await showDialog<void>(
-        context: context,
-        builder: (BuildContext context) =>
-          SimpleWarning(
-            title: "Warning",
-            text:
-            // "Wrong password, try again."
-            data["message"]
-          )
-      );
-      _passphrase.text = "";
-      return;
-    }
     else
     {
-        Navigator.pop(_loadingPopupContext);
-        appState.changeCurrentWalletId = 0;
-        // snack("Account #0 selected", context);
-        // snack("Account #0 selected", context);
-        appState.walletManager.startBalanceSubscription(appState);
-        NotificationBar().show(context,text:"Account #0 selected");
-        Navigator.pushReplacementNamed(context, "/home");
-        // Navigator.pushReplacementNamed(context, "test/preview");
-        // Navigator.pushReplacementNamed(context, "test/preview");
+      AvmeWallet app = Provider.of<AvmeWallet>(context, listen: false);
+      bool valid = await app.login(this._passphrase.text, context);
+      if(valid)
+      {
+        app.changeCurrentWalletId = 0;
+        Navigator.pushReplacementNamed(context, "test/preview");
+      }
     }
   }
 }
