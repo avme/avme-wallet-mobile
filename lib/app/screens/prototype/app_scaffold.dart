@@ -1,10 +1,15 @@
-import 'package:avme_wallet/app/lib/utils.dart';
+import 'dart:async';
+
+import 'package:avme_wallet/app/controller/services/connection.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/screens/prototype/contacts.dart';
 import 'package:avme_wallet/app/screens/prototype/history.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/accounts_drawer.dart';
+import 'package:avme_wallet/app/screens/prototype/widgets/debug.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:overlay_support/overlay_support.dart';
 import 'package:provider/provider.dart';
 import 'package:avme_wallet/app/screens/prototype/send.dart';
 import 'overview.dart';
@@ -19,7 +24,10 @@ class _State extends State<AppScaffold>
     with SingleTickerProviderStateMixin{
 
   TabController appScaffoldTabController;
-
+  StreamSubscription _connectionChangeStream;
+  AppConnection appConnection;
+  bool connectionStatus = false;
+  ConnectivityResult connectionType = ConnectivityResult.none;
   ///We build two lists, one with labels and another with routes,
   ///sadly theres no other way to bypass a TabController when a
   ///child widget needs a TabController reference, so we use
@@ -85,16 +93,59 @@ class _State extends State<AppScaffold>
     ];
 
     appScaffoldTabController.addListener(() {
-      ///Empty setstate to update our selected tab
+      ///Empty setState to update our selected tab
       setState(() {});
     });
+
+    appConnection = AppConnection.getInstance();
+    connectionStatus = appConnection.hasConnection;
+    connectionType = appConnection.connectivityResult;
+    // _connectionChangeStream = appConnection.connectionChange.listen(connectionChanged);
+    _connectionChangeStream = appConnection.connectionType.listen(connectionTypeChanged);
+
     super.initState();
+  }
+
+  void connectionChanged(dynamic connectionData)
+  {
+    setState(() {
+      connectionStatus = connectionData[0];
+      final color = connectionData[0] ? Colors.green : Colors.red;
+      final message = connectionData[0] ? "Internet Connection restored" : "Lost internet connection";
+      showSimpleNotification(
+        Text(message),
+        background: color
+      );
+    });
+  }
+
+  void connectionTypeChanged(dynamic connectionData)
+  {
+    setState(() {
+      connectionType = connectionData[1];
+      if(connectionData[1] == ConnectivityResult.wifi)
+        showSimpleNotification(
+          Text("Using a wifi connection"),
+          background: Colors.green
+        );
+      else if(connectionData[1] == ConnectivityResult.mobile)
+        showSimpleNotification(
+          Text("Using a Mobile connection"),
+          background: Colors.orange
+        );
+      else if(connectionData[1] == ConnectivityResult.none)
+        showSimpleNotification(
+            Text("Disconnected from the internet"),
+            background: Colors.red
+        );
+    });
   }
 
   @override
   void dispose() {
-    super.dispose();
     appScaffoldTabController.dispose();
+    appConnection.dispose();
+    super.dispose();
   }
 
   @override
@@ -160,11 +211,20 @@ class _State extends State<AppScaffold>
           return AccountsDrawer(app: app,);
         },
       ),
-      body: AppTabBar(
-        padding: appBarWidth,
-        routeLabels: this.routeLabels,
-        routeWidgets: this.routeWidgets,
-        appScaffoldTabController: this.appScaffoldTabController,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          AppTabBar(
+            padding: appBarWidth,
+            routeLabels: this.routeLabels,
+            routeWidgets: this.routeWidgets,
+            appScaffoldTabController: this.appScaffoldTabController,
+          ),
+            DebugOverlay(
+              connected: connectionStatus,
+              connectionType: connectionType,
+            )
+        ],
       ),
     );
   }
