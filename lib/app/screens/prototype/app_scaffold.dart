@@ -100,8 +100,8 @@ class _State extends State<AppScaffold>
     appConnection = AppConnection.getInstance();
     connectionStatus = appConnection.hasConnection;
     connectionType = appConnection.connectivityResult;
-    // _connectionChangeStream = appConnection.connectionChange.listen(connectionChanged);
-    _connectionChangeStream = appConnection.connectionType.listen(connectionTypeChanged);
+    _connectionChangeStream = appConnection.connectionChange.listen(connectionChanged);
+    // _connectionChangeStream = appConnection.connectionType.listen(connectionTypeChanged);
 
     super.initState();
   }
@@ -110,6 +110,7 @@ class _State extends State<AppScaffold>
   {
     setState(() {
       connectionStatus = connectionData[0];
+      connectionType = connectionData[1];
       final color = connectionData[0] ? Colors.green : Colors.red;
       final message = connectionData[0] ? "Internet Connection restored" : "Lost internet connection";
       showSimpleNotification(
@@ -122,6 +123,7 @@ class _State extends State<AppScaffold>
   void connectionTypeChanged(dynamic connectionData)
   {
     setState(() {
+      connectionStatus = connectionData[0];
       connectionType = connectionData[1];
       if(connectionData[1] == ConnectivityResult.wifi)
         showSimpleNotification(
