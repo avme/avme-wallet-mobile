@@ -67,7 +67,10 @@ class AppConnection
     print("type of connection ${result.toString()}");
 
     if(previousType != connectivityResult)
+    {
       appConnectionTypeChangeController.add([hasConnection,connectivityResult]);
+      appConnectionChangeController.add([hasConnection,connectivityResult]);
+    }
 
     return connectivityResult;
   }

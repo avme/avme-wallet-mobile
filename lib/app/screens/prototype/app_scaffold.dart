@@ -146,6 +146,7 @@ class _State extends State<AppScaffold>
   @override
   void dispose() {
     appScaffoldTabController.dispose();
+    _connectionChangeStream.cancel();
     appConnection.dispose();
     super.dispose();
   }

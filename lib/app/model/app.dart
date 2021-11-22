@@ -5,6 +5,7 @@ import 'package:avme_wallet/app/controller/wallet_manager.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/popup.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'boxes.dart';
 import 'metacoin.dart';
 import 'token.dart';
@@ -21,53 +22,42 @@ class AvmeWallet extends ChangeNotifier
 {
   final FileManager fileManager;
   WalletManager walletManager;
+  Wallet _w3dartWallet;
+  Map<int,AccountObject> _accountList = {};
+  String appTitle = "AVME Wallet";
+  int _currentWalletId;
+  Map<String, Isolate> services = {};
+  Token token = Token();
+  MetaCoin metaCoin = MetaCoin();
+  AccountsState accountsState = AccountsState();
+  bool debugMode = false;
+  bool debugPanel = false;
 
   AvmeWallet(this.fileManager){
-    print("[AvmeWallet]");
+    // print("[AvmeWallet]");
+    this.debugMode = env["DEBUG_MODE"] == "TRUE" ? true : false;
     this.walletManager = WalletManager(this.fileManager);
   }
 
-  Wallet _w3dartWallet;
-  Wallet get getW3DartWallet => _w3dartWallet;
+  get getW3DartWallet => _w3dartWallet;
+  get accountList => _accountList;
+  get currentAccount => _accountList[currentWalletId];
+  get currentWalletId => _currentWalletId;
+
   set w3dartWallet (Wallet value) => _w3dartWallet = value;
-
-
-  Map<int,AccountObject> _accountList = {};
   set setAccountList (Map<int,AccountObject> value) {
     _accountList = value;
     notifyListeners();
   }
-
-  Map<int,AccountObject> get accountList => _accountList;
-
-  AccountObject get currentAccount => _accountList[currentWalletId];
-
-  String appTitle = "AVME Wallet";
-  int _currentWalletId;
 
   set changeCurrentWalletId (int value){
     _currentWalletId = value;
     notifyListeners();
   }
 
-  int get currentWalletId => _currentWalletId;
-
-  Map<String, Isolate> services = {};
-
   TransactionInformation lastTransactionWasSucessful = new TransactionInformation();
-
-  Token token = Token();
-  MetaCoin metaCoin = MetaCoin();
-  AccountsState accountsState = AccountsState();
-
   Box<TokenChart> dashboardBox = Boxes.getHistory();
-
   TokenChart dashboard = TokenChart();
-  
-  // void init()
-  // {
-  //   _walletManager.setFileManager(fileManager);
-  // }
 
   void displayTokenChart()
   {
@@ -105,13 +95,11 @@ class AvmeWallet extends ChangeNotifier
     {
       print("killService($key)");
       services[key].kill(priority: Isolate.immediate);
-
       services.remove(key);
     }
   }
 
   ///Listeners
-
   void watchMetaCoinValueChanges()
   {
     metaCoin.addListener(() {
@@ -144,6 +132,12 @@ class AvmeWallet extends ChangeNotifier
     changeCurrentWalletId = id;
     walletManager.stopBalanceSubscription(this);
     walletManager.startBalanceSubscription(this);
+  }
+
+  void toggleDebugPanel()
+  {
+    debugPanel = !debugPanel;
+    notifyListeners();
   }
 
   Future<bool> login(String password, BuildContext context, {bool display = false}) async {
