@@ -693,25 +693,18 @@ class _NewAccountState extends State<NewAccount> {
                                         invalidMnemonic = "";
                                       });
                                       Navigator.of(context).pop();
-                                      BuildContext _loadingPopupContext;
-
-                                      showDialog<void>(
-                                        context: context,
-                                        barrierDismissible: false,
-                                        builder: (BuildContext context) {
-                                          _loadingPopupContext = context;
-                                          return LoadingPopUp(
-                                            text:
-                                            "Loading, please wait."
-                                          );
-                                        }
-                                      );
-                                      // Creates the user account
-                                      await appWalletManager.walletManager.makeAccount(phraseController.text, appWalletManager,mnemonic: this.walletSeed);
-                                      Navigator.pop(_loadingPopupContext);
-                                      Navigator.pushReplacementNamed(context, "test/preview");
-                                      appWalletManager.changeCurrentWalletId = 0;
-                                      NotificationBar().show(context, text: "Account #0 selected");
+                                      await showDialog(context: context, builder: (_) => StatefulBuilder(builder: (builder, setState){
+                                        return ProgressPopup(
+                                          title: "Creating",
+                                          future: appWalletManager.walletManager.makeAccount(phraseController.text, appWalletManager,mnemonic: this.walletSeed)
+                                            .then((result) {
+                                              // Creates the user account
+                                              appWalletManager.changeCurrentWalletId = 0;
+                                              Navigator.pop(context);
+                                              Navigator.pushReplacementNamed(context, "test/preview");
+                                              NotificationBar().show(context, text: "Account #0 selected");
+                                          }));
+                                      }));
                                       return;
                                     }
                                   },
