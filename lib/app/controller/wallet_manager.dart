@@ -93,19 +93,18 @@ class WalletManager
     return mnemonic;
   }
 
-  Future<List<String>> makeAccount(String password, AvmeWallet appState,
+  Future<Map<String,dynamic>> makeAccount(String password, AvmeWallet appState,
     {
       String mnemonic,
       String title = "",
       int slot
     }) async
   {
-    List<String> ret = [];
-
-    print(appState.accountList.isEmpty);
+    print("Is account list empty? ${appState.accountList.isEmpty}");
 
     if(appState.accountList.isEmpty)
     {
+      slot = 0;
       mnemonic = mnemonic ?? newMnemonic();
 
       String documentsPath = this.fileManager.documentsFolder;
@@ -127,8 +126,6 @@ class WalletManager
     print(mnemonic);
     BIP32 node = bip32.BIP32.fromSeed(await compute(bip39.mnemonicToSeed,mnemonic));
     Random _rng = new Random.secure();
-
-    slot = slot ?? appState.accountList.keys.length;
 
     if(appState.accountList.keys.length > 9)
     {
@@ -164,13 +161,19 @@ class WalletManager
       walletObject = jsonDecode(await readWalletJson());
       walletObject.add(accountObject);
     }
-    // String json = encoder.convert(walletObject);
     String json = this.fileManager.encoder.convert(walletObject);
-    File savedPath = await writeWalletJson(json);
+    await writeWalletJson(json);
     appState.w3dartWallet = _wallet;
-    ret.add(savedPath.path);
-    // Map auth = await authenticate(password, appState);
-    return ret;
+
+    if(appState.accountList.isEmpty)
+    {
+      appState.setCurrentWallet(slot);
+      await authenticate(password, appState);
+      stopBalanceSubscription(appState);
+      await startBalanceSubscription(appState);
+    }
+    return {"status":200, "message":""};
+
   }
 
   Future decryptAesWallet(String password, {bool shouldReturnMnemonicFile = false}) async
@@ -200,6 +203,7 @@ class WalletManager
     }
     try
     {
+      print("INICIANDO loadWalletAccounts");
       await loadWalletAccounts(password, wallet);
       if(wallet.accountList[0].account != null)
       {

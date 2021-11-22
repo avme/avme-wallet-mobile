@@ -3,6 +3,7 @@ import 'package:avme_wallet/app/controller/services/balance.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/notification_bar.dart';
+import 'package:avme_wallet/app/screens/welcome.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -25,86 +26,88 @@ class ButtonText extends StatelessWidget {
 }
 
 class _InitialLoadingState extends State<InitialLoading>{
-  /*GENERIC LOADING SCREEN*/
+  AvmeWallet wallet;
   @override
   void initState()
   {
+    wallet = Provider.of<AvmeWallet>(context, listen: false);
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    startWalletServices(context);
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: <Color>[
-              AppColors.purpleVariant1,
-              AppColors.purpleBlue
-            ]
-          )
-        ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset(
-                'assets/resized-newlogo02-trans.png',
-                width: MediaQuery.of(context).size.width * 1 / 4.5,
-                fit: BoxFit.fitHeight,
+      body: FutureBuilder(
+        future: startWalletServices(context),
+        builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+          if(snapshot.data == null)
+            return Container(
+              decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: <Color>[
+                        AppColors.purpleVariant1,
+                        AppColors.purpleBlue
+                      ]
+                  )
               ),
-              Padding(
-                padding: const EdgeInsets.only(top: 18),
-                child: Text(
-                  "AVME",
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w700
-                  ),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      'assets/resized-newlogo02-trans.png',
+                      width: MediaQuery.of(context).size.width * 1 / 4.5,
+                      fit: BoxFit.fitHeight,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 18),
+                      child: Text(
+                        "AVME",
+                        style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w700
+                        ),
+                      ),
+                    )
+                  ],
                 ),
-              )
-            ],
-          ),
-        ),
+              ),
+            );
+          else
+            return Container(
+              decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: <Color>[
+                        AppColors.purpleVariant1,
+                        AppColors.purpleBlue
+                      ]
+                  )
+              ),
+            );
+        },
       ),
     );
   }
 
-  void startWalletServices(BuildContext context) async
+  Future<void> startWalletServices(BuildContext context) async
   {
-    AvmeWallet wallet = Provider.of<AvmeWallet>(context);
-    ContactsController controller = Provider.of<ContactsController>(context);
-
-    if (!wallet.services.containsKey("valueSubscription"))
-      valueSubscription(wallet);
-    await wallet.fileManager.getDocumentsFolder();
-
-    // await wallet.fileManager.getDocumentsFolder();
-    //
-    // if(env["ALWAYS_RESET"].toString().toUpperCase() == "TRUE")
-    // {
-    //   wallet.walletManager.deletePreviousWallet();
-    // }
-
-    Navigator.pushReplacementNamed(context, "/welcome");
-
-    //
-    // bool hasWallet = await wallet.walletManager.walletAlreadyExists();
-    //
-    // if(hasWallet == false)
-    //   welcomeDialog();
-    //
-    // else
-    // {
-    //   // Navigator.pushReplacementNamed(context, "/login");
-    //   Navigator.pushReplacementNamed(context, "/welcome");
-    // }
-
-    // NotificationBar().show(context, text: "Wallet already created previously? \"$hasWallet\"");
-    // snack("Wallet already created previously? \"$hasWallet\"", context);
+    await Future.delayed(Duration(milliseconds: 500),() async{
+      if (!wallet.services.containsKey("valueSubscription"))
+        valueSubscription(wallet);
+      if(env["ALWAYS_RESET"].toString().toUpperCase() == "TRUE")
+      {
+        wallet.walletManager.deletePreviousWallet();
+      }
+      bool walletExists = await wallet.walletManager.walletAlreadyExists();
+      print("walletExists? $walletExists");
+      Navigator.pushReplacement(context, MaterialPageRoute(
+          builder: (context) => Welcome(walletExists:walletExists)
+      ));
+    });
   }
 
   Future<void> welcomeDialog() async {

@@ -133,7 +133,7 @@ class Options extends StatelessWidget
 
   btnMakeAccount(BuildContext context) async
   {
-    List<String> ret = await appState.walletManager.makeAccount("abacaxi",appState);
+    List<String> ret = (await appState.walletManager.makeAccount("abacaxi",appState)).entries.map((entry) => entry.value).toList();
     snack(ret, context);
   }
 }
