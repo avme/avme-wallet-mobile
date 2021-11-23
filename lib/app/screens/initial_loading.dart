@@ -31,6 +31,7 @@ class _InitialLoadingState extends State<InitialLoading>{
   void initState()
   {
     wallet = Provider.of<AvmeWallet>(context, listen: false);
+    Provider.of<ContactsController>(context, listen: false);
     super.initState();
   }
 
