@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/button.dart';
@@ -675,28 +677,23 @@ class _SendState extends State<Send> {
   }
 
   void startTransaction(AvmeWallet app, BigInt value) async {
-    BuildContext loadingDialog;
-    showDialog(
-      context: context,
-      // barrierDismissible: false,
-      barrierDismissible: true,
-      builder: (BuildContext context) {
-        loadingDialog = context;
-        return CircularLoading(text: "Requesting Transaction, please wait.");
-      },
+    ValueNotifier <String> transactionStatus = ValueNotifier("1 - Starting Transaction");
+    await showDialog(context: context, builder: (_) =>
+      StatefulBuilder(builder: (builder, setState){
+        return ProgressPopup(
+          title: "Warning",
+          labelNotifier: transactionStatus,
+          future: app.walletManager.sendTransaction(app, addressController.text, value, notifier:transactionStatus)
+            .then((response) {
+              if(response["status"] == 200)
+              {
+                Navigator.of(context).pop();
+              }
+              print(jsonEncode(response));
+          })
+        );
+      })
     );
-    Map<String, dynamic> response = await app.walletManager.sendTransaction(app, addressController.text, value);
-    Navigator.pop(loadingDialog);
-    if(response["status"] != 200)
-    {
-      showDialog(
-        context: context,
-        barrierDismissible: true,
-        builder: (BuildContext context) {
-          return SimpleWarning(title: response["title"],text: response["message"],);
-        },
-      );
-    }
   }
   
   Color getColor(Set<MaterialState> states) {
