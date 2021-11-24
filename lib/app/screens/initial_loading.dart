@@ -1,5 +1,6 @@
 import 'package:avme_wallet/app/controller/contacts.dart';
 import 'package:avme_wallet/app/controller/services/balance.dart';
+import 'package:avme_wallet/app/controller/services/push_notification.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/notification_bar.dart';
@@ -7,6 +8,7 @@ import 'package:avme_wallet/app/screens/welcome.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
 
@@ -34,6 +36,13 @@ class _InitialLoadingState extends State<InitialLoading>{
     Provider.of<ContactsController>(context, listen: false);
     super.initState();
   }
+
+  void selectNotification(String payload) async
+  {
+    if(payload != null)
+      debugPrint("notification payload: $payload");
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -94,15 +103,39 @@ class _InitialLoadingState extends State<InitialLoading>{
     );
   }
 
+  Future<void> appFlutterLocalNotificationsInit() async
+  {
+    FlutterLocalNotificationsPlugin notificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+
+    //TODO: Change this res to the app logo
+    const AndroidInitializationSettings initializationSettingsAndroid =
+    AndroidInitializationSettings('@mipmap/ic_launcher');
+    const IOSInitializationSettings initializationSettingsIOS =
+    IOSInitializationSettings(
+      /*onDidReceiveLocalNotification: onDidReceiveLocalNotification*/
+    );
+    final MacOSInitializationSettings initializationSettingsMacOs = MacOSInitializationSettings();
+
+    final InitializationSettings initializationSettings = InitializationSettings(
+        android: initializationSettingsAndroid,
+        iOS: initializationSettingsIOS,
+        macOS: initializationSettingsMacOs
+    );
+    await notificationsPlugin.initialize(initializationSettings, onSelectNotification: selectNotification);
+  }
+
   Future<void> startWalletServices(BuildContext context) async
   {
     await Future.delayed(Duration(milliseconds: 500),() async{
+
+      await appFlutterLocalNotificationsInit();
+
       if (!wallet.services.containsKey("valueSubscription"))
         valueSubscription(wallet);
       if(env["ALWAYS_RESET"].toString().toUpperCase() == "TRUE")
-      {
         wallet.walletManager.deletePreviousWallet();
-      }
+
       bool walletExists = await wallet.walletManager.walletAlreadyExists();
       print("walletExists? $walletExists");
       Navigator.pushReplacement(context, MaterialPageRoute(
