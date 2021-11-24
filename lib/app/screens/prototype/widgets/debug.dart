@@ -9,8 +9,14 @@ import 'package:provider/provider.dart';
 class DebugOverlay extends StatefulWidget {
 
   final bool connected;
+  final TabController tabController;
   final ConnectivityResult connectionType;
-  const DebugOverlay({Key key, this.connected, this.connectionType}) : super(key: key);
+  const DebugOverlay({
+    Key key,
+    this.connected,
+    this.connectionType,
+    @required this.tabController
+  }) : super(key: key);
 
   @override
   _DebugOverlayState createState() => _DebugOverlayState();
@@ -19,6 +25,26 @@ class DebugOverlay extends StatefulWidget {
 class _DebugOverlayState extends State<DebugOverlay> {
 
   bool shouldDisplay = false;
+
+  @override
+  void initState()
+  {
+    PushNotification.init();
+    listenNotifications();
+    super.initState();
+  }
+
+  void listenNotifications()
+  {
+    PushNotification.onNotifications.stream.listen((payload) {
+      print(payload.toString());
+      print(ModalRoute.of(context).settings.name);
+      if(payload.toString() == "app/overview" && widget.tabController.index != 1)
+      {
+        widget.tabController.index = 1;
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -307,15 +333,19 @@ class _DebugOverlayState extends State<DebugOverlay> {
 
   Future<void> showAlertNotification() async
   {
-    const NotificationDetails platformChannelSpecifics =
-    NotificationDetails(android: PushNotification.debugChannel0);
-    await FlutterLocalNotificationsPlugin().show(0, "BUTTON ON DEBUG", "body and soul", platformChannelSpecifics);
+    PushNotification.showNotification(
+      title: "showAlertNotification",
+      id: 1
+    );
   }
 
   Future<void> showAppNotification() async
   {
-    const NotificationDetails platformChannelSpecifics =
-    NotificationDetails(android: PushNotification.alertChannel);
-    await FlutterLocalNotificationsPlugin().show(1, "AVME Wallet", "Received 20 AVAX!", platformChannelSpecifics);
+    PushNotification.showNotification(
+      title: 'New Notification',
+      body: 'Yes',
+      id: 0,
+      payload: 'app/overview'
+    );
   }
 }

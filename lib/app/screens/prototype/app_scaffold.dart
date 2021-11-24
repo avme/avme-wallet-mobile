@@ -226,6 +226,7 @@ class _State extends State<AppScaffold>
             DebugOverlay(
               connected: connectionStatus,
               connectionType: connectionType,
+              tabController: appScaffoldTabController,
             )
         ],
       ),

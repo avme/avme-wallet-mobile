@@ -1,57 +1,60 @@
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'dart:async';
 
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:rxdart/rxdart.dart';
+
+///Thank @JohannesMilke's tutorial/github
 class PushNotification
 {
-  static final PushNotification _pushNotification = PushNotification._internal();
-  PushNotification._internal();
+  static final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
+  static final BehaviorSubject onNotifications = BehaviorSubject<String>();
 
-  static PushNotification getInstance() =>  _pushNotification;
+  static Future _notificationDetails() async {
+    return NotificationDetails(
+      android: AndroidNotificationDetails(
+        'id',
+        'name',
+        channelDescription: 'description',
+        priority: Priority.max,
+        importance: Importance.max
+      ),
+      iOS: IOSNotificationDetails()
+    );
+  }
 
-  static const AndroidNotificationDetails debugChannel0 =
-  AndroidNotificationDetails('0', 'debugChannel0',
-    channelDescription: 'using this channel to test notifications',
-    importance: Importance.max,
-    priority: Priority.high,);
+  static Future init({bool initSchedule = false}) async
+  {
+    final IOSInitializationSettings initializationSettingsIOS =
+      IOSInitializationSettings();
+    final MacOSInitializationSettings initializationSettingsMacOS = MacOSInitializationSettings();
+    final AndroidInitializationSettings initializationSettingsAndroid =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
 
-  static const  AndroidNotificationDetails debugChannel1 =
-  AndroidNotificationDetails('1', 'debugChannel1',
-    channelDescription: 'using this channel to test notifications',
-    importance: Importance.max,
-    priority: Priority.high,);
+    final InitializationSettings settings = InitializationSettings(
+      iOS: initializationSettingsIOS,
+      macOS: initializationSettingsMacOS,
+      android: initializationSettingsAndroid
+    );
 
-  static const  AndroidNotificationDetails debugChannel2 =
-  AndroidNotificationDetails('2', 'debugChannel2',
-    channelDescription: 'using this channel to test notifications',
-    importance: Importance.max,
-    priority: Priority.high,);
+    await _notifications.initialize(
+      settings,
+      onSelectNotification: (payload) async
+      {
+        if(payload.length > 0)
+          onNotifications.add(payload);
+      }
+    );
+  }
+  static Future showNotification({
+    int id = 0,
+    String title = "Title",
+    String body = "Body",
+    String payload
+  }) async {
+    print("showNotification");
+    print("title:$title | body:$body");
+    return _notifications.show(id, title, body, await _notificationDetails(), payload: payload);
+  }
 
-  static const  AndroidNotificationDetails debugChannel3 =
-  AndroidNotificationDetails('3', 'debugChannel3',
-    channelDescription: 'using this channel to test notifications',
-    importance: Importance.max,
-    priority: Priority.high,);
 
-  static const  AndroidNotificationDetails debugChannel4 =
-  AndroidNotificationDetails('4', 'debugChannel4',
-    channelDescription: 'using this channel to test notifications',
-    importance: Importance.max,
-    priority: Priority.high,);
-
-  static const  AndroidNotificationDetails debugChannel5 =
-  AndroidNotificationDetails('5', 'debugChannel5',
-    channelDescription: 'using this channel to test notifications',
-    importance: Importance.max,
-    priority: Priority.high,);
-
-  static const  AndroidNotificationDetails alertChannel =
-  AndroidNotificationDetails('10', 'Alert Channel',
-    channelDescription: 'Display Alert notifications through App',
-    importance: Importance.max,
-    priority: Priority.high,);
-
-  static const  AndroidNotificationDetails appChannel =
-  AndroidNotificationDetails('11', 'App Channel',
-    channelDescription: 'Display notifications through App',
-    importance: Importance.defaultImportance,
-    priority: Priority.defaultPriority,);
 }

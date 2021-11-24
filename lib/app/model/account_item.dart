@@ -20,8 +20,8 @@ class AccountObject
   int derived;
   String title;
 
-  double _currencyBalance;
-  double _currencyTokenBalance;
+  double _currencyBalance = 0;
+  double _currencyTokenBalance = 0;
 
   set currencyBalance(double value)
   {

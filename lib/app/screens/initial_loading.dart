@@ -37,13 +37,6 @@ class _InitialLoadingState extends State<InitialLoading>{
     super.initState();
   }
 
-  void selectNotification(String payload) async
-  {
-    if(payload != null)
-      debugPrint("notification payload: $payload");
-  }
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -103,34 +96,9 @@ class _InitialLoadingState extends State<InitialLoading>{
     );
   }
 
-  Future<void> appFlutterLocalNotificationsInit() async
-  {
-    FlutterLocalNotificationsPlugin notificationsPlugin =
-    FlutterLocalNotificationsPlugin();
-
-    //TODO: Change this res to the app logo
-    const AndroidInitializationSettings initializationSettingsAndroid =
-    AndroidInitializationSettings('@mipmap/ic_launcher');
-    const IOSInitializationSettings initializationSettingsIOS =
-    IOSInitializationSettings(
-      /*onDidReceiveLocalNotification: onDidReceiveLocalNotification*/
-    );
-    final MacOSInitializationSettings initializationSettingsMacOs = MacOSInitializationSettings();
-
-    final InitializationSettings initializationSettings = InitializationSettings(
-        android: initializationSettingsAndroid,
-        iOS: initializationSettingsIOS,
-        macOS: initializationSettingsMacOs
-    );
-    await notificationsPlugin.initialize(initializationSettings, onSelectNotification: selectNotification);
-  }
-
   Future<void> startWalletServices(BuildContext context) async
   {
     await Future.delayed(Duration(milliseconds: 500),() async{
-
-      await appFlutterLocalNotificationsInit();
-
       if (!wallet.services.containsKey("valueSubscription"))
         valueSubscription(wallet);
       if(env["ALWAYS_RESET"].toString().toUpperCase() == "TRUE")

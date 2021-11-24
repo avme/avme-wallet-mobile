@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:isolate';
+import 'package:avme_wallet/app/controller/services/push_notification.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/account_item.dart';
 import 'package:avme_wallet/app/model/app.dart';
@@ -20,7 +21,10 @@ Future<void> balanceSubscription(AvmeWallet appState, Map<int,AccountObject> acc
   ///Validating if is the default/selected or a specific account to keep track of!
 
   List<Map<String, dynamic>> accountSpawnData = [];
-
+  ///List of previously updated accounts
+  ///{"0":[true,true]}
+  ///{"key":[metacoinUpdated,tokenUpdated]}
+  // List<String> didUpdatePreviously = [];
   for(int pos = 0; pos < accounts.length; pos++)
   {
     if(pos == posCurrentAccount)
@@ -63,23 +67,14 @@ Future<void> balanceSubscription(AvmeWallet appState, Map<int,AccountObject> acc
 
     ///We validate who is returning data, since we don't use multiple Isolates,
     ///for the same purpose (like previously seen) to save memory! @_@
-    /*
-      appState.metaCoin.value = response["avax"];
-      appState.token.value = response["avme"];
-    */
-    // print("ID /listen/");
-    // print(response['id']);
-    // print("SIZE:");
-    // print(appState.accountList.length);
-    // print("APPSTATE OBJECTS");
-    // print(appState.accountList);
-    // print("OBJECT:");
-    // print(appState.accountList[response['id']]);
-    // AccountObject accountUpdate = appState.accountList[response['id']];
+
     if(data.containsKey("metacoin"))
     {
       response = data["metacoin"];
       AccountObject accountUpdate = appState.accountList[response['id']];
+
+      double oldValue = accountUpdate.currencyBalance;
+      double newValue = oldValue;
 
       if(accountUpdate.waiBalance != response["balance"])
         accountUpdate.updateAccountBalance = response["balance"];
@@ -87,31 +82,71 @@ Future<void> balanceSubscription(AvmeWallet appState, Map<int,AccountObject> acc
       double balanceFromBigInt =
         double.tryParse(weiToFixedPoint(response["balance"].toString()));
 
-      double metacoinValue = double.tryParse(appState.metaCoin.value);
-      double result = balanceFromBigInt * metacoinValue;
+      double avaxValue = double.tryParse(appState.metaCoin.value);
+      newValue = balanceFromBigInt * avaxValue;
+      //
+      // double difference = newValue - oldValue;
+      //
+      // ///Checking if we received any amount
+      // if(didUpdatePreviously.contains("${response["id"]}.metacoin")) {
+      //   ///there was an increase in balance
+      //   if (difference > 0) {
+      //     PushNotification.showNotification(
+      //         id: 9,
+      //         title: "Transfer received (AVAX)",
+      //         body: "Account Update: "
+      //             "You received \$${difference.toStringAsFixed(2)} (AVAX)",
+      //         payload: "app/history"
+      //     );
+      //   }
+      // }
+      // else
+      // {
+      //   didUpdatePreviously.add("${response["id"]}.metacoin");
+      // }
 
-      accountUpdate.currencyBalance = result;
+      accountUpdate.currencyBalance = newValue;
       appState.updateAccountBalance(response["id"], accountUpdate);
-      // appState.accountList[response['id']].currencyBalance = result;
 
     }
     if(data.containsKey("token"))
     {
       response = data["token"];
       AccountObject accountUpdate = appState.accountList[response['id']];
+
+      double oldValue = accountUpdate.currencyTokenBalance;
+      double newValue = oldValue;
+
       if(accountUpdate.rawTokenBalance != response["tokenBalance"])
         accountUpdate.updateTokenBalance = response["tokenBalance"];
 
       double tokenFromBigInt =
-      double.tryParse(weiToFixedPoint(response["tokenBalance"].toString()));
+        double.tryParse(weiToFixedPoint(response["tokenBalance"].toString()));
 
-      double tokenMarketValue = double.tryParse(appState.token.value);
-      double result = tokenFromBigInt * tokenMarketValue;
-      // appState.accountList[response['id']].currencyTokenBalance = result;
-
-      accountUpdate.currencyTokenBalance = result;
+      double avmeValue = double.tryParse(appState.token.value);
+      newValue = tokenFromBigInt * avmeValue;
+      // double difference = newValue - oldValue;
+      // ///Checking if we received any amount
+      // if(didUpdatePreviously.contains("${response["id"]}.token")) {
+      //   ///there was an increase in balance
+      //   if (difference > 0) {
+      //     PushNotification.showNotification(
+      //         id: 10,
+      //         title: "Transfer received (AVME)",
+      //         body: "Account Update: "
+      //             "You received \$${difference.toStringAsFixed(2)} (AVME)",
+      //         payload: "app/history"
+      //     );
+      //   }
+      // }
+      // else
+      // {
+      //   didUpdatePreviously.add("${response["id"]}.token");
+      // }
+      accountUpdate.currencyTokenBalance = newValue;
       appState.updateAccountBalance(response["id"], accountUpdate);
     }
+    // print(didUpdatePreviously.toString());
   });
   print("{balanceSubscription}");
 }
@@ -132,7 +167,7 @@ void watchBalanceChanges(ServiceData param) async
   EthereumAddress address = param.data["address"];
   http.Client httpClient = http.Client();
   Web3Client ethClient = Web3Client(param.data["url"], httpClient);
-  int seconds = 0;
+  int seconds = 1;
   while(true)
   {
     await Future.delayed(Duration(seconds: seconds), () async{
@@ -154,7 +189,7 @@ void watchTokenChanges(ServiceData param) async
   http.Client httpClient = http.Client();
   Web3Client ethClient = Web3Client(param.data["url"], httpClient);
   AvmeContract contract = AvmeContract(address: param.data["contractAddress"],client: ethClient, chainId: 43113);
-  int seconds = 0;
+  int seconds = 1;
   while(true)
   {
     await Future.delayed(Duration(seconds: seconds), () async{
