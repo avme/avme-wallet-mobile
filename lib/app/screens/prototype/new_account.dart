@@ -701,7 +701,7 @@ class _NewAccountState extends State<NewAccount> {
                                               // Creates the user account
                                               appWalletManager.changeCurrentWalletId = 0;
                                               Navigator.pop(context);
-                                              Navigator.pushReplacementNamed(context, "test/preview");
+                                              Navigator.pushReplacementNamed(context, "app/overview");
                                               NotificationBar().show(context, text: "Account #0 selected");
                                           }));
                                       }));

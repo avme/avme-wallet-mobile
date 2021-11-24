@@ -175,7 +175,7 @@ class _LoginState extends State<Login> {
       if(valid)
       {
         app.changeCurrentWalletId = 0;
-        Navigator.pushReplacementNamed(context, "test/preview");
+        Navigator.pushReplacementNamed(context, "app/overview");
       }
     }
   }
