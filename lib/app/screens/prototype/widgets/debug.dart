@@ -1,7 +1,9 @@
+import 'package:avme_wallet/app/controller/services/push_notification.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/screens/widgets/custom_widgets.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:provider/provider.dart';
 
 class DebugOverlay extends StatefulWidget {
@@ -64,6 +66,40 @@ class _DebugOverlayState extends State<DebugOverlay> {
                   children: [
                     Column(
                       children: [
+                        debugTitle("Notifications"),
+                        Row(
+                          crossAxisAlignment: cStart,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: cStart,
+                                children: [
+                                  Row(
+                                    children: [
+                                      GestureDetector(onTap: () async {
+                                        await showAlertNotification();
+                                      }, child: Text("Alert"))
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: cStart,
+                                children: [
+                                  Row(
+                                    children: [
+                                      GestureDetector(onTap: () async {
+                                        await showAppNotification();
+                                      }, child: Text("App"))
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                         debugTitle("Internet"),
                         Row(
                           crossAxisAlignment: cStart,
@@ -255,6 +291,7 @@ class _DebugOverlayState extends State<DebugOverlay> {
       ],
     );
   }
+
   TextSpan textConnection(ConnectivityResult type)
   {
     String text = "none";
@@ -266,5 +303,19 @@ class _DebugOverlayState extends State<DebugOverlay> {
     return TextSpan(
         text: text
     );
+  }
+
+  Future<void> showAlertNotification() async
+  {
+    const NotificationDetails platformChannelSpecifics =
+    NotificationDetails(android: PushNotification.debugChannel0);
+    await FlutterLocalNotificationsPlugin().show(0, "BUTTON ON DEBUG", "body and soul", platformChannelSpecifics);
+  }
+
+  Future<void> showAppNotification() async
+  {
+    const NotificationDetails platformChannelSpecifics =
+    NotificationDetails(android: PushNotification.alertChannel);
+    await FlutterLocalNotificationsPlugin().show(1, "AVME Wallet", "Received 20 AVAX!", platformChannelSpecifics);
   }
 }
