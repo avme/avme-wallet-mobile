@@ -674,11 +674,6 @@ class _NewAccountState extends State<NewAccount> {
                               ],
                               actions: [
                                 AppNeonButton(
-                                  onPressed: () => Navigator.of(context).pop(),
-                                  expanded: false,
-                                  text: "CANCEL"
-                                ),
-                                AppNeonButton(
                                   onPressed: () async {
                                     wrongMnemonic = formMnemonic.validate();
                                     if(wrongMnemonic > -1)
