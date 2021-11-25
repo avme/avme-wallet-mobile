@@ -226,11 +226,11 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
     final int flexBalance = 2;
     final double darkBorderPadding = 8.0;
 
-    String password = "abacaxi";
+    String password = "";
 
     this.generatedKeys = this.generatedKeys.length > 0
         ? this.generatedKeys
-        : await app.walletManager.previewAccounts(password);
+        : await app.walletManager.previewAvaxBalance(password);
 
     return [
       Text("Choose an Account from the List"),
