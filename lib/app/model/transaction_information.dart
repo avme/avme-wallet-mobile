@@ -67,7 +67,7 @@ class TransactionInformation with ChangeNotifier{
     stream.writeAsString(jsonFile);
   }
 
-  Future<List> fileTransactions(String address) async {
+  Future<List> fileTransactions(String address, {int amount = 0}) async {
     FileManager fileManager = FileManager();
     String file = (await fileManager.getDocumentsFolder()) + fileManager.transactions + "$address";
     File dataFile = File(file);
@@ -75,7 +75,10 @@ class TransactionInformation with ChangeNotifier{
     {
       return null;
     }
-    return jsonDecode(await dataFile.readAsString())["transactions"];
+    List ret = jsonDecode(await dataFile.readAsString())["transactions"];
+    if(amount > 0)
+      ret = ret.sublist(ret.length - amount, ret.length);
+    return ret;
   }
 
   int get qtdTransactions => this.storedTransaction["transactions"].length;

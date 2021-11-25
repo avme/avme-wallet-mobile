@@ -110,34 +110,34 @@ class _HistoryState extends State<History> {
                 );
               },
             ),
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Row(
-                // crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child:Align(
-                    alignment: Alignment.centerRight,
-                      child: LabelText("Show:")
-                    )
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 16.0, right:16.0),
-                      child: AppButton(
-                          onPressed: () => {},
-                          text: "All",
-                          paddingText: EdgeInsets.all(0),
-                          height: 36,
-                      ),
-                    ),
-                  )
-                ],
-              ),
-            ),
+            // Padding(
+            //   padding: const EdgeInsets.all(12.0),
+            //   child: Row(
+            //     // crossAxisAlignment: CrossAxisAlignment.end,
+            //     mainAxisAlignment: MainAxisAlignment.end,
+            //     children: [
+            //       Expanded(
+            //         flex: 3,
+            //         child:Align(
+            //         alignment: Alignment.centerRight,
+            //           child: LabelText("Show:")
+            //         )
+            //       ),
+            //       Expanded(
+            //         flex: 1,
+            //         child: Padding(
+            //           padding: const EdgeInsets.only(left: 16.0, right:16.0),
+            //           child: AppButton(
+            //               onPressed: () => {},
+            //               text: "All",
+            //               paddingText: EdgeInsets.all(0),
+            //               height: 36,
+            //           ),
+            //         ),
+            //       )
+            //     ],
+            //   ),
+            // ),
             AppCard(
               child:
                 Column(
@@ -235,9 +235,14 @@ class _HistoryState extends State<History> {
           Divider(color: AppColors.labelDisabledColor,)
         );
     });
-    return ListView(
-      shrinkWrap: true,
-      children: _widgetsList,
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height / 3
+      ),
+      child: ListView(
+        shrinkWrap: true,
+        children: _widgetsList,
+      ),
     );
   }
 }

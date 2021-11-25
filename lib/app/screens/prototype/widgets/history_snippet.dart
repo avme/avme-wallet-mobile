@@ -55,7 +55,7 @@ class _HistorySnippetState extends State<HistorySnippet> {
 
   Future<Widget> listTransactions(String address) async
   {
-    List transactionsMap = await TransactionInformation().fileTransactions(address);
+    List transactionsMap = await TransactionInformation().fileTransactions(address, amount: 5);
     if(transactionsMap == null)
     {
       return Center(child:
@@ -103,8 +103,7 @@ class _HistorySnippetState extends State<HistorySnippet> {
             Divider(color: AppColors.labelDisabledColor,)
         );
     });
-    return ListView(
-      shrinkWrap: true,
+    return Column(
       children: _widgetsList,
     );
   }
