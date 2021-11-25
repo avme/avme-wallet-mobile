@@ -71,7 +71,7 @@ class ContactsController extends ChangeNotifier {
 
   void _updateContactsFile()
   {
-    Future<File> fileContacts = this.fileManager.contactsFile();
+    Future<File> fileContacts = contactsFile();
     fileContacts.then((File file) async {
       Map<String, List> mContacts = {"contacts" : []};
       contacts.values.forEach((Contact contact) {
