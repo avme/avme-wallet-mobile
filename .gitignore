@@ -1,3 +1,6 @@
+# Testing
+*.g.dart
+*.abi.json
 # Miscellaneous
 *.class
 *.lock
