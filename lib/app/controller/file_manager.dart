@@ -40,34 +40,4 @@ class FileManager
     }
     return exists;
   }
-
-  Future<File> contactsFile() async
-  {
-    await getDocumentsFolder();
-    String fileFolder = "${this.documentsFolder}$contacts";
-    print(fileFolder);
-    await checkPath(fileFolder);
-    File file = File("${fileFolder}contacts$ext");
-    if(!await file.exists())
-    {
-
-      await file.writeAsString(this.encoder.convert({
-        "contacts" : [
-          {
-            "name": "User One",
-            "address": "0x4214496147525148769976fb554a8388117e25b1"
-          },
-          {
-            "name": "User Two",
-            "address": "0x4214496147525148769976fb554a8388117e25b1"
-          },
-          {
-            "name": "User Three",
-            "address": "0x4214496147525148769976fb554a8388117e25b1"
-          }
-        ]
-      }));
-    }
-    return file;
-  }
 }
