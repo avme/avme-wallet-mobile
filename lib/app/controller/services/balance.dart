@@ -8,7 +8,7 @@ import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/model/boxes.dart';
 import 'package:avme_wallet/app/model/service_data.dart';
 import 'package:avme_wallet/app/model/token_chart.dart';
-import 'package:avme_wallet/external/contracts/avme_contract.dart';
+import 'package:avme_wallet/external/contracts/erc20_contract.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
@@ -50,11 +50,19 @@ Future<void> balanceSubscription(AvmeWallet appState, Map<int,AccountObject> acc
   Map <String, dynamic> data = {
     "accounts" : accountSpawnData,
     "url" : env['NETWORK_URL'],
-    "contractAddress" : EthereumAddress.fromHex(env['CONTRACT_ADDRESS']),
+    // "contractAbi" : appState.contracts.entries.first.value[0], ///<ContractAbi>
+    // "contractAddress" : EthereumAddress.fromHex(appState.contracts.entries.first.value[1]), ///<String> ContractAddress
+    "contractAbi" : appState.contracts["AVME testnet"][0], ///<ContractAbi>
+    "contractAddress" : EthereumAddress.fromHex(appState.contracts["AVME testnet"][1]), ///<String> ContractAddress
   };
 
   ReceivePort receivePort = ReceivePort();
   ServiceData serviceData = ServiceData(data,receivePort.sendPort);
+
+  // print("CONTRACT ABI:");
+  // print(appState.contracts.entries.first.value.toString());
+  // print("FUNCTIONS:");
+  // print(appState.contracts.entries.first.value.functions.toString());
 
   appState.services["balanceSubscription"] = await Isolate.spawn(
     startBalanceSubscription,
@@ -155,19 +163,20 @@ void startBalanceSubscription(ServiceData param)
 {
   param.data["accounts"].forEach((account) {
     account["url"] = param.data["url"];
+    account["contractAbi"] = param.data["contractAbi"];
     account["contractAddress"] = param.data["contractAddress"];
-    watchBalanceChanges(ServiceData(account,param.sendPort));
+    avaxBalanceChanges(ServiceData(account,param.sendPort));
     watchTokenChanges(ServiceData(account,param.sendPort));
   });
 }
 
 ///Isolated function to watch balance changes
-void watchBalanceChanges(ServiceData param) async
+void avaxBalanceChanges(ServiceData param) async
 {
   EthereumAddress address = param.data["address"];
   http.Client httpClient = http.Client();
   Web3Client ethClient = Web3Client(param.data["url"], httpClient);
-  int seconds = 1;
+  int seconds = 0;
   while(true)
   {
     await Future.delayed(Duration(seconds: seconds), () async{
@@ -182,14 +191,49 @@ void watchBalanceChanges(ServiceData param) async
   }
 }
 
-///Isolated function to watch token balance changes
+
+Future<void> requestBalanceFromNetwork(Map<String, List> contracts, Map<int, String> addresses) async
+{
+  // List<ContractAbi> contractAbiList = contractDetails.values.map<ContractAbi>((list) => list[0]).toList();
+  // print(contractAbiList[0].name);
+  // contractAbiList = [contractAbiList[0]];
+  // String address = contractDetails[1];
+  Map<int, List> data = {};
+
+  contracts.values.forEach((contractDetails) async {
+    ContractAbi contractAbi = contractDetails[0];
+    EthereumAddress contractAddress = EthereumAddress.fromHex(contractDetails[1]);
+    int chainId = int.tryParse(contractDetails[2]);
+    // print('requestBalanceFromNetwork(${contractAbi.name},$contractAddress,$chainId)');
+    await Future.forEach(addresses.entries, (entry) async{
+      EthereumAddress accountAddress = EthereumAddress.fromHex(entry.value);
+      String url = !contractAbi.name.contains('testnet') ? env['NETWORK_URL'] : env["TESTNET_URL"];
+      http.Client httpClient = http.Client();
+      Web3Client ethClient = Web3Client(url, httpClient);
+
+      ERC20 contract = ERC20(contractAbi, address: contractAddress, client: ethClient, chainId: chainId);
+
+      BigInt balance = await contract.balanceOf(accountAddress);
+      String digit = balance.toDouble() != 0 ? weiToFixedPoint(balance.toString()) : "0";
+      print("TOKEN:${contractAbi.name} | ACC-ID:${entry.key} | WEI:$balance | DIGITS:$digit");
+      data[entry.key] = [
+        entry.value,
+        shortAmount(digit,length: 6),
+      ];
+    });
+  });
+  // return data;
+}
+
+// ///Isolated function to watch token balance changes
 void watchTokenChanges(ServiceData param) async
 {
   EthereumAddress address = param.data["address"];
   http.Client httpClient = http.Client();
   Web3Client ethClient = Web3Client(param.data["url"], httpClient);
-  AvmeContract contract = AvmeContract(address: param.data["contractAddress"],client: ethClient, chainId: 43113);
-  int seconds = 1;
+  // Avme contract = Avme(param.data["contractAbi"],address: param.data["contractAddress"],client: ethClient, chainId: 43113);
+  ERC20 contract = ERC20(param.data["contractAbi"],address: param.data["contractAddress"],client: ethClient, chainId: 43113);
+  int seconds = 0;
   while(true)
   {
     await Future.delayed(Duration(seconds: seconds), () async{

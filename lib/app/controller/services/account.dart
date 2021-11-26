@@ -91,7 +91,7 @@ void buildAccountObjectList(ServiceData param) async
     [
       param.data["index"],
       AccountObject(
-        account: _wallet,
+        walletObj: _wallet,
         address: _ethAddress.hex,
         slot: _accountData["slot"],
         derived: _accountData["derived"],

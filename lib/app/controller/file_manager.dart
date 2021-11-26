@@ -8,7 +8,6 @@ class FileManager
   String ext = ".json";
   String accountFolder = "Accounts/";
   String transactions = "Transactions/";
-  String contacts = "Contacts/";
   String filename = "accounts";
   JsonEncoder encoder = JsonEncoder.withIndent('  ');
 

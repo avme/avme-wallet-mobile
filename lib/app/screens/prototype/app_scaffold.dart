@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:avme_wallet/app/controller/services/connection.dart';
 import 'package:avme_wallet/app/model/app.dart';
+import 'package:avme_wallet/app/model/token.dart';
 import 'package:avme_wallet/app/screens/prototype/contacts.dart';
 import 'package:avme_wallet/app/screens/prototype/history.dart';
+import 'package:avme_wallet/app/screens/prototype/tokens.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/accounts_drawer.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/debug.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
@@ -35,7 +37,7 @@ class _State extends State<AppScaffold>
   ///the build method kicks in, we make a Map<String,Widget>
 
   List<String> routeLabels = [
-    'About', 'Overview', 'History', 'Send', 'Contacts', 'Exchange'];
+    'Tokens', 'Overview', 'History', 'Send', 'Contacts', 'Exchange','About'];
 
   List<Widget> routeWidgets;
 
@@ -49,16 +51,8 @@ class _State extends State<AppScaffold>
     );
 
     routeWidgets = [
-      //About
-      Center(
-        child: Text(
-          'About',
-          style: TextStyle(
-            fontSize: 25,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
+
+      Tokens(),
 
       //Overview
       Overview(
@@ -84,6 +78,17 @@ class _State extends State<AppScaffold>
       Center(
         child: Text(
           'Exchange',
+          style: TextStyle(
+            fontSize: 25,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+
+      //About
+      Center(
+        child: Text(
+          'About',
           style: TextStyle(
             fontSize: 25,
             fontWeight: FontWeight.w600,

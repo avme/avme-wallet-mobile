@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:avme_wallet/app/model/app.dart';
-import 'package:avme_wallet/external/contracts/avme_contract.dart';
+// import 'package:avme_wallet/external/contracts/avme_contract.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart';
 import 'package:provider/provider.dart';
@@ -92,15 +92,15 @@ class Options extends StatelessWidget
                 title: Text("Call contract test"),
                 trailing: ElevatedButton(
                   onPressed: () async {
-                    EthereumAddress address = await appState.currentAccount.account.privateKey.extractAddress();
+                    EthereumAddress address = await appState.currentAccount.walletObj.privateKey.extractAddress();
                     // print(env['NETWORK_URL']);
                     Client httpClient = Client();
                     Web3Client ethClient = Web3Client(env['NETWORK_URL'], httpClient);
-                    EthereumAddress contractAddress = EthereumAddress.fromHex(env["CONTRACT_ADDRESS"]);
+                    // EthereumAddress contractAddress = EthereumAddress.fromHex(env["CONTRACT_ADDRESS"]);
                     // Avme contract = new Avme(address, ethClient);
-                    AvmeContract contract = new AvmeContract(address: contractAddress,client: ethClient, chainId: 43113);
-                    var wei = await contract.balanceOf(address);
-                    print(wei);
+                    // AvmeContract contract = new AvmeContract(address: contractAddress,client: ethClient, chainId: 43113);
+                    // var wei = await contract.balanceOf(address);
+                    // print(wei);
                     // BigInt wei = await contract.balanceOf(address);
                     // String result = weiToFixedPoint(wei.toString());
                     // print(result);

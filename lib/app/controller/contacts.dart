@@ -22,7 +22,8 @@ class ContactsController extends ChangeNotifier {
 
   Future<File> contactsFile() async
   {
-    String fileFolder = "${this.fileManager.documentsFolder}$contacts";
+    await this.fileManager.getDocumentsFolder();
+    String fileFolder = "${this.fileManager.documentsFolder}Contacts/";
     print(fileFolder);
     await this.fileManager.checkPath(fileFolder);
     File file = File("${fileFolder}contacts${this.fileManager.ext}");

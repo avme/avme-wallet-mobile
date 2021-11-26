@@ -6,6 +6,7 @@ import 'package:avme_wallet/app/screens/prototype/widgets/popup.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:web3dart/web3dart.dart' as web3dart;
 import 'boxes.dart';
 import 'metacoin.dart';
 import 'token.dart';
@@ -33,15 +34,16 @@ class AvmeWallet extends ChangeNotifier
   bool debugMode = false;
   bool debugPanel = false;
 
+  Map<String, List> contracts;
+
   AvmeWallet(this.fileManager){
-    // print("[AvmeWallet]");
     this.debugMode = env["DEBUG_MODE"] == "TRUE" ? true : false;
     this.walletManager = WalletManager(this.fileManager);
   }
 
-  get getW3DartWallet => _w3dartWallet;
-  get accountList => _accountList;
-  get currentAccount => _accountList[currentWalletId];
+  Wallet get getW3DartWallet => _w3dartWallet;
+  Map<int,AccountObject> get accountList => _accountList;
+  AccountObject get currentAccount => _accountList[currentWalletId];
   get currentWalletId => _currentWalletId;
 
   set w3dartWallet (Wallet value) => _w3dartWallet = value;

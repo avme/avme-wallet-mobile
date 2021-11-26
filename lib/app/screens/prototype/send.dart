@@ -8,11 +8,11 @@ import 'package:avme_wallet/app/screens/prototype/widgets/labeltext.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/notification_bar.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/popup.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/textform.dart';
-import 'package:avme_wallet/app/screens/widgets/custom_widgets.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../qrcode_reader.dart';
 
@@ -410,38 +410,53 @@ class _SendState extends State<Send> {
                             textAlign: TextAlign.end,
                             onChanged: (String value){
                               setState((){
-                                double newValue = 0;
-                                if(value.length == 0 || value == null)
-                                  return newValue;
-                                //IS AVAX
-                                if(tokenDropdownValue == 1)
+                                if(double.tryParse(value) != null && double.tryParse(value) > 0)
                                 {
-                                  newValue = double.tryParse(value) * double.tryParse(app.metaCoin.value);
+                                  double newValue = 0;
+                                  if(value.length == 0 || value == null)
+                                    return newValue;
+                                  //IS AVAX
+                                  if(tokenDropdownValue == 1)
+                                  {
+                                    newValue = double.tryParse(value) * double.tryParse(app.metaCoin.value);
+                                  }
+                                  //IS AVME
+                                  else if (tokenDropdownValue == 2)
+                                  {
+                                    newValue = double.tryParse(value) * double.tryParse(app.token.value);
+                                  }
+                                  convertedValue = shortAmount(newValue.toString(),comma: true,length: 3);
+                                  // weiValue = bigIntFixedPointToWei(newValue.toString().replaceAll(r",", "."));
+                                  if(_sendTokenForm.currentState != null)
+                                    _sendTokenForm.currentState.validate();
                                 }
-                                //IS AVME
-                                else if (tokenDropdownValue == 2)
+                                else
                                 {
-                                  newValue = double.tryParse(value) * double.tryParse(app.token.value);
+                                  convertedValue = "0";
                                 }
-                                convertedValue = shortAmount(newValue.toString(),comma: true,length: 3);
-                                // weiValue = bigIntFixedPointToWei(newValue.toString().replaceAll(r",", "."));
-                                if(_sendTokenForm.currentState != null)
-                                  _sendTokenForm.currentState.validate();
                               });
                             },
                             validator: (String value){
-                              // bigIntValue > appState.accountList[appState.currentWalletId].rawTokenBalance
-                              weiValue = bigIntFixedPointToWei(value.replaceAll(r",", "."));
-                              //IS AVAX
-                              print("AVAX TOKEN:${app.currentAccount.balance}");
-                              print("AVME TOKEN:${app.currentAccount.tokenBalance}");
-                              if(tokenDropdownValue == 1 && (weiValue > app.currentAccount.waiBalance))
-                                return "Not enough balance (AVAX)";
-                              //IS AVME
-                              else if(tokenDropdownValue == 2 && (weiValue > app.currentAccount.rawTokenBalance))
-                                return "Not enough balance (AVME)";
-                              else
-                                return null;
+                              if(double.tryParse(value) != null && double.tryParse(value) > 0)
+                              {
+                                weiValue = bigIntFixedPointToWei(value.replaceAll(r",", "."));
+                                //IS AVAX
+                                print("AVAX TOKEN:${app.currentAccount.balance}");
+                                print("AVME TOKEN:${app.currentAccount.tokenBalance}");
+                                if(tokenDropdownValue == 1 && (weiValue > app.currentAccount.waiBalance))
+                                  return "Not enough balance (AVAX)";
+                                //IS AVME
+                                else if(tokenDropdownValue == 2 && (weiValue > app.currentAccount.rawTokenBalance))
+                                  return "Not enough balance (AVME)";
+                              }
+                              else if (double.tryParse(value) == null)
+                              {
+                                if(tokenDropdownValue == 1)
+                                  return "Not enough balance (AVAX)";
+                                else if(tokenDropdownValue == 2)
+                                  return "Not enough balance (AVME)";
+                              }
+                              return null;
                             },
                             style: TextStyle(
                                 fontWeight: FontWeight.bold,
@@ -683,19 +698,50 @@ class _SendState extends State<Send> {
         return ProgressPopup(
           title: "Warning",
           labelNotifier: transactionStatus,
-          future: app.walletManager.sendTransaction(app, addressController.text, value, notifier:transactionStatus)
-            .then((response) {
+          future: app.walletManager.sendTransaction(app, addressController.text, value, tokenDropdownValue, notifier:transactionStatus)
+            .then((response) async{
               if(response["status"] == 200)
               {
                 Navigator.of(context).pop();
+                await Future.delayed(Duration(milliseconds: 250));
+                displayTransactionHash(response["message"]);
               }
-              print(jsonEncode(response));
+              else
+                Navigator.of(context).pop();
           })
         );
       })
     );
   }
-  
+
+  void displayTransactionHash(String message)
+  {
+    showDialog(context:context, builder: (_) =>
+      AppPopupWidget(
+        title: "Transaction done",
+        cancelable: false,
+        canClose: true,
+        showIndicator: false,
+        children: [
+          AppButton(onPressed: () async{
+            print(message);
+            NotificationBar().show(context,text: "Opening in browser $message");
+            Navigator.of(context).pop();
+            await Future.delayed(Duration(seconds: 2));
+            if(await canLaunch(message))
+              await launch(message);
+            else
+            {
+              NotificationBar().show(context,text: "cant launch url $message");
+              print("cant launch url $message");
+            }
+
+          }, text: "Open on Browser")
+        ]
+      )
+    );
+  }
+
   Color getColor(Set<MaterialState> states) {
     const Set<MaterialState> interactiveStates = <MaterialState>{
       MaterialState.pressed,

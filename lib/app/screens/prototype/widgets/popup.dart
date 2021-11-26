@@ -584,7 +584,7 @@ class _ProgressPopupState extends State<ProgressPopup> with SingleTickerProvider
                             context,
                             text: "please wait for the current operation to finish."
                           );
-                          return false;
+                          return true;
                         },
                         child: FutureBuilder(
                           future: widget.future,

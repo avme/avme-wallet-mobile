@@ -1,11 +1,10 @@
 import 'dart:isolate';
+import 'dart:math';
 import 'dart:typed_data';
-import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/transaction_information.dart' as transactionModel;
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/model/service_data.dart';
-import 'package:avme_wallet/app/packages/services.dart';
-import 'package:avme_wallet/external/contracts/avme_contract.dart';
+import 'package:avme_wallet/external/contracts/erc20_contract.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -22,111 +21,83 @@ Future<bool> hasEnoughBalanceToPayTaxes(BigInt balance) async {
   return tax > balance ? false : true;
 }
 
-Future<bool> sendTransaction(AvmeWallet appState, String receiverAddress, BigInt amount, {ValueNotifier notifier}) async
+Future<String> sendTransaction(AvmeWallet appState, String receiverAddress, BigInt amount, int tokenId, {ValueNotifier notifier}) async
 {
-  ReceivePort receivePort = ReceivePort();
   Client httpClient = Client();
   Web3Client ethClient = Web3Client(url, httpClient);
-  // Credentials accountCredentials = await ethClient.credentialsFromPrivateKey(appState.currentAccount.address);
+  BigInt addToFee = BigInt.from((5 * pow(10,9)));
+  EtherAmount gasPrice = EtherAmount.inWei((await ethClient.getGasPrice()).getInWei + addToFee);
 
-  EthereumAddress contractAddress = EthereumAddress.fromHex(env["CONTRACT_ADDRESS"]);
-  AvmeContract avmeContract = AvmeContract(
-      address:contractAddress,
-      client: ethClient,
-      chainId: int.parse(env["CHAIN_ID"]),
-  );
-  Credentials accountCredentials = await avmeContract.client.credentialsFromPrivateKey(appState.currentAccount.address);
-
-  Transaction _transaction = await avmeContract
-      .transfer(
+  Transaction transaction = Transaction(
       to: EthereumAddress.fromHex(receiverAddress),
-      value: amount,
-      credentials: accountCredentials,
+      maxGas: 70000,
+      gasPrice: gasPrice,
+      value: EtherAmount.inWei(amount),
   );
+
+  //Todo ASAP: change from token id to token identifier
+  ///1: AVAX, 2: AVME
+
   notifier.value = "2 - Signing Transaction";
-  print("[Info] Transaction: ${_transaction.data}");
-  Uint8List signedTransaction = await ethClient.signTransaction(
-    appState.currentAccount.account.privateKey,
-    _transaction,
-    chainId: int.parse(env["CHAIN_ID"])
-  );
+  String transactionHash;
+  Web3Client transactionClient;
+  if(tokenId == 1)
+  {
+    Credentials accountCredentials = appState.currentAccount.walletObj.privateKey;
+    transactionHash = await ethClient.sendTransaction(accountCredentials, transaction, chainId: 43113);
+    // Uint8List signedTransaction = await ethClient.signTransaction(
+    //     accountCredentials,
+    //     transaction);
+    // transactionHash = await ethClient.sendRawTransaction(signedTransaction);
+    print("[transactionHash]$transactionHash");
+    notifier.value = "3 - Sending Transaction";
 
-  notifier.value = "3 - Creating Transaction Hash";
-  String transactionHash = await ethClient.sendRawTransaction(signedTransaction);
-
-  print("[Info] transaction hash:$transactionHash");
-
-  Map <String, dynamic> data = {
-    "url" : url,
-    "transactionHash" : transactionHash,
-    "contractAddress" : env["CONTRACT_ADDRESS"],
-    "chainId" : int.parse(env["CHAIN_ID"]),
-    "amount" : amount,
-  };
-
-  // requestTransactionData = ServiceData(data, receivePort.sendPort);
-  notifier.value = "4 - Waiting for the network";
-  await compute(getTransactionByHash, data).then((response) async {
-    // TransactionInformation _data = response["response"];
-    TransactionInformation _data = response["response"];
-        appState.lastTransactionWasSucessful.setLastTransactionInformation(
-        _data,
-        // tokenValue: EtherAmount.fromUnitAndValue(EtherUnit.gwei, amount),
-        tokenValue: EtherAmount.inWei(amount),
-        to: receiverAddress
+    transactionClient = ethClient;
+  }
+  else
+  {
+    transaction = Transaction(
+      maxGas: 70000,
+      gasPrice: gasPrice
     );
-    notifier.value = "5 - Writing Transaction";
-    await Future.delayed(Duration(seconds: 2));
-    appState.lastTransactionWasSucessful.writeTransaction();
-  });
-  // appState.services["pendingTransaction"] = await Isolate.spawn(getTransactionByHash,requestTransactionData);
-  //
-  // notifier.value = "4 - Waiting for the network";
-  //
-  // receivePort.listen((response) async {
-  //   print("Returned Data: ${response["response"]}");
-  //   appState.killService("pendingTransaction");
-  //   TransactionInformation _data = response["response"];
-  //   appState.lastTransactionWasSucessful.setLastTransactionInformation(
-  //     _data,
-  //     // tokenValue: EtherAmount.fromUnitAndValue(EtherUnit.gwei, amount),
-  //     tokenValue: EtherAmount.inWei(amount),
-  //     to: receiverAddress
-  //   );
-  //   await Future.delayed(Duration(seconds: 2));
-  //   appState.lastTransactionWasSucessful.writeTransaction();
-  // });
-  return true;
-}
+    EthereumAddress contractAddress = EthereumAddress.fromHex(appState.contracts["AVME testnet"][1]);
+    ContractAbi abi = appState.contracts["AVME testnet"][0];
+    int chainId = int.tryParse(appState.contracts["AVME testnet"][2]);
+    ERC20 contract = ERC20(abi, address: contractAddress, client: ethClient, chainId: chainId);
+    Credentials accountCredentials = appState.currentAccount.walletObj.privateKey;
+    notifier.value = "3 - Sending Transaction";
 
-Future<Map> getTransactionByHash(Map data) async
-{
-  Client httpClient = Client();
-  Web3Client ethClient = Web3Client(data["url"], httpClient);
-  String transactionHash = data['transactionHash'];
-  EthereumAddress contractAddress = EthereumAddress.fromHex(data["contractAddress"]);
-  AvmeContract avmeContract =  AvmeContract(address:contractAddress, client: ethClient, chainId: data["chainId"]);
+    transactionHash = await contract.transfer(
+        EthereumAddress.fromHex(receiverAddress),
+        amount,
+        credentials: accountCredentials,
+        transaction: transaction
+    );
 
+    transactionClient = contract.client;
+  }
+  print(transactionHash);
+  notifier.value = "4 - Confirming Transaction";
+  /*Recovering Transaction hash*/
   TransactionInformation transactionInformation;
   TransactionReceipt transactionReceipt;
   int secondsPassed = 0;
-  Map mapInfo = {};
-  while(true)
-  {
-    try
-    {
-      await Future.delayed(Duration(seconds:2));
-      transactionReceipt = await avmeContract.client.getTransactionReceipt(transactionHash);
+  while(true) {
+    try {
+      await Future.delayed(Duration(seconds:1));
+      transactionReceipt = await transactionClient.getTransactionReceipt(transactionHash);
       print("[info] Receipt: $transactionReceipt");
-      if(transactionReceipt.status)
-      {
-        transactionInformation = await avmeContract.client.getTransactionByHash(transactionHash);
+      if(transactionReceipt.status) {
+        transactionInformation = await transactionClient.getTransactionByHash(transactionHash);
         print("[Info] seconds passed: $secondsPassed, and returned $transactionInformation");
         if(transactionInformation != null)
         {
-          mapInfo = {
-            "response" : transactionInformation,
-          };
+          appState.lastTransactionWasSucessful.setLastTransactionInformation(
+              transactionInformation,
+              tokenValue: EtherAmount.inWei(amount),
+              to: receiverAddress
+          );
+          appState.lastTransactionWasSucessful.writeTransaction();
           break;
         }
       }
@@ -136,5 +107,5 @@ Future<Map> getTransactionByHash(Map data) async
       print("ERROR $e");
     }
   }
-  return mapInfo;
+  return "https://snowtrace.io/tx/$transactionHash";
 }

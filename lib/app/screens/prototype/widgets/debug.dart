@@ -1,4 +1,8 @@
+import 'dart:convert';
+
+import 'package:avme_wallet/app/controller/services/contract.dart';
 import 'package:avme_wallet/app/controller/services/push_notification.dart';
+import 'package:avme_wallet/app/model/active_contracts.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/screens/widgets/custom_widgets.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -25,12 +29,13 @@ class DebugOverlay extends StatefulWidget {
 class _DebugOverlayState extends State<DebugOverlay> {
 
   bool shouldDisplay = false;
-
+  Contracts contracts;
   @override
   void initState()
   {
     PushNotification.init();
     listenNotifications();
+    contracts = Contracts.getInstance();
     super.initState();
   }
 
@@ -92,6 +97,84 @@ class _DebugOverlayState extends State<DebugOverlay> {
                   children: [
                     Column(
                       children: [
+                        debugTitle("Menu"),
+                        Row(
+                          crossAxisAlignment: cStart,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: cStart,
+                                children: [
+                                  Row(
+                                    children: [
+                                      GestureDetector(onTap: () async {
+                                        AvmeWallet app = Provider.of<AvmeWallet>(context,listen: false);
+                                        app.walletManager.requestBalanceFromNetwork(app);
+                                      }, child: Text("REQUEST BALANCE (ALL)"))
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      GestureDetector(onTap: () async {
+                                        ActiveContracts token = Provider.of<ActiveContracts>(context, listen: false);
+                                        token.addToken("AVME");
+                                        token.addToken("AVME testnet");
+                                      }, child: Text("+TOKEN AVME"))
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      GestureDetector(onTap: () async {
+                                        ActiveContracts token = Provider.of<ActiveContracts>(context, listen: false);
+                                        token.addToken("Pangolin");
+                                      }, child: Text("+TOKEN PGL"))
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      GestureDetector(onTap: () async {
+                                        ActiveContracts token = Provider.of<ActiveContracts>(context, listen: false);
+                                        token.addToken("JoeToken");
+                                      }, child: Text("+TOKEN JOE"))
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: cStart,
+                                children: [
+                                  Row(
+                                    children: [
+                                      GestureDetector(onTap: () async {
+                                        ActiveContracts token = Provider.of<ActiveContracts>(context, listen: false);
+                                        token.removeToken("AVME");
+                                        token.removeToken("AVME testnet");
+                                      }, child: Text("-TOKEN AVME"))
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      GestureDetector(onTap: () async {
+                                        ActiveContracts token = Provider.of<ActiveContracts>(context, listen: false);
+                                        token.removeToken("Pangolin");
+                                      }, child: Text("-TOKEN PGL"))
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      GestureDetector(onTap: () async {
+                                        ActiveContracts token = Provider.of<ActiveContracts>(context, listen: false);
+                                        token.removeToken("JoeToken");
+                                      }, child: Text("-TOKEN JOE"))
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                         debugTitle("Notifications"),
                         Row(
                           crossAxisAlignment: cStart,
@@ -252,10 +335,11 @@ class _DebugOverlayState extends State<DebugOverlay> {
                                               children: [
                                                 TextSpan(
                                                     style: textBase,
-                                                    children: [
-                                                      TextSpan(text: "AVME, "),
-                                                      TextSpan(text: "AVAX"),
-                                                    ]
+                                                    children: contracts.contracts.keys.map((key) {
+                                                      if(key == contracts.contracts.keys.last)
+                                                        return TextSpan(text: "\"$key\"");
+                                                      return TextSpan(text: "\"$key\", ");
+                                                    }).toList()
                                                 )
                                               ]
                                           ),

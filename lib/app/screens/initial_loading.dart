@@ -1,7 +1,9 @@
 import 'package:avme_wallet/app/controller/contacts.dart';
 import 'package:avme_wallet/app/controller/services/balance.dart';
+import 'package:avme_wallet/app/controller/services/contract.dart';
 import 'package:avme_wallet/app/controller/services/push_notification.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
+import 'package:avme_wallet/app/model/active_contracts.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/notification_bar.dart';
 import 'package:avme_wallet/app/screens/welcome.dart';
@@ -29,11 +31,15 @@ class ButtonText extends StatelessWidget {
 
 class _InitialLoadingState extends State<InitialLoading>{
   AvmeWallet wallet;
+  Contracts contractsService;
   @override
   void initState()
   {
     wallet = Provider.of<AvmeWallet>(context, listen: false);
     Provider.of<ContactsController>(context, listen: false);
+    Provider.of<ActiveContracts>(context, listen: false);
+    contractsService = Contracts.getInstance();
+    contractsService.initialize();
     super.initState();
   }
 
@@ -99,7 +105,8 @@ class _InitialLoadingState extends State<InitialLoading>{
   Future<void> startWalletServices(BuildContext context) async
   {
     await Future.delayed(Duration(milliseconds: 500),() async{
-      if (!wallet.services.containsKey("valueSubscription"))
+      wallet.contracts = contractsService.contracts;
+      if(!wallet.services.containsKey("valueSubscription"))
         valueSubscription(wallet);
       if(env["ALWAYS_RESET"].toString().toUpperCase() == "TRUE")
         wallet.walletManager.deletePreviousWallet();

@@ -192,7 +192,7 @@ class WalletManager
     }
   }
 
-  Future<Map> authenticate(String password, AvmeWallet wallet) async
+  Future<Map> authenticate(String password, AvmeWallet appState) async
   {
     Map ret = {"status":400,"message":"Wrong password."};
     bool mnemonicUnlocked = await decryptAesWallet(password);
@@ -204,10 +204,10 @@ class WalletManager
     try
     {
       print("INICIANDO loadWalletAccounts");
-      await loadWalletAccounts(password, wallet);
-      if(wallet.accountList[0].account != null)
+      await loadWalletAccounts(password, appState);
+      if(appState.accountList[0].walletObj != null)
       {
-        wallet.w3dartWallet = wallet.accountList[0].account;
+        appState.w3dartWallet = appState.accountList[0].walletObj;
       }
       ret["status"] = 200;
       ret["message"] = "";
@@ -245,18 +245,18 @@ class WalletManager
     }
   }
 
-  Future<Map<String,dynamic>> sendTransaction(AvmeWallet wallet, String address, BigInt amount, {ValueNotifier notifier}) async
+  Future<Map<String,dynamic>> sendTransaction(AvmeWallet wallet, String address, BigInt amount, tokenId, {ValueNotifier notifier}) async
   {
     if (!await services.hasEnoughBalanceToPayTaxes(wallet.currentAccount.waiBalance))
     {
       return {"title" : "Attention", "status": 500, "message": "Not enough AVAX to complete the transaction."};
     }
     wallet.lastTransactionWasSucessful.retrievingData = true;
-    await services.sendTransaction(wallet, address, amount, notifier: notifier);
-    return {"title": "", "status": 200, "message": ""};
+    String url = await services.sendTransaction(wallet, address, amount, tokenId, notifier: notifier);
+    return {"title": "", "status": 200, "message": url};
   }
 
-  Future<Map<int,List>> previewAccounts(String password) async
+  Future<Map<int,List>> previewAvaxBalance(String password) async
   {
     String mnemonic = await decryptAesWallet(password, shouldReturnMnemonicFile: true);
     BIP32 node = bip32.BIP32.fromSeed(await compute(bip39.mnemonicToSeed,mnemonic));
@@ -271,5 +271,11 @@ class WalletManager
     }
     Map<int,List> data = await services.requestBalanceByAddress(pkeyMap);
     return data;
+  }
+
+  Future<void> requestBalanceFromNetwork(AvmeWallet wallet) async
+  {
+    Map<int,String> pkeys = wallet.accountList.map((key,value) => MapEntry(key, value.address));
+    await services.requestBalanceFromNetwork(wallet.contracts, pkeys);
   }
 }

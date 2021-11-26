@@ -13,6 +13,7 @@ import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'app/controller/file_manager.dart';
+import 'app/model/active_contracts.dart';
 
 main() async{
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,6 +29,7 @@ main() async{
   runApp(MultiProvider(
       providers: [
         ChangeNotifierProvider<AvmeWallet>(create:(_) => AvmeWallet(fileManager)),
+        ChangeNotifierProvider<ActiveContracts>(create:(_) => ActiveContracts(fileManager)),
         ChangeNotifierProvider<ContactsController>(create:(_) => ContactsController(fileManager)),
       ],
     child: AvmeWalletApp(),

@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'dart:math';
 
 // /// Default Colors
 //
@@ -98,6 +98,11 @@ class AppColors {
             }
             else tries++;
         }
+    }
+
+    Color randomPrimaries()
+    {
+        return Colors.primaries[Random().nextInt(Colors.primaries.length)];
     }
 }
 

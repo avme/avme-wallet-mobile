@@ -183,18 +183,18 @@ class _SendState extends State<Send> {
         return CircularLoading(text: "Requesting Transaction, please wait.");
       },
     );
-    Map<String, dynamic> response = await appState.walletManager.sendTransaction(appState, sendersAddress.text,bigIntValue);
-    Navigator.pop(loadingDialog);
-    if(response["status"] != 200)
-    {
-      showDialog(
-        context: context,
-        barrierDismissible: true,
-        builder: (BuildContext context) {
-          return SimpleWarning(title: response["title"],text: response["message"],);
-        },
-      );
-    }
+    // Map<String, dynamic> response = await appState.walletManager.sendTransaction(appState, sendersAddress.text,bigIntValue);
+    // Navigator.pop(loadingDialog);
+    // if(response["status"] != 200)
+    // {
+    //   showDialog(
+    //     context: context,
+    //     barrierDismissible: true,
+    //     builder: (BuildContext context) {
+    //       return SimpleWarning(title: response["title"],text: response["message"],);
+    //     },
+    //   );
+    // }
   }
 
   void validateBeforeSending() async

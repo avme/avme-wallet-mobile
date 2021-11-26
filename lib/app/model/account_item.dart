@@ -4,14 +4,14 @@ import 'package:web3dart/credentials.dart';
 class AccountObject
 {
   AccountObject({
-    this.account,
+    this.walletObj,
     this.address,
     this.slot,
     this.derived,
     this.title
   });
 
-  Wallet account;
+  Wallet walletObj;
   String address;
   BigInt _weiBalance;
   BigInt _tokenWeiBalance;

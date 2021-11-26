@@ -45,6 +45,9 @@ BigInt bigIntFixedPointToWei(String amount, {int decimals = 18})
 
 String fixedPointToWei(String amount, int decimals) {
 
+  if(double.tryParse(amount) == 0)
+    return amount;
+
   String digitPadding = "";
   String valuestr = "";
 
