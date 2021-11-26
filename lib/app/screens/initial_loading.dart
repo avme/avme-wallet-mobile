@@ -66,7 +66,7 @@ class _InitialLoadingState extends State<InitialLoading>{
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Image.asset(
-                      'assets/resized-newlogo02-trans.png',
+                      'assets/avme_logo.png',
                       width: MediaQuery.of(context).size.width * 1 / 4.5,
                       fit: BoxFit.fitHeight,
                     ),

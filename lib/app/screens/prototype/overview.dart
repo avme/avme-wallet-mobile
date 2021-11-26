@@ -160,7 +160,7 @@ class _OverviewState extends State<Overview> {
             TokenValue(
               image:
               Image.asset(
-                'assets/resized-newlogo02-trans.png',
+                'assets/avme_logo.png',
                 fit: BoxFit.fitHeight,),
               name: 'AVME',
               amount: "${shortAmount(app.currentAccount.tokenBalance)}",

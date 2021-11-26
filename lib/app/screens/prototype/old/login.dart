@@ -55,7 +55,7 @@ class _LoginState extends State<Login> {
                     constraints: BoxConstraints.expand(),
                     child: Center(
                       child: Image.asset(
-                        'assets/resized-newlogo02-trans.png',
+                        'assets/avme_logo.png',
                         width: 120,
                         fit: BoxFit.fitHeight,),
                     ),

@@ -187,7 +187,7 @@ class _State extends State<AppScaffold>
             ),
             Center(
               child: Image.asset(
-                'assets/resized-newlogo02-trans.png',
+                'assets/avme_logo.png',
                 width: MediaQuery.of(context).padding.top + kToolbarHeight * 1 / 8,
                 fit: BoxFit.fitHeight,)
             ),
