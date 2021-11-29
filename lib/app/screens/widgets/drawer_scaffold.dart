@@ -60,7 +60,7 @@ class _DrawerScaffoldState extends State<DrawerScaffold> {
           ),
         ),
       ),
-      drawer: AppDrawer(Container(), widget.pages, Container(), side: "LEFT"),
+      drawer: AppDrawer(widget.pages, side: "LEFT"),
     );
   }
 }

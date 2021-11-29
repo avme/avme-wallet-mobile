@@ -212,11 +212,7 @@ class _State extends State<AppScaffold>
         ],
       ),
       ///Drawer in the Left Side
-      drawer: Consumer<AvmeWallet>(
-        builder: (context, app, _){
-          return AccountsDrawer(app: app,);
-        },
-      ),
+      drawer: AppDrawer({"Example 1" : Container()}, side: "LEFT",),
       ///Drawer in the Right Side
       // endDrawer: AppDrawer({"Example 1" : Container()}),
       endDrawer: Consumer<AvmeWallet>(

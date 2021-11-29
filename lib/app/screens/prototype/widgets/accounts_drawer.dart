@@ -481,43 +481,20 @@ class CustomAppDrawer extends StatefulWidget {
 class _AppDrawerState extends State<CustomAppDrawer> {
   @override
   Widget build(BuildContext context) {
-
-    List<Widget> drawerElements = [];
-
-    widget.routes.forEach((key, value) {
-      if(key.runtimeType == int)
-      {
-        drawerElements.add(value);
-      }
-      else
-      {
-        drawerElements.add(
-            ListTile(
-                title: Text(key),
-                onTap: () {
-                  // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => value));
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => value));
-                }
-            )
-        );
-      }
-    });
-
-    return ClipRRect(
-      borderRadius: widget.side.toUpperCase() == "RIGHT"
-          ? BorderRadius.only(
-          topLeft: labelRadius.topLeft * 2,
-          bottomLeft: labelRadius.bottomLeft * 2
-      )
-          : BorderRadius.only(
-          topRight: labelRadius.topRight * 2,
-          bottomRight: labelRadius.bottomRight * 2
-      )
-      ,
-      child: SizedBox(
-        width: MediaQuery.of(context).size.width / 8 * 7,
-        child: Padding(
-          padding: const EdgeInsets.only(top: 16, bottom: 16),
+    return SizedBox(
+      width: MediaQuery.of(context).size.width / 8 * 7,
+      child: Padding(
+        padding: const EdgeInsets.only(top: 16, bottom: 16),
+        child: ClipRRect(
+          borderRadius: widget.side.toUpperCase() == "RIGHT"
+              ? BorderRadius.only(
+              topLeft: labelRadius.topLeft * 2,
+              bottomLeft: labelRadius.bottomLeft * 2
+          )
+              : BorderRadius.only(
+              topRight: labelRadius.topRight * 2,
+              bottomRight: labelRadius.bottomRight * 2
+          ),
           child: Drawer(
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 24.0),
@@ -529,7 +506,17 @@ class _AppDrawerState extends State<CustomAppDrawer> {
                     child: ListView(
                       shrinkWrap: true,
                       padding: EdgeInsets.zero,
-                      children: drawerElements,
+                      children: widget.routes.entries.map((entry) {
+                        if(entry.key.runtimeType == int)
+                          return entry.value;
+                        else
+                          return ListTile(
+                            title: Text("${entry.key}"),
+                            onTap: (){
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => entry.value));
+                            },
+                          );
+                      }).toList(),
                     ),
                   ),
                   Padding(
