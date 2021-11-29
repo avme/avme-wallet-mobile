@@ -44,11 +44,15 @@ Future<String> sendTransaction(AvmeWallet appState, String receiverAddress, BigI
   if(tokenId == 1)
   {
     Credentials accountCredentials = appState.currentAccount.walletObj.privateKey;
-    transactionHash = await ethClient.sendTransaction(accountCredentials, transaction, chainId: 43113);
-    // Uint8List signedTransaction = await ethClient.signTransaction(
-    //     accountCredentials,
-    //     transaction);
-    // transactionHash = await ethClient.sendRawTransaction(signedTransaction);
+    // transactionHash = await ethClient.sendTransaction(accountCredentials, transaction, chainId: 43113);
+    Uint8List signedTransaction = await ethClient.signTransaction(
+      accountCredentials,
+      transaction,
+      chainId:43113,
+    );
+    print("[signedTransaction]");
+    print(signedTransaction);
+    transactionHash = await ethClient.sendRawTransaction(signedTransaction);
     print("[transactionHash]$transactionHash");
     notifier.value = "3 - Sending Transaction";
 
