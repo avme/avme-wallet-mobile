@@ -44,9 +44,22 @@ class _State extends State<AppScaffold>
 
   final List<Widget> routeWidgets = [];
 
+  ///You can use both a single parameter as Widget or Function
+  ///or a list, currently using this format:
+  /// [ICON] IconData, used in leading parameter of ListTile
+  /// [Key] String, Menu item label
+  /// [Function] or [Widget] to stack in navigator or run function in OnTap of
+  /// ListTile
+
   final Map<String, dynamic> leftDrawer = {
-    "Settings" : Settings(),
-    "Exit": () => closeApp()
+    "Settings" : [Icons.settings, Settings()],
+    // "Icon Test" : [Icons.map, Settings()],
+    "Exit": [Icons.exit_to_app,() => closeApp()],
+
+    ///"Exemple of Function": () => debugPrint("Hello"), //Executes code
+    ///"Exemple of Function with icon": [Icons.map,() => debugPrint("Hello again")], //Executes code passing an icon
+    ///"Exemple of Widget": Widget(), //redirect with navigator
+    ///"Exemple of Widget": [Icons.code,Widget()], //redirect with navigator
   };
 
   @override
@@ -200,7 +213,35 @@ class _State extends State<AppScaffold>
         ],
       ),
       ///Drawer in the Left Side
-      drawer: AppDrawer(this.leftDrawer, side: "LEFT",),
+      drawer: AppDrawer(
+        this.leftDrawer,
+        side: "LEFT",
+        header: Container(
+          height: 160,
+          // color: Colors.red,
+          child: DrawerHeader(
+            decoration: BoxDecoration(
+              color: AppColors.purpleDark1,
+            ),
+            padding: EdgeInsets.only(bottom: 16),
+            child: Column(
+              children: [
+                Flexible(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Image.asset('assets/logo_font.png', fit: BoxFit.scaleDown),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(bottom:8.0),
+                  child: Text("{App Version}"),
+                )
+              ],
+            ),
+            ///Image.asset('assets/avme_logo.png', fit: BoxFit.fitHeight,)
+          ),
+        ),
+        width: MediaQuery.of(context).size.width / 8 * 5,),
       ///Drawer in the Right Side
       // endDrawer: AppDrawer({"Example 1" : Container()}),
       endDrawer: Consumer<AvmeWallet>(
