@@ -232,7 +232,7 @@ class _HistoryState extends State<History> {
       );
       if(key != transactionsMap.length - 1)
         _widgetsList.add(
-          Divider(color: AppColors.labelDisabledColor,)
+          Divider()
         );
     });
     return ConstrainedBox(

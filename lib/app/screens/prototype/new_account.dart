@@ -364,7 +364,7 @@ class _NewAccountState extends State<NewAccount> {
                     Padding(
                       padding: const EdgeInsets.symmetric(
                         vertical: 12),
-                      child: Divider(color: Colors.white,),
+                      child: Divider(),
                     ),
                     getSeedList(this.walletSeedMap),
                     Padding(
@@ -642,7 +642,7 @@ class _NewAccountState extends State<NewAccount> {
                     Text(this.warning1),
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Divider(color: Colors.white,),
+                      child: Divider(),
                     ),
                     getSeedList(this.walletSeedMap),
                     Padding(

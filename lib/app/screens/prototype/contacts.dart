@@ -383,7 +383,7 @@ class _ContactsState extends State<Contacts> {
                 SizedBox(
                   height: 24.0,
                 ),
-                Divider(color: AppColors.labelDisabledColor,),
+                Divider(),
                 SizedBox(
                   height: 24.0,
                 ),
@@ -520,7 +520,6 @@ class _ContactsState extends State<Contacts> {
         ),
       ),
     );
-    // Divider(color: AppColors.labelDisabledColor,),
   }
 
   List<Widget> contactsList(Map<int,Contact> contacts)
@@ -542,7 +541,7 @@ class _ContactsState extends State<Contacts> {
               Column(
                 children: [
                   contactWidget(contact, key),
-                  Divider(color: AppColors.labelDisabledColor,)
+                  Divider()
                 ],
               )
             );
@@ -564,7 +563,7 @@ class _ContactsState extends State<Contacts> {
               Column(
                 children: [
                   contactWidget(contact, key),
-                  Divider(color: AppColors.labelDisabledColor,)
+                  Divider()
                 ],
               )
           );

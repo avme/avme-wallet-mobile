@@ -260,7 +260,7 @@ class _SendState extends State<Send> {
                             ),
                           ],
                         ),
-                        Divider(color: AppColors.labelDisabledColor,),
+                        Divider(),
 
                         /*2*/
                         Row(
@@ -290,7 +290,7 @@ class _SendState extends State<Send> {
                             ),
                           ],
                         ),
-                        Divider(color: AppColors.labelDisabledColor,),
+                        Divider(),
 
                         /*3*/
                         Row(
@@ -320,14 +320,6 @@ class _SendState extends State<Send> {
                             ),
                           ],
                         ),
-                        // Divider(color: AppColors.labelDisabledColor,),
-                        // Padding(
-                        //   padding: const EdgeInsets.all(8.0),
-                        //   child: Center(
-                        //     child: LabelText("Work in progress"),
-                        //   ),
-                        // ),
-
                       ],
                     )
                   ),
@@ -480,7 +472,7 @@ class _SendState extends State<Send> {
                       ],
                     ),
                     /*Gas Limit*/
-                    Divider(color: Colors.white,),
+                    Divider(),
                     Padding(
                       padding: const EdgeInsets.only(top: 16, bottom: 8),
                       child: Row(
@@ -573,7 +565,7 @@ class _SendState extends State<Send> {
                       height: 16,
                     ),
                     /*Recommended fees*/
-                    Divider(color: Colors.white,),
+                    Divider(),
                     Padding(
                       padding: const EdgeInsets.only(top: 16, bottom: 8),
                       child: Row(

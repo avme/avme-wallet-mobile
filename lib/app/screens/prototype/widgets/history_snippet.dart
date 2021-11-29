@@ -100,7 +100,7 @@ class _HistorySnippetState extends State<HistorySnippet> {
       );
       if(key != transactionsMap.length - 1)
         _widgetsList.add(
-            Divider(color: AppColors.labelDisabledColor,)
+            Divider()
         );
     });
     return Column(

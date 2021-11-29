@@ -381,7 +381,7 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                     SizedBox(
                       height: 24.0,
                     ),
-                    Divider(color: AppColors.labelDisabledColor,),
+                    Divider(),
                   ],
                 )
             )
