@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:provider/provider.dart';
 import 'package:avme_wallet/app/screens/prototype/send.dart';
+import 'app_drawer.dart';
 import 'overview.dart';
 
 
@@ -211,7 +212,11 @@ class _State extends State<AppScaffold>
         ],
       ),
       ///Drawer in the Left Side
-      // drawer: AppDrawer({"Example 1" : Container()}),
+      drawer: Consumer<AvmeWallet>(
+        builder: (context, app, _){
+          return AccountsDrawer(app: app,);
+        },
+      ),
       ///Drawer in the Right Side
       // endDrawer: AppDrawer({"Example 1" : Container()}),
       endDrawer: Consumer<AvmeWallet>(
