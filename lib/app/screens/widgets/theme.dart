@@ -170,5 +170,6 @@ ThemeData avmeTheme = ThemeData(
     appBarTheme: AppBarTheme(
         backgroundColor: AppColors.darkBlue
     ),
-    canvasColor: AppColors.cardBlue
+    canvasColor: AppColors.cardBlue,
+    dividerColor: AppColors.labelDisabledColor
 );

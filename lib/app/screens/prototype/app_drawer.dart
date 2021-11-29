@@ -2,7 +2,7 @@ import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
 
 class AppDrawer extends StatefulWidget {
-  final Map<String,Widget> routes;
+  final Map<String,dynamic> routes;
   final String side;
   const AppDrawer(
     this.routes,
@@ -13,6 +13,18 @@ class AppDrawer extends StatefulWidget {
 }
 
 class _AppDrawerState extends State<AppDrawer> {
+
+  TextStyle tileStyle = avmeTheme.textTheme.headline1.copyWith(
+    fontWeight: FontWeight.bold
+  );
+
+  Widget itemDivider = Padding(
+    padding: EdgeInsets.only(right: 20),
+    child: Divider(
+      height: 1,
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -30,19 +42,33 @@ class _AppDrawerState extends State<AppDrawer> {
               bottomRight: labelRadius.bottomRight * 2
           ),
           child: Drawer(
-            child: Padding(
-              // padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 24.0),
-              padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 0),
-              child: Column(
-                children: widget.routes.entries.map((entry) {
-                  return ListTile(
-                    title: Text(entry.key),
-                    onTap: (){
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => entry.value));
-                    },
+            child: ListView(
+              physics: BouncingScrollPhysics(),
+              children: widget.routes.entries.map((entry) {
+                if(entry.value is Function)
+                {
+                  return Column(
+                    children: [
+                      ListTile(
+                        title: Text(entry.key, style: tileStyle,),
+                        onTap: entry.value,
+                      ),
+                      entry.key != widget.routes.entries.last.key ? itemDivider : Container()
+                    ],
                   );
-                }).toList()
-              ),
+                }
+                return Column(
+                  children: [
+                    ListTile(
+                      title: Text(entry.key),
+                      onTap: (){
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => entry.value));
+                      },
+                    ),
+                    entry.key != widget.routes.entries.last.key ? itemDivider : Container()
+                  ],
+                );
+              }).toList()
             ),
           ),
         ),

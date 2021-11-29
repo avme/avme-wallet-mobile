@@ -1,10 +1,12 @@
 import 'dart:async';
 
 import 'package:avme_wallet/app/controller/services/connection.dart';
+import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/model/token.dart';
 import 'package:avme_wallet/app/screens/prototype/contacts.dart';
 import 'package:avme_wallet/app/screens/prototype/history.dart';
+import 'package:avme_wallet/app/screens/prototype/settings.dart';
 import 'package:avme_wallet/app/screens/prototype/tokens.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/accounts_drawer.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/debug.dart';
@@ -37,10 +39,15 @@ class _State extends State<AppScaffold>
   ///a list of labels to construct the tab length, and before
   ///the build method kicks in, we make a Map<String,Widget>
 
-  List<String> routeLabels = [
-    'Tokens', 'Overview', 'History', 'Send', 'Contacts', 'Exchange','About'];
+  final List<String> routeLabels = [
+    'Tokens', 'Overview', 'History', 'Send', 'Contacts', 'Exchange', 'About'];
 
-  List<Widget> routeWidgets;
+  final List<Widget> routeWidgets = [];
+
+  final Map<String, dynamic> leftDrawer = {
+    "Settings" : Settings(),
+    "Exit": () => closeApp()
+  };
 
   @override
   void initState() {
@@ -51,30 +58,12 @@ class _State extends State<AppScaffold>
       initialIndex: 1
     );
 
-    routeWidgets = [
-
+    routeWidgets.addAll([
       Tokens(),
-
-      //Overview
-      Overview(
-        appScaffoldTabController: this.appScaffoldTabController,
-      ),
-
-      //History
-      History(
-        appScaffoldTabController: this.appScaffoldTabController,
-      ),
-
-      //Send
-      Send(
-        appScaffoldTabController: this.appScaffoldTabController,
-      ),
-
-      //Contacts
-      Contacts(
-
-      ),
-
+      Overview(appScaffoldTabController: this.appScaffoldTabController,),
+      History(appScaffoldTabController: this.appScaffoldTabController,),
+      Send(appScaffoldTabController: this.appScaffoldTabController,),
+      Contacts(),
       //Exchange
       Center(
         child: Text(
@@ -85,7 +74,6 @@ class _State extends State<AppScaffold>
           ),
         ),
       ),
-
       //About
       Center(
         child: Text(
@@ -96,7 +84,7 @@ class _State extends State<AppScaffold>
           ),
         ),
       ),
-    ];
+    ]);
 
     appScaffoldTabController.addListener(() {
       ///Empty setState to update our selected tab
@@ -212,7 +200,7 @@ class _State extends State<AppScaffold>
         ],
       ),
       ///Drawer in the Left Side
-      drawer: AppDrawer({"Example 1" : Container()}, side: "LEFT",),
+      drawer: AppDrawer(this.leftDrawer, side: "LEFT",),
       ///Drawer in the Right Side
       // endDrawer: AppDrawer({"Example 1" : Container()}),
       endDrawer: Consumer<AvmeWallet>(

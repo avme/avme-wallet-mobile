@@ -1,6 +1,8 @@
 import 'dart:math';
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:avme_wallet/app/model/app.dart';
+import 'package:flutter/services.dart';
 import 'package:hex/hex.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -137,4 +139,12 @@ bool isHex(String hex)
 {
   RegExp regIsAddress = new RegExp(r"^(0x)[a-zA-Z0-9]*$",multiLine: false);
   return regIsAddress.hasMatch(hex);
+}
+
+void closeApp()
+{
+  if(Platform.isAndroid)
+    SystemNavigator.pop();
+  else if (Platform.isIOS)
+    exit(0);
 }
