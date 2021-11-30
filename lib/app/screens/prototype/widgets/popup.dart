@@ -66,32 +66,32 @@ class _AppPopupWidgetState extends State<AppPopupWidget> {
                 text: "CANCEL"
             ));
         if(widget.actions.length > 0)
-          widget.actions.asMap().forEach((key, widget) {
-            if(key.remainder(2) == 0)
+          widget.actions.asMap().forEach((key, itemWidget) {
+            if(widget.actions.first != itemWidget)
               popupActions.add(
                   Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: widget,
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: itemWidget,
                   )
               );
             else
               popupActions.add(
-                  widget
+                  itemWidget
               );
           });
       }
       else
-        widget.actions.asMap().forEach((key, widget) {
-          if(key.remainder(2) == 0)
+        widget.actions.asMap().forEach((key, itemWidget) {
+          if(widget.actions.first != itemWidget)
             popupActions.add(
                 Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: widget,
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: itemWidget,
                 )
             );
           else
             popupActions.add(
-                widget
+                itemWidget
             );
         });
     }
@@ -277,32 +277,32 @@ class _FuturePopupWidgetState extends State<FuturePopupWidget> with SingleTicker
                 text: "CANCEL"
             ));
         if(widget.actions.length > 0)
-          widget.actions.asMap().forEach((key, widget) {
-            if(key.remainder(2) == 0)
+          widget.actions.asMap().forEach((key, itemWidget) {
+            if(widget.actions.first != itemWidget)
               popupActions.add(
                   Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: widget,
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: itemWidget,
                   )
               );
             else
               popupActions.add(
-                  widget
+                  itemWidget
               );
           });
       }
       else
-        widget.actions.asMap().forEach((key, widget) {
-          if(key.remainder(2) == 0)
+        widget.actions.asMap().forEach((key, itemWidget) {
+          if(widget.actions.first != itemWidget)
             popupActions.add(
                 Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: widget,
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: itemWidget,
                 )
             );
           else
             popupActions.add(
-                widget
+                itemWidget
             );
         });
     }
