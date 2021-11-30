@@ -106,9 +106,19 @@ class AppColors {
     }
 }
 
+class AppTextStyles {
+    static const span = TextStyle(
+        color: Colors.grey,
+        fontSize: 12
+    );
+    static const label = TextStyle(
+        color: Colors.white,
+        fontSize: 18,
+        fontWeight: FontWeight.bold
+    );
+}
 
 /// Shimmer Data
-
 const shimmerGradientDefault = LinearGradient(
     colors: [
         AppColors.loading1,
@@ -172,4 +182,56 @@ ThemeData avmeTheme = ThemeData(
     ),
     canvasColor: AppColors.cardBlue,
     dividerColor: AppColors.labelDisabledColor
+);
+
+ThemeData screenTheme = ThemeData.dark().copyWith(
+    // Define the default brightness and colors.
+
+    // brightness: Brightness.dark,
+    primaryColor: AppColors.purple,
+    accentColor: AppColors.purpleDark1,
+
+
+    // Define the default font family.
+    // fontFamily:  'Roboto Mono',
+    // scaffoldBackgroundColor: AppColors.blue1,
+    // scaffoldBackgroundColor: AppColors.darkBlue,
+
+    // scaffoldBackgroundColor: AppColors.cardDefaultColor,
+    // indicatorColor: AppColors.lightBlue1,
+    // cardColor: AppColors.purple.withOpacity(0.85),
+    // // cardTheme: CardTheme(
+    // //   color:AppColors.blue2,
+    // // ),
+    // textSelectionTheme: TextSelectionThemeData(
+    //     cursorColor: AppColors.purple,
+    //     selectionColor: AppColors.purple
+    // ),
+    // elevatedButtonTheme: ElevatedButtonThemeData(
+    //     style: ButtonStyle(
+    //         backgroundColor:MaterialStateProperty.all<Color>(AppColors.purple),
+    //     )
+    // ),
+    // textButtonTheme: TextButtonThemeData(
+    //     style: TextButton.styleFrom(
+    //         primary: AppColors.purple, // This is a custom color variable
+    //     ),
+    // ),
+    appBarTheme: AppBarTheme(
+        // backgroundColor: AppColors.darkBlue
+        backgroundColor: AppColors.cardDefaultColor
+    ),
+    // canvasColor: AppColors.cardBlue,
+    // dividerColor: AppColors.labelDisabledColor
+    switchTheme: SwitchThemeData(
+        thumbColor: MaterialStateProperty.all<Color>(AppColors.purple),
+        trackColor: MaterialStateProperty.resolveWith((states) {
+            const Set<MaterialState> switchState = {
+                MaterialState.selected
+            };
+            if(states.any(switchState.contains))
+                return AppColors.purple;
+            return null;
+        }),
+    )
 );

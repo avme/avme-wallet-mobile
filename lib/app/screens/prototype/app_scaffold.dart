@@ -6,7 +6,7 @@ import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/model/token.dart';
 import 'package:avme_wallet/app/screens/prototype/contacts.dart';
 import 'package:avme_wallet/app/screens/prototype/history.dart';
-import 'package:avme_wallet/app/screens/prototype/settings.dart';
+import 'package:avme_wallet/app/screens/prototype/pages/settings.dart';
 import 'package:avme_wallet/app/screens/prototype/tokens.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/accounts_drawer.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/debug.dart';
@@ -56,10 +56,10 @@ class _State extends State<AppScaffold>
     // "Icon Test" : [Icons.map, Settings()],
     "Exit": [Icons.exit_to_app,() => closeApp()],
 
-    ///"Exemple of Function": () => debugPrint("Hello"), //Executes code
-    ///"Exemple of Function with icon": [Icons.map,() => debugPrint("Hello again")], //Executes code passing an icon
-    ///"Exemple of Widget": Widget(), //redirect with navigator
-    ///"Exemple of Widget": [Icons.code,Widget()], //redirect with navigator
+    ///"Example of Function": () => debugPrint("Hello"), //Executes code
+    ///"Example of Function with icon": [Icons.map,() => debugPrint("Hello again")], //Executes code passing an icon
+    ///"Example of Widget": Widget(), //redirect with navigator
+    ///"Example of Widget": [Icons.code,Widget()], //redirect with navigator
   };
 
   @override
