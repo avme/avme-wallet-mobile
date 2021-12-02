@@ -11,6 +11,7 @@ import 'package:avme_wallet/app/screens/widgets/custom_widgets.dart';
 import 'package:avme_wallet/app/screens/widgets/screen_indicator.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 
 class AccountsDrawer extends StatefulWidget {
@@ -226,7 +227,7 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
     final int flexBalance = 2;
     final double darkBorderPadding = 8.0;
 
-    String password = "";
+    String password = env["DEFAULT_PASSWORD"];
 
     this.generatedKeys = this.generatedKeys.length > 0
         ? this.generatedKeys
