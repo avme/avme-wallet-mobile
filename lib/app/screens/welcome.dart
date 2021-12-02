@@ -1,3 +1,4 @@
+import 'package:avme_wallet/app/controller/size_config.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/screens/prototype/new_account.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/button.dart';
@@ -21,6 +22,7 @@ class Welcome extends StatefulWidget {
 class _WelcomeState extends State<Welcome> {
   @override
   Widget build(BuildContext context) {
+    SizeConfig().init(context);
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -45,7 +47,7 @@ class _WelcomeState extends State<Welcome> {
                 child: Padding(
                   padding: EdgeInsets.symmetric(
                     vertical: 32,
-                    horizontal: 32,
+                    horizontal: 8,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -53,14 +55,17 @@ class _WelcomeState extends State<Welcome> {
                       Text(
                           "Welcome to AVME",
                           style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 28)
+                              fontWeight: FontWeight.bold, fontSize: SizeConfig.safeBlockHorizontal * 6.75)
                       ),
                       SizedBox(
                         height: 14,
                       ),
-                      ScreenIndicator(
-                        height: 20,
-                        width: MediaQuery.of(context).size.width,
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                        child: ScreenIndicator(
+                          height: 20,
+                          width: MediaQuery.of(context).size.width,
+                        ),
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(
