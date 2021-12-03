@@ -1,3 +1,4 @@
+import 'package:avme_wallet/app/controller/size_config.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
 
@@ -33,7 +34,7 @@ class AppButton extends StatelessWidget {
   });
   @override
   Widget build(BuildContext context) {
-
+    SizeConfig().init(context);
     List<Widget> children = [];
 
     if(this.iconData != null)
@@ -56,7 +57,8 @@ class AppButton extends StatelessWidget {
           padding: this.paddingText,
           child: Text(text, style: this.textStyle ??
             TextStyle(
-              color: Colors.white
+              color: Colors.white,
+              fontSize: SizeConfig.safeBlockHorizontal * 4
             ),
             overflow: this.textOverflow,
             maxLines: this.maxLines,

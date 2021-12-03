@@ -1,3 +1,4 @@
+import 'package:avme_wallet/app/controller/size_config.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
 
@@ -31,7 +32,7 @@ class AppNeonButton extends StatelessWidget {
   });
   @override
   Widget build(BuildContext context) {
-
+    SizeConfig().init(context);
     List<Widget> children = [];
 
     if(this.iconData != null)
@@ -52,9 +53,10 @@ class AppNeonButton extends StatelessWidget {
       Flexible(
         child: Padding(
           padding: this.paddingText,
-          child: Text(text, style: this.textStyle ??
+          child: Text(text,style: this.textStyle ??
             TextStyle(
-              color: this.enabled ? AppColors.purple : Colors.grey
+              color: this.enabled ? Colors.white : Colors.grey,
+              fontSize: SizeConfig.safeBlockHorizontal * 4
             ),
             overflow: this.textOverflow,
             maxLines: this.maxLines,

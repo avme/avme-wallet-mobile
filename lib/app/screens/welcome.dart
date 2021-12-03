@@ -23,6 +23,7 @@ class _WelcomeState extends State<Welcome> {
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
+    double buttonSpacing = SizeConfig.safeBlockVertical * 4;
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -39,79 +40,73 @@ class _WelcomeState extends State<Welcome> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Padding(
-              padding: EdgeInsets.all(
-                  (MediaQuery.of(context).size.width * 0.1).toDouble()
+              padding: EdgeInsets.symmetric(
+                horizontal: SizeConfig.safeBlockHorizontal * 8,
               ),
               child: Card(
                 color: AppColors.cardBlue,
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    vertical: 32,
-                    horizontal: 8,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
+                child: Container(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      vertical: SizeConfig.safeBlockVertical * 6,
+                      horizontal: SizeConfig.safeBlockVertical * 6,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
                           "Welcome to AVME",
                           style: TextStyle(
                               fontWeight: FontWeight.bold, fontSize: SizeConfig.safeBlockHorizontal * 6.75)
-                      ),
-                      SizedBox(
-                        height: 14,
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                        child: ScreenIndicator(
-                          height: 20,
-                          width: MediaQuery.of(context).size.width,
                         ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 16,
-                          horizontal: 32
+                        Padding(
+                          // padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                          padding: EdgeInsets.symmetric(
+                              vertical: SizeConfig.safeBlockVertical * 3,
+                            // horizontal:
+                          ),
+                          child: ScreenIndicator(
+                            height: 20,
+                            width: MediaQuery.of(context).size.width,
+                          ),
                         ),
-                        child: Column(
-                          children: [
-                            SizedBox(
-                              height: 32,
+                        Container(
+                          // color: Colors.red,
+                          child: Container(
+                            // color: Colors.blue,
+                            child: Column(
+                              children: [
+                                AppButton(
+                                  onPressed: () {
+                                    Navigator.push(context,
+                                      MaterialPageRoute(builder: (builder) => NewAccount()));
+                                  },
+                                  text: "CREATE NEW WALLET",
+                                ),
+                                SizedBox(
+                                  height: buttonSpacing,
+                                ),
+                                AppNeonButton(
+                                  onPressed: () {},
+                                  text: "IMPORT WALLET",
+                                  enabled: false,
+                                ),
+                                SizedBox(
+                                  height: buttonSpacing,
+                                ),
+                                AppNeonButton(
+                                  onPressed: () {
+                                    Navigator.pushNamed(context, "/login");
+                                  },
+                                  enabled: widget.walletExists,
+                                  text: "LOAD WALLET",
+                                ),
+                              ],
                             ),
-                            AppButton(
-                              onPressed: () {
-                                Navigator.push(context,
-                                  MaterialPageRoute(builder: (builder) => NewAccount()));
-                              },
-                              text: "CREATE NEW WALLET",
-                            ),
-                            SizedBox(
-                              height: 32,
-                            ),
-                            AppNeonButton(
-                              onPressed: () {},
-                              text: "IMPORT WALLET",
-                              textStyle: TextStyle(
-                                  color: Colors.white
-                              ),
-                              enabled: false,
-                            ),
-                            SizedBox(
-                              height: 32,
-                            ),
-                            AppNeonButton(
-                              onPressed: () {
-                                Navigator.pushNamed(context, "/login");
-                              },
-                              enabled: widget.walletExists,
-                              text: "LOAD WALLET",
-                              textStyle: TextStyle(
-                                  color: Colors.white
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    ],
+                          ),
+                        )
+                      ],
+                    ),
                   ),
                 ),
               ),
