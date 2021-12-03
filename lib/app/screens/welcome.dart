@@ -57,7 +57,7 @@ class _WelcomeState extends State<Welcome> {
                         Text(
                           "Welcome to AVME",
                           style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: SizeConfig.safeBlockHorizontal * 6.75)
+                              fontWeight: FontWeight.bold, fontSize: SizeConfig.safeBlockHorizontal * 6)
                         ),
                         Padding(
                           // padding: const EdgeInsets.symmetric(horizontal: 24.0),
