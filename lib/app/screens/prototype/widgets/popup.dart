@@ -1,7 +1,9 @@
+import 'package:avme_wallet/app/controller/size_config.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/button.dart';
 import 'package:avme_wallet/app/screens/widgets/screen_indicator.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 import 'neon_button.dart';
 import 'notification_bar.dart';
@@ -26,12 +28,7 @@ class AppPopupWidget extends StatefulWidget {
     Key key,
     @required this.title,
     @required this.children,
-    this.padding = const EdgeInsets.only(
-        left: 32,
-        right: 32,
-        top: 16,
-        bottom: 8
-    ),
+    this.padding,
     this.margin,
     this.actions,
     this.cancelable = true,
@@ -95,9 +92,7 @@ class _AppPopupWidgetState extends State<AppPopupWidget> {
             );
         });
     }
-
-
-
+    SizeConfig().init(context);
     return GestureDetector(
       onTap: () => widget.canClose ? Navigator.of(context).pop() : null,
       child: Scaffold(
@@ -123,15 +118,17 @@ class _AppPopupWidgetState extends State<AppPopupWidget> {
                         return widget.canClose;
                       },
                       child: AlertDialog(
-                          insetPadding: widget.margin ?? Dialog().insetPadding,
-                          buttonPadding: const EdgeInsets.all(0),
-                          actionsPadding: EdgeInsets.only(
-                              right: widget.padding.right,
-                              bottom: widget.padding.top,
-                              top: 16
+                          insetPadding: widget.margin ?? EdgeInsets.symmetric(
+                            ///Vertical margin of the popup
+                            horizontal: SizeConfig.safeBlockHorizontal * 4,
+                          ),
+                          buttonPadding: EdgeInsets.zero,
+                          actionsPadding: EdgeInsets.symmetric(
+                              vertical: SizeConfig.safeBlockHorizontal * 4,
+                              horizontal: SizeConfig.safeBlockHorizontal * 4
                           ),
                           backgroundColor: AppColors.cardDefaultColor,
-                          contentPadding: EdgeInsets.all(0),
+                          contentPadding: EdgeInsets.zero,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8)
                           ),
@@ -144,67 +141,78 @@ class _AppPopupWidgetState extends State<AppPopupWidget> {
                                 text: "CANCEL"
                             )
                           ] : popupActions,
-                          content: Container(
-                            width: double.maxFinite,
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                ///Header
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Expanded(
+                          content: Padding(
+                            padding:EdgeInsets.symmetric(horizontal:SizeConfig.safeBlockHorizontal * 4),
+                            child: Container(
+                              width: double.maxFinite,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  ///Header
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(vertical: SizeConfig.safeBlockVertical * 1),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      children: [
+                                        Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                ///Close button
+                                                IconButton(
+                                                  icon: Align(
+                                                    alignment: Alignment(-1.4, 0),
+                                                    child: Icon(Icons.close, color: widget.canClose ? Colors.white : Colors.transparent,
+                                                    textDirection: TextDirection.ltr,
+                                                    ),
+                                                  ),
+                                                  highlightColor: Colors.transparent,
+                                                  splashColor: Colors.transparent,
+                                                  padding: EdgeInsets.all(0),
+                                                  alignment: Alignment.centerLeft,
+                                                  onPressed: () {
+                                                    if(widget.canClose)
+                                                      Navigator.of(context).pop();
+                                                  },
+                                                ),
+                                              ],
+                                            )
+                                        ),
+                                        Expanded(
+                                          flex: 4,
                                           child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
-                                              ///Close button
-                                              IconButton(
-                                                icon: Icon(Icons.close, color: widget.canClose ? Colors.white : Colors.transparent,),
-                                                highlightColor: Colors.transparent,
-                                                splashColor: Colors.transparent,
-                                                onPressed: () {
-                                                  if(widget.canClose)
-                                                    Navigator.of(context).pop();
-                                                },
+                                              Text(
+                                                widget.title,
+                                                style: widget.textStyle,
+                                                textAlign: TextAlign.center,
                                               ),
                                             ],
-                                          )
-                                      ),
-                                      Expanded(
-                                        flex: 2,
-                                        child: Column(
-                                          children: [
-                                            Text(
-                                              widget.title,
-                                              style: widget.textStyle,
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ],
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: Container(),
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                  widget.showIndicator
+                                    ? Container(
+                                    // color: Colors.red,
+                                      child: Padding(
+                                        padding: EdgeInsets.only(bottom: SizeConfig.safeBlockVertical * 2,),
+                                        child: ScreenIndicator(
+                                          height: 20,
+                                          width: MediaQuery.of(context).size.width,
                                         ),
                                       ),
-                                      Expanded(
-                                        child: Container(),
-                                      )
-                                    ],
-                                  ),
-                                ),
-                                widget.showIndicator ? FractionallySizedBox(
-                                  widthFactor: 0.84,
-                                  child: ScreenIndicator(
-                                    height: 20,
-                                    width: MediaQuery.of(context).size.width,
-                                  ),
-                                )
+                                    )
                                     : Container(),
-                                Padding(
-                                  padding: widget.padding ?? const EdgeInsets.all(32),
-                                  child: Column(
+                                  Column(
                                     children: widget.children,
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           )
                       ),
