@@ -1,5 +1,7 @@
+import 'package:avme_wallet/app/controller/size_config.dart';
 import 'package:avme_wallet/app/controller/wallet_manager.dart';
 import 'package:avme_wallet/app/model/app.dart';
+import 'package:avme_wallet/app/screens/prototype/widgets/button.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/neon_button.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/notification_bar.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/popup.dart';
@@ -69,8 +71,13 @@ class _NewAccountState extends State<NewAccount> {
 
   @override
   Widget build(BuildContext context) {
+    SizeConfig().init(context);
+    double fieldSpacing = SizeConfig.safeBlockVertical * 4;
+
+    // this.labelSize = SizeConfig.safeBlockVertical * 6;
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -83,24 +90,24 @@ class _NewAccountState extends State<NewAccount> {
           )
         ),
         child: Center(
-          child: ListView(
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            children: [
-              Column(
+          child: SingleChildScrollView(
+            physics: BouncingScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Padding(
-                    padding: EdgeInsets.all(
-                      (MediaQuery.of(context).size.width * 0.1).toDouble()
+                    padding: EdgeInsets.symmetric(
+                      horizontal: SizeConfig.safeBlockHorizontal * 4,
                     ),
                     child: Card(
                       color: AppColors.cardBlue,
                       child: Container(
                           child: Padding(
                             padding: EdgeInsets.symmetric(
-                              vertical: 32,
-                              horizontal: 32,
+                              vertical: SizeConfig.safeBlockVertical * 4,
+                              horizontal: SizeConfig.safeBlockVertical * 4,
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
@@ -108,24 +115,19 @@ class _NewAccountState extends State<NewAccount> {
                                 ///Header
                                 Column(children: header(context),),
                                 ///Fields
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 16,
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      ///Seed Phrase
-                                      seedField(context),
-                                      ///Passphrase
-                                      passPhrase(context),
-                                      ///Confirm Passphrase
-                                      rePassphrase(context),
-                                      SizedBox(
-                                        height: 32,
-                                      ),
-                                      createAccount(),
-                                    ],
-                                  ),
+                                Column(
+                                  children: [
+                                    ///Seed Phrase
+                                    seedField(context),
+                                    ///Passphrase
+                                    passPhrase(context),
+                                    ///Confirm Passphrase
+                                    rePassphrase(context),
+                                    SizedBox(
+                                      height: fieldSpacing,
+                                    ),
+                                    createAccount(),
+                                  ],
                                 )
                               ],
                             ),
@@ -135,7 +137,7 @@ class _NewAccountState extends State<NewAccount> {
                   ),
                 ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -157,18 +159,10 @@ class _NewAccountState extends State<NewAccount> {
                   child: Container(
                     color: Colors.transparent,
                     // color: Colors.red,
-                    child: Padding(
-                      padding: const EdgeInsets.only(
-                          top: 16,
-                          bottom: 10,
-                          // left: 16,
-                          right: 16
-                      ),
-                      child: Icon(
-                        Icons.arrow_back,
-                        size: 32,
-                        color: AppColors.labelDefaultColor,
-                      ),
+                    child: Icon(
+                      Icons.arrow_back,
+                      size: 32,
+                      color: AppColors.labelDefaultColor,
                     ),
                   ),
                   onTap: (){
@@ -185,17 +179,24 @@ class _NewAccountState extends State<NewAccount> {
                 Text(
                     "Create New",
                     style: TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 28)
+                        fontWeight: FontWeight.bold, fontSize: SizeConfig.titleSize)
                 ),
               ],
             ),
           ),
-          Expanded(child: Container())
+          Expanded(child: Container(
+            color: Colors.pink,
+          ))
       ],
     ),
-    ScreenIndicator(
-      height: 20,
-      width: MediaQuery.of(context).size.width,
+    Padding(
+      padding: EdgeInsets.symmetric(
+        vertical: SizeConfig.safeBlockVertical * 3,
+      ),
+      child: ScreenIndicator(
+        height: 20,
+        width: MediaQuery.of(context).size.width,
+      ),
     ),];
   }
 
@@ -341,9 +342,9 @@ class _NewAccountState extends State<NewAccount> {
     );
   }
 
-  Padding seedField(BuildContext context) {
+  Widget seedField(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top:16),
+      padding: EdgeInsets.only(top:SizeConfig.safeBlockVertical * 1),
       // padding: EdgeInsets.zero,
       child: Stack(
         children: [
@@ -359,6 +360,7 @@ class _NewAccountState extends State<NewAccount> {
                     top: 16,
                     bottom: 8
                   ),
+                  cancelable: false,
                   children: [
                     Text(this.warning1),
                     Padding(
@@ -407,7 +409,7 @@ class _NewAccountState extends State<NewAccount> {
                 labelStyle: TextStyle(
                   color: Colors.grey[600],
                   fontWeight: FontWeight.w500,
-                  fontSize: 20
+                  fontSize: SizeConfig.labelSize
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(width: 2,
@@ -447,7 +449,7 @@ class _NewAccountState extends State<NewAccount> {
     return Form(
       key: _phraseFormState,
       child: Padding(
-        padding: const EdgeInsets.only(top:32),
+        padding: EdgeInsets.only(top:SizeConfig.safeBlockVertical * 3),
         child: Stack(
           children: [
             TextFormField(
@@ -490,7 +492,7 @@ class _NewAccountState extends State<NewAccount> {
                 labelStyle: TextStyle(
                   color: phraseFocusNode.hasFocus ? Colors.white : AppColors.labelDefaultColor,
                   fontWeight: phraseFocusNode.hasFocus ? FontWeight.w900 : FontWeight.w500,
-                  fontSize: 20
+                  fontSize: SizeConfig.labelSize
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(width: 2,
@@ -539,7 +541,7 @@ class _NewAccountState extends State<NewAccount> {
     return Form(
       key: _rephraseFormState,
       child: Padding(
-        padding: const EdgeInsets.only(top:32),
+        padding: EdgeInsets.only(top:SizeConfig.safeBlockVertical * 3),
         child: Stack(
           children: [
             TextFormField(
@@ -582,7 +584,7 @@ class _NewAccountState extends State<NewAccount> {
                 labelStyle: TextStyle(
                   color: rePhraseFocusNode.hasFocus ? Colors.white : AppColors.labelDefaultColor,
                   fontWeight: rePhraseFocusNode.hasFocus ? FontWeight.w900 : FontWeight.w500,
-                  fontSize: 20
+                  fontSize: SizeConfig.labelSize
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(width: 2,
@@ -622,9 +624,10 @@ class _NewAccountState extends State<NewAccount> {
     );
   }
 
-  ElevatedButton createAccount() {
-    return ElevatedButton(
+  AppButton createAccount() {
+    return AppButton(
       onPressed: () {
+        ScrollController read = ScrollController();
         if(_phraseFormState.currentState.validate() == true && _rephraseFormState.currentState.validate() == true)
         {
           ///First we gathered the keys to hide and make the user verify
@@ -639,16 +642,33 @@ class _NewAccountState extends State<NewAccount> {
                   title: "Warning",
                   canClose: false,
                   children: [
-                    Text(this.warning1),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Divider(),
-                    ),
-                    getSeedList(this.walletSeedMap),
-                    Padding(
-                      padding: EdgeInsets.only(top: 24),
-                      child: Text(this.warning2),
-                    ),
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxHeight: SizeConfig.safeBlockVertical * 40
+                      ),
+                      child: Scrollbar(
+                        isAlwaysShown: true,
+                        thickness: 4,
+                        controller: read,
+                        child: SingleChildScrollView(
+                          controller: read,
+                          child: Column(
+                            children: [
+                              Text(this.warning1),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                child: Divider(),
+                              ),
+                              getSeedList(this.walletSeedMap),
+                              Padding(
+                                padding: EdgeInsets.only(top: 24),
+                                child: Text(this.warning2),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    )
                   ],
                   actions: [
                     AppNeonButton(
@@ -721,7 +741,8 @@ class _NewAccountState extends State<NewAccount> {
           });
         }
       },
-      child: Text("CREATE ACCOUNT"),
+      text: 'CREATE ACCOUNT',
+      expanded: false,
     );
   }
 }

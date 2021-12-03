@@ -56,54 +56,47 @@ class _WelcomeState extends State<Welcome> {
                       children: [
                         Text(
                           "Welcome to AVME",
+                          textAlign: TextAlign.center,
                           style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: SizeConfig.safeBlockHorizontal * 6)
+                              fontWeight: FontWeight.bold, fontSize: SizeConfig.titleSize)
                         ),
                         Padding(
-                          // padding: const EdgeInsets.symmetric(horizontal: 24.0),
                           padding: EdgeInsets.symmetric(
                               vertical: SizeConfig.safeBlockVertical * 3,
-                            // horizontal:
                           ),
                           child: ScreenIndicator(
                             height: 20,
                             width: MediaQuery.of(context).size.width,
                           ),
                         ),
-                        Container(
-                          // color: Colors.red,
-                          child: Container(
-                            // color: Colors.blue,
-                            child: Column(
-                              children: [
-                                AppButton(
-                                  onPressed: () {
-                                    Navigator.push(context,
-                                      MaterialPageRoute(builder: (builder) => NewAccount()));
-                                  },
-                                  text: "CREATE NEW WALLET",
-                                ),
-                                SizedBox(
-                                  height: buttonSpacing,
-                                ),
-                                AppNeonButton(
-                                  onPressed: () {},
-                                  text: "IMPORT WALLET",
-                                  enabled: false,
-                                ),
-                                SizedBox(
-                                  height: buttonSpacing,
-                                ),
-                                AppNeonButton(
-                                  onPressed: () {
-                                    Navigator.pushNamed(context, "/login");
-                                  },
-                                  enabled: widget.walletExists,
-                                  text: "LOAD WALLET",
-                                ),
-                              ],
+                        Column(
+                          children: [
+                            AppButton(
+                              onPressed: () {
+                                Navigator.push(context,
+                                  MaterialPageRoute(builder: (builder) => NewAccount()));
+                              },
+                              text: "CREATE NEW WALLET",
                             ),
-                          ),
+                            SizedBox(
+                              height: buttonSpacing,
+                            ),
+                            AppNeonButton(
+                              onPressed: () {},
+                              text: "IMPORT WALLET",
+                              enabled: false,
+                            ),
+                            SizedBox(
+                              height: buttonSpacing,
+                            ),
+                            AppNeonButton(
+                              onPressed: () {
+                                Navigator.pushNamed(context, "/login");
+                              },
+                              enabled: widget.walletExists,
+                              text: "LOAD WALLET",
+                            ),
+                          ],
                         )
                       ],
                     ),

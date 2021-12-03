@@ -106,6 +106,18 @@ class AppColors {
     }
 }
 
+class MaterialStates
+{
+    static const Set<MaterialState> buttonStates = {
+        MaterialState.selected,
+        MaterialState.disabled,
+        MaterialState.pressed
+    };
+    static const Set<MaterialState> switchStates = {
+        MaterialState.selected,
+    };
+}
+
 class AppTextStyles {
     static const span = TextStyle(
         color: Colors.grey,
@@ -169,7 +181,7 @@ ThemeData avmeTheme = ThemeData(
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
         style: ButtonStyle(
-            backgroundColor:MaterialStateProperty.all<Color>(AppColors.purple),
+            backgroundColor: MaterialStateProperty.all<Color>(AppColors.purple)
         )
     ),
     textButtonTheme: TextButtonThemeData(
@@ -181,7 +193,11 @@ ThemeData avmeTheme = ThemeData(
         backgroundColor: AppColors.darkBlue
     ),
     canvasColor: AppColors.cardBlue,
-    dividerColor: AppColors.labelDisabledColor
+    dividerColor: AppColors.labelDisabledColor,
+    scrollbarTheme: ScrollbarThemeData(
+        thumbColor: MaterialStateProperty.all<Color>(AppColors.purple),
+        trackColor: MaterialStateProperty.all<Color>(AppColors.purple),
+    ),
 );
 
 ThemeData screenTheme = ThemeData.dark().copyWith(
@@ -190,46 +206,14 @@ ThemeData screenTheme = ThemeData.dark().copyWith(
     // brightness: Brightness.dark,
     primaryColor: AppColors.purple,
     accentColor: AppColors.purpleDark1,
-
-
-    // Define the default font family.
-    // fontFamily:  'Roboto Mono',
-    // scaffoldBackgroundColor: AppColors.blue1,
-    // scaffoldBackgroundColor: AppColors.darkBlue,
-
-    // scaffoldBackgroundColor: AppColors.cardDefaultColor,
-    // indicatorColor: AppColors.lightBlue1,
-    // cardColor: AppColors.purple.withOpacity(0.85),
-    // // cardTheme: CardTheme(
-    // //   color:AppColors.blue2,
-    // // ),
-    // textSelectionTheme: TextSelectionThemeData(
-    //     cursorColor: AppColors.purple,
-    //     selectionColor: AppColors.purple
-    // ),
-    // elevatedButtonTheme: ElevatedButtonThemeData(
-    //     style: ButtonStyle(
-    //         backgroundColor:MaterialStateProperty.all<Color>(AppColors.purple),
-    //     )
-    // ),
-    // textButtonTheme: TextButtonThemeData(
-    //     style: TextButton.styleFrom(
-    //         primary: AppColors.purple, // This is a custom color variable
-    //     ),
-    // ),
     appBarTheme: AppBarTheme(
         // backgroundColor: AppColors.darkBlue
         backgroundColor: AppColors.cardDefaultColor
     ),
-    // canvasColor: AppColors.cardBlue,
-    // dividerColor: AppColors.labelDisabledColor
     switchTheme: SwitchThemeData(
         thumbColor: MaterialStateProperty.all<Color>(AppColors.purple),
         trackColor: MaterialStateProperty.resolveWith((states) {
-            const Set<MaterialState> switchState = {
-                MaterialState.selected
-            };
-            if(states.any(switchState.contains))
+            if(states.any(MaterialStates.switchStates.contains))
                 return AppColors.purple;
             return null;
         }),

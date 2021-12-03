@@ -8,6 +8,7 @@ class AppButton extends StatelessWidget {
   final IconData iconData;
   final double height;
   final double width;
+  final double size;
   final MainAxisAlignment mainAxisAlignment;
   final double paddingBetweenIcons;
   final TextStyle textStyle;
@@ -25,6 +26,7 @@ class AppButton extends StatelessWidget {
     this.paddingBetweenIcons,
     this.height = 45,
     this.width,
+    this.size,
     this.expanded = true,
     this.textStyle,
     this.paddingText = const EdgeInsets.all(0),
@@ -51,15 +53,18 @@ class AppButton extends StatelessWidget {
       );
     }
 
+    TextStyle btnStyle = this.textStyle == null
+      ? TextStyle(
+        color: Colors.white,
+        fontSize: this.size ?? SizeConfig.smallLabel)
+      : this.textStyle.copyWith(fontSize: this.size ?? SizeConfig.smallLabel);
+
     children.add(
       Flexible(
         child: Padding(
           padding: this.paddingText,
           child: Text(text, style: this.textStyle ??
-            TextStyle(
-              color: Colors.white,
-              fontSize: SizeConfig.safeBlockHorizontal * 4
-            ),
+            btnStyle,
             overflow: this.textOverflow,
             maxLines: this.maxLines,
           ),
