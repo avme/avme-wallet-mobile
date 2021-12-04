@@ -5,6 +5,7 @@ import 'package:avme_wallet/app/screens/prototype/widgets/button.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/neon_button.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/notification_bar.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/popup.dart';
+import 'package:avme_wallet/app/screens/prototype/widgets/textform.dart';
 import 'package:avme_wallet/app/screens/widgets/custom_widgets.dart';
 import 'package:avme_wallet/app/screens/widgets/screen_indicator.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
@@ -202,7 +203,8 @@ class _NewAccountState extends State<NewAccount> {
 
   int maxCharacteresInsideTextField(BuildContext context)
   {
-    int size = (MediaQuery.of(context).size.width / 17).round();
+    // int size = (MediaQuery.of(context).size.width / 17).round();
+    int size = (SizeConfig.safeBlockHorizontal * 7).round();
     return size;
   }
 
@@ -345,7 +347,6 @@ class _NewAccountState extends State<NewAccount> {
   Widget seedField(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(top:SizeConfig.safeBlockVertical * 1),
-      // padding: EdgeInsets.zero,
       child: Stack(
         children: [
           GestureDetector(
@@ -628,6 +629,7 @@ class _NewAccountState extends State<NewAccount> {
     return AppButton(
       onPressed: () {
         ScrollController read = ScrollController();
+        ScrollController write = ScrollController();
         if(_phraseFormState.currentState.validate() == true && _rephraseFormState.currentState.validate() == true)
         {
           ///First we gathered the keys to hide and make the user verify
@@ -644,7 +646,7 @@ class _NewAccountState extends State<NewAccount> {
                   children: [
                     ConstrainedBox(
                       constraints: BoxConstraints(
-                        maxHeight: SizeConfig.safeBlockVertical * 40
+                        maxHeight: SizeConfig.safeBlockVertical * 50
                       ),
                       child: Scrollbar(
                         isAlwaysShown: true,
@@ -654,9 +656,12 @@ class _NewAccountState extends State<NewAccount> {
                           controller: read,
                           child: Column(
                             children: [
-                              Text(this.warning1),
                               Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                padding: EdgeInsets.only(top: SizeConfig.safeBlockVertical * 2,),
+                                child: Text(this.warning1),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(12),
                                 child: Divider(),
                               ),
                               getSeedList(this.walletSeedMap),
@@ -682,14 +687,31 @@ class _NewAccountState extends State<NewAccount> {
                               margin: EdgeInsets.symmetric(horizontal: 8),
                               children: [
                                 Text("Fill in Mnemonic Phrase Below"),
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 16),
-                                  child: formMnemonic.build(),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 16.0),
-                                  child: Text(invalidMnemonic,
-                                    style: TextStyle(color: Colors.red),),
+                                ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                      maxHeight: SizeConfig.safeBlockVertical * 50
+                                  ),
+                                  child: Scrollbar(
+                                      isAlwaysShown: true,
+                                      thickness: 4,
+                                      controller: write,
+                                      child: SingleChildScrollView(
+                                        controller: write,
+                                        child: Column(
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.only(top: 16),
+                                              child: formMnemonic.build(),
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.only(top: 8.0),
+                                              child: Text(invalidMnemonic,
+                                                style: TextStyle(color: Colors.red),),
+                                            ),
+                                          ],
+                                        ),
+                                      )
+                                  ),
                                 ),
                               ],
                               actions: [
@@ -732,7 +754,7 @@ class _NewAccountState extends State<NewAccount> {
                         );
                         // Navigator.of(context).pop();
                       },
-                      text: "Continue",
+                      text: "CONTINUE",
                     )
                   ]
                 )
@@ -792,54 +814,104 @@ class FormMnemonic {
   Widget build()
   {
     Map<int,List<Widget>> columnMap = {};
-    int row = 0;
+    int column = 0;
 
+    double paddingHorizontal = SizeConfig.safeBlockHorizontal * 2;
+    EdgeInsets columnPadding = EdgeInsets.all(paddingHorizontal);
     this.mnemonicDict.forEach((key, value) {
 
       if(key.remainder(6) == 0 && key != 0)
-        row++;
+        column++;
 
-      columnMap[row] = columnMap[row] ?? [];
-      columnMap[row].add(
+      columnMap[column] = columnMap[column] ?? [];
+      columnMap[column].add(
         Padding(
-          padding: row > 0 ? const EdgeInsets.only(left:8) : const EdgeInsets.only(right:8),
+          padding: column > 0 ? columnPadding.copyWith(left:paddingHorizontal) : columnPadding.copyWith(right:paddingHorizontal),
           child:Row(
             children: [
-              Text(" ${key+1}." + (key > 8 ? "  " : "   "),
-                style: TextStyle(
-                  color: Colors.blue
-                ),
-              ),
               Expanded(
-                child: TextField(
-                  controller: this.mnemonicControlDict[key],
-                  enabled: this.removedKeys.contains(key),
+                child: Text(" ${key+1}." + (key > 8 ? "  " : "   "),
                   style: TextStyle(
-                    color: Colors.white70,
-                    fontWeight: FontWeight.bold
+                    color: AppColors.purple,
+                    fontWeight: FontWeight.bold,
+                    fontSize: SizeConfig.smallLabel
                   ),
-                  decoration: InputDecoration(
-                    floatingLabelBehavior: FloatingLabelBehavior.always,
-                    contentPadding: EdgeInsets.all(0),
-                    disabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey, width: 1),
-                    ),
-                    enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white, width: 2)
-                    ),
-                    labelStyle: TextStyle(
-                      color: AppColors.labelDefaultColor,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 20
-                    ),
-                  )
                 ),
               ),
+              // Expanded(
+              //   child: TextField(
+              //     controller: this.mnemonicControlDict[key],
+              //     enabled: this.removedKeys.contains(key),
+              //     style: TextStyle(
+              //       color: Colors.white70,
+              //       fontWeight: FontWeight.bold
+              //     ),
+              //     decoration: InputDecoration(
+              //       floatingLabelBehavior: FloatingLabelBehavior.always,
+              //       contentPadding: EdgeInsets.all(0),
+              //       disabledBorder: UnderlineInputBorder(
+              //         borderSide: BorderSide(color: Colors.grey, width: 1),
+              //       ),
+              //       enabledBorder: UnderlineInputBorder(
+              //         borderSide: BorderSide(color: Colors.white, width: 2)
+              //       ),
+              //       labelStyle: TextStyle(
+              //         color: AppColors.labelDefaultColor,
+              //         fontWeight: FontWeight.w500,
+              //         fontSize: 20
+              //       ),
+              //     )
+              //   ),
+              // ),
+
+              Expanded(
+                flex: 4,
+                child: Padding(
+                  padding: EdgeInsets.only(right:SizeConfig.safeBlockHorizontal * 4),
+                  child: AppTextFormField(
+                    enabled: this.removedKeys.contains(key),
+                    controller: this.mnemonicControlDict[key],
+                    textAlign: TextAlign.end,
+                    // keyboardType: TextInputType.number,
+                    contentPadding: EdgeInsets.symmetric(
+                        vertical: 6,
+                        horizontal: 4
+                    ),
+                    isDense: true,
+                  ),
+                ),
+              ),
+              //
+              // Expanded(
+              //   child: TextField(
+              //     controller: this.mnemonicControlDict[key],
+              //     enabled: this.removedKeys.contains(key),
+              //     style: TextStyle(
+              //       color: Colors.white70,
+              //       fontWeight: FontWeight.bold
+              //     ),
+              //     decoration: InputDecoration(
+              //       floatingLabelBehavior: FloatingLabelBehavior.always,
+              //       contentPadding: EdgeInsets.all(0),
+              //       disabledBorder: UnderlineInputBorder(
+              //         borderSide: BorderSide(color: Colors.grey, width: 1),
+              //       ),
+              //       enabledBorder: UnderlineInputBorder(
+              //         borderSide: BorderSide(color: Colors.white, width: 2)
+              //       ),
+              //       labelStyle: TextStyle(
+              //         color: AppColors.labelDefaultColor,
+              //         fontWeight: FontWeight.w500,
+              //         fontSize: 20
+              //       ),
+              //     )
+              //   ),
+              // ),
             ],
           ),
         ),
       );
-      print("row[$row] ${key+1} - $value");
+      print("row[$column] ${key+1} - $value");
     });
 
     List<Widget> columnWidgets = [];
