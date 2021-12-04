@@ -55,25 +55,29 @@ class _AppPopupWidgetState extends State<AppPopupWidget> {
     {
       if(widget.cancelable == true)
       {
-        widget.actions.insert(
-            0,
-            AppNeonButton(
+        popupActions.insert(
+          0,
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: AppNeonButton(
                 onPressed: () => Navigator.of(this.context).pop(),
                 expanded: false,
                 text: "CANCEL"
-            ));
+            ),
+          )
+        );
         if(widget.actions.length > 0)
           widget.actions.asMap().forEach((key, itemWidget) {
             if(widget.actions.first != itemWidget)
               popupActions.add(
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8.0),
-                    child: itemWidget,
-                  )
+                Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: itemWidget,
+                )
               );
             else
               popupActions.add(
-                  itemWidget
+                itemWidget
               );
           });
       }
@@ -81,14 +85,14 @@ class _AppPopupWidgetState extends State<AppPopupWidget> {
         widget.actions.asMap().forEach((key, itemWidget) {
           if(widget.actions.first != itemWidget)
             popupActions.add(
-                Padding(
-                  padding: const EdgeInsets.only(left: 8.0),
-                  child: itemWidget,
-                )
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: itemWidget,
+              )
             );
           else
             popupActions.add(
-                itemWidget
+              itemWidget
             );
         });
     }
@@ -271,19 +275,24 @@ class FuturePopupWidget extends StatefulWidget {
 class _FuturePopupWidgetState extends State<FuturePopupWidget> with SingleTickerProviderStateMixin{
   @override
   Widget build(BuildContext context) {
+
     List<Widget> popupActions = [];
 
     if(widget.actions != null)
     {
       if(widget.cancelable == true)
       {
-        widget.actions.insert(
+        popupActions.insert(
             0,
-            AppNeonButton(
-                onPressed: () => Navigator.of(this.context).pop(),
-                expanded: false,
-                text: "CANCEL"
-            ));
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: AppNeonButton(
+                  onPressed: () => Navigator.of(this.context).pop(),
+                  expanded: false,
+                  text: "CANCEL"
+              ),
+            )
+        );
         if(widget.actions.length > 0)
           widget.actions.asMap().forEach((key, itemWidget) {
             if(widget.actions.first != itemWidget)
