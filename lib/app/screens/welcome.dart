@@ -1,3 +1,4 @@
+import 'package:avme_wallet/app/controller/services/push_notification.dart';
 import 'package:avme_wallet/app/controller/size_config.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/screens/prototype/new_account.dart';
@@ -20,6 +21,14 @@ class Welcome extends StatefulWidget {
 }
 
 class _WelcomeState extends State<Welcome> {
+
+  @override
+  void initState() {
+    super.initState();
+    PushNotification.init();
+    notifExample();
+  }
+
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
@@ -27,14 +36,14 @@ class _WelcomeState extends State<Welcome> {
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: <Color>[
-              AppColors.purpleVariant1,
-              AppColors.purpleBlue
-            ]
-          )
+            gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: <Color>[
+                  AppColors.purpleVariant1,
+                  AppColors.purpleBlue
+                ]
+            )
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -55,14 +64,14 @@ class _WelcomeState extends State<Welcome> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
-                          "Welcome to AVME",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: SizeConfig.titleSize)
+                            "Welcome to AVME",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: SizeConfig.titleSize)
                         ),
                         Padding(
                           padding: EdgeInsets.symmetric(
-                              vertical: SizeConfig.safeBlockVertical * 3,
+                            vertical: SizeConfig.safeBlockVertical * 3,
                           ),
                           child: ScreenIndicator(
                             height: 20,
@@ -74,7 +83,7 @@ class _WelcomeState extends State<Welcome> {
                             AppButton(
                               onPressed: () {
                                 Navigator.push(context,
-                                  MaterialPageRoute(builder: (builder) => NewAccount()));
+                                    MaterialPageRoute(builder: (builder) => NewAccount()));
                               },
                               text: "CREATE NEW WALLET",
                             ),
@@ -109,4 +118,15 @@ class _WelcomeState extends State<Welcome> {
       ),
     );
   }
+  //This is my first commit / addition to the repo
+  Future<void> notifExample() async
+  {
+    PushNotification.showNotification(
+        title: 'My first change',
+        body: 'This is my first commit / addition to the repo',
+        id: 0,
+        payload: 'app/overview'
+    );
+  }
+
 }
