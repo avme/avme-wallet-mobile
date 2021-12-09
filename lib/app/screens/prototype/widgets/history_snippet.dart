@@ -62,7 +62,7 @@ class _HistorySnippetState extends State<HistorySnippet> {
       SizedBox(
           width: MediaQuery.of(context).size.width * 1 / 2,
           child:  Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.symmetric(vertical: 16.0,horizontal: 12.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
