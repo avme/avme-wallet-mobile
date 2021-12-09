@@ -239,8 +239,7 @@ class _State extends State<AppScaffold>
                 ),
                 Padding(
                   padding: EdgeInsets.only(top:SizeConfig.safeBlockVertical * 2),
-                  // child: Text("{App Version}"),
-                  child: Text("{App Meme3}"),
+                 child: Text("{App Version}"),
                 )
               ],
             ),
