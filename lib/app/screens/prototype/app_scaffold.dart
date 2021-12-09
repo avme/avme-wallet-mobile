@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:avme_wallet/app/controller/services/connection.dart';
+import 'package:avme_wallet/app/controller/size_config.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/model/token.dart';
@@ -161,6 +162,7 @@ class _State extends State<AppScaffold>
   @override
   Widget build(BuildContext context) {
     final double appBarWidth = 24;
+    SizeConfig().init(context);
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -217,7 +219,7 @@ class _State extends State<AppScaffold>
         this.leftDrawer,
         side: "LEFT",
         header: Container(
-          height: 160,
+          height: SizeConfig.safeBlockVertical * 24,
           // color: Colors.red,
           child: DrawerHeader(
             decoration: BoxDecoration(
@@ -225,16 +227,20 @@ class _State extends State<AppScaffold>
             ),
             padding: EdgeInsets.only(bottom: 16),
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Flexible(
                   child: Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: SizeConfig.safeBlockHorizontal * 6
+                    ),
                     child: Image.asset('assets/logo_font.png', fit: BoxFit.scaleDown),
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(bottom:8.0),
-                  child: Text("{App Version}"),
+                  padding: EdgeInsets.only(top:SizeConfig.safeBlockVertical * 2),
+                  // child: Text("{App Version}"),
+                  child: Text("{App Meme3}"),
                 )
               ],
             ),
