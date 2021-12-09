@@ -23,13 +23,6 @@ class Welcome extends StatefulWidget {
 class _WelcomeState extends State<Welcome> {
 
   @override
-  void initState() {
-    super.initState();
-    PushNotification.init();
-    notifExample();
-  }
-
-  @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
     double buttonSpacing = SizeConfig.safeBlockVertical * 4;
@@ -118,15 +111,4 @@ class _WelcomeState extends State<Welcome> {
       ),
     );
   }
-  //This is my first commit / addition to the repo
-  Future<void> notifExample() async
-  {
-    PushNotification.showNotification(
-        title: 'My first change',
-        body: 'This is my first commit / addition to the repo',
-        id: 0,
-        payload: 'app/overview'
-    );
-  }
-
 }
