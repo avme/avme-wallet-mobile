@@ -1,3 +1,4 @@
+import 'package:avme_wallet/app/controller/size_config.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/notification_bar.dart';
@@ -18,7 +19,9 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
+    double fieldSpacing = SizeConfig.safeBlockVertical * 2;
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -30,126 +33,130 @@ class _LoginState extends State<Login> {
             ]
           )
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Padding(
-              padding: EdgeInsets.all(
-                  (MediaQuery.of(context).size.width * 0.1).toDouble()
-              ),
-              child: Card(
-                color: AppColors.cardBlue,
-                child: Container(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      vertical: 32,
-                      horizontal: 32,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        ///Header
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  ///Close button
-                                  GestureDetector(
-                                    child: Container(
-                                      color: Colors.transparent,
-                                      // color: Colors.red,
-                                      child: Padding(
-                                        padding: const EdgeInsets.only(
-                                          top: 16,
-                                          bottom: 10,
-                                          // left: 16,
-                                          right: 16
-                                        ),
-                                        child: Icon(
-                                          Icons.arrow_back,
-                                          size: 32,
-                                          color: AppColors.labelDefaultColor,
-                                        ),
-                                      ),
-                                    ),
-                                    onTap: (){
-                                      Navigator.of(context).pop();
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Expanded(
-                              flex: 2,
-                              child: Column(
-                                children: [
-                                  Text(
-                                    "Load",
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold, fontSize: 28)
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Expanded(
-                              child: Container(),
-                            )
-                          ],
-                        ),
-                        ScreenIndicator(
-                          height: 20,
-                          width: MediaQuery.of(context).size.width,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 16,
+        child: Center(
+          child: SingleChildScrollView(
+            physics: BouncingScrollPhysics(),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: SizeConfig.safeBlockHorizontal * 8,
+                  ),
+                  child: Container(
+                    child: Card(
+                      color: AppColors.cardBlue,
+                      child: Container(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            vertical: SizeConfig.safeBlockVertical * 4,
+                            horizontal: SizeConfig.safeBlockVertical * 4,
                           ),
                           child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              SizedBox(
-                                height: 20,
-                              ),
-                              TextField(
-                                cursorColor: AppColors.labelDefaultColor,
-                                controller: _passphrase,
-                                obscureText: true,
-                                decoration: InputDecoration(
-                                  labelText: "Please type your passphrase.",
-                                  labelStyle: TextStyle(
-                                      color: AppColors.labelDefaultColor
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderSide: BorderSide(width: 1,
-                                        color: AppColors.labelDefaultColor
+                              ///Header
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        ///Close button
+                                        GestureDetector(
+                                          child: Container(
+                                            color: Colors.transparent,
+                                            //color: Colors.red,
+                                            // previously there was a padding involving icon
+                                            child: Icon(
+                                              Icons.arrow_back,
+                                              size: 32,
+                                              color: AppColors.labelDefaultColor,
+                                            ),
+                                          ),
+                                          onTap: (){
+                                            Navigator.of(context).pop();
+                                          },
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                )
+                                  Expanded(
+                                    flex: 2,
+                                    child: Column(
+                                      children: [
+                                        Text(
+                                          "Load",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold, fontSize: SizeConfig.titleSize)
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Container(),
+                                  ),
+                                ],
                               ),
-                              SizedBox(
-                                height: 32,
+                              Padding(
+                                padding: EdgeInsets.only(top: SizeConfig.safeBlockVertical*2),
+                                child: ScreenIndicator(
+                                  height: SizeConfig.safeBlockVertical*2,
+                                  width: MediaQuery.of(context).size.width,
+                                ),
                               ),
-                              ElevatedButton(
-                                onPressed: () async{
-                                  authenticate(context);
-                                },
-                                child: Text("LOAD EXISTING WALLET"),
-                                // style: ElevatedButton.styleFrom(
-                                //   padding: EdgeInsets.symmetric(vertical: 21, horizontal: 0),
-                                // style: _btnStyleLogin,
-                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                ),
+                                child: Column(
+                                  children: [
+                                    SizedBox(
+                                      height: fieldSpacing,
+                                    ),
+                                    TextField(
+                                      cursorColor: AppColors.labelDefaultColor,
+                                      controller: _passphrase,
+                                      obscureText: true,
+                                      decoration: InputDecoration(
+                                        labelText: "Please type your passphrase.",
+                                        labelStyle: TextStyle(
+                                            color: AppColors.labelDefaultColor,
+                                            fontSize: SizeConfig.labelSize*0.75,
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(width: 1,
+                                              color: AppColors.labelDefaultColor
+                                          ),
+                                        ),
+                                      )
+                                    ),
+                                    SizedBox(
+                                      height: fieldSpacing*3,
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () async{
+                                        authenticate(context);
+                                      },
+                                      child: Text("LOAD EXISTING WALLET"),
+                                      // style: ElevatedButton.styleFrom(
+                                      //   padding: EdgeInsets.symmetric(vertical: 21, horizontal: 0),
+                                      // style: _btnStyleLogin,
+                                    ),
+                                  ],
+                                ),
+                              )
                             ],
                           ),
                         )
-                      ],
+                      ),
                     ),
-                  )
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
