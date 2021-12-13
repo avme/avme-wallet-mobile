@@ -1,12 +1,14 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:avme_wallet/app/model/app.dart';
+import 'package:avme_wallet/external/contracts/erc20_contract.dart';
 import 'package:bip32/bip32.dart';
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:bip32/bip32.dart' as bip32;
 import 'package:flutter/foundation.dart';
 import 'dart:io';
 import 'package:hex/hex.dart';
+import 'package:http/http.dart';
 import 'package:web3dart/credentials.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:aes_crypt/aes_crypt.dart';
@@ -277,5 +279,14 @@ class WalletManager
   {
     Map<int,String> pkeys = wallet.accountList.map((key,value) => MapEntry(key, value.address));
     await services.requestBalanceFromNetwork(wallet.contracts, pkeys);
+  }
+
+  ERC20 signer(String contractAddress, int chainId, ContractAbi abi)
+  {
+    Client httpClient = Client();
+    Web3Client ethClient = Web3Client(url, httpClient);
+
+    EthereumAddress _ethereumAddress = EthereumAddress.fromHex(contractAddress);
+    return ERC20(abi, address: _ethereumAddress, client: ethClient, chainId: chainId);
   }
 }

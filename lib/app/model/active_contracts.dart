@@ -7,13 +7,13 @@ import 'package:flutter/material.dart';
 class ActiveContracts extends ChangeNotifier
 {
   final FileManager fileManager;
-  List tokens = [];
+  List<String> tokens = [];
   Map<String, Isolate> services = {};
 
   ActiveContracts(this.fileManager){
     Future<File> _fileTokens = tokensFile();
     _fileTokens.then((File file) async {
-      this.tokens = jsonDecode(await file.readAsString());
+      this.tokens = List<String>.from(jsonDecode(await file.readAsString()));
 
       // List lContacts = contents["contacts"];
       // lContacts.asMap().forEach((key,contact) {
@@ -26,7 +26,7 @@ class ActiveContracts extends ChangeNotifier
   {
     await this.fileManager.getDocumentsFolder();
     String fileFolder = this.fileManager.documentsFolder;
-    print(fileFolder);
+    // print(fileFolder);
     await this.fileManager.checkPath(fileFolder);
     File file = File("${fileFolder}tokens${this.fileManager.ext}");
     if(!await file.exists())
