@@ -130,11 +130,6 @@ String weiToFixedPoint(String amount, {int digits = 18})
   return result;
 }
 
-AvmeWallet getAppState(BuildContext context, {listen = false})
-{
-  return Provider.of<AvmeWallet>(context, listen: listen);
-}
-
 bool isHex(String hex)
 {
   RegExp regIsAddress = new RegExp(r"^(0x)[a-zA-Z0-9]*$",multiLine: false);
@@ -147,4 +142,12 @@ void closeApp()
     SystemNavigator.pop();
   else if (Platform.isIOS)
     exit(0);
+}
+
+Image resolveImage(String res, {double height, double width})
+{
+  BoxFit fit = BoxFit.scaleDown;
+  return res.contains("http")
+    ? Image.network(res, fit: fit, height: height, width: width,)
+    : Image.asset(res, fit: fit, height: height, width: width,);
 }
