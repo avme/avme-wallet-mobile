@@ -80,7 +80,7 @@ class AppNeonButton extends StatelessWidget {
           children: children
         ),
         style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.all<Color>(Colors.transparent),
+          backgroundColor: MaterialStateProperty.all<Color>(AppColors.darkBlue),
           shadowColor: MaterialStateProperty.all<Color>(Colors.transparent),
           shape: MaterialStateProperty.all<RoundedRectangleBorder>(
             RoundedRectangleBorder(
