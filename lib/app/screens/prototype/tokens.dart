@@ -25,7 +25,6 @@ class Tokens extends StatefulWidget {
 
 class _TokensState extends State<Tokens> {
   Contracts contracts;
-  int grid = 3;
 
   String selectedToken = "AVME testnet";
 
@@ -146,10 +145,6 @@ class _TokensState extends State<Tokens> {
       contracts.contracts[tokenName][0]
     );
 
-    print("[[MEMES]]");
-    print(contractSigner.contractAbi.name);
-    print("DECIMALS");
-
     int contractDecimals = (await contractSigner.decimals()).toInt();
 
     showDialog<void>(
@@ -235,7 +230,7 @@ class _TokensState extends State<Tokens> {
   {
     return GridView.count(
       shrinkWrap: true,
-      crossAxisCount: grid,
+      crossAxisCount: 3,
       // padding: EdgeInsets.all(8),
       crossAxisSpacing: 12,
       mainAxisSpacing: 12,
