@@ -1,3 +1,4 @@
+import 'package:avme_wallet/app/controller/size_config.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
@@ -91,7 +92,7 @@ class _TokenValueState extends State<TokenValue> {
               child: Column(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.only(right:8.0),
+                    padding: EdgeInsets.only(right:SizeConfig.safeBlockHorizontal),
                     child: AppButton(
                       onPressed: () {
                         NotificationBar().show(
