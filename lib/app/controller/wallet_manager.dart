@@ -247,14 +247,14 @@ class WalletManager
     }
   }
 
-  Future<Map<String,dynamic>> sendTransaction(AvmeWallet wallet, String address, BigInt amount, tokenId, {ValueNotifier notifier}) async
+  Future<Map<String,dynamic>> sendTransaction(AvmeWallet wallet, String address, BigInt amount, tokenId, {List<ValueNotifier> listNotifier}) async
   {
     if (!await services.hasEnoughBalanceToPayTaxes(wallet.currentAccount.waiBalance))
     {
       return {"title" : "Attention", "status": 500, "message": "Not enough AVAX to complete the transaction."};
     }
     wallet.lastTransactionWasSucessful.retrievingData = true;
-    String url = await services.sendTransaction(wallet, address, amount, tokenId, notifier: notifier);
+    String url = await services.sendTransaction(wallet, address, amount, tokenId, listNotifier: listNotifier);
     return {"title": "", "status": 200, "message": url};
   }
 

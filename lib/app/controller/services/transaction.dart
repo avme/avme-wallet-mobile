@@ -21,7 +21,7 @@ Future<bool> hasEnoughBalanceToPayTaxes(BigInt balance) async {
   return tax > balance ? false : true;
 }
 
-Future<String> sendTransaction(AvmeWallet appState, String receiverAddress, BigInt amount, int tokenId, {ValueNotifier notifier}) async
+Future<String> sendTransaction(AvmeWallet appState, String receiverAddress, BigInt amount, int tokenId, {List<ValueNotifier> listNotifier}) async
 {
   Client httpClient = Client();
   Web3Client ethClient = Web3Client(url, httpClient);
@@ -38,7 +38,8 @@ Future<String> sendTransaction(AvmeWallet appState, String receiverAddress, BigI
   //Todo ASAP: change from token id to token identifier
   ///1: AVAX, 2: AVME
 
-  notifier.value = "2 - Signing Transaction";
+  listNotifier[0].value = 40;
+  listNotifier[1].value = "Signing Transaction";
   String transactionHash;
   Web3Client transactionClient;
   if(tokenId == 1)
@@ -54,8 +55,8 @@ Future<String> sendTransaction(AvmeWallet appState, String receiverAddress, BigI
     print(signedTransaction);
     transactionHash = await ethClient.sendRawTransaction(signedTransaction);
     print("[transactionHash]$transactionHash");
-    notifier.value = "3 - Sending Transaction";
-
+    listNotifier[0].value = 60;
+    listNotifier[1].value = "Sending Transaction";
     transactionClient = ethClient;
   }
   else
@@ -69,8 +70,8 @@ Future<String> sendTransaction(AvmeWallet appState, String receiverAddress, BigI
     int chainId = int.tryParse(appState.contracts["AVME testnet"][2]);
     ERC20 contract = ERC20(abi, address: contractAddress, client: ethClient, chainId: chainId);
     Credentials accountCredentials = appState.currentAccount.walletObj.privateKey;
-    notifier.value = "3 - Sending Transaction";
-
+    listNotifier[0].value = 60;
+    listNotifier[1].value = "Sending Transaction";
     transactionHash = await contract.transfer(
         EthereumAddress.fromHex(receiverAddress),
         amount,
@@ -81,7 +82,8 @@ Future<String> sendTransaction(AvmeWallet appState, String receiverAddress, BigI
     transactionClient = contract.client;
   }
   print(transactionHash);
-  notifier.value = "4 - Confirming Transaction";
+  listNotifier[0].value = 90;
+  listNotifier[1].value = "Confirming Transaction";
   /*Recovering Transaction hash*/
   TransactionInformation transactionInformation;
   TransactionReceipt transactionReceipt;
@@ -111,5 +113,7 @@ Future<String> sendTransaction(AvmeWallet appState, String receiverAddress, BigI
       print("ERROR $e");
     }
   }
+  listNotifier[0].value = 100;
+  listNotifier[1].value = "Done";
   return "https://snowtrace.io/tx/$transactionHash";
 }
