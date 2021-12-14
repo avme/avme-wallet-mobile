@@ -155,7 +155,7 @@ class _ContactsState extends State<Contacts> {
                                                     });
                                                     NotificationBar().show(
                                                       context,
-                                                      text: selected == 1 ? "$selected Contact was removed." : "$selected Contacts was removed."
+                                                      text: selected == 1 ? "$selected Contact was removed." : "$selected Contacts were removed."
                                                     );
                                                     cancel();
                                                   });
