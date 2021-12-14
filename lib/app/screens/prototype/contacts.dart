@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:avme_wallet/app/controller/contacts.dart';
+import 'package:avme_wallet/app/controller/size_config.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/contacts.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/button.dart';
@@ -36,6 +37,8 @@ class _ContactsState extends State<Contacts> {
 
   @override
   Widget build(BuildContext context) {
+    SizeConfig().init(context);
+    final bottomInset = SizeConfig.safeBlockVertical;
     EdgeInsets buttonPadding = EdgeInsets.symmetric(
         vertical: 0,
         horizontal: 8
@@ -49,15 +52,15 @@ class _ContactsState extends State<Contacts> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.only(
-                          top: 12.0,
-                          bottom: 20,
+                      padding: EdgeInsets.only(
+                          //top: 12.0,
+                          bottom: bottomInset,
                           left: 16.0
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          LabelText("Contacts", fontSize: 18),
+                          LabelText("Contacts", fontSize: SizeConfig.fontSize*1.8),
                           // IconButton(onPressed: () {
                           //
                           // }, icon: FaIcon(FontAwesomeIcons.ellipsisV))
@@ -66,7 +69,7 @@ class _ContactsState extends State<Contacts> {
                       )
                     ),
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 24.0),
+                      padding: EdgeInsets.only(bottom: bottomInset*3),
                       child: searchBar(controller.contacts),
                     ),
                     this.editMode ? Padding(
@@ -333,7 +336,7 @@ class _ContactsState extends State<Contacts> {
               children: [
                 Row(
                   children: [
-                    LabelText("Address", fontSize: 18,),
+                    LabelText("Address", fontSize: SizeConfig.fontSize*1.5,),
                   ],
                 ),
                 SizedBox(
@@ -359,7 +362,7 @@ class _ContactsState extends State<Contacts> {
                 ),
                 Row(
                   children: [
-                    LabelText("Name", fontSize: 18,),
+                    LabelText("Name", fontSize: SizeConfig.fontSize*1.5,),
                   ],
                 ),
                 SizedBox(
@@ -381,25 +384,27 @@ class _ContactsState extends State<Contacts> {
                   isDense: true,
                 ),
                 SizedBox(
-                  height: 24.0,
+                  height: SizeConfig.safeBlockVertical*3,
                 ),
                 Divider(),
                 SizedBox(
-                  height: 24.0,
+                  height: SizeConfig.safeBlockVertical*3,
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     AppNeonButton(
                       expanded: false,
+                      textStyle: TextStyle(fontSize: SizeConfig.fontSize*1.4),
                       onPressed: () => Navigator.of(context).pop(),
                       text: "Cancel"
                     ),
                     SizedBox(
-                      width: 16.0,
+                      width: 8.0,
                     ),
                     AppButton(
                       expanded: false,
+                      textStyle: TextStyle(fontSize: SizeConfig.fontSize*1.4),
                       onPressed: () {
                         if(_contactsForm.currentState != null && _contactsForm.currentState.validate())
                         {
@@ -436,8 +441,9 @@ class _ContactsState extends State<Contacts> {
                     ),
                   ],
                 ),
+                //TODO: Remove this SizedBox?
                 SizedBox(
-                  height: 16.0,
+                  height: 0,
                 ),
               ],
             )
