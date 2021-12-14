@@ -34,10 +34,13 @@ class AppPopupWidget extends StatefulWidget {
     this.cancelable = true,
     this.canClose = true,
     this.showIndicator = true,
+    this.textStyle,
+    /*
     this.textStyle = const TextStyle(
         fontSize: 24,
         fontWeight: FontWeight.w500
     ),
+    */
   }) : super(key: key);
 
   @override
@@ -50,6 +53,9 @@ class _AppPopupWidgetState extends State<AppPopupWidget> {
   Widget build(BuildContext context) {
 
     List<Widget> popupActions = [];
+
+    SizeConfig().init(context);
+    TextStyle widgetTextStyle = widget.textStyle ?? AppTextStyles.label.copyWith(fontSize: SizeConfig.titleSize);
 
     if(widget.actions != null)
     {
@@ -188,7 +194,7 @@ class _AppPopupWidgetState extends State<AppPopupWidget> {
                                             children: [
                                               Text(
                                                 widget.title,
-                                                style: widget.textStyle,
+                                                style: widgetTextStyle,
                                                 textAlign: TextAlign.center,
                                               ),
                                             ],
@@ -275,6 +281,8 @@ class FuturePopupWidget extends StatefulWidget {
 class _FuturePopupWidgetState extends State<FuturePopupWidget> with SingleTickerProviderStateMixin{
   @override
   Widget build(BuildContext context) {
+
+    SizeConfig().init(context);
 
     List<Widget> popupActions = [];
 
