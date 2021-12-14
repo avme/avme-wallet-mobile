@@ -521,7 +521,7 @@ class _FuturePopupWidgetState extends State<FuturePopupWidget> with SingleTicker
 
 class ProgressPopup extends StatefulWidget {
   final String title;
-  final ValueNotifier labelNotifier;
+  final List<ValueNotifier> listNotifier;
   final TextStyle textStyle;
   ///This is the default content padding
   final EdgeInsets padding;
@@ -537,7 +537,7 @@ class ProgressPopup extends StatefulWidget {
   ProgressPopup({
     Key key,
     @required this.title,
-    this.labelNotifier,
+    this.listNotifier,
     @required this.future,
     this.padding = const EdgeInsets.only(
         left: 32,
@@ -560,12 +560,12 @@ class ProgressPopup extends StatefulWidget {
 
 class _ProgressPopupState extends State<ProgressPopup> with SingleTickerProviderStateMixin{
 
-  ValueNotifier _labelNotifier;
+  List<ValueNotifier> _listNotifier;
 
   @override
   void initState()
   {
-    _labelNotifier = widget.labelNotifier ?? ValueNotifier("Loading");
+    _listNotifier = widget.listNotifier ?? [ValueNotifier(10),ValueNotifier("This may take a while.")];
     super.initState();
   }
 
@@ -589,7 +589,7 @@ class _ProgressPopupState extends State<ProgressPopup> with SingleTickerProvider
             );
         });
     }
-
+    SizeConfig().init(context);
     return GestureDetector(
       onTap: () => null,
       child: Scaffold(
@@ -609,7 +609,7 @@ class _ProgressPopupState extends State<ProgressPopup> with SingleTickerProvider
                             context,
                             text: "please wait for the current operation to finish."
                           );
-                          return true;
+                          return false;
                         },
                         child: FutureBuilder(
                           future: widget.future,
@@ -619,41 +619,53 @@ class _ProgressPopupState extends State<ProgressPopup> with SingleTickerProvider
                             {
                               return AlertDialog(
                                   backgroundColor: AppColors.cardDefaultColor,
-                                  contentPadding: EdgeInsets.all(0),
-                                  insetPadding: EdgeInsets.all(
-                                      MediaQuery.of(context).size.width / 4
-                                  ),
+                                  contentPadding: EdgeInsets.all(SizeConfig.safeBlockHorizontal * 6),
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(8)
                                   ),
-                                  content: Container(
-                                    width: double.maxFinite,
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Padding(
-                                          padding:
-                                          const EdgeInsets.all(32),
-                                          child: Column(
-                                            children:
-                                            [
-                                              Container(
-                                                height: 48,
-                                                width: 48,
+                                  content: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      Padding(
+                                        padding: EdgeInsets.only(right: SizeConfig.safeBlockHorizontal * 6),
+                                        child: Column(
+                                          children: [
+                                            Container(
+                                              // color: Colors.green,
+                                              child: SizedBox(
+                                                height: SizeConfig.safeBlockVertical * 5.5,
+                                                width: SizeConfig.safeBlockVertical * 5.5,
                                                 child: CircularProgressIndicator(
                                                   color: AppColors.purple,
-                                                  strokeWidth: 6,
+                                                  strokeWidth: SizeConfig.titleSize / 5,
                                                 ),
                                               ),
-                                              SizedBox(height: 32),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Container(
+                                        // color:Colors.blue,
+                                        child: Flexible(
+                                          child: Column(
+                                            mainAxisAlignment: MainAxisAlignment.start,
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
                                               ValueListenableBuilder(
-                                                valueListenable: _labelNotifier,
-                                                builder: (BuildContext context, label, Widget child) => Text("$label", textAlign: TextAlign.center,))
+                                                valueListenable: _listNotifier[0],
+                                                builder: (BuildContext context, text, Widget child) =>
+                                                  Text("Loading $text%", textAlign: TextAlign.left,)),
+                                              SizedBox(height: 8),
+                                              ValueListenableBuilder(
+                                                valueListenable: _listNotifier[1],
+                                                builder: (BuildContext context, text, Widget child) =>
+                                                  Text("$text",style: AppTextStyles.span, textAlign: TextAlign.left,))
                                             ],
                                           ),
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                    ],
                                   )
                               );
                             }

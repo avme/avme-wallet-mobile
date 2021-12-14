@@ -1,6 +1,9 @@
 import 'dart:convert';
 
+import 'package:avme_wallet/app/controller/services/contract.dart';
+import 'package:avme_wallet/app/controller/size_config.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
+import 'package:avme_wallet/app/model/active_contracts.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/button.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/card.dart';
@@ -30,18 +33,9 @@ class _SendState extends State<Send> {
   final _preTokenForm = GlobalKey<FormState>();
   final _sendTokenForm = GlobalKey<FormState>();
 
-  int tokenDropdownValue = 0;
-  //Todo: use an asset list with both id and label/short name
-  // final List availableTokens = <String>[
-  //   "Select Token",
-  //   "AVAX",
-  //   "AVME"
-  // ];
-  final Map availableTokens = <int,String>{
-    0 : "Select Token",
-    1 : "AVAX",
-    2 : "AVME"
-  };
+  String tokenDropdownValue = "Select a Token";
+  //Todo: use an asset list with both id and label/short nam
+  List<String> availableTokens = ["Select a Token"];
 
   TextEditingController addressController = new TextEditingController();
   FocusNode phraseFocusNode = new FocusNode();
@@ -52,14 +46,28 @@ class _SendState extends State<Send> {
     bottom:20,
   );
 
+  ActiveContracts activeContracts;
+  Contracts contracts;
+
+  @override
+  void initState() {
+    activeContracts = Provider.of<ActiveContracts>(context, listen: false);
+    availableTokens.addAll(activeContracts.tokens);
+    contracts = Contracts.getInstance();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
+
+    SizeConfig().init(context);
+
     Color cLabelStyle = AppColors.labelDefaultColor;
     OutlineInputBorder fieldBorder = OutlineInputBorder(
-        borderRadius: BorderRadius.circular(6.0),
-        borderSide: BorderSide(
-            width: 2
-        )
+      borderRadius: BorderRadius.circular(6.0),
+      borderSide: BorderSide(
+        width: 2
+      )
     );
     return Form(
       key: _preTokenForm,
@@ -112,22 +120,20 @@ class _SendState extends State<Send> {
                       padding: const EdgeInsets.only(bottom:8.0),
                       child: AppLabelText("Available Tokens",),
                     ),
-                    DropdownButtonFormField<int>(
+                    DropdownButtonFormField<String>(
                       isExpanded: true,
                       value: tokenDropdownValue,
                       icon: new Icon(Icons.keyboard_arrow_down, color: AppColors.labelDefaultColor, size: 28,),
                       elevation: 16,
-                      validator: (selected) {
-                        if(selected == 0)
+                      validator: (String selected) {
+                        if(selected == "Select a Token")
                         {
                           return "Please select a token";
                         }
                         return null;
                       },
-                      onChanged: (int selectedValue){
-                        setState(() {
-                          tokenDropdownValue = selectedValue;
-                        });
+                      onChanged: (String selectedValue){
+                        tokenDropdownValue = selectedValue;
                         if(_preTokenForm.currentState != null)
                           _preTokenForm.currentState.validate();
                       },
@@ -136,8 +142,8 @@ class _SendState extends State<Send> {
                         filled: true,
                         fillColor: AppColors.darkBlue,
                         contentPadding: const EdgeInsets.symmetric(
-                            vertical: 14,
-                            horizontal: 12
+                          vertical: 14,
+                          horizontal: 12
                         ),
                         enabledBorder: fieldBorder.copyWith(
                           borderSide: BorderSide(
@@ -146,18 +152,33 @@ class _SendState extends State<Send> {
                           ),
                         ),
                         errorBorder: fieldBorder.copyWith(
-                            borderSide: BorderSide(
-                              width: 2,
-                              color: AppColors.labelDefaultColor,
-                            )
+                          borderSide: BorderSide(
+                            width: 2,
+                            color: AppColors.labelDefaultColor,
+                          )
                         ),
                       ),
-                      items: availableTokens.entries.map<DropdownMenuItem<int>>((entry) {
-                        return DropdownMenuItem(
-                            value: entry.key,
-                            child: Text(entry.value)
-                        );
-                      }).toList(),
+                      items: availableTokens.map<DropdownMenuItem<String>>((value) {
+                          if(value != availableTokens.first)
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Row(
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.only(right:SizeConfig.safeBlockVertical * 1.5),
+                                    child: resolveImage(contracts.contractsRaw[value]["logo"], width: SizeConfig.safeBlockVertical * 3.5),
+                                  ),
+                                  Text(value, style: AppTextStyles.label,),
+                                ],
+                              ),
+                            );
+                          else
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            );
+                        }
+                      ).toList()
                     )
                   ],
                 ),
@@ -176,7 +197,7 @@ class _SendState extends State<Send> {
                     vertical: 18,
                     horizontal: 14
                   ),
-                  //Todo: Create an proper "address book"
+                  //Todo: Implement "address/contact list"
                   child: Row(
                     children: [
                       Expanded(
@@ -250,13 +271,13 @@ class _SendState extends State<Send> {
                               ),
                             ),
                             Expanded(
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    Icon(Icons.arrow_forward_ios, color: AppColors.labelDefaultColor,)
-                                  ],
-                                )
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Icon(Icons.arrow_forward_ios, color: AppColors.labelDefaultColor,)
+                                ],
+                              )
                             ),
                           ],
                         ),
@@ -280,13 +301,13 @@ class _SendState extends State<Send> {
                               ),
                             ),
                             Expanded(
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    Icon(Icons.arrow_forward_ios, color: AppColors.labelDefaultColor,)
-                                  ],
-                                )
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Icon(Icons.arrow_forward_ios, color: AppColors.labelDefaultColor,)
+                                ],
+                              )
                             ),
                           ],
                         ),
@@ -310,13 +331,13 @@ class _SendState extends State<Send> {
                               ),
                             ),
                             Expanded(
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    Icon(Icons.arrow_forward_ios, color: AppColors.labelDefaultColor,)
-                                  ],
-                                )
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Icon(Icons.arrow_forward_ios, color: AppColors.labelDefaultColor,)
+                                ],
+                              )
                             ),
                           ],
                         ),
@@ -387,7 +408,7 @@ class _SendState extends State<Send> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text(availableTokens[tokenDropdownValue],
+                        Text(availableTokens.firstWhere((element) => element == tokenDropdownValue),
                           style: TextStyle(
                               fontSize: 18
                           ),

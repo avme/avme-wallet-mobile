@@ -144,14 +144,19 @@ class AvmeWallet extends ChangeNotifier
 
   Future<bool> login(String password, BuildContext context, {bool display = false}) async {
     bool auth = false;
-    ValueNotifier <String> status = ValueNotifier("Loading - 0%");
+    ValueNotifier<int> percentage = ValueNotifier(0);
+    ValueNotifier<String> label = ValueNotifier("Loading...");
+    List<ValueNotifier> loadingNotifier = [
+      percentage,
+      label
+    ];
     if(display)
       await showDialog(context: context, builder: (_) =>
         StatefulBuilder(
           builder: (builder, setState){
             return ProgressPopup(
-              labelNotifier: status,
-              future: _initFirstLogin(context, password, status, display)
+              listNotifier: loadingNotifier,
+              future: _initFirstLogin(context, password, loadingNotifier, display)
                 .then((result) {
                   auth = result[0];
                   return [Text(result[1])];
@@ -163,17 +168,19 @@ class AvmeWallet extends ChangeNotifier
         )
       );
     else
-      auth = (await _initFirstLogin(context, password, status, display))[0];
+      auth = (await _initFirstLogin(context, password, loadingNotifier, display))[0];
     return auth;
   }
 
-  Future<List> _initFirstLogin(BuildContext context, String password, ValueNotifier label, bool display) async
+  Future<List> _initFirstLogin(BuildContext context, String password, List<ValueNotifier> loadingNotifier, bool display) async
   {
-    label.value = "10% - Authenticating";
+    loadingNotifier[0].value = 10;
+    loadingNotifier[1].value = "Authenticating...";
     Map authMap = await walletManager.authenticate(password, this);
     if(authMap["status"] == 200)
     {
-      label.value = "90% - Retrieving data from Web";
+      loadingNotifier[0].value = 90;
+      loadingNotifier[1].value = "Retrieving data from Web...";
       walletManager.stopBalanceSubscription(this);
       await walletManager.startBalanceSubscription(this);
 
@@ -185,7 +192,7 @@ class AvmeWallet extends ChangeNotifier
     else
     {
       //...error
-      return [false, authMap["message"]];
+      // return [false, authMap["message"]];
     }
 
   }
