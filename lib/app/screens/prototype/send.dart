@@ -710,8 +710,7 @@ class _SendState extends State<Send> {
       StatefulBuilder(builder: (builder, setState){
         return ProgressPopup(
           title: "Warning",
-          labelNotifier: transactionStatus,
-          future: app.walletManager.sendTransaction(app, addressController.text, value, tokenDropdownValue, notifier:transactionStatus)
+          future: app.walletManager.sendTransaction(app, addressController.text, value, tokenDropdownValue, listNotifier: [ValueNotifier("_value"),ValueNotifier("_value")])
             .then((response) async{
               if(response["status"] == 200)
               {
