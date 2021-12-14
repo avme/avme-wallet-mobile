@@ -1,3 +1,4 @@
+import 'package:avme_wallet/app/controller/size_config.dart';
 import 'package:flutter/material.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:pie_chart/pie_chart.dart' as PieChart;
@@ -37,9 +38,9 @@ class _TokenDistributionState extends State<TokenDistribution> {
     return AppCard(
       child: Column(
         children: [
-          Text("This Account"),
+          Text("This Account",style: TextStyle(fontSize: SizeConfig.labelSize*0.8)),
           SizedBox(
-            height: 12,
+            height: SizeConfig.safeBlockVertical*1.5,
           ),
           Container(
             decoration: BoxDecoration(
@@ -57,8 +58,11 @@ class _TokenDistributionState extends State<TokenDistribution> {
                     flex:6,
                     child: Container(
                       child: Padding(
-                        padding: const EdgeInsets.only(
-                            left: 28, top: 28, bottom: 28, right: 64
+                        padding: EdgeInsets.only(
+                            left: 28, top: 28, bottom: 28, right: SizeConfig.safeBlockHorizontal*15,
+                            //left: 28, top: 28, bottom: 28, right: 64,
+                            // Ratib: Right dictates the size of the ring for some reason, so I made only it dynamic and removed const
+                            // the bigger the number, the smaller the radius of the circle is
                         ),
                         child: Stack(
                           children: [
