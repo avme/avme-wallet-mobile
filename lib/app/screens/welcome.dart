@@ -93,6 +93,7 @@ class _WelcomeState extends State<Welcome> {
                               onPressed: () {
                                 Navigator.pushNamed(context, "/login");
                               },
+                              enabled: false,
                               text: "LOAD WALLET",
                             ),
                           ],
