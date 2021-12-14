@@ -7,18 +7,17 @@ import 'package:flutter/material.dart';
 class ActiveContracts extends ChangeNotifier
 {
   final FileManager fileManager;
-  List<String> tokens = [];
+  List<String> tokens = [
+    "AVME testnet",
+    "AVME",
+  ];
   Map<String, Isolate> services = {};
 
   ActiveContracts(this.fileManager){
     Future<File> _fileTokens = tokensFile();
     _fileTokens.then((File file) async {
-      this.tokens = List<String>.from(jsonDecode(await file.readAsString()));
-
-      // List lContacts = contents["contacts"];
-      // lContacts.asMap().forEach((key,contact) {
-      //   contacts[key] = Contact(contact["name"], contact["address"]);
-      // });
+      List<String> tokensInFile = List<String>.from(jsonDecode(await file.readAsString()));
+      this.tokens = tokensInFile ?? this.tokens;
     });
   }
 
