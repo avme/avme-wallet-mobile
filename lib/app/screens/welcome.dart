@@ -12,9 +12,7 @@ import 'package:provider/provider.dart';
 
 class Welcome extends StatefulWidget {
 
-  final bool walletExists;
-
-  const Welcome({Key key, this.walletExists = false}) : super(key: key);
+  const Welcome({Key key}) : super(key: key);
 
   @override
   _WelcomeState createState() => _WelcomeState();
@@ -95,7 +93,6 @@ class _WelcomeState extends State<Welcome> {
                               onPressed: () {
                                 Navigator.pushNamed(context, "/login");
                               },
-                              enabled: widget.walletExists,
                               text: "LOAD WALLET",
                             ),
                           ],

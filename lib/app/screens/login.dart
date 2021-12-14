@@ -9,6 +9,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class Login extends StatefulWidget {
+  final bool canGoBack;
+
+  const Login({Key key, this.canGoBack = true}) : super(key: key);
   @override
   _LoginState createState() => _LoginState();
 }
@@ -19,6 +22,7 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
+    SizeConfig().init(context);
     double fieldSpacing = SizeConfig.safeBlockVertical * 2;
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -63,22 +67,23 @@ class _LoginState extends State<Login> {
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        ///Close button
-                                        GestureDetector(
-                                          child: Container(
-                                            color: Colors.transparent,
-                                            //color: Colors.red,
-                                            // previously there was a padding involving icon
-                                            child: Icon(
-                                              Icons.arrow_back,
-                                              size: 32,
-                                              color: AppColors.labelDefaultColor,
+                                        !widget.canGoBack
+                                        ? GestureDetector( ///Close button
+                                            child: Container(
+                                              color: Colors.transparent,
+                                              //color: Colors.red,
+                                              // previously there was a padding involving icon
+                                              child: Icon(
+                                                Icons.arrow_back,
+                                                size: 32,
+                                                color: AppColors.labelDefaultColor,
+                                              ),
                                             ),
-                                          ),
-                                          onTap: (){
-                                            Navigator.of(context).pop();
-                                          },
-                                        ),
+                                            onTap: (){
+                                              Navigator.of(context).pop();
+                                            },
+                                          )
+                                        : Container()
                                       ],
                                     ),
                                   ),
