@@ -1,3 +1,4 @@
+import 'package:avme_wallet/app/controller/size_config.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/screens/prototype/app_drawer.dart';
@@ -96,11 +97,11 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
   Widget header()
   {
     return Padding(
-      padding: const EdgeInsets.only(
-        left: 16,
-        top:12,
-        right: 16,
-        bottom: 28,
+      padding: EdgeInsets.only(
+        top: SizeConfig.safeBlockVertical*2,
+        bottom: SizeConfig.safeBlockHorizontal*6,
+        left: SizeConfig.safeBlockHorizontal*4,
+        right: SizeConfig.safeBlockHorizontal*4,
       ),
       child: Column(
         children: [
