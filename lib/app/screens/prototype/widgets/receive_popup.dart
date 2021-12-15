@@ -1,3 +1,4 @@
+import 'package:avme_wallet/app/controller/size_config.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/button.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/neon_button.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/notification_bar.dart';
@@ -31,6 +32,7 @@ class ReceivePopup extends StatefulWidget {
 class _ReceivePopupState extends State<ReceivePopup> {
   @override
   Widget build(BuildContext context) {
+    SizeConfig().init(context);
     return AppPopupWidget(
       padding: EdgeInsets.all(0),
       cancelable: false,
@@ -38,7 +40,7 @@ class _ReceivePopupState extends State<ReceivePopup> {
           fontSize: 18,
           fontWeight: FontWeight.w500
       ),
-      margin: EdgeInsets.all(16),
+      margin: EdgeInsets.all(SizeConfig.safeBlockHorizontal*4),
       title: widget.title,
       children: [
         Container(
@@ -46,7 +48,7 @@ class _ReceivePopupState extends State<ReceivePopup> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Padding(
-              padding: const EdgeInsets.all(32),
+              padding: EdgeInsets.symmetric(vertical: SizeConfig.safeBlockVertical,horizontal: SizeConfig.safeBlockHorizontal*3),
               child: Column(
                 children: [
                   Container(
@@ -66,11 +68,7 @@ class _ReceivePopupState extends State<ReceivePopup> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(
-                      top: 32.0,
-                      left: 8,
-                      right: 8,
-                    ),
+                    padding: EdgeInsets.symmetric(vertical:SizeConfig.blockSizeVertical*3,horizontal: SizeConfig.safeBlockHorizontal*3),
                     child: Column(
                       children: [
                         GestureDetector(
@@ -95,7 +93,7 @@ class _ReceivePopupState extends State<ReceivePopup> {
                             ],
                           ),
                         ),
-                        SizedBox(height: 24,),
+                        SizedBox(height: SizeConfig.blockSizeVertical*3),
                         AppButton(
                           mainAxisAlignment: MainAxisAlignment.start,
                           paddingBetweenIcons: 16,
@@ -103,7 +101,8 @@ class _ReceivePopupState extends State<ReceivePopup> {
                           onPressed: () {},
                           iconData: Icons.account_circle_outlined,
                         ),
-                        SizedBox(height: 18,),
+                        //SizedBox(height: 18,),
+                        SizedBox(height: SizeConfig.blockSizeVertical*2),
                         AppNeonButton(
                           mainAxisAlignment: MainAxisAlignment.start,
                           paddingBetweenIcons: 16,
