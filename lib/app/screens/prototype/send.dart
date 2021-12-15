@@ -86,8 +86,8 @@ class _SendState extends State<Send> {
                     child: AppLabelText("Address",),
                   ),
                   AppTextFormField(
-                    q//contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 12),
                     controller: addressController,
+                    hintText: '0x4214496147525148769976fb554a8388117e25b1',
                     validator: (value) {
                       if (value.length != 42 || !isHex(value)) {
                         return 'This is not a valid address';
