@@ -58,6 +58,15 @@ class AppTextFormField extends StatelessWidget {
         )
     );
 
+    EdgeInsets varContentPadding;
+    if(this.icon!=null)
+    {
+      varContentPadding = EdgeInsets.only(top:16, bottom: 16, left:12, right: 40);
+    } else
+    {
+      //previous default value
+      varContentPadding = this.contentPadding;
+    }
 
     if(this.focusNode != null)
     {
@@ -99,7 +108,7 @@ class AppTextFormField extends StatelessWidget {
                 ),
                 labelText: this.labelText,
                 floatingLabelBehavior: this.floatingLabelBehavior,
-                contentPadding: this.contentPadding,
+                contentPadding: varContentPadding,
                 enabledBorder: fieldBorder.copyWith(
                   borderSide: BorderSide(
                     width: 2,
