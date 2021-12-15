@@ -1,3 +1,4 @@
+import 'package:avme_wallet/app/controller/size_config.dart';
 import 'package:flutter/material.dart';
 
 import 'neon_button.dart';
@@ -34,6 +35,7 @@ class OverviewAndButtons extends StatefulWidget {
 class _OverviewAndButtonsState extends State<OverviewAndButtons> {
   @override
   Widget build(BuildContext context) {
+    SizeConfig().init(context);
     return AppCard(
       child: Column(
         children: [
@@ -41,7 +43,7 @@ class _OverviewAndButtonsState extends State<OverviewAndButtons> {
             decorationTween: widget.balanceTween,
             onPressed: (){},
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(SizeConfig.safeBlockHorizontal*4),
               child: Row(
                 children: [
                 ///Fist Column with Data.
@@ -53,11 +55,11 @@ class _OverviewAndButtonsState extends State<OverviewAndButtons> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("Total Balance"),
+                          Text("Total Balance",style: TextStyle(fontSize: SizeConfig.labelSize*0.7),),
                           SizedBox(height: 8,),
                           Text("\$${widget.totalBalance}",
                             style: TextStyle(
-                              fontSize: 26,
+                              fontSize: SizeConfig.titleSize,
                             ),),
                           SizedBox(height: 8,),
                           Text("${widget.difference}",
@@ -70,9 +72,9 @@ class _OverviewAndButtonsState extends State<OverviewAndButtons> {
                             children: [
                               Padding(
                                 padding: const EdgeInsets.all(1.0),
-                                child: Icon(Icons.copy),
+                                child: Icon(Icons.copy,size: SizeConfig.labelSize,),
                               ),
-                              SizedBox(width: 8,),
+                              SizedBox(width: 4,),
                               Flexible(
                                 child: Column(
                                   children: [
