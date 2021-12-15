@@ -215,7 +215,7 @@ class PieChartPercentages extends StatelessWidget
       child: Text(this.text,
         style: TextStyle(
           color: this.color,
-          fontSize: 11,
+          fontSize: SizeConfig.fontSize*1.5,
         ),
       ),
     );
