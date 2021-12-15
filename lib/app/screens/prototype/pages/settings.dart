@@ -22,71 +22,72 @@ class _SettingsState extends State<Settings> {
         appBar: AppBar(
           title: Text("Settings"),
         ),
-        body: SafeArea(
-          child: Column(
-            // physics: BouncingScrollPhysics(),
-            children: [
+        body: SingleChildScrollView(
+          child: SafeArea(
+            child: Column(
+              children: [
+                  ///Section/Category
+                  ListTile(
+                    title: Text("Advanced Settings", style: AppTextStyles.label,),
+                  ),
+                ]..addAll(
+                  ListTile.divideTiles(
+                    context: context,
+                    tiles: [
+                      ListTile(
+                        title: Text("Debug Mode"),
+                        leading: Icon(Icons.bug_report_outlined),
+                        onTap: () => setState(() => this.debugMode = !this.debugMode),
+                        subtitle: Text(
+                            debugMode ? "Enabled" : "Disabled"
+                        ),
+                        trailing: Switch(
+                          value: debugMode,
+                          onChanged: (bool value) => setState(() => this.debugMode = !this.debugMode),
+                        ),
+                      ),
+                      ListTile(
+                        title: Text("Text input sample"),
+                        leading: Icon(Icons.verified_user_sharp),
+                        onTap: () async {
+                          FocusNode fieldFocus = new FocusNode();
+                          fieldFocus.requestFocus();
+                          await exampleTextPopup(fieldFocus);
+                          setState((){});
+                          // setState(() => this.debugMode = !this.debugMode);
+                        },
+                        subtitle: Text(this.textInput.value.text),
+                      ),
+                    ]
+                  ),
+              )..addAll([
                 ///Section/Category
                 ListTile(
-                  title: Text("Advanced Settings", style: AppTextStyles.label,),
+                  title: Text("Network", style: AppTextStyles.label),
                 ),
-              ]..addAll(
+              ])..addAll(
                 ListTile.divideTiles(
                   context: context,
                   tiles: [
                     ListTile(
-                      title: Text("Debug Mode"),
-                      leading: Icon(Icons.bug_report_outlined),
-                      onTap: () => setState(() => this.debugMode = !this.debugMode),
-                      subtitle: Text(
-                          debugMode ? "Enabled" : "Disabled"
-                      ),
-                      trailing: Switch(
-                        value: debugMode,
-                        onChanged: (bool value) => setState(() => this.debugMode = !this.debugMode),
-                      ),
+                      title: Text("Wallet API"),
+                      leading: Icon(Icons.web),
+                      subtitle: Text("api.avme.io:443/"),
                     ),
                     ListTile(
-                      title: Text("Text input sample"),
-                      leading: Icon(Icons.verified_user_sharp),
-                      onTap: () async {
-                        FocusNode fieldFocus = new FocusNode();
-                        fieldFocus.requestFocus();
-                        await exampleTextPopup(fieldFocus);
-                        setState((){});
-                        // setState(() => this.debugMode = !this.debugMode);
-                      },
-                      subtitle: Text(this.textInput.value.text),
+                      title: Text("Websocket Server"),
+                      leading: Icon(Icons.alternate_email),
+                      subtitle: Text("api.avax.network:443/ext/bc/C/rpc"),
+                    ),
+                    ListTile(
+                      title: Text("Websocket Client"),
+                      leading: Icon(Icons.tag),
+                      subtitle: Text("Port: 4812"),
                     ),
                   ]
-                ),
-            )..addAll([
-              ///Section/Category
-              ListTile(
-                title: Text("Network", style: AppTextStyles.label,),
-              ),
-            ])..addAll(
-              ListTile.divideTiles(
-                context: context,
-                tiles: [
-                  ListTile(
-                    title: Text("Wallet API"),
-                    leading: Icon(Icons.web),
-                    subtitle: Text("api.avme.io:443/"),
-                  ),
-                  ListTile(
-                    title: Text("Websocket Server"),
-                    leading: Icon(Icons.alternate_email),
-                    subtitle: Text("api.avax.network:443/ext/bc/C/rpc"),
-                  ),
-                  ListTile(
-                    title: Text("Websocket Client"),
-                    leading: Icon(Icons.tag),
-                    subtitle: Text("Port: 4812"),
-                  ),
-                ]
+                )
               )
-            )
+            ),
           ),
         ),
       ),
