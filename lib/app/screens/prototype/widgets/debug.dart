@@ -29,14 +29,14 @@ class DebugOverlay extends StatefulWidget {
 class _DebugOverlayState extends State<DebugOverlay> {
 
   bool shouldDisplay = false;
-  Contracts contracts;
+  ActiveContracts tokens;
   @override
   void initState()
   {
     PushNotification.init();
     listenNotifications();
-    contracts = Contracts.getInstance();
     super.initState();
+    tokens = Provider.of<ActiveContracts>(context, listen: false);
   }
 
   void listenNotifications()
@@ -116,25 +116,22 @@ class _DebugOverlayState extends State<DebugOverlay> {
                                   Row(
                                     children: [
                                       GestureDetector(onTap: () async {
-                                        ActiveContracts token = Provider.of<ActiveContracts>(context, listen: false);
-                                        token.addToken("AVME");
-                                        token.addToken("AVME testnet");
+                                        tokens.addToken("AVME");
+                                        tokens.addToken("AVME testnet");
                                       }, child: Text("+TOKEN AVME"))
                                     ],
                                   ),
                                   Row(
                                     children: [
                                       GestureDetector(onTap: () async {
-                                        ActiveContracts token = Provider.of<ActiveContracts>(context, listen: false);
-                                        token.addToken("Pangolin");
+                                        tokens.addToken("Pangolin");
                                       }, child: Text("+TOKEN PGL"))
                                     ],
                                   ),
                                   Row(
                                     children: [
                                       GestureDetector(onTap: () async {
-                                        ActiveContracts token = Provider.of<ActiveContracts>(context, listen: false);
-                                        token.addToken("JoeToken");
+                                        tokens.addToken("JoeToken");
                                       }, child: Text("+TOKEN JOE"))
                                     ],
                                   ),
@@ -335,8 +332,8 @@ class _DebugOverlayState extends State<DebugOverlay> {
                                               children: [
                                                 TextSpan(
                                                     style: textBase,
-                                                    children: contracts.contracts.keys.map((key) {
-                                                      if(key == contracts.contracts.keys.last)
+                                                    children: tokens.sContracts.contracts.keys.map((key) {
+                                                      if(key == tokens.sContracts.contracts.keys.last)
                                                         return TextSpan(text: "\"$key\"");
                                                       return TextSpan(text: "\"$key\", ");
                                                     }).toList()

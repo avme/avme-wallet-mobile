@@ -20,27 +20,15 @@ class InitialLoading extends StatefulWidget {
   _InitialLoadingState createState() => _InitialLoadingState();
 }
 
-class ButtonText extends StatelessWidget {
-  final String text;
-  ButtonText({this.text});
-  Widget build(BuildContext context) {
-    return Text(text,
-        // style: theme.alertDialogText()
-    );
-  }
-}
-
 class _InitialLoadingState extends State<InitialLoading>{
   AvmeWallet wallet;
-  Contracts contractsService;
+  ActiveContracts activeContracts;
   @override
   void initState()
   {
     wallet = Provider.of<AvmeWallet>(context, listen: false);
     Provider.of<ContactsController>(context, listen: false);
-    Provider.of<ActiveContracts>(context, listen: false);
-    contractsService = Contracts.getInstance();
-    contractsService.initialize();
+    activeContracts = Provider.of<ActiveContracts>(context, listen: false);
     super.initState();
   }
 
@@ -106,9 +94,8 @@ class _InitialLoadingState extends State<InitialLoading>{
   Future<void> startWalletServices(BuildContext context) async
   {
     await Future.delayed(Duration(milliseconds: 500),() async{
-      wallet.contracts = contractsService.contracts;
       if(!wallet.services.containsKey("valueSubscription"))
-        valueSubscription(wallet);
+        wallet.walletManager.startValueSubscription(wallet);
       if(env["ALWAYS_RESET"].toString().toUpperCase() == "TRUE")
         wallet.walletManager.deletePreviousWallet();
 
@@ -123,42 +110,5 @@ class _InitialLoadingState extends State<InitialLoading>{
             builder: (context) => Welcome()
         ));
     });
-  }
-
-  Future<void> welcomeDialog() async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Welcome to AVME Wallet'),
-          insetPadding: EdgeInsets.symmetric(horizontal: 20),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: [
-                Text('Do you want to restore a backup, or create a new wallet?'),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              child: ButtonText(text: "RESTORE BACKUP"),
-              onPressed: () {
-                // Navigator.of(context).pop();
-                // TODO: implement backup process
-                snack("NOT IMPLEMENTED", context);
-              },
-            ),
-            TextButton(
-              child: ButtonText(text: "CREATE NEW",),
-              onPressed: () {
-                Navigator.pop(context);
-                Navigator.pushReplacementNamed(context, "/registerPassword");
-              },
-            ),
-          ],
-        );
-      },
-    );
   }
 }

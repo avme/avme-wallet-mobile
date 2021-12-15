@@ -26,10 +26,11 @@ main() async{
   Hive.registerAdapter(TokenChartAdapter());
   await Hive.openBox<TokenChart>("dashboard_chart");
   FileManager fileManager = FileManager();
+  ActiveContracts activeContracts = ActiveContracts(fileManager);
   runApp(MultiProvider(
       providers: [
-        ChangeNotifierProvider<AvmeWallet>(create:(_) => AvmeWallet(fileManager)),
-        ChangeNotifierProvider<ActiveContracts>(create:(_) => ActiveContracts(fileManager)),
+        ChangeNotifierProvider<AvmeWallet>(create:(_) => AvmeWallet(fileManager, activeContracts)),
+        ChangeNotifierProvider<ActiveContracts>(create:(_) => activeContracts),
         ChangeNotifierProvider<ContactsController>(create:(_) => ContactsController(fileManager)),
       ],
     child: AvmeWalletApp(),

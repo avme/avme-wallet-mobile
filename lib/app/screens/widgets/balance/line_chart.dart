@@ -1,3 +1,4 @@
+import 'package:avme_wallet/app/model/active_contracts.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -280,7 +281,7 @@ class _TokenChartState extends State<TokenChart> {
       {
         totalDays--;
         double key = (_totalDays - 1)/2;
-        return MapEntry(key, [_totalDays+1, DateFormat('MM/dd').format(DateTime.now()).toString(), double.parse(double.parse(widget.appState.token.value).toStringAsPrecision(3))]);
+        return MapEntry(key, [_totalDays+1, DateFormat('MM/dd').format(DateTime.now()).toString(), double.parse(double.parse(widget.appState.activeContracts.token.tokenValues["AVME"]).toStringAsPrecision(3))]);
       }
       else
       {

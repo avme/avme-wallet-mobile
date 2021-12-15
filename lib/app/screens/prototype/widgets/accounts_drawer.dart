@@ -70,8 +70,8 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                   NotificationBar().show(context, text:"Account \"${widget.app.accountList[key].title}\" selected.");
                 },
                 onIconPressed: () {},
-                balance: accountObject.currencyBalance == null || accountObject.currencyTokenBalance == null ? "0,0000000" :
-                "${shortAmount((accountObject.currencyBalance +
+                balance: accountObject.networkBalance == null || accountObject.currencyTokenBalance == null ? "0,0000000" :
+                "${shortAmount((accountObject.networkBalance +
                     accountObject.currencyTokenBalance).toString(),comma: true, length: 7)}",
                 label: accountObject.title,
                 balanceTween: balanceTween,

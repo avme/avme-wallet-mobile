@@ -2,19 +2,27 @@ import 'dart:convert';
 import 'dart:isolate';
 import 'dart:io';
 import 'package:avme_wallet/app/controller/file_manager.dart';
+import 'package:avme_wallet/app/controller/services/contract.dart';
+import 'package:avme_wallet/app/model/token.dart';
 import 'package:flutter/material.dart';
 
 class ActiveContracts extends ChangeNotifier
 {
   final FileManager fileManager;
+  Contracts sContracts;
+  Token token;
   List<String> tokens = [
     "AVME testnet",
     "AVME",
+    "Local testnet"
   ];
   Map<String, Isolate> services = {};
 
   ActiveContracts(this.fileManager){
     Future<File> _fileTokens = tokensFile();
+    sContracts = Contracts.getInstance();
+    sContracts.initialize();
+    token = Token();
     _fileTokens.then((File file) async {
       List<String> tokensInFile = List<String>.from(jsonDecode(await file.readAsString()));
       this.tokens = tokensInFile ?? this.tokens;
@@ -70,5 +78,12 @@ class ActiveContracts extends ChangeNotifier
   {
     File _file = await tokensFile();
     await _file.writeAsString(fileManager.encoder.convert(tokens));
+  }
+
+  void watchTokenValueChanges()
+  {
+    token.addListener(() {
+      notifyListeners();
+    });
   }
 }

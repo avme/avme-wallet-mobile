@@ -64,8 +64,8 @@ class _HistoryState extends State<History> {
                   )
               ),
               totalBalance:
-              app.currentAccount.currencyBalance == null || app.currentAccount.currencyTokenBalance == null ? "0,0000000" :
-              "${shortAmount((app.currentAccount.currencyBalance +
+              app.currentAccount.networkBalance == null || app.currentAccount.currencyTokenBalance == null ? "0,0000000" :
+              "${shortAmount((app.currentAccount.networkBalance +
                   app.currentAccount.currencyTokenBalance).toString(),comma: true, length: 7)}",
               onPressed: () {
                 NotificationBar().show(

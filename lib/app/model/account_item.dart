@@ -20,17 +20,15 @@ class AccountObject
   int derived;
   String title;
 
-  double _currencyBalance = 0;
-  double _currencyTokenBalance = 0;
+  double networkBalance = 0;
+  double currencyTokenBalance = 0;
 
-  set currencyBalance(double value)
-  {
-    _currencyBalance = value;
-  }
+  ///List must follow this architecture...
+  ///{<BigInt> wei:00000000, <Double>balance:1000.00}
+  Map<String,Map<String,dynamic>> tokensBalanceList = {};
 
-  set currencyTokenBalance(double value)
-  {
-    _currencyTokenBalance = value;
+  void updateTokens(String key, Map tokenBalance) {
+    tokensBalanceList[key] = tokenBalance;
   }
 
   set updateTokenBalance(BigInt value)
@@ -54,16 +52,6 @@ class AccountObject
     if(_weiBalance == null) return null;
     if(_weiBalance.toDouble() != 0) return weiToFixedPoint(_weiBalance.toString());
     else return "0";
-  }
-
-  double get currencyTokenBalance
-  {
-    return _currencyTokenBalance;
-  }
-
-  double get currencyBalance
-  {
-    return _currencyBalance;
   }
 
   BigInt get waiBalance => _weiBalance;

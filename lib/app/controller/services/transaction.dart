@@ -11,6 +11,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart';
 import 'package:web3dart/web3dart.dart';
 
+import 'contract.dart';
+
 String url = env["NETWORK_URL"];
 ServiceData requestTransactionData;
 
@@ -27,7 +29,7 @@ Future<String> sendTransaction(AvmeWallet appState, String receiverAddress, BigI
   Web3Client ethClient = Web3Client(url, httpClient);
   BigInt addToFee = BigInt.from((5 * pow(10,9)));
   EtherAmount gasPrice = EtherAmount.inWei((await ethClient.getGasPrice()).getInWei + addToFee);
-
+  Map<String,List> contracts = Contracts.getInstance().contracts;
   Transaction transaction = Transaction(
       to: EthereumAddress.fromHex(receiverAddress),
       maxGas: 70000,
@@ -65,9 +67,9 @@ Future<String> sendTransaction(AvmeWallet appState, String receiverAddress, BigI
       maxGas: 70000,
       gasPrice: gasPrice
     );
-    EthereumAddress contractAddress = EthereumAddress.fromHex(appState.contracts["AVME testnet"][1]);
-    ContractAbi abi = appState.contracts["AVME testnet"][0];
-    int chainId = int.tryParse(appState.contracts["AVME testnet"][2]);
+    EthereumAddress contractAddress = EthereumAddress.fromHex(contracts["AVME testnet"][1]);
+    ContractAbi abi = contracts["AVME testnet"][0];
+    int chainId = int.tryParse(contracts["AVME testnet"][2]);
     ERC20 contract = ERC20(abi, address: contractAddress, client: ethClient, chainId: chainId);
     Credentials accountCredentials = appState.currentAccount.walletObj.privateKey;
     listNotifier[0].value = 60;

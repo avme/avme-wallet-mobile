@@ -49,13 +49,12 @@ class _SendState extends State<Send> {
   );
 
   ActiveContracts activeContracts;
-  Contracts contracts;
 
   @override
   void initState() {
     activeContracts = Provider.of<ActiveContracts>(context, listen: false);
     availableTokens.addAll(activeContracts.tokens);
-    contracts = Contracts.getInstance();
+    print(availableTokens);
     super.initState();
   }
 
@@ -169,7 +168,7 @@ class _SendState extends State<Send> {
                                 children: [
                                   Padding(
                                     padding: EdgeInsets.only(right:SizeConfig.safeBlockVertical * 1.5),
-                                    child: resolveImage(contracts.contractsRaw[value]["logo"], width: SizeConfig.safeBlockVertical * 3.5),
+                                    child: resolveImage(activeContracts.sContracts.contractsRaw[value]["logo"], width: SizeConfig.safeBlockVertical * 3.5),
                                   ),
                                   Text(value, style: AppTextStyles.label,),
                                 ],
@@ -399,307 +398,307 @@ class _SendState extends State<Send> {
             Form(
               key: _sendTokenForm,
               child: AppPopupWidget(
-                  title: "SEND TOKENS",
-                  canClose: true,
-                  margin: EdgeInsets.all(8),
-                  cancelable: false,
-                  padding: EdgeInsets.symmetric(
-                    vertical: 16,
-                    horizontal: 32
+                title: "SEND TOKENS",
+                canClose: true,
+                margin: EdgeInsets.all(8),
+                cancelable: false,
+                padding: EdgeInsets.symmetric(
+                  vertical: 16,
+                  horizontal: 32
+                ),
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(availableTokens.firstWhere((element) => element == tokenDropdownValue),
+                        style: TextStyle(
+                          fontSize: 18
+                        ),
+                      ),
+                      SizedBox(
+                        height: 8,
+                      ),
+                      TextFormField(
+                        cursorColor: AppColors.labelDefaultColor,
+                        controller: amount,
+                        keyboardType: TextInputType.number,
+                        textAlign: TextAlign.end,
+                        onChanged: (String value){
+                          setState((){
+                            if(double.tryParse(value) != null && double.tryParse(value) > 0)
+                            {
+                              double newValue = 0;
+                              if(value.length == 0 || value == null)
+                                return newValue;
+                              //IS AVAX
+                              if(tokenDropdownValue == 1)
+                              {
+                                newValue = double.tryParse(value) * double.tryParse(app.networkToken.value);
+                              }
+                              //IS AVME
+                              else if (tokenDropdownValue == 2)
+                              {
+                                newValue = double.tryParse(value) * double.tryParse(app.activeContracts.token.tokenValues[tokenDropdownValue]);
+                              }
+                              convertedValue = shortAmount(newValue.toString(),comma: true,length: 3);
+                              // weiValue = bigIntFixedPointToWei(newValue.toString().replaceAll(r",", "."));
+                              if(_sendTokenForm.currentState != null)
+                                _sendTokenForm.currentState.validate();
+                            }
+                            else
+                            {
+                              convertedValue = "0";
+                            }
+                          });
+                        },
+                        validator: (String value){
+                          if(double.tryParse(value) != null && double.tryParse(value) > 0)
+                          {
+                            weiValue = bigIntFixedPointToWei(value.replaceAll(r",", "."));
+                            //IS AVAX
+                            print("AVAX TOKEN:${app.currentAccount.balance}");
+                            print("AVME TOKEN:${app.currentAccount.tokenBalance}");
+                            if(tokenDropdownValue == 1 && (weiValue > app.currentAccount.waiBalance))
+                              return "Not enough balance (AVAX)";
+                            //IS AVME
+                            else if(tokenDropdownValue == 2 && (weiValue > app.currentAccount.rawTokenBalance))
+                              return "Not enough balance (AVME)";
+                          }
+                          else if (double.tryParse(value) == null)
+                          {
+                            if(tokenDropdownValue == 1)
+                              return "Not enough balance (AVAX)";
+                            else if(tokenDropdownValue == 2)
+                              return "Not enough balance (AVME)";
+                          }
+                          return null;
+                        },
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 64),
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          hintText: "0.50"
+                        ),
+                      ),
+                      SizedBox(
+                        height: 8,
+                      ),
+                      Text("\$ $convertedValue",
+                        style: TextStyle(
+                          fontSize: 18
+                        ),
+                      ),
+                      SizedBox(
+                        height: 16,
+                      ),
+                    ],
                   ),
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
+                  /*Gas Limit*/
+                  Divider(),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16, bottom: 8),
+                    child: Row(
                       children: [
-                        Text(availableTokens.firstWhere((element) => element == tokenDropdownValue),
-                          style: TextStyle(
-                              fontSize: 18
-                          ),
-                        ),
-                        SizedBox(
-                          height: 8,
-                        ),
-                        TextFormField(
-                            cursorColor: AppColors.labelDefaultColor,
-                            controller: amount,
-                            keyboardType: TextInputType.number,
-                            textAlign: TextAlign.end,
-                            onChanged: (String value){
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: (){
                               setState((){
-                                if(double.tryParse(value) != null && double.tryParse(value) > 0)
+                                disableGasLimit = !disableGasLimit;
+                                if(disableGasLimit)
                                 {
-                                  double newValue = 0;
-                                  if(value.length == 0 || value == null)
-                                    return newValue;
-                                  //IS AVAX
-                                  if(tokenDropdownValue == 1)
-                                  {
-                                    newValue = double.tryParse(value) * double.tryParse(app.metaCoin.value);
-                                  }
-                                  //IS AVME
-                                  else if (tokenDropdownValue == 2)
-                                  {
-                                    newValue = double.tryParse(value) * double.tryParse(app.token.value);
-                                  }
-                                  convertedValue = shortAmount(newValue.toString(),comma: true,length: 3);
-                                  // weiValue = bigIntFixedPointToWei(newValue.toString().replaceAll(r",", "."));
-                                  if(_sendTokenForm.currentState != null)
-                                    _sendTokenForm.currentState.validate();
-                                }
-                                else
-                                {
-                                  convertedValue = "0";
+                                  gasLimit.text = env["MAX_GAS"];
                                 }
                               });
                             },
-                            validator: (String value){
-                              if(double.tryParse(value) != null && double.tryParse(value) > 0)
-                              {
-                                weiValue = bigIntFixedPointToWei(value.replaceAll(r",", "."));
-                                //IS AVAX
-                                print("AVAX TOKEN:${app.currentAccount.balance}");
-                                print("AVME TOKEN:${app.currentAccount.tokenBalance}");
-                                if(tokenDropdownValue == 1 && (weiValue > app.currentAccount.waiBalance))
-                                  return "Not enough balance (AVAX)";
-                                //IS AVME
-                                else if(tokenDropdownValue == 2 && (weiValue > app.currentAccount.rawTokenBalance))
-                                  return "Not enough balance (AVME)";
-                              }
-                              else if (double.tryParse(value) == null)
-                              {
-                                if(tokenDropdownValue == 1)
-                                  return "Not enough balance (AVAX)";
-                                else if(tokenDropdownValue == 2)
-                                  return "Not enough balance (AVME)";
-                              }
-                              return null;
-                            },
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 64),
-                            decoration: InputDecoration(
-                              border: InputBorder.none,
-                              hintText: "0.50"
+                            child: Container(
+                              color:Colors.transparent,
+                              child: Row(
+                                children: [
+                                  SizedBox(
+                                    height:22,
+                                    width:22,
+                                    child: Checkbox(
+                                      value: disableGasLimit,
+                                      fillColor: MaterialStateProperty.resolveWith(getColor),
+                                      onChanged: (bool value) => setState(() {
+                                        disableGasLimit = value;
+                                        if(value)
+                                        {
+                                          gasLimit.text = env["MAX_GAS"];
+                                        }
+                                      })
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left:8.0),
+                                    child: Text(
+                                      "Automatic gas limit",
+                                      style: TextStyle(
+                                        fontSize: 12.0
+                                      ),
+                                    ),
+                                  )
+                                ],
+                              ),
                             ),
-                        ),
-                        SizedBox(
-                          height: 8,
-                        ),
-                        Text("\$ $convertedValue",
-                          style: TextStyle(
-                            fontSize: 18
                           ),
                         ),
-                        SizedBox(
-                          height: 16,
+                        Expanded(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            mainAxisSize: MainAxisSize.max,
+                            children: [
+                              Text(
+                                "Gas limit in (WEI)",
+                                style: TextStyle(
+                                    fontSize: 12.0
+                                ),
+                              )
+                            ],
+                          ),
                         ),
                       ],
                     ),
-                    /*Gas Limit*/
-                    Divider(),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 16, bottom: 8),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: (){
-                                setState((){
-                                  disableGasLimit = !disableGasLimit;
-                                  if(disableGasLimit)
-                                  {
-                                    gasLimit.text = env["MAX_GAS"];
-                                  }
-                                });
-                              },
-                              child: Container(
-                                color:Colors.transparent,
-                                child: Row(
-                                  children: [
-                                    SizedBox(
-                                      height:22,
-                                      width:22,
-                                      child: Checkbox(
-                                        value: disableGasLimit,
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: Container(),
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: AppTextFormField(
+                          enabled: !disableGasLimit,
+                          controller: gasLimit,
+                          textAlign: TextAlign.end,
+                          keyboardType: TextInputType.number,
+                          contentPadding: EdgeInsets.symmetric(
+                              vertical: 6,
+                              horizontal: 4
+                          ),
+                          isDense: true,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 16,
+                  ),
+                  /*Recommended fees*/
+                  Divider(),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16, bottom: 8),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: (){
+                              setState((){
+                                disableGasFee = !disableGasFee;
+                                if(disableGasFee)
+                                {
+                                  gasFee.text = env["GAS_PRICE"];
+                                }
+                              });
+                            },
+                            child: Container(
+                              color:Colors.transparent,
+                              child: Row(
+                                children: [
+                                  SizedBox(
+                                    height:22,
+                                    width:22,
+                                    child: Checkbox(
+                                        value: disableGasFee,
                                         fillColor: MaterialStateProperty.resolveWith(getColor),
                                         onChanged: (bool value) => setState(() {
-                                          disableGasLimit = value;
+                                          disableGasFee = value;
                                           if(value)
                                           {
-                                            gasLimit.text = env["MAX_GAS"];
+                                            gasFee.text = env["GAS_PRICE"];
                                           }
                                         })
-                                      ),
                                     ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(left:8.0),
-                                      child: Text(
-                                        "Automatic gas limit",
-                                        style: TextStyle(
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left:8.0),
+                                    child: Text(
+                                      "Recommended fees",
+                                      style: TextStyle(
                                           fontSize: 12.0
-                                        ),
-                                      ),
-                                    )
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              mainAxisSize: MainAxisSize.max,
-                              children: [
-                                Text(
-                                  "Gas limit in (WEI)",
-                                  style: TextStyle(
-                                      fontSize: 12.0
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: Container(),
-                        ),
-                        Expanded(
-                          flex: 2,
-                          child: AppTextFormField(
-                            enabled: !disableGasLimit,
-                            controller: gasLimit,
-                            textAlign: TextAlign.end,
-                            keyboardType: TextInputType.number,
-                            contentPadding: EdgeInsets.symmetric(
-                                vertical: 6,
-                                horizontal: 4
-                            ),
-                            isDense: true,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(
-                      height: 16,
-                    ),
-                    /*Recommended fees*/
-                    Divider(),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 16, bottom: 8),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: (){
-                                setState((){
-                                  disableGasFee = !disableGasFee;
-                                  if(disableGasFee)
-                                  {
-                                    gasFee.text = env["GAS_PRICE"];
-                                  }
-                                });
-                              },
-                              child: Container(
-                                color:Colors.transparent,
-                                child: Row(
-                                  children: [
-                                    SizedBox(
-                                      height:22,
-                                      width:22,
-                                      child: Checkbox(
-                                          value: disableGasFee,
-                                          fillColor: MaterialStateProperty.resolveWith(getColor),
-                                          onChanged: (bool value) => setState(() {
-                                            disableGasFee = value;
-                                            if(value)
-                                            {
-                                              gasFee.text = env["GAS_PRICE"];
-                                            }
-                                          })
                                       ),
                                     ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(left:8.0),
-                                      child: Text(
-                                        "Recommended fees",
-                                        style: TextStyle(
-                                            fontSize: 12.0
-                                        ),
-                                      ),
-                                    )
-                                  ],
-                                ),
+                                  )
+                                ],
                               ),
                             ),
                           ),
-                          Expanded(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              mainAxisSize: MainAxisSize.max,
-                              children: [
-                                Text(
-                                  "Gas price (In GWEI)",
-                                  style: TextStyle(
-                                      fontSize: 12.0
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: Container(),
                         ),
                         Expanded(
-                          flex: 2,
-                          child: AppTextFormField(
-                            enabled: !disableGasFee,
-                            controller: gasFee,
-                            textAlign: TextAlign.end,
-                            keyboardType: TextInputType.number,
-                            contentPadding: EdgeInsets.symmetric(
-                                vertical: 6,
-                                horizontal: 4
-                            ),
-                            isDense: true,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            mainAxisSize: MainAxisSize.max,
+                            children: [
+                              Text(
+                                "Gas price (In GWEI)",
+                                style: TextStyle(
+                                    fontSize: 12.0
+                                ),
+                              )
+                            ],
                           ),
                         ),
                       ],
                     ),
-
-                    Padding(
-                      padding: const EdgeInsets.only(top: 32),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        // crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          AppButton(
-                            expanded: false,
-                            onPressed: () {
-                              // Navigator.of(context).pop();
-                              if (_sendTokenForm.currentState != null && _sendTokenForm.currentState.validate()) {
-                                startTransaction(app, weiValue);
-                              }
-                            },
-                            text: "CONFIRM",
-                          ),
-                        ],
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: Container(),
                       ),
-                    )
-                  ],
-                  actions: []
+                      Expanded(
+                        flex: 2,
+                        child: AppTextFormField(
+                          enabled: !disableGasFee,
+                          controller: gasFee,
+                          textAlign: TextAlign.end,
+                          keyboardType: TextInputType.number,
+                          contentPadding: EdgeInsets.symmetric(
+                              vertical: 6,
+                              horizontal: 4
+                          ),
+                          isDense: true,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  Padding(
+                    padding: const EdgeInsets.only(top: 32),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      // crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        AppButton(
+                          expanded: false,
+                          onPressed: () {
+                            // Navigator.of(context).pop();
+                            if (_sendTokenForm.currentState != null && _sendTokenForm.currentState.validate()) {
+                              startTransaction(app, weiValue);
+                            }
+                          },
+                          text: "CONFIRM",
+                        ),
+                      ],
+                    ),
+                  )
+                ],
+                actions: []
               ),
             ),
           )
@@ -708,12 +707,18 @@ class _SendState extends State<Send> {
   }
 
   void startTransaction(AvmeWallet app, BigInt value) async {
-    ValueNotifier <String> transactionStatus = ValueNotifier("1 - Starting Transaction");
+    ValueNotifier<int> percentage = ValueNotifier(10);
+    ValueNotifier<String> label = ValueNotifier("Starting Transaction");
+    List<ValueNotifier> loadingNotifier = [
+      percentage,
+      label
+    ];
     await showDialog(context: context, builder: (_) =>
       StatefulBuilder(builder: (builder, setState){
         return ProgressPopup(
           title: "Warning",
-          future: app.walletManager.sendTransaction(app, addressController.text, value, tokenDropdownValue, listNotifier: [ValueNotifier("_value"),ValueNotifier("_value")])
+          listNotifier: loadingNotifier,
+          future: app.walletManager.sendTransaction(app, addressController.text, value, tokenDropdownValue, listNotifier:loadingNotifier)
             .then((response) async{
               if(response["status"] == 200)
               {

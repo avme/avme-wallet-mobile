@@ -3,16 +3,15 @@ import 'dart:isolate';
 import 'package:avme_wallet/app/controller/file_manager.dart';
 import 'package:avme_wallet/app/controller/wallet_manager.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/popup.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:web3dart/web3dart.dart' as web3dart;
+import 'active_contracts.dart';
 import 'boxes.dart';
-import 'metacoin.dart';
+import 'network_token.dart';
 import 'token.dart';
 import 'token_chart.dart';
 import 'transaction_information.dart';
-import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:web3dart/credentials.dart';
 
@@ -28,25 +27,28 @@ class AvmeWallet extends ChangeNotifier
   String appTitle = "AVME Wallet";
   int _currentWalletId;
   Map<String, Isolate> services = {};
-  Token token = Token();
-  MetaCoin metaCoin = MetaCoin();
+  // Token token = Token();
+  NetworkToken networkToken = NetworkToken();
   AccountsState accountsState = AccountsState();
   bool debugMode = false;
   bool debugPanel = false;
+  final ActiveContracts activeContracts;
 
-  Map<String, List> contracts;
-
-  AvmeWallet(this.fileManager){
+  AvmeWallet(this.fileManager, this.activeContracts){
     this.debugMode = env["DEBUG_MODE"] == "TRUE" ? true : false;
     this.walletManager = WalletManager(this.fileManager);
   }
 
   Wallet get getW3DartWallet => _w3dartWallet;
+
   Map<int,AccountObject> get accountList => _accountList;
+
   AccountObject get currentAccount => _accountList[currentWalletId];
-  get currentWalletId => _currentWalletId;
+
+  int get currentWalletId => _currentWalletId;
 
   set w3dartWallet (Wallet value) => _w3dartWallet = value;
+
   set setAccountList (Map<int,AccountObject> value) {
     _accountList = value;
     notifyListeners();
@@ -56,6 +58,8 @@ class AvmeWallet extends ChangeNotifier
     _currentWalletId = value;
     notifyListeners();
   }
+
+
 
   TransactionInformation lastTransactionWasSucessful = new TransactionInformation();
   Box<TokenChart> dashboardBox = Boxes.getHistory();
@@ -102,16 +106,9 @@ class AvmeWallet extends ChangeNotifier
   }
 
   ///Listeners
-  void watchMetaCoinValueChanges()
+  void watchNetworkTokenValueChanges()
   {
-    metaCoin.addListener(() {
-      notifyListeners();
-    });
-  }
-
-  void watchTokenValueChanges()
-  {
-    token.addListener(() {
+    networkToken.addListener(() {
       notifyListeners();
     });
   }
@@ -123,7 +120,7 @@ class AvmeWallet extends ChangeNotifier
     });
   }
 
-  void updateAccountBalance(id, AccountObject accountObject)
+  void updateAccountObject(id, AccountObject accountObject)
   {
     accountList[id] = accountObject;
     notifyListeners();
@@ -132,8 +129,7 @@ class AvmeWallet extends ChangeNotifier
   void setCurrentWallet(int id)
   {
     changeCurrentWalletId = id;
-    walletManager.stopBalanceSubscription(this);
-    walletManager.startBalanceSubscription(this);
+    walletManager.restartTokenServices(this);
   }
 
   void toggleDebugPanel()
@@ -181,9 +177,7 @@ class AvmeWallet extends ChangeNotifier
     {
       loadingNotifier[0].value = 90;
       loadingNotifier[1].value = "Retrieving data from Web...";
-      walletManager.stopBalanceSubscription(this);
-      await walletManager.startBalanceSubscription(this);
-
+      await walletManager.restartTokenServices(this);
       await Future.delayed(Duration(milliseconds: 250));
       if(display)
         Navigator.of(context).pop();

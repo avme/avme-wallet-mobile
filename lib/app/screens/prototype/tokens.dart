@@ -24,19 +24,21 @@ class Tokens extends StatefulWidget {
 }
 
 class _TokensState extends State<Tokens> {
-  Contracts contracts;
 
   String selectedToken = "AVME testnet";
+  AvmeWallet app;
 
   @override
-  void initState()
-  {
-    contracts = Contracts.getInstance();
+  void initState() {
+    app = Provider.of<AvmeWallet>(context, listen: false);
     super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
+    print("BALANCE");
+    print(app.currentAccount.tokensBalanceList);
     return Consumer<ActiveContracts>(builder: (context, activeContracts, _){
       return AppCard(
         child: Column(
@@ -44,7 +46,7 @@ class _TokensState extends State<Tokens> {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                AppButton(onPressed: () => details(activeContracts, selectedToken, contracts), text: "DETAILS", expanded: false,),
+                AppButton(onPressed: () => details(activeContracts, selectedToken), text: "DETAILS", expanded: false,),
               ],
             ),
             SizedBox(height: SizeConfig.safeBlockVertical * 1.5,),
@@ -69,7 +71,7 @@ class _TokensState extends State<Tokens> {
                         AppButton(onPressed: (){}, text: "NEW TOKEN FROM ADDRESS",),
                         SizedBox(height: SizeConfig.safeBlockVertical,),
                         !widget.protectedTokens.contains(this.selectedToken)
-                          ? AppButton(onPressed: () => removeToken(activeContracts, selectedToken), text: "REMOVE TOKEN",)
+                          ? AppButton(onPressed: () => removeToken(selectedToken), text: "REMOVE TOKEN",)
                           : AppNeonButton(onPressed: null, text: "CAN'T REMOVE")
                       ],
                     ),
@@ -83,7 +85,7 @@ class _TokensState extends State<Tokens> {
     });    // return Container(
   }
 
-  void removeToken(ActiveContracts activeContracts, String tokenName)
+  void removeToken(String tokenName)
   {
     showDialog<void>(
       context: context,
@@ -120,10 +122,10 @@ class _TokensState extends State<Tokens> {
           actions: [
             AppButton(
               expanded:false,
-              onPressed: () {
+              onPressed: () async{
+                await app.walletManager.removeToken(app,tokenName);
                 Navigator.of(context).pop();
                 setState(() {
-                  activeContracts.removeToken(tokenName);
                   this.selectedToken = widget.protectedTokens.first;
                 });
               },
@@ -135,14 +137,14 @@ class _TokensState extends State<Tokens> {
     );
   }
 
-  Future<void> details(ActiveContracts activeContracts, String tokenName, Contracts contracts)
+  Future<void> details(ActiveContracts activeContracts, String tokenName)
   async {
     AvmeWallet app = Provider.of<AvmeWallet>(context, listen: false);
 
     ERC20 contractSigner = app.walletManager.signer(
-      contracts.contracts[tokenName][1],
-      int.tryParse(contracts.contracts[tokenName][2]),
-      contracts.contracts[tokenName][0]
+      activeContracts.sContracts.contracts[tokenName][1],
+      int.tryParse(activeContracts.sContracts.contracts[tokenName][2]),
+      activeContracts.sContracts.contracts[tokenName][0]
     );
 
     int contractDecimals = (await contractSigner.decimals()).toInt();
@@ -162,13 +164,13 @@ class _TokensState extends State<Tokens> {
                 maxHeight: SizeConfig.screenWidth / 4
               ),
               child: resolveImage(
-                contracts.contractsRaw[tokenName]["logo"]
+                activeContracts.sContracts.contractsRaw[tokenName]["logo"]
               ),
             ),
             SizedBox(
               height: SizeConfig.safeBlockVertical * 2,
             ),
-            Text(contracts.contractsRaw[tokenName]["symbol"], style: AppTextStyles.label.copyWith(fontSize: 22),),
+            Text(activeContracts.sContracts.contractsRaw[tokenName]["symbol"], style: AppTextStyles.label.copyWith(fontSize: 22),),
             SizedBox(height: SizeConfig.safeBlockVertical),
             RichText(text: TextSpan(
               children: <TextSpan> [
@@ -192,7 +194,7 @@ class _TokensState extends State<Tokens> {
             GestureDetector(
               onTap: () async {
                 await Clipboard.setData(
-                    ClipboardData(text: contracts.contractsRaw[tokenName]["address"]));
+                    ClipboardData(text: activeContracts.sContracts.contractsRaw[tokenName]["address"]));
                 NotificationBar().show(context,text: "Contract address copied to clipboard");
               },
               child: Container(
@@ -200,7 +202,7 @@ class _TokensState extends State<Tokens> {
                 child: RichText(
                   textAlign: TextAlign.center,
                   text: TextSpan(
-                    text: contracts.contractsRaw[tokenName]["address"],
+                    text: activeContracts.sContracts.contractsRaw[tokenName]["address"],
                     style: TextStyle(
                         decoration: TextDecoration.underline,
                         decorationStyle: TextDecorationStyle.double,
@@ -245,7 +247,7 @@ class _TokensState extends State<Tokens> {
 
           child: TokenItem(
             tokenName: tokenName,
-            contractObj: contracts,
+            contractObj: activeContracts.sContracts,
             selected: this.selectedToken,
           ),
         )

@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'dart:math';
+import 'package:avme_wallet/app/controller/services/contract.dart';
+import 'package:avme_wallet/app/model/active_contracts.dart';
 import 'package:avme_wallet/app/model/app.dart';
+import 'package:avme_wallet/app/model/token.dart';
 import 'package:avme_wallet/external/contracts/erc20_contract.dart';
 import 'package:bip32/bip32.dart';
 import 'package:bip39/bip39.dart' as bip39;
@@ -169,10 +172,9 @@ class WalletManager
 
     if(appState.accountList.isEmpty)
     {
-      appState.setCurrentWallet(slot);
+      appState.changeCurrentWalletId = slot;
       await authenticate(password, appState);
-      stopBalanceSubscription(appState);
-      await startBalanceSubscription(appState);
+      await restartTokenServices(appState);
     }
     return {"status":200, "message":""};
 
@@ -230,21 +232,28 @@ class WalletManager
     return await services.loadWalletAccounts(file,password, appState);
   }
 
-  ///Start balance update "subscription"
   Future<void> startBalanceSubscription(AvmeWallet appState) async
   {
     if(!appState.services.containsKey("balanceSubscription"))
-    {
-      await services.balanceSubscription(appState, appState.accountList, appState.currentWalletId);
-    }
+      await services.balanceSubscription(appState);
   }
 
   void stopBalanceSubscription(AvmeWallet appState)
   {
     if(appState.services.containsKey("balanceSubscription"))
-    {
       appState.killService("balanceSubscription");
-    }
+  }
+
+  Future<void> startValueSubscription(AvmeWallet appState) async
+  {
+    if(!appState.services.containsKey("valueSubscription"))
+      await services.valueSubscription(appState);
+  }
+
+  void stopValueSubscription(AvmeWallet appState)
+  {
+    if(appState.services.containsKey("valueSubscription"))
+      appState.killService("valueSubscription");
   }
 
   Future<Map<String,dynamic>> sendTransaction(AvmeWallet wallet, String address, BigInt amount, tokenId, {List<ValueNotifier> listNotifier}) async
@@ -277,8 +286,9 @@ class WalletManager
 
   Future<void> requestBalanceFromNetwork(AvmeWallet wallet) async
   {
+    Map<String,List> contracts = Contracts.getInstance().contracts;
     Map<int,String> pkeys = wallet.accountList.map((key,value) => MapEntry(key, value.address));
-    await services.requestBalanceFromNetwork(wallet.contracts, pkeys);
+    await services.requestBalanceFromNetwork(contracts, pkeys);
   }
 
   ERC20 signer(String contractAddress, int chainId, ContractAbi abi)
@@ -288,5 +298,22 @@ class WalletManager
 
     EthereumAddress _ethereumAddress = EthereumAddress.fromHex(contractAddress);
     return ERC20(abi, address: _ethereumAddress, client: ethClient, chainId: chainId);
+  }
+
+  Future<void> restartTokenServices(AvmeWallet app) async
+  {
+    stopValueSubscription(app);
+    await startValueSubscription(app);
+    stopBalanceSubscription(app);
+    await startBalanceSubscription(app);
+  }
+
+  ///Removes token from appState Queue
+  Future<void> removeToken(AvmeWallet app, String tokenName) async
+  {
+    Token token = app.activeContracts.token;
+    token.tokenValues.remove(tokenName);
+    await app.activeContracts.removeToken(tokenName);
+    await restartTokenServices(app);
   }
 }

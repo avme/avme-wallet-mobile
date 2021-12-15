@@ -2,10 +2,10 @@ import 'package:flutter/foundation.dart';
 
 class Token extends ChangeNotifier
 {
-  String value = "0";
+  Map tokenValues = {};
 
-  void updateToken(String value) {
-    this.value = value;
+  void updateToken(String key, String value) {
+    tokenValues[key] = value;
     notifyListeners();
   }
 }

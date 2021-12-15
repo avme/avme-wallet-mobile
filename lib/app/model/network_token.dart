@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-class MetaCoin extends ChangeNotifier
+class NetworkToken extends ChangeNotifier
 {
   String value = "0";
 

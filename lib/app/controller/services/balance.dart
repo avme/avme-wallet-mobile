@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:isolate';
+import 'package:avme_wallet/app/controller/services/contract.dart';
 import 'package:avme_wallet/app/controller/services/push_notification.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/account_item.dart';
+import 'package:avme_wallet/app/model/active_contracts.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/model/boxes.dart';
 import 'package:avme_wallet/app/model/service_data.dart';
@@ -16,82 +18,190 @@ import 'package:web3dart/web3dart.dart';
 import 'package:decimal/decimal.dart';
 
 ///Spawns a single thread to listen, and update our appState
-Future<void> balanceSubscription(AvmeWallet appState, Map<int,AccountObject> accounts, int posCurrentAccount) async
+Future<void> balanceSubscription(AvmeWallet appState) async
 {
   ///Validating if is the default/selected or a specific account to keep track of!
-
   List<Map<String, dynamic>> accountSpawnData = [];
+  Map<int,AccountObject> accounts = appState.accountList;
+  int currentWalletId = appState.currentWalletId;
+  ActiveContracts activeContracts = appState.activeContracts;
   ///List of previously updated accounts
   ///{"0":[true,true]}
   ///{"key":[metacoinUpdated,tokenUpdated]}
   // List<String> didUpdatePreviously = [];
   for(int pos = 0; pos < accounts.length; pos++)
-  {
-    if(pos == posCurrentAccount)
-    {
+    if(pos == currentWalletId)
       accountSpawnData.add({
-        "id" : posCurrentAccount,
+        "id" : currentWalletId,
         "updateIn" : 10,
         "address" : EthereumAddress.fromHex(appState.currentAccount.address),
       });
-    }
     else
-    {
       accountSpawnData.add({
         "id" : pos ,
         "updateIn" : 30,
         "address" : EthereumAddress.fromHex(appState.accountList[pos].address),
       });
-    }
-  }
-  print("Account to be processed");
-  print(accountSpawnData);
+
 
   Map <String, dynamic> data = {
     "accounts" : accountSpawnData,
     "url" : env['NETWORK_URL'],
-    // "contractAbi" : appState.contracts.entries.first.value[0], ///<ContractAbi>
-    // "contractAddress" : EthereumAddress.fromHex(appState.contracts.entries.first.value[1]), ///<String> ContractAddress
-    "contractAbi" : appState.contracts["AVME testnet"][0], ///<ContractAbi>
-    "contractAddress" : EthereumAddress.fromHex(appState.contracts["AVME testnet"][1]), ///<String> ContractAddress
+    "activeTokens": appState.activeContracts.tokens,
+    "contracts": appState.activeContracts.sContracts.contracts
   };
 
   ReceivePort receivePort = ReceivePort();
   ServiceData serviceData = ServiceData(data,receivePort.sendPort);
 
-  // print("CONTRACT ABI:");
-  // print(appState.contracts.entries.first.value.toString());
-  // print("FUNCTIONS:");
-  // print(appState.contracts.entries.first.value.functions.toString());
-
   appState.services["balanceSubscription"] = await Isolate.spawn(
-    startBalanceSubscription,
+    _startBalanceSubscription,
     serviceData
   );
 
   receivePort.listen((data) {
-    print(data);
-    Map response;
+    // print(data);
 
-    ///We validate who is returning data, since we don't use multiple Isolates,
-    ///for the same purpose (like previously seen) to save memory! @_@
+    List<Map> balanceData = data["_balanceSubscription"]["balance"];
+    int accId = data["_balanceSubscription"]["id"];
 
-    if(data.containsKey("metacoin"))
-    {
-      response = data["metacoin"];
-      AccountObject accountUpdate = appState.accountList[response['id']];
+    ///Recovering the account to apply the requested data
+    AccountObject accountObject = appState.accountList[accId];
+    double oldBalance = 0;
+    double updatedBalance = 0;
 
-      double oldValue = accountUpdate.currencyBalance;
-      double newValue = oldValue;
+    balanceData.forEach((Map requestedBalance) {
+      String key = requestedBalance.entries.first.key;
+      if(key == "empty")
+        return;
+      print("processing $key");
+      ///Recovering the requested value as bigInt/Wei
+      BigInt balance = requestedBalance.entries.first.value;
 
-      if(accountUpdate.waiBalance != response["balance"])
-        accountUpdate.updateAccountBalance = response["balance"];
+      ///...then convert it to normal double
+      double balanceUSD =
+        double.tryParse(weiToFixedPoint(balance.toString()));
 
-      double balanceFromBigInt =
-        double.tryParse(weiToFixedPoint(response["balance"].toString()));
+      if(key == "AVAX")
+      {
+        oldBalance = accountObject.networkBalance; ///Double
+        updatedBalance = oldBalance;
 
-      double avaxValue = double.tryParse(appState.metaCoin.value);
-      newValue = balanceFromBigInt * avaxValue;
+        ///Checking the difference in BigInt/Wei
+        if(accountObject.waiBalance != balance)
+          accountObject.updateAccountBalance = balance;
+
+        ///Recovering the USD price of "Network Token" that we retrieved in
+        ///the valueSubscription routine...
+        double networkTokenValue =
+          double.tryParse(appState.networkToken.value); ///Stored as String
+
+        ///Calculating the balance
+        updatedBalance = balanceUSD * networkTokenValue;
+
+        ///Finally we update the balance in the account
+        accountObject.networkBalance = updatedBalance;
+        appState.updateAccountObject(accId, accountObject);
+      }
+      else
+      {
+        ///When consulting a Smart Contract that does not exist on
+        ///api.thegraph.com the default value will be 1 USD
+        double tokenValue = 1;
+        if(accountObject.tokensBalanceList.containsKey(key) &&
+            appState.activeContracts.token.tokenValues.containsKey(key))
+        {
+          oldBalance = accountObject.tokensBalanceList[key]["balance"]; ///Double
+          ///Recovering the USD price of "Token" that we retrieved in
+          ///the valueSubscription routine...
+          tokenValue =
+            double.tryParse(appState.activeContracts.token.tokenValues[key]); ///Stored as String
+        }
+
+        updatedBalance = oldBalance;
+
+        Map<String, dynamic> preparedData = {};
+
+        preparedData["wei"] = balance;
+
+        ///Calculating the balance
+        updatedBalance = balanceUSD * tokenValue;
+
+        preparedData["balance"] = updatedBalance;
+
+        ///Checking the prepared data and inserting it
+        print("NOSSO MAP $key");
+        print(preparedData);
+
+        accountObject.tokensBalanceList[key] = preparedData;
+
+      }
+    });
+
+    // print("[BALANCEsss]");
+    // print(balance);
+    // print("[RESPONSE2]");
+    // print(response["balance"]);
+    //
+    // if(data.containsKey("token"))
+    // {
+    //   Map response = data["token"];
+    //   print("BALANCE TOKEN ${response["tokenBalance"]}");
+    //   AccountObject accountUpdate = appState.accountList[response['id']];
+    //
+    //   double oldValue = accountUpdate.currencyTokenBalance;
+    //   double newValue = oldValue;
+    //
+    //   if(accountUpdate.rawTokenBalance != response["tokenBalance"])
+    //     accountUpdate.updateTokenBalance = response["tokenBalance"];
+    //
+    //   double tokenFromBigInt =
+    //   double.tryParse(weiToFixedPoint(response["tokenBalance"].toString()));
+    //
+    //   double avmeValue = double.tryParse(appState.activeContracts.token.tokenValues["AVME"]);
+    //   newValue = tokenFromBigInt * avmeValue;
+      // double difference = newValue - oldValue;
+      // ///Checking if we received any amount
+      // if(didUpdatePreviously.contains("${response["id"]}.token")) {
+      //   ///there was an increase in balance
+      //   if (difference > 0) {
+      //     PushNotification.showNotification(
+      //         id: 10,
+      //         title: "Transfer received (AVME)",
+      //         body: "Account Update: "
+      //             "You received \$${difference.toStringAsFixed(2)} (AVME)",
+      //         payload: "app/history"
+      //     );
+      //   }
+      // }
+      // else
+      // {
+      //   didUpdatePreviously.add("${response["id"]}.token");
+      // }
+      // accountUpdate.currencyTokenBalance = newValue;
+      // appState.updateAccountObject(response["id"], accountUpdate);
+    // }
+    // print(didUpdatePreviously.toString());
+
+    // if(data.containsKey("metacoin"))
+    // {
+    //   Map response = data["metacoin"];
+    //
+    //   print("BALANCE ${response["balance"]}");
+    //
+    //   AccountObject accountUpdate = appState.accountList[response['id']];
+    //
+    //   double oldValue = accountUpdate.networkBalance;
+    //   double newValue = oldValue;
+    //
+    //   if(accountUpdate.waiBalance != response["balance"])
+    //     accountUpdate.updateAccountBalance = response["balance"];
+    //
+    //   double balanceFromBigInt =
+    //     double.tryParse(weiToFixedPoint(response["balance"].toString()));
+    //
+    //   double avaxValue = double.tryParse(appState.networkToken.value);
+    //   newValue = balanceFromBigInt * avaxValue;
       //
       // double difference = newValue - oldValue;
       //
@@ -113,83 +223,33 @@ Future<void> balanceSubscription(AvmeWallet appState, Map<int,AccountObject> acc
       //   didUpdatePreviously.add("${response["id"]}.metacoin");
       // }
 
-      accountUpdate.currencyBalance = newValue;
-      appState.updateAccountBalance(response["id"], accountUpdate);
+      // accountUpdate.networkBalance = newValue;
+      // appState.updateAccountObject(response["id"], accountUpdate);
 
-    }
-    if(data.containsKey("token"))
-    {
-      response = data["token"];
-      AccountObject accountUpdate = appState.accountList[response['id']];
-
-      double oldValue = accountUpdate.currencyTokenBalance;
-      double newValue = oldValue;
-
-      if(accountUpdate.rawTokenBalance != response["tokenBalance"])
-        accountUpdate.updateTokenBalance = response["tokenBalance"];
-
-      double tokenFromBigInt =
-        double.tryParse(weiToFixedPoint(response["tokenBalance"].toString()));
-
-      double avmeValue = double.tryParse(appState.token.value);
-      newValue = tokenFromBigInt * avmeValue;
-      // double difference = newValue - oldValue;
-      // ///Checking if we received any amount
-      // if(didUpdatePreviously.contains("${response["id"]}.token")) {
-      //   ///there was an increase in balance
-      //   if (difference > 0) {
-      //     PushNotification.showNotification(
-      //         id: 10,
-      //         title: "Transfer received (AVME)",
-      //         body: "Account Update: "
-      //             "You received \$${difference.toStringAsFixed(2)} (AVME)",
-      //         payload: "app/history"
-      //     );
-      //   }
-      // }
-      // else
-      // {
-      //   didUpdatePreviously.add("${response["id"]}.token");
-      // }
-      accountUpdate.currencyTokenBalance = newValue;
-      appState.updateAccountBalance(response["id"], accountUpdate);
-    }
-    // print(didUpdatePreviously.toString());
-  });
-  print("{balanceSubscription}");
-}
-
-void startBalanceSubscription(ServiceData param)
-{
-  param.data["accounts"].forEach((account) {
-    account["url"] = param.data["url"];
-    account["contractAbi"] = param.data["contractAbi"];
-    account["contractAddress"] = param.data["contractAddress"];
-    avaxBalanceChanges(ServiceData(account,param.sendPort));
-    watchTokenChanges(ServiceData(account,param.sendPort));
+    // }
   });
 }
 
-///Isolated function to watch balance changes
-void avaxBalanceChanges(ServiceData param) async
-{
-  EthereumAddress address = param.data["address"];
-  http.Client httpClient = http.Client();
-  Web3Client ethClient = Web3Client(param.data["url"], httpClient);
-  int seconds = 0;
-  while(true)
-  {
-    await Future.delayed(Duration(seconds: seconds), () async{
-      EtherAmount balance = await ethClient.getBalance(address);
-      param.sendPort.send(
-        {
-          "metacoin": {"balance" : balance.getInWei, "id" : param.data["id"]}
-        }
-      );
-      if(seconds == 0) seconds = param.data["updateIn"];
-    });
-  }
-}
+// ///Isolated function to watch balance changes
+// void avaxBalanceChanges(ServiceData account) async
+// {
+//   EthereumAddress address = account.data["address"];
+//   http.Client httpClient = http.Client();
+//   Web3Client ethClient = Web3Client(account.data["url"], httpClient);
+//   int seconds = 0;
+//   while(true)
+//   {
+//     await Future.delayed(Duration(seconds: seconds), () async{
+//       EtherAmount balance = await ethClient.getBalance(address);
+//       account.sendPort.send(
+//         {
+//           "metacoin": {"balance" : balance.getInWei, "id" : account.data["id"]}
+//         }
+//       );
+//       if(seconds == 0) seconds = account.data["updateIn"];
+//     });
+//   }
+// }
 
 
 Future<void> requestBalanceFromNetwork(Map<String, List> contracts, Map<int, String> addresses) async
@@ -222,108 +282,202 @@ Future<void> requestBalanceFromNetwork(Map<String, List> contracts, Map<int, Str
       ];
     });
   });
-  // return data;
 }
 
-// ///Isolated function to watch token balance changes
-void watchTokenChanges(ServiceData param) async
+void _startBalanceSubscription(ServiceData param)
 {
-  EthereumAddress address = param.data["address"];
+  param.data["accounts"].forEach((account) {
+    account["url"] = param.data["url"];
+    account["contracts"] = param.data["contracts"];
+    account["activeTokens"] = param.data["activeTokens"];
+    account["contractAddress"] = param.data["contractAddress"];
+    // avaxBalanceChanges(ServiceData(account,param.sendPort));
+    _balanceSubscription(ServiceData(account,param.sendPort));
+  });
+}
+
+void _balanceSubscription(ServiceData account) async
+{
+  EthereumAddress address = account.data["address"];
   http.Client httpClient = http.Client();
-  Web3Client ethClient = Web3Client(param.data["url"], httpClient);
-  // Avme contract = Avme(param.data["contractAbi"],address: param.data["contractAddress"],client: ethClient, chainId: 43113);
-  ERC20 contract = ERC20(param.data["contractAbi"],address: param.data["contractAddress"],client: ethClient, chainId: 43113);
+  Web3Client ethClient = Web3Client(account.data["url"], httpClient);
+
+  ///List of contracts
+  Map<String, List> contracts = account.data["contracts"];
+
+  ///Remember, mounted contracts is stored as
+  ///[<ContractAbi>"Contract Abi", <String>"ContractAddress", <String>"ChainID"]
+
+  Map<String,ERC20> contractsERC20 = {};
+
+  account.data["activeTokens"].forEach((String tokenName) {
+      contractsERC20[tokenName] = ERC20(
+        contracts[tokenName][0], // ContractAbi Object
+        address: EthereumAddress.fromHex(contracts[tokenName][1]), // String Address
+        client: ethClient,
+        chainId: int.tryParse(contracts[tokenName][2]), //Chain ID
+      );
+    }
+  );
   int seconds = 0;
   while(true)
   {
     await Future.delayed(Duration(seconds: seconds), () async{
-      BigInt tokenBalance = await contract.balanceOf(address);
-      param.sendPort.send(
+      /// AVAX/Network balance
+      EtherAmount balance = await ethClient.getBalance(address);
+      List<Map> tokenBalance = [];
+        /// Tokens balance as List<Map<String TokenName, BigInt balance>>
+        tokenBalance = await Future.wait(
+          contractsERC20.entries.map((contractItem) {
+            return wrapAsList(identifier: contractItem.key,
+              future: contractItem.value.balanceOf(address));
+          })
+        );
+      tokenBalance.insert(0, {"AVAX": balance.getInWei});
+      account.sendPort.send(
         {
-          "token": {"tokenBalance" : tokenBalance, "id" : param.data["id"]}
+          "_balanceSubscription": {"balance" : tokenBalance, "id" : account.data["id"]}
         }
       );
-      if(seconds == 0) seconds = param.data["updateIn"];
+      if(seconds == 0) seconds = account.data["updateIn"];
     });
   }
 }
 
-void valueSubscription(AvmeWallet appState) async
+///Simple wrapper to identify later
+Future<Map> wrapAsList({String identifier , Future future}) async
+{
+  dynamic result = false;
+  print("wrapping $identifier");
+  try {
+    result = await future;
+  }
+  catch(e)
+  {
+    if(e is RangeError)
+    {
+      print("[WARNING -> wrapAsList] Balance Subscription failed while processing $identifier, \n at $e");
+    }
+    return {"empty": {}};
+  }
+  return {identifier: result};
+}
+
+Future<void> valueSubscription(AvmeWallet appState) async
 {
   ReceivePort isolatePort = ReceivePort();
 
-  Map <String, dynamic> data = {"env":env};
-  Box<TokenChart> box = Boxes.getHistory();
+  Map <String, dynamic> data = {
+    "url": "${env["MAINNET_URL"]}:${env["MAINNET_PORT"]}${env["MAINNET_VALUEPATH"]}",
+    "activeTokens": appState.activeContracts.tokens,
+    "contractRaw": appState.activeContracts.sContracts.contractsRaw
+  };
+  // Box<TokenChart> box = Boxes.getHistory();
   ServiceData isolateData = ServiceData(data,isolatePort.sendPort);
   appState.services["valueSubscription"] = await Isolate.spawn(startValueSubscription,isolateData);
 
   isolatePort.listen((data) {
-
-    ///We validate who is returning data, since we don't use multiple Isolates,
-    ///for the same purpose (like previously seen) to save memory! @_@
-
-    Map response;
-    print(data);
-    if(data.containsKey("watchTokenPriceHistory"))
+    if(data.containsKey("listenValue"))
     {
-      response = data["watchTokenPriceHistory"];
-      print(response['tokenChart']["data"].runtimeType);
-      TokenChart dashboardChart = TokenChart();
-      Map tokenMap = {};
-      Map metaCoinMap = {};
-
-      List tokenList = response['tokenChart']['data']['tokenDayDatas'];
-      List metaCoinList =  response['metaCoinHistory']['data']['tokenDayDatas'];
-
-      tokenList.forEach((element) {
-        tokenMap[element["date"]] = element["priceUSD"];
+      List response = data["listenValue"];
+      response.forEach((mapEntry){
+        String key = mapEntry.entries.first.key;
+        String value = mapEntry.entries.first.value;
+        if(key == "AVAX"){
+          appState.networkToken.value = value;
+        }
+        else
+        {
+          appState.activeContracts.token.updateToken(key, value);
+          if(appState.activeContracts.tokens.contains("$key testnet"))
+            appState.activeContracts.token.updateToken("$key testnet", value);
+        }
+        // print("TOKEN VALUES BABY");
+        // print(appState.activeContracts.token.tokenValues);
       });
-      metaCoinList.forEach((element) {
-        metaCoinMap[element["date"]] = element["priceUSD"];
-      });
-
-      tokenMap.forEach((key, value) {
-        Decimal metaCoinValue = Decimal.fromInt(1) / Decimal.parse(metaCoinMap[key]);
-        Decimal tokenValue = metaCoinValue * Decimal.parse(value);
-        // print("$key: value:$tokenValue");
-        dashboardChart.addToList(key, tokenValue.toString());
-      });
-      box.put(0,dashboardChart);
     }
 
-    if(data.containsKey("watchCoinValueChanges"))
-    {
-      response = data["watchCoinValueChanges"];
-      appState.metaCoin.value = response["avax"];
-      appState.token.value = response["avme"];
-    }
+    // if(data.containsKey("watchTokenPriceHistory"))
+    // {
+    //   Map response = data["watchTokenPriceHistory"];
+    //   print(response['tokenChart']["data"].runtimeType);
+    //   TokenChart dashboardChart = TokenChart();
+    //   Map tokenMap = {};
+    //   Map metaCoinMap = {};
+    //
+    //   List tokenList = response['tokenChart']['data']['tokenDayDatas'];
+    //   List metaCoinList =  response['metaCoinHistory']['data']['tokenDayDatas'];
+    //
+    //   tokenList.forEach((element) {
+    //     tokenMap[element["date"]] = element["priceUSD"];
+    //   });
+    //   metaCoinList.forEach((element) {
+    //     metaCoinMap[element["date"]] = element["priceUSD"];
+    //   });
+    //
+    //   tokenMap.forEach((key, value) {
+    //     Decimal metaCoinValue = Decimal.fromInt(1) / Decimal.parse(metaCoinMap[key]);
+    //     Decimal tokenValue = metaCoinValue * Decimal.parse(value);
+    //     // print("$key: value:$tokenValue");
+    //     dashboardChart.addToList(key, tokenValue.toString());
+    //   });
+    //   box.put(0,dashboardChart);
+    // }
   });
 }
 
 void startValueSubscription(ServiceData param)
 {
-  String url = param.data["env"]["MAINNET_URL"] + ":${param.data["env"]["MAINNET_PORT"]}" + param.data["env"]["MAINNET_VALUEPATH"];
 
-  print("Spawning watchTokenPriceHistory");
+  // print("Spawning watchTokenPriceHistory");
+  //
+  // watchTokenPriceHistory(
+  //   ServiceData({
+  //       "url" : url,
+  //       "tokenBodyRequest" : {"query": "{tokenDayDatas(first: 30,orderBy: date,orderDirection: desc,where:{token: \"[CONTRACT_ADDRESS]\"}) { date priceUSD }}"},
+  //       "metaCoinBodyRequest" : {"query": "{tokenDayDatas(first: 30,orderBy: date,orderDirection: desc,where:{token: \"0xde3a24028580884448a5397872046a019649b084\"}) { date priceUSD }}"},
+  //     }
+  //   ,param.sendPort));
 
-  watchTokenPriceHistory(
-    ServiceData({
-        "url" : url,
-        "tokenBodyRequest" : {"query": "{tokenDayDatas(first: 30,orderBy: date,orderDirection: desc,where:{token: \"0x1ecd47ff4d9598f89721a2866bfeb99505a413ed\"}) { date priceUSD }}"},
-        "metaCoinBodyRequest" : {"query": "{tokenDayDatas(first: 30,orderBy: date,orderDirection: desc,where:{token: \"0xde3a24028580884448a5397872046a019649b084\"}) { date priceUSD }}"},
-      }
-    ,param.sendPort));
 
-  print("Spawning watchCoinValueChanges");
-  watchCoinValueChanges(
+  Map<String,Map<String,String>> contractsRaw = param.data["contractRaw"];
+  String tokenRequest = "{token(id: \"CONTRACT_ADDRESS\"){symbol derivedETH}}";
+  Map<String,Map<String,String>> paramList = {};
+  param.data["activeTokens"].forEach((String token)
+  {
+    if(!token.contains('testnet'))
+      paramList[token] = {"query":tokenRequest.replaceFirst('CONTRACT_ADDRESS', param.data["contractRaw"][token]['address'])};
+  });
+
+  listenValue(
       ServiceData({
-        "url" : url,
+        "url" : param.data["url"],
+        "tokenBodyRequest" : paramList,
         "avaxBodyRequest" : {"query": "{pair(id: \"0x9ee0a4e21bd333a6bb2ab298194320b8daa26516\") {token0 {symbol} token1 {symbol} token0Price token1Price}}"},
-        "tokenBodyRequest" : {"query": "{token(id: \"0x1ecd47ff4d9598f89721a2866bfeb99505a413ed\"){symbol derivedETH}}"}
       }
     ,param.sendPort));
 }
 
+void listenValue(ServiceData param) async
+{
+  int seconds = 0;
+  String url = param.data["url"];
+  Map <String, Map<String,dynamic>> tokenBodyRequest = param.data["tokenBodyRequest"];
+  Map <String, String> avaxBodyRequest = param.data["avaxBodyRequest"];
+
+  while(true)
+  {
+    await Future.delayed(Duration(seconds: seconds), () async {
+      String avaxPrice = await getAVAXPriceUSD(avaxBodyRequest, url);
+      List<Map> tokenValue = await Future.wait(tokenBodyRequest.entries.map((entry) => getTokenPriceUSD(avaxPrice, url, entry.value, entry.key)));
+      tokenValue.add({"AVAX":avaxPrice});
+      print(tokenValue);
+      param.sendPort.send(
+        {"listenValue": tokenValue});
+    });
+    if(seconds == 0) seconds = 5;
+  }
+}
 
 void watchTokenPriceHistory(ServiceData param) async
 {
@@ -342,36 +496,13 @@ void watchTokenPriceHistory(ServiceData param) async
       metaCoinHistory = await getTokenChartHistory(metaCoinBodyRequest, url);
 
       param.sendPort.send({
-          "watchTokenPriceHistory":{
-            "tokenChart": json.decode(tokenHistory),
-            "metaCoinHistory": json.decode(metaCoinHistory)
-          }
+        "watchTokenPriceHistory":{
+          "tokenChart": json.decode(tokenHistory),
+          "metaCoinHistory": json.decode(metaCoinHistory)
         }
-      );
-    });
-    if(seconds == 0) seconds = 3600;
-  }
-}
-
-void watchCoinValueChanges(ServiceData param) async
-{
-  int seconds = 0;
-  String url = param.data["url"];
-  Map <String, dynamic> tokenBodyRequest = param.data["tokenBodyRequest"];
-  Map <String, dynamic> avaxBodyRequest = param.data["avaxBodyRequest"];
-  String avmePrice;
-  String avaxPrice;
-  while(true)
-  {
-    await Future.delayed(Duration(seconds: seconds), () async{
-      avaxPrice = await getAVAXPriceUSD(avaxBodyRequest, url);
-      avmePrice = await getAVMEPriceUSD(avaxPrice, url, tokenBodyRequest);
-
-      param.sendPort.send(
-        {"watchCoinValueChanges": {"avax": avaxPrice, "avme": avmePrice}
       });
     });
-    if(seconds == 0) seconds = 5;
+    if(seconds == 0) seconds = 3600;
   }
 }
 
@@ -382,6 +513,15 @@ Future<String> httpGetRequest(String urlString, Map body) async
       body: json.encode(body),
       headers: {"Content-Type": "application/json"});
   return response.body;
+}
+
+Future<Map> getTokenPriceUSD(String avaxUnitPriceUSD, String url, Map body, String tokenName) async
+{
+  String response = await httpGetRequest(url, body);
+  Decimal avaxPrice = Decimal.parse(avaxUnitPriceUSD);
+  Decimal derivedETH = Decimal.parse(json.decode(response)["data"]["token"]["derivedETH"]);
+  Decimal avmeValue = derivedETH * avaxPrice;
+  return {tokenName:avmeValue.toString()};
 }
 
 Future<String> getAVMEPriceUSD(String avaxUnitPriceUSD, String url, Map body) async

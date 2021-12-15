@@ -56,8 +56,8 @@ class _OverviewState extends State<Overview> {
                   )
               ),
               totalBalance:
-              app.currentAccount.currencyBalance == null || app.currentAccount.currencyTokenBalance == null ? "0,0000000" :
-              "${shortAmount((app.currentAccount.currencyBalance +
+              app.currentAccount.networkBalance == null || app.currentAccount.currencyTokenBalance == null ? "0,0000000" :
+              "${shortAmount((app.currentAccount.networkBalance +
                   app.currentAccount.currencyTokenBalance).toString(),comma: true, length: 7)}",
               address: app.currentAccount.address,
               onPressed: () {
@@ -133,8 +133,8 @@ class _OverviewState extends State<Overview> {
             TokenDistribution(
                 chartData: {
                   "AVAX": [
-                    app.currentAccount.currencyBalance == null ? 0 :
-                    app.currentAccount.currencyBalance,
+                    app.currentAccount.networkBalance == null ? 0 :
+                    app.currentAccount.networkBalance,
                     AppColors.purple
                   ],
                   "AVME": [
@@ -153,7 +153,7 @@ class _OverviewState extends State<Overview> {
                 fit: BoxFit.fitHeight,),
               name: 'AVAX',
               amount: "${shortAmount(app.currentAccount.balance)}",
-              marketValue: "${shortAmount(app.currentAccount.currencyBalance.toString(),comma: true, length: 3)}",
+              marketValue: "${shortAmount(app.currentAccount.networkBalance.toString(),comma: true, length: 3)}",
               valueDifference: "2,013",
             ),
             ///AVME Token Card

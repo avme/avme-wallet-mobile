@@ -1,7 +1,8 @@
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/account_item.dart';
+import 'package:avme_wallet/app/model/active_contracts.dart';
 import 'package:avme_wallet/app/model/app.dart';
-import 'package:avme_wallet/app/model/metacoin.dart';
+import 'package:avme_wallet/app/model/network_token.dart';
 import 'package:avme_wallet/app/model/token.dart';
 import 'package:avme_wallet/app/screens/widgets/custom_widgets.dart';
 import 'package:avme_wallet/app/screens/widgets/qr_display.dart';
@@ -22,6 +23,14 @@ class StatusCard extends StatefulWidget {
 
 class _StatusCardState extends State<StatusCard> {
   double qrSize;
+
+  ActiveContracts contracts;
+
+  @override
+  void initState() {
+    contracts = Provider.of<ActiveContracts>(context);
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -89,11 +98,12 @@ class _StatusCardState extends State<StatusCard> {
                             Text(" ",
                                 style: TextStyle(
                                     fontWeight: FontWeight.bold, fontSize: 12)),
-                            Selector<AvmeWallet, Token>(
-                              selector: (context, token) => token.token,
-                              builder: (context, token, child) {
-                                widget.appState.watchTokenValueChanges();
-                                return Text("${shortAmount(token.value,length: 4, comma: true)} USD",style: TextStyle(fontSize: 12));
+                            Selector<Token, Map>(
+                              selector: (context, activeContracts) => activeContracts.tokenValues,
+                              builder: (context, tokenValues, child) {
+                                // widget.appState.watchTokenValueChanges();
+                                contracts.watchTokenValueChanges();
+                                return Text("${shortAmount(tokenValues["AVME"],length: 4, comma: true)} USD",style: TextStyle(fontSize: 12));
                               },),
                           ],
                         ),
@@ -144,10 +154,10 @@ class _StatusCardState extends State<StatusCard> {
                             Text(" ",
                                 style: TextStyle(
                                     fontWeight: FontWeight.bold, fontSize: 12)),
-                            Selector<AvmeWallet, MetaCoin>(
-                                selector: (context, model) => model.metaCoin,
-                                builder:(context, metaCoin, child) {
-                                  return Text("${shortAmount(metaCoin.value, length: 3, comma: true)} USD", style: TextStyle(fontSize: 12),);
+                            Selector<AvmeWallet, NetworkToken>(
+                                selector: (context, model) => model.networkToken,
+                                builder:(context, networkToken, child) {
+                                  return Text("${shortAmount(networkToken.value, length: 3, comma: true)} USD", style: TextStyle(fontSize: 12),);
                               }
                             )
                             // Text("1.85 USD", style: TextStyle(fontSize: 12)),
