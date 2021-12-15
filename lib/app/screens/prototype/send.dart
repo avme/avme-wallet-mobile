@@ -40,6 +40,8 @@ class _SendState extends State<Send> {
   TextEditingController addressController = new TextEditingController();
   FocusNode phraseFocusNode = new FocusNode();
   EdgeInsets textFieldButtonPadding = new EdgeInsets.only(
+    //There is another declaration of textFieldButtonPadding in new_account.dart
+    //but this one in send.dart is never used
     left: 12,
     top: 20,
     right: 42,
@@ -75,7 +77,7 @@ class _SendState extends State<Send> {
         children: [
           AppCard(
             child: Padding(
-              padding: const EdgeInsets.all(18.0),
+              padding: EdgeInsets.symmetric(vertical: SizeConfig.safeBlockVertical*2,horizontal: SizeConfig.safeBlockHorizontal*2), //all 18
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -84,6 +86,7 @@ class _SendState extends State<Send> {
                     child: AppLabelText("Address",),
                   ),
                   AppTextFormField(
+                    q//contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 12),
                     controller: addressController,
                     validator: (value) {
                       if (value.length != 42 || !isHex(value)) {
@@ -112,7 +115,7 @@ class _SendState extends State<Send> {
           ),
           AppCard(
               child: Padding(
-                padding: const EdgeInsets.all(18.0),
+                padding: EdgeInsets.symmetric(vertical: SizeConfig.safeBlockVertical*2,horizontal: SizeConfig.safeBlockHorizontal*2),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -356,7 +359,7 @@ class _SendState extends State<Send> {
             ),
             child: Row(
               children: [
-                Expanded(flex: 3, child: Container(),),
+                Expanded(flex: 2, child: Container(),),
                 Expanded(flex: 2, child: AppButton(
                   text: 'CONTINUE',
                   onPressed: () {
@@ -366,7 +369,7 @@ class _SendState extends State<Send> {
                     }
                   },
                 ),),
-                Expanded(flex: 3, child: Container(),),
+                Expanded(flex: 2, child: Container(),),
               ],
             ),
           )
