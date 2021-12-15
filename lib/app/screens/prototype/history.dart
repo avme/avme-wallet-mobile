@@ -1,3 +1,4 @@
+import 'package:avme_wallet/app/controller/size_config.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/model/transaction_information.dart';
@@ -182,31 +183,34 @@ class _HistoryState extends State<History> {
 
   Future<Widget> listTransactions(String address) async
   {
+    SizeConfig().init(context);
     List transactionsMap = await TransactionInformation().fileTransactions(address);
     if(transactionsMap == null)
     {
       return Center(child:
-        SizedBox(
+      SizedBox(
           width: MediaQuery.of(context).size.width * 1 / 2,
           child:  Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.symmetric(vertical: SizeConfig.safeBlockVertical*2.5,horizontal: 0.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Column(
                   children: [
-                    Text("😕 ",
+                    Text("😕",
                         style: TextStyle(
-                            fontSize: 22)
+                          fontSize: SizeConfig.labelSize,)
                     ),
                     SizedBox(height: 6,),
-                    Text("No transactions found."),
+                    Text("No recent activity to show.",
+                        style: TextStyle(
+                          fontSize: SizeConfig.labelSize*0.6,)),
                   ],
                 ),
               ],
             ),
           )
-        )
+      )
       );
     }
 
