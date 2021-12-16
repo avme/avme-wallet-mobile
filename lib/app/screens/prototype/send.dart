@@ -412,11 +412,11 @@ class _SendState extends State<Send> {
                     children: [
                       Text(availableTokens.firstWhere((element) => element == tokenDropdownValue),
                         style: TextStyle(
-                          fontSize: 18
+                          fontSize: SizeConfig.labelSize*0.5+6
                         ),
                       ),
                       SizedBox(
-                        height: 8,
+                        height: SizeConfig.safeBlockVertical,
                       ),
                       TextFormField(
                         cursorColor: AppColors.labelDefaultColor,
@@ -475,29 +475,29 @@ class _SendState extends State<Send> {
                         },
                         style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontSize: 64),
+                            fontSize: SizeConfig.titleSize*2.2),
                         decoration: InputDecoration(
                           border: InputBorder.none,
                           hintText: "0.50"
                         ),
                       ),
                       SizedBox(
-                        height: 8,
+                        height: SizeConfig.safeBlockVertical,
                       ),
                       Text("\$ $convertedValue",
                         style: TextStyle(
-                          fontSize: 18
+                            fontSize: SizeConfig.titleSize*0.7
                         ),
                       ),
                       SizedBox(
-                        height: 16,
+                        height: SizeConfig.safeBlockVertical,
                       ),
                     ],
                   ),
                   /*Gas Limit*/
                   Divider(),
                   Padding(
-                    padding: const EdgeInsets.only(top: 16, bottom: 8),
+                    padding: EdgeInsets.only(top: SizeConfig.safeBlockVertical*2, bottom: SizeConfig.safeBlockVertical),
                     child: Row(
                       children: [
                         Expanded(
@@ -585,12 +585,12 @@ class _SendState extends State<Send> {
                     ],
                   ),
                   SizedBox(
-                    height: 16,
+                    height: SizeConfig.safeBlockVertical*2,
                   ),
                   /*Recommended fees*/
                   Divider(),
                   Padding(
-                    padding: const EdgeInsets.only(top: 16, bottom: 8),
+                    padding: EdgeInsets.only(top: SizeConfig.safeBlockVertical*2, bottom: SizeConfig.safeBlockVertical),
                     child: Row(
                       children: [
                         Expanded(
@@ -679,7 +679,7 @@ class _SendState extends State<Send> {
                   ),
 
                   Padding(
-                    padding: const EdgeInsets.only(top: 32),
+                    padding: EdgeInsets.only(top: SizeConfig.safeBlockVertical*4),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       // crossAxisAlignment: CrossAxisAlignment.end,
