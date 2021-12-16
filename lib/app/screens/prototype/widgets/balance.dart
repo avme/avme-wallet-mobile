@@ -134,7 +134,7 @@ class _OverviewAndButtonsState extends State<OverviewAndButtons> {
                 ),
               ),
               SizedBox(
-                width: 8,
+                width: SizeConfig.safeBlockHorizontal * 1.6,
               ),
               Expanded(
                 child: AppNeonButton(
@@ -144,7 +144,7 @@ class _OverviewAndButtonsState extends State<OverviewAndButtons> {
                 ),
               ),
               SizedBox(
-                width: 8,
+                width: SizeConfig.safeBlockHorizontal * 1.6,
               ),
               Expanded(
                 child: AppNeonButton(
