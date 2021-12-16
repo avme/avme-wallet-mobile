@@ -5,11 +5,9 @@ import 'package:avme_wallet/app/controller/wallet_manager.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/popup.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:web3dart/web3dart.dart' as web3dart;
 import 'active_contracts.dart';
 import 'boxes.dart';
 import 'network_token.dart';
-import 'token.dart';
 import 'token_chart.dart';
 import 'transaction_information.dart';
 import 'package:hive/hive.dart';
@@ -186,7 +184,7 @@ class AvmeWallet extends ChangeNotifier
     else
     {
       //...error
-      // return [false, authMap["message"]];
+      return [false, authMap["message"]];
     }
 
   }
