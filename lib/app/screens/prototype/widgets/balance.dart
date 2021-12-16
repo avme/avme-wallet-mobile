@@ -36,6 +36,7 @@ class _OverviewAndButtonsState extends State<OverviewAndButtons> {
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
+    double cardpad = SizeConfig.safeBlockHorizontal*3.5;
     return AppCard(
       child: Column(
         children: [
@@ -43,7 +44,8 @@ class _OverviewAndButtonsState extends State<OverviewAndButtons> {
             decorationTween: widget.balanceTween,
             onPressed: (){},
             child: Padding(
-              padding: EdgeInsets.all(SizeConfig.safeBlockHorizontal*4),
+              // padding: EdgeInsets.all(SizeConfig.safeBlockHorizontal*3.5),
+              padding: EdgeInsets.only(top: cardpad, left: cardpad, bottom: cardpad),
               child: Row(
                 children: [
                 ///Fist Column with Data.
@@ -55,13 +57,13 @@ class _OverviewAndButtonsState extends State<OverviewAndButtons> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("Total Balance",style: TextStyle(fontSize: SizeConfig.labelSize*0.7),),
-                          SizedBox(height: 8,),
+                          Text("Total Balance",style: TextStyle(fontSize: SizeConfig.labelSize*0.6),),
+                          SizedBox(height: SizeConfig.safeBlockVertical,),
                           Text("\$${widget.totalBalance}",
                             style: TextStyle(
-                              fontSize: SizeConfig.titleSize,
+                              fontSize: SizeConfig.labelSize,
                             ),),
-                          SizedBox(height: 8,),
+                          SizedBox(height: 4,),
                           Text("${widget.difference}",
                               style: TextStyle(
                                 fontSize: 12,
@@ -94,14 +96,24 @@ class _OverviewAndButtonsState extends State<OverviewAndButtons> {
                 ),
                 ///This is the second column, icon only
                 Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.only(left:8.0),
-                      child: TextButton(
-                        child: Icon(Icons.qr_code_scanner, size: 64,color: Colors.white,),
-                        onPressed: widget.onIconPressed,
+                    // Center(
+                    //   child: TextButton(
+                    //     child: Icon(Icons.qr_code_scanner, size: 58,color: Colors.white,),
+                    //     onPressed: widget.onIconPressed,
+                    //   ),
+                    // ),
+                    GestureDetector(
+                      onTap: widget.onIconPressed,
+                      child: Container(
+                        color: Colors.transparent,
+                        child: Padding(
+                          padding: EdgeInsets.only(left: cardpad / 2,right: cardpad),
+                          child: Icon(Icons.qr_code_scanner, size: 58,color: Colors.white,),
+                        )
                       ),
-                    ),
+                    )
                   ],
                 )
               ],
