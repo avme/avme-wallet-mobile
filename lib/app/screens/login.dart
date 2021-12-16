@@ -2,6 +2,7 @@ import 'package:avme_wallet/app/controller/size_config.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/notification_bar.dart';
+import 'package:avme_wallet/app/screens/prototype/widgets/textform.dart';
 import 'package:avme_wallet/app/screens/widgets/custom_widgets.dart';
 import 'package:avme_wallet/app/screens/widgets/screen_indicator.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
@@ -120,25 +121,20 @@ class _LoginState extends State<Login> {
                                     SizedBox(
                                       height: fieldSpacing,
                                     ),
-                                    TextField(
-                                      cursorColor: AppColors.labelDefaultColor,
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      children: [
+                                        Text('Please type your passphrase.',style: AppTextStyles.span.copyWith(fontSize: SizeConfig.fontSize*1.5),),
+                                      ],
+                                    ),
+                                    SizedBox(height: SizeConfig.safeBlockVertical*2,),
+                                    AppTextFormField(
                                       controller: _passphrase,
                                       obscureText: true,
-                                      decoration: InputDecoration(
-                                        labelText: "Please type your passphrase.",
-                                        labelStyle: TextStyle(
-                                            color: AppColors.labelDefaultColor,
-                                            fontSize: SizeConfig.labelSize*0.75,
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(width: 1,
-                                              color: AppColors.labelDefaultColor
-                                          ),
-                                        ),
-                                      )
+                                      hintText: "**********",
                                     ),
                                     SizedBox(
-                                      height: fieldSpacing*3,
+                                      height: fieldSpacing*2,
                                     ),
                                     ElevatedButton(
                                       onPressed: () async{
