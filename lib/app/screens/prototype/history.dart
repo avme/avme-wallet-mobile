@@ -11,6 +11,7 @@ import 'package:avme_wallet/app/screens/prototype/widgets/receive_popup.dart';
 import 'package:avme_wallet/app/screens/widgets/custom_widgets.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:avme_wallet/app/screens/widgets/transaction_details.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -29,6 +30,9 @@ class History extends StatefulWidget {
 }
 
 class _HistoryState extends State<History> {
+
+  //DropdownButton
+  String selectedDate = 'LAST WEEK';
 
   @override
   Widget build(BuildContext context) {
@@ -139,6 +143,48 @@ class _HistoryState extends State<History> {
             //     ],
             //   ),
             // ),
+            Padding(
+              padding: EdgeInsets.only(right: SizeConfig.safeBlockHorizontal*5),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text('Show:  ',style: TextStyle(fontSize: SizeConfig.fontSize*1.3),),
+                  Container(
+                    height:32,
+                    decoration: BoxDecoration(
+                      color: AppColors.purpleVariant1,
+                      border: Border.all(
+                        color: AppColors.purpleVariant1,
+                      ),
+                      borderRadius: BorderRadius.all(Radius.circular(6)),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: SizeConfig.safeBlockHorizontal*2),
+                      child: DropdownButton<String>(
+                        alignment: AlignmentDirectional.center,
+                        underline: Container(
+                          color: Colors.transparent,
+                        ),
+                        value: selectedDate,
+                        icon: Visibility(visible: false, child: Icon(Icons.arrow_downward),),
+                        style: AppTextStyles.label.copyWith(fontSize: SizeConfig.fontSize*1.2),
+                        onChanged: (String newValue){
+                          if (newValue==null) newValue = 'LAST WEEK';
+                          setState(() {
+                            selectedDate = newValue;
+                          });
+                        },
+                        items: <String>['LAST DAY','LAST WEEK','LAST MONTH'].map((String value){
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value,textAlign: TextAlign.end,),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ),],
+              ),
+            ),
             AppCard(
               child:
                 Column(
