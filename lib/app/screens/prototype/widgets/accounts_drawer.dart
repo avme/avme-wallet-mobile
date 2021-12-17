@@ -314,6 +314,7 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
             StatefulBuilder(
               builder: (builder, setState) =>
                 AppPopupWidget(
+                  scrollable: true,
                   title: "Warning",
                   margin: EdgeInsets.all(8),
                   cancelable: true,
