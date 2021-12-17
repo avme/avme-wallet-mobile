@@ -83,7 +83,7 @@ class _StatusCardState extends State<StatusCard> {
                                 selector: (context, model) => model.currentAccount,
                                 builder:(context, data, child)
                                 {
-                                  return Text("${shortAmount(widget.appState.currentAccount.tokenBalance)} AVME",
+                                  return Text("${shortAmount(widget.appState.currentAccount.tokenQuantity())} AVME",
                                       style: TextStyle(fontSize: 12));
                                 }
                             )
