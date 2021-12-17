@@ -25,17 +25,28 @@ String hexRandBytes({int size = 4}) {
 
 String shortAmount(String amount, {int length = 6, bool comma = false})
 {
-  if(amount == null || double.tryParse(amount) == 0)
-  {
-    String ret = "0";
-    ret += comma ? "," : ".";
-    for(int i = 0; i < length; i++) ret += "0";
-    return ret;
+  try {
+    if (amount == null || double.tryParse(amount) == 0) {
+      String ret = "0";
+      ret += comma ? "," : ".";
+      for (int i = 0; i < length; i++)
+        ret += "0";
+      return ret;
+    }
+    int dotIndex = amount.indexOf(".");
+    // int maxSize = dotIndex + (length ?? 6);
+    int maxSize = dotIndex + length;
+    return comma ? amount.substring(0, maxSize).replaceAll(r".", ",") : amount
+        .substring(0, maxSize);
   }
-  int dotIndex = amount.indexOf(".");
-  // int maxSize = dotIndex + (length ?? 6);
-  int maxSize = dotIndex + length;
-  return comma ? amount.substring(0, maxSize).replaceAll(r".", ",") : amount.substring(0, maxSize);
+  catch(e) {
+    if(e is RangeError)
+    {
+      print("[WARNING -> shortAmount] Error when working with the following data:");
+      print("amount $amount, length $length, comma $comma");
+    }
+    return amount;
+  }
 }
 
 BigInt bigIntFixedPointToWei(String amount, {int decimals = 18})
