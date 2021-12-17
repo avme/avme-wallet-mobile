@@ -23,6 +23,7 @@ class AppPopupWidget extends StatefulWidget {
   final EdgeInsets margin;
   final bool showIndicator;
   final bool cancelable;
+  final bool scrollable;
 
   AppPopupWidget({
     Key key,
@@ -34,6 +35,7 @@ class AppPopupWidget extends StatefulWidget {
     this.cancelable = true,
     this.canClose = true,
     this.showIndicator = true,
+    this.scrollable = false,
     this.textStyle,
     /*
     this.textStyle = const TextStyle(
@@ -56,6 +58,8 @@ class _AppPopupWidgetState extends State<AppPopupWidget> {
 
     SizeConfig().init(context);
     TextStyle widgetTextStyle = widget.textStyle ?? AppTextStyles.label.copyWith(fontSize: SizeConfig.titleSize);
+
+    ScrollPhysics isScrollable = widget.scrollable != false ? AlwaysScrollableScrollPhysics() : NeverScrollableScrollPhysics();
 
     if(widget.actions != null)
     {
@@ -111,7 +115,7 @@ class _AppPopupWidgetState extends State<AppPopupWidget> {
           builder: (BuildContext context) =>
             Center(
               child: ListView(
-                physics: NeverScrollableScrollPhysics(),
+                physics: isScrollable,
                 shrinkWrap: true,
                 children: [
                   GestureDetector(

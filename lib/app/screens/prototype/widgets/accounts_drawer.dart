@@ -198,11 +198,16 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
           FuturePopupWidget(
             title: "CREATE NEW ACCOUNT",
             textStyle: TextStyle(
-              fontSize: 16,
+              fontSize: SizeConfig.titleSize*0.8,
               fontWeight: FontWeight.bold
             ),
             margin: EdgeInsets.all(8),
             cancelable: false,
+            padding: EdgeInsets.only(
+                left: SizeConfig.safeBlockHorizontal*8,
+                right: SizeConfig.safeBlockHorizontal*8,
+                top: SizeConfig.safeBlockVertical*4,
+            ),
             // future: futureDelayed(seconds: 8),
             future: previewAccounts(setState, app),
           )
@@ -235,7 +240,7 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
         : await app.walletManager.previewAvaxBalance(password);
 
     return [
-      Text("Choose an Account from the List"),
+      Text("Choose an Account from the List",style: TextStyle(fontSize: SizeConfig.fontSize*1.5),),
       SizedBox(
         height: 24,
       ),
@@ -249,9 +254,9 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
           padding: EdgeInsets.all(darkBorderPadding),
           child: Row(
             children: [
-              Expanded(flex: flexIndex, child: Text("Index")),
-              Expanded(flex: flexAddress, child: Text("Account"),),
-              Expanded(flex: flexBalance, child: Text("AVAX Balance", textAlign: TextAlign.center,),)
+              Expanded(flex: flexIndex*2, child: Text("Index",style: TextStyle(fontSize: SizeConfig.fontSize*1.5),)),
+              Expanded(flex: flexAddress, child: Text("Account",style: TextStyle(fontSize: SizeConfig.fontSize*1.5),),),
+              Expanded(flex: flexBalance, child: Text("AVAX Balance", textAlign: TextAlign.center,style: TextStyle(fontSize: SizeConfig.fontSize*1.5),),)
             ],
           ),
         ),
@@ -309,6 +314,7 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
             StatefulBuilder(
               builder: (builder, setState) =>
                 AppPopupWidget(
+                  scrollable: true,
                   title: "Warning",
                   margin: EdgeInsets.all(8),
                   cancelable: true,
@@ -333,17 +339,17 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                     )
                   ],
                   children: [
-                    Text("Please confirm the selected account and/or assign a name."),
+                    Text("Please confirm the selected account and/or assign a name.",style: TextStyle(fontSize: SizeConfig.fontSize*1.5),),
                     SizedBox(
-                      height: 32,
+                      height: SizeConfig.blockSizeVertical*4,
                     ),
                     Row(
                       children: [
-                        LabelText("Selected Account", fontSize: 18,),
+                        LabelText("Selected Account", fontSize: SizeConfig.fontSize*1.5,),
                       ],
                     ),
                     SizedBox(
-                      height: 16.0,
+                      height: SizeConfig.blockSizeVertical*2,
                     ),
                     GestureDetector(
                       onTap: (){
@@ -361,11 +367,11 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                       ),
                     ),
                     SizedBox(
-                      height: 24.0,
+                      height: SizeConfig.blockSizeVertical*3,
                     ),
                     Row(
                       children: [
-                        LabelText("(OPTIONAL) Name", fontSize: 18,),
+                        LabelText("(OPTIONAL) Name",fontSize: SizeConfig.fontSize*1.5,),
                       ],
                     ),
                     SizedBox(
@@ -381,7 +387,7 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                       isDense: true,
                     ),
                     SizedBox(
-                      height: 24.0,
+                      height: SizeConfig.blockSizeVertical*3,
                     ),
                     Divider(),
                   ],
@@ -451,11 +457,11 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
             child: Row(
               children: [
                 ///Index
-                Expanded(flex: flexIndex, child: Text(index.toString()),),
+                Expanded(flex: flexIndex, child: Text(index.toString(),style: TextStyle(fontSize: SizeConfig.fontSize*1.4)),),
                 ///Account Address (Shortened)
-                Expanded(flex: flexAddress, child: Text("${address.substring(0,8)}...${address.substring(34,42)}"),),
+                Expanded(flex: flexAddress, child: Text("${address.substring(0,8)}...${address.substring(34,42)}",style: TextStyle(fontSize: SizeConfig.fontSize*1.4)),),
                 ///Balance
-                Expanded(flex: flexBalance, child: Text(balance, textAlign: TextAlign.center,),),
+                Expanded(flex: flexBalance, child: Text(balance, textAlign: TextAlign.center,style: TextStyle(fontSize: SizeConfig.fontSize*1.4)),),
               ],
             ),
           ),
