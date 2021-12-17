@@ -398,6 +398,7 @@ class _SendState extends State<Send> {
             Form(
               key: _sendTokenForm,
               child: AppPopupWidget(
+                scrollable: true,
                 title: "SEND TOKENS",
                 canClose: true,
                 margin: EdgeInsets.all(8),
