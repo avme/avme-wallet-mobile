@@ -143,6 +143,7 @@ class _HistoryState extends State<History> {
             //     ],
             //   ),
             // ),
+            /*
             Padding(
               padding: EdgeInsets.only(right: SizeConfig.safeBlockHorizontal*5),
               child: Row(
@@ -185,6 +186,9 @@ class _HistoryState extends State<History> {
                   ),],
               ),
             ),
+            Text('Selected date: $selectedDate'),
+            //Working as intended!
+            */
             AppCard(
               child:
                 Column(
