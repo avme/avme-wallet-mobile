@@ -451,26 +451,27 @@ class _SendState extends State<Send> {
                             }
                           });
                         },
+                        //TODO: FIX THIS TO USE A SELECTION OF TOKEN
                         validator: (String value){
-                          if(double.tryParse(value) != null && double.tryParse(value) > 0)
-                          {
-                            weiValue = bigIntFixedPointToWei(value.replaceAll(r",", "."));
-                            //IS AVAX
-                            print("AVAX TOKEN:${app.currentAccount.balance}");
-                            print("AVME TOKEN:${app.currentAccount.tokenBalance}");
-                            if(tokenDropdownValue == 1 && (weiValue > app.currentAccount.waiBalance))
-                              return "Not enough balance (AVAX)";
-                            //IS AVME
-                            else if(tokenDropdownValue == 2 && (weiValue > app.currentAccount.rawTokenBalance))
-                              return "Not enough balance (AVME)";
-                          }
-                          else if (double.tryParse(value) == null)
-                          {
-                            if(tokenDropdownValue == 1)
-                              return "Not enough balance (AVAX)";
-                            else if(tokenDropdownValue == 2)
-                              return "Not enough balance (AVME)";
-                          }
+                          // if(double.tryParse(value) != null && double.tryParse(value) > 0)
+                          // {
+                          //   weiValue = bigIntFixedPointToWei(value.replaceAll(r",", "."));
+                          //   //IS AVAX
+                          //   print("AVAX TOKEN:${app.currentAccount.balance}");
+                          //   print("AVME TOKEN:${app.currentAccount.tokenBalance}");
+                          //   if(tokenDropdownValue == 1 && (weiValue > app.currentAccount.waiBalance))
+                          //     return "Not enough balance (AVAX)";
+                          //   //IS AVME
+                          //   else if(tokenDropdownValue == 2 && (weiValue > app.currentAccount.REMOVETHIS_rawTokenBalance))
+                          //     return "Not enough balance (AVME)";
+                          // }
+                          // else if (double.tryParse(value) == null)
+                          // {
+                          //   if(tokenDropdownValue == 1)
+                          //     return "Not enough balance (AVAX)";
+                          //   else if(tokenDropdownValue == 2)
+                          //     return "Not enough balance (AVME)";
+                          // }
                           return null;
                         },
                         style: TextStyle(
