@@ -95,7 +95,7 @@ class _AppTextFormFieldState extends State<AppTextFormField> with TickerProvider
     ///Testing if isDense is true, we set same as the default in
     ///"flutter: material/input_decorator.dart", since the padding ain't
     ///being set by the framework
-    contentPadding = widget.isDense ? EdgeInsets.fromLTRB(0, 8, 0, 8) : contentPadding;
+    contentPadding = widget.isDense ? EdgeInsets.fromLTRB(8, 8, 0, 8) : contentPadding;
 
     cLabelStyle = myFocus.hasFocus ? AppColors.purple : AppColors.labelDefaultColor;
     fLabelStyle = myFocus.hasFocus ? FontWeight.w900 : FontWeight.w500;
