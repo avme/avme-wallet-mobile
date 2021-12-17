@@ -235,7 +235,11 @@ class WalletManager
   Future<void> startBalanceSubscription(AvmeWallet appState) async
   {
     if(!appState.services.containsKey("balanceSubscription"))
-      await services.balanceSubscription(appState);
+    {
+      bool res = await services.balanceSubscription(appState);
+      print("services.balanceSubscription returned: $res");
+    }
+
   }
 
   void stopBalanceSubscription(AvmeWallet appState)
@@ -258,7 +262,7 @@ class WalletManager
 
   Future<Map<String,dynamic>> sendTransaction(AvmeWallet wallet, String address, BigInt amount, tokenId, {List<ValueNotifier> listNotifier}) async
   {
-    if (!await services.hasEnoughBalanceToPayTaxes(wallet.currentAccount.waiBalance))
+    if (!await services.hasEnoughBalanceToPayTaxes(wallet.currentAccount.networkTokenBalance))
     {
       return {"title" : "Attention", "status": 500, "message": "Not enough AVAX to complete the transaction."};
     }
