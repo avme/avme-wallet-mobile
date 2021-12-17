@@ -103,7 +103,7 @@ class _SendState extends State<Send> {
                                     {
                                       return "Invalid Amount";
                                     }
-                                    else if (bigIntValue > appState.accountList[appState.currentWalletId].rawTokenBalance)
+                                    else if (bigIntValue > appState.currentAccount.tokensBalanceList["AVME testnet"]["wei"])
                                     {
                                       return "Balance too low.";
                                     }
@@ -140,7 +140,7 @@ class _SendState extends State<Send> {
                           Center(
                             child: Column(
                               children: [
-                                Text("AVME Balance: ${appState.currentAccount.tokenBalance}"),
+                                Text("AVME Balance: ${appState.currentAccount.tokenQuantity}"),
                                 SizedBox(height: 2,),
                                 Text("AVAX Balance: ${appState.currentAccount.balance}"),
                                 // Text("New Balance: $previewBalance"),
