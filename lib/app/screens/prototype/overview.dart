@@ -5,13 +5,11 @@ import 'package:avme_wallet/app/screens/prototype/widgets/receive_popup.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-
 import 'widgets/balance.dart';
 import 'widgets/token_distribution.dart';
 import 'widgets/token_value.dart';
 import 'package:flutter/material.dart';
 import 'widgets/history_snippet.dart';
-
 
 class Overview extends StatefulWidget {
 
@@ -55,10 +53,7 @@ class _OverviewState extends State<Overview> {
                       )
                   )
               ),
-              totalBalance:
-              app.currentAccount.networkBalance == null || app.currentAccount.currencyTokenBalance == null ? "0,0000000" :
-              "${shortAmount((app.currentAccount.networkBalance +
-                  app.currentAccount.currencyTokenBalance).toString(),comma: true, length: 7)}",
+              totalBalance: _totalBalance(app),
               address: app.currentAccount.address,
               onPressed: () {
                 NotificationBar().show(
@@ -129,51 +124,87 @@ class _OverviewState extends State<Overview> {
                 );
               },
             ),
-
             TokenDistribution(
-                chartData: {
-                  "AVAX": [
-                    app.currentAccount.networkBalance == null ? 0 :
-                    app.currentAccount.networkBalance,
-                    AppColors.purple
-                  ],
-                  "AVME": [
-                    app.currentAccount.currencyTokenBalance == null ? 0 :
-                    app.currentAccount.currencyTokenBalance,
-                    AppColors.lightBlue
-                  ]
-                }
+                chartData: _tokenDistribution(app)
             ),
-
-            ///AVAX Token Card
-            TokenValue(
-              image:
-              Image.asset(
-                'assets/avax_logo.png',
-                fit: BoxFit.fitHeight,),
-              name: 'AVAX',
-              amount: "${shortAmount(app.currentAccount.balance)}",
-              marketValue: "${shortAmount(app.currentAccount.networkBalance.toString(),comma: true, length: 3)}",
-              valueDifference: "2,013",
-            ),
-            ///AVME Token Card
-            TokenValue(
-              image:
-              Image.asset(
-                'assets/avme_logo.png',
-                fit: BoxFit.fitHeight,),
-              name: 'AVME',
-              amount: "${shortAmount(app.currentAccount.tokenBalance)}",
-              marketValue: "${shortAmount(app.currentAccount.currencyTokenBalance.toString(),comma: true, length: 3)}",
-              valueDifference: "8,669",
-            ),
-            HistorySnippet(
-              appScaffoldTabController: widget.appScaffoldTabController,
-              app: app,
-            )
-          ],
+            ]
+            ..addAll(_tokenDetailsCard(app))
+            ..addAll([
+              HistorySnippet(
+                appScaffoldTabController: widget.appScaffoldTabController,
+                app: app,
+              )
+            ])
         );
       },
     );
+  }
+  List<Widget> _tokenDetailsCard(AvmeWallet app)
+  {
+    Map trackedTokens = app.activeContracts.token.tokenValues;
+    List<Widget> ret = [
+       TokenValue(
+        image:
+        Image.asset(
+          'assets/avax_logo.png',
+          fit: BoxFit.fitHeight,),
+        name: 'AVAX',
+        amount: "${shortAmount(app.currentAccount.balance)}",
+        marketValue: "${shortAmount(app.currentAccount.networkBalance.toString(),comma: true, length: 3)}",
+        valueDifference: "2,013",
+      )
+    ];
+    ///Checking for any token
+    if(trackedTokens.length > 0)
+      return ret..addAll(trackedTokens.entries.map((entry) {
+        return TokenValue(
+          image: resolveImage(app.activeContracts.sContracts.contractsRaw[entry.key]["logo"]),
+          name: entry.key,
+          amount: "${shortAmount(app.currentAccount.tokenWei(name: entry.key))}",
+           marketValue: shortAmount(app.currentAccount.tokenQuantity(name: entry.key),comma: false, length: 3),
+          valueDifference: "2,013",
+        );
+      }).toList());
+    return ret;
+  }
+
+  Map _tokenDistribution(AvmeWallet app)
+  {
+    Map trackedTokens = app.activeContracts.token.tokenValues;
+    Map<String, List> ret = {
+      "AVAX": [
+        app.currentAccount.networkBalance,
+        Colors.red
+      ]
+    };
+    int pos = 0;
+
+    ///Checking for any token
+    if(app.currentAccount.tokensBalanceList.length > 0)
+      ret.addAll(
+        trackedTokens.map((key, value) {
+          pos++;
+          return MapEntry(key, [
+            app.currentAccount.tokensBalanceList[key]["balance"],
+            AppColors.availableColors[pos]
+          ]);
+          }
+        )
+      );
+
+    return ret;
+  }
+
+  String _totalBalance(AvmeWallet app)
+  {
+    List tokensValue = app.currentAccount.tokensBalanceList.entries.map((e) =>
+      e.value["balance"]).toList();
+
+    double totalValue = app.currentAccount.networkBalance;
+
+    tokensValue.forEach((value) => totalValue += value);
+
+    print(tokensValue);
+    return "${shortAmount(totalValue.toString(),comma: true, length: 7)}";
   }
 }
