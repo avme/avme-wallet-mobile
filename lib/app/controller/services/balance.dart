@@ -18,13 +18,13 @@ import 'package:web3dart/web3dart.dart';
 import 'package:decimal/decimal.dart';
 
 ///Spawns a single thread to listen, and update our appState
-Future<void> balanceSubscription(AvmeWallet appState) async
+Future<bool> balanceSubscription(AvmeWallet appState) async
 {
+  bool didBalanceUpdated = false;
   ///Validating if is the default/selected or a specific account to keep track of!
   List<Map<String, dynamic>> accountSpawnData = [];
   Map<int,AccountObject> accounts = appState.accountList;
   int currentWalletId = appState.currentWalletId;
-  ActiveContracts activeContracts = appState.activeContracts;
   ///List of previously updated accounts
   ///{"0":[true,true]}
   ///{"key":[metacoinUpdated,tokenUpdated]}
@@ -58,7 +58,6 @@ Future<void> balanceSubscription(AvmeWallet appState) async
     _startBalanceSubscription,
     serviceData
   );
-
   receivePort.listen((data) {
     // print(data);
 
@@ -88,7 +87,7 @@ Future<void> balanceSubscription(AvmeWallet appState) async
         updatedBalance = oldBalance;
 
         ///Checking the difference in BigInt/Wei
-        if(accountObject.waiBalance != balance)
+        if(accountObject.networkTokenBalance != balance)
           accountObject.updateAccountBalance = balance;
 
         ///Recovering the USD price of "Network Token" that we retrieved in
@@ -108,15 +107,16 @@ Future<void> balanceSubscription(AvmeWallet appState) async
         ///When consulting a Smart Contract that does not exist on
         ///api.thegraph.com the default value will be 1 USD
         double tokenValue = 1;
-        if(accountObject.tokensBalanceList.containsKey(key) &&
-            appState.activeContracts.token.tokenValues.containsKey(key))
+        if(accountObject.tokensBalanceList.containsKey(key))
         {
           oldBalance = accountObject.tokensBalanceList[key]["balance"]; ///Double
-          ///Recovering the USD price of "Token" that we retrieved in
-          ///the valueSubscription routine...
-          tokenValue =
-            double.tryParse(appState.activeContracts.token.tokenValues[key]); ///Stored as String
         }
+
+        ///Recovering the USD price of "Token" that we retrieved in
+        ///the valueSubscription routine...
+
+        tokenValue =
+            double.tryParse(appState.activeContracts.token.tokenValues[key]); ///Stored as String
 
         updatedBalance = oldBalance;
 
@@ -134,100 +134,23 @@ Future<void> balanceSubscription(AvmeWallet appState) async
         print(preparedData);
 
         accountObject.tokensBalanceList[key] = preparedData;
-
+        String nonTestnetName = key.replaceAll(" testnet", "");
+        // print("NON");
+        // print(nonTestnetName);
+        // print("CONTAINS");
+        print(appState.activeContracts.tokens.contains(nonTestnetName));
+        if(appState.activeContracts.tokens.contains(nonTestnetName))
+        {
+          accountObject.tokensBalanceList[nonTestnetName] = preparedData;
+        }
+        didBalanceUpdated = true;
       }
     });
-
-    // print("[BALANCEsss]");
-    // print(balance);
-    // print("[RESPONSE2]");
-    // print(response["balance"]);
-    //
-    // if(data.containsKey("token"))
-    // {
-    //   Map response = data["token"];
-    //   print("BALANCE TOKEN ${response["tokenBalance"]}");
-    //   AccountObject accountUpdate = appState.accountList[response['id']];
-    //
-    //   double oldValue = accountUpdate.currencyTokenBalance;
-    //   double newValue = oldValue;
-    //
-    //   if(accountUpdate.rawTokenBalance != response["tokenBalance"])
-    //     accountUpdate.updateTokenBalance = response["tokenBalance"];
-    //
-    //   double tokenFromBigInt =
-    //   double.tryParse(weiToFixedPoint(response["tokenBalance"].toString()));
-    //
-    //   double avmeValue = double.tryParse(appState.activeContracts.token.tokenValues["AVME"]);
-    //   newValue = tokenFromBigInt * avmeValue;
-      // double difference = newValue - oldValue;
-      // ///Checking if we received any amount
-      // if(didUpdatePreviously.contains("${response["id"]}.token")) {
-      //   ///there was an increase in balance
-      //   if (difference > 0) {
-      //     PushNotification.showNotification(
-      //         id: 10,
-      //         title: "Transfer received (AVME)",
-      //         body: "Account Update: "
-      //             "You received \$${difference.toStringAsFixed(2)} (AVME)",
-      //         payload: "app/history"
-      //     );
-      //   }
-      // }
-      // else
-      // {
-      //   didUpdatePreviously.add("${response["id"]}.token");
-      // }
-      // accountUpdate.currencyTokenBalance = newValue;
-      // appState.updateAccountObject(response["id"], accountUpdate);
-    // }
-    // print(didUpdatePreviously.toString());
-
-    // if(data.containsKey("metacoin"))
-    // {
-    //   Map response = data["metacoin"];
-    //
-    //   print("BALANCE ${response["balance"]}");
-    //
-    //   AccountObject accountUpdate = appState.accountList[response['id']];
-    //
-    //   double oldValue = accountUpdate.networkBalance;
-    //   double newValue = oldValue;
-    //
-    //   if(accountUpdate.waiBalance != response["balance"])
-    //     accountUpdate.updateAccountBalance = response["balance"];
-    //
-    //   double balanceFromBigInt =
-    //     double.tryParse(weiToFixedPoint(response["balance"].toString()));
-    //
-    //   double avaxValue = double.tryParse(appState.networkToken.value);
-    //   newValue = balanceFromBigInt * avaxValue;
-      //
-      // double difference = newValue - oldValue;
-      //
-      // ///Checking if we received any amount
-      // if(didUpdatePreviously.contains("${response["id"]}.metacoin")) {
-      //   ///there was an increase in balance
-      //   if (difference > 0) {
-      //     PushNotification.showNotification(
-      //         id: 9,
-      //         title: "Transfer received (AVAX)",
-      //         body: "Account Update: "
-      //             "You received \$${difference.toStringAsFixed(2)} (AVAX)",
-      //         payload: "app/history"
-      //     );
-      //   }
-      // }
-      // else
-      // {
-      //   didUpdatePreviously.add("${response["id"]}.metacoin");
-      // }
-
-      // accountUpdate.networkBalance = newValue;
-      // appState.updateAccountObject(response["id"], accountUpdate);
-
-    // }
   });
+
+  do await Future.delayed(Duration(milliseconds: 150));
+  while(!didBalanceUpdated);
+  return didBalanceUpdated;
 }
 
 // ///Isolated function to watch balance changes
@@ -363,10 +286,10 @@ Future<Map> wrapAsList({String identifier , Future future}) async
   return {identifier: result};
 }
 
-Future<void> valueSubscription(AvmeWallet appState) async
+Future<bool> valueSubscription(AvmeWallet appState) async
 {
   ReceivePort isolatePort = ReceivePort();
-
+  bool didValueUpdated = false;
   Map <String, dynamic> data = {
     "url": "${env["MAINNET_URL"]}:${env["MAINNET_PORT"]}${env["MAINNET_VALUEPATH"]}",
     "activeTokens": appState.activeContracts.tokens,
@@ -392,8 +315,7 @@ Future<void> valueSubscription(AvmeWallet appState) async
           if(appState.activeContracts.tokens.contains("$key testnet"))
             appState.activeContracts.token.updateToken("$key testnet", value);
         }
-        // print("TOKEN VALUES BABY");
-        // print(appState.activeContracts.token.tokenValues);
+        didValueUpdated = true;
       });
     }
 
@@ -424,6 +346,9 @@ Future<void> valueSubscription(AvmeWallet appState) async
     //   box.put(0,dashboardChart);
     // }
   });
+  do await Future.delayed(Duration(milliseconds: 150));
+  while(!didValueUpdated);
+  return didValueUpdated;
 }
 
 void startValueSubscription(ServiceData param)
@@ -445,8 +370,10 @@ void startValueSubscription(ServiceData param)
   Map<String,Map<String,String>> paramList = {};
   param.data["activeTokens"].forEach((String token)
   {
-    if(!token.contains('testnet'))
-      paramList[token] = {"query":tokenRequest.replaceFirst('CONTRACT_ADDRESS', param.data["contractRaw"][token]['address'])};
+    // if(!token.contains('testnet'))
+      paramList[token] = {"query":tokenRequest.replaceFirst('CONTRACT_ADDRESS', token.contains('testnet')
+        ? param.data["contractRaw"]["AVME"]['address']
+        : param.data["contractRaw"][token]['address'])};
   });
 
   listenValue(
