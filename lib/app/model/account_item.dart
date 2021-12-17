@@ -12,49 +12,52 @@ class AccountObject
   });
 
   Wallet walletObj;
-  String address;
-  BigInt _weiBalance;
-  BigInt _tokenWeiBalance;
+  String address = "";
+  BigInt _networkTokenBalance = BigInt.zero;
 
-  int slot;
-  int derived;
-  String title;
+  int slot = 0;
+  int derived = 0;
+  String title = "title not set";
 
   double networkBalance = 0;
   double currencyTokenBalance = 0;
 
-  ///List must follow this architecture...
-  ///{<BigInt> wei:00000000, <Double>balance:1000.00}
+
   Map<String,Map<String,dynamic>> tokensBalanceList = {};
 
   void updateTokens(String key, Map tokenBalance) {
     tokensBalanceList[key] = tokenBalance;
   }
 
-  set updateTokenBalance(BigInt value)
-  {
-    _tokenWeiBalance = value;
-  }
-
   set updateAccountBalance(BigInt value)
   {
-    _weiBalance = value;
+    _networkTokenBalance = value;
   }
 
-  String get tokenBalance
+  String tokenQuantity({String name = "AVME testnet"})
   {
-    if(_tokenWeiBalance == null) return null;
-    if(_tokenWeiBalance.toDouble() != 0) return weiToFixedPoint(_tokenWeiBalance.toString());
-    else return "0";
+    if(tokensBalanceList.containsKey(name))
+    {
+      if(tokensBalanceList[name]['balance'].toDouble() != 0) return tokensBalanceList[name]['balance'].toString();
+      else return "0.00";
+    }
+    return "0.00";
+  }
+  String tokenWei({String name = "AVME testnet"})
+  {
+    if(tokensBalanceList.containsKey(name))
+    {
+      if(tokensBalanceList[name]['wei'].toDouble() != 0) return weiToFixedPoint(tokensBalanceList[name]['wei'].toString());
+      else return "0";
+    }
+    return "0";
   }
 
   String get balance {
-    if(_weiBalance == null) return null;
-    if(_weiBalance.toDouble() != 0) return weiToFixedPoint(_weiBalance.toString());
+    if(_networkTokenBalance.toDouble() != 0) return weiToFixedPoint(_networkTokenBalance.toString());
     else return "0";
   }
 
-  BigInt get waiBalance => _weiBalance;
-  BigInt get rawTokenBalance => _tokenWeiBalance;
+  BigInt get networkTokenBalance => _networkTokenBalance;
 }
 
