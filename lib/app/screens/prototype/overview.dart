@@ -141,7 +141,7 @@ class _OverviewState extends State<Overview> {
   }
   List<Widget> _tokenDetailsCard(AvmeWallet app)
   {
-    Map trackedTokens = app.activeContracts.token.tokenValues;
+    Map tokensWithBalance = app.currentAccount.tokensBalanceList;
     List<Widget> ret = [
        TokenValue(
         image:
@@ -154,9 +154,9 @@ class _OverviewState extends State<Overview> {
         valueDifference: "2,013",
       )
     ];
-    ///Checking for any token
-    if(trackedTokens.length > 0)
-      return ret..addAll(trackedTokens.entries.map((entry) {
+    ///Checking for any token recovered
+    if(tokensWithBalance.length > 0)
+      return ret..addAll(tokensWithBalance.entries.map((entry) {
         return TokenValue(
           image: resolveImage(app.activeContracts.sContracts.contractsRaw[entry.key]["logo"]),
           name: entry.key,
@@ -170,7 +170,7 @@ class _OverviewState extends State<Overview> {
 
   Map _tokenDistribution(AvmeWallet app)
   {
-    Map trackedTokens = app.activeContracts.token.tokenValues;
+    Map tokensWithBalance = app.currentAccount.tokensBalanceList;
     Map<String, List> ret = {
       "AVAX": [
         app.currentAccount.networkBalance,
@@ -182,10 +182,10 @@ class _OverviewState extends State<Overview> {
     ///Checking for any token
     if(app.currentAccount.tokensBalanceList.length > 0)
       ret.addAll(
-        trackedTokens.map((key, value) {
+          tokensWithBalance.map((key, value) {
           pos++;
           return MapEntry(key, [
-            app.currentAccount.tokensBalanceList[key]["balance"],
+            tokensWithBalance[key]["balance"],
             AppColors.availableColors[pos]
           ]);
           }
