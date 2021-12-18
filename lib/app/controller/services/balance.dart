@@ -92,11 +92,10 @@ Future<bool> balanceSubscription(AvmeWallet appState) async
 
         ///Recovering the USD price of "Network Token" that we retrieved in
         ///the valueSubscription routine...
-        double networkTokenValue =
-          double.tryParse(appState.networkToken.value); ///Stored as String
+        Decimal networkTokenValue = appState.networkToken.decimal; ///Stored as String
 
         ///Calculating the balance
-        updatedBalance = balanceUSD * networkTokenValue;
+        updatedBalance = balanceUSD * networkTokenValue.toDouble();
 
         ///Finally we update the balance in the account
         accountObject.networkBalance = updatedBalance;
@@ -116,7 +115,7 @@ Future<bool> balanceSubscription(AvmeWallet appState) async
         ///the valueSubscription routine...
 
         tokenValue =
-            double.tryParse(appState.activeContracts.token.tokenValues[key]); ///Stored as String
+            appState.activeContracts.token.decimal(key).toDouble(); ///Stored as String
 
         updatedBalance = oldBalance;
 
@@ -305,9 +304,9 @@ Future<bool> valueSubscription(AvmeWallet appState) async
       List response = data["listenValue"];
       response.forEach((mapEntry){
         String key = mapEntry.entries.first.key;
-        String value = mapEntry.entries.first.value;
+        Decimal value = mapEntry.entries.first.value;
         if(key == "AVAX"){
-          appState.networkToken.value = value;
+          appState.networkToken.updateToken(value);
         }
         else
         {
@@ -395,7 +394,7 @@ void listenValue(ServiceData param) async
   while(true)
   {
     await Future.delayed(Duration(seconds: seconds), () async {
-      String avaxPrice = await getAVAXPriceUSD(avaxBodyRequest, url);
+      Decimal avaxPrice = await getAVAXPriceUSD(avaxBodyRequest, url);
       List<Map> tokenValue = await Future.wait(tokenBodyRequest.entries.map((entry) => getTokenPriceUSD(avaxPrice, url, entry.value, entry.key)));
       tokenValue.add({"AVAX":avaxPrice});
       print(tokenValue);
@@ -442,13 +441,13 @@ Future<String> httpGetRequest(String urlString, Map body) async
   return response.body;
 }
 
-Future<Map> getTokenPriceUSD(String avaxUnitPriceUSD, String url, Map body, String tokenName) async
+Future<Map> getTokenPriceUSD(Decimal avaxUnitPriceUSD, String url, Map body, String tokenName) async
 {
   String response = await httpGetRequest(url, body);
-  Decimal avaxPrice = Decimal.parse(avaxUnitPriceUSD);
+  Decimal avaxPrice = avaxUnitPriceUSD;
   Decimal derivedETH = Decimal.parse(json.decode(response)["data"]["token"]["derivedETH"]);
-  Decimal avmeValue = derivedETH * avaxPrice;
-  return {tokenName:avmeValue.toString()};
+  Decimal tokenValue = derivedETH * avaxPrice;
+  return {tokenName:tokenValue};
 }
 
 Future<String> getAVMEPriceUSD(String avaxUnitPriceUSD, String url, Map body) async
@@ -460,13 +459,13 @@ Future<String> getAVMEPriceUSD(String avaxUnitPriceUSD, String url, Map body) as
   return avmeValue.toString();
 }
 
-Future<String> getAVAXPriceUSD(Map body, url) async
+Future<Decimal> getAVAXPriceUSD(Map body, url) async
 {
   String response = await httpGetRequest(url, body);
   String token0Label = json.decode(response)["data"]["pair"]["token0"]["symbol"];
   String token1Label = json.decode(response)["data"]["pair"]["token1"]["symbol"];
-  String token0Price = json.decode(response)["data"]["pair"]["token0Price"];
-  String token1Price = json.decode(response)["data"]["pair"]["token1Price"];
+  Decimal token0Price = Decimal.parse(json.decode(response)["data"]["pair"]["token0Price"]);
+  Decimal token1Price = Decimal.parse(json.decode(response)["data"]["pair"]["token1Price"]);
 
   return token0Label == "WAVAX" ? token1Price : token0Price;
 }

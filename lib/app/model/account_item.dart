@@ -34,7 +34,7 @@ class AccountObject
     _networkTokenBalance = value;
   }
 
-  String tokenQuantity({String name = "AVME testnet"})
+  String tokenBalance({String name = "AVME testnet"})
   {
     if(tokensBalanceList.containsKey(name))
     {

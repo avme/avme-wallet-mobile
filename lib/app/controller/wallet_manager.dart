@@ -316,7 +316,7 @@ class WalletManager
   Future<void> removeToken(AvmeWallet app, String tokenName) async
   {
     Token token = app.activeContracts.token;
-    token.tokenValues.remove(tokenName);
+    token.removeToken(tokenName);
     await app.activeContracts.removeToken(tokenName);
     await restartTokenServices(app);
   }
