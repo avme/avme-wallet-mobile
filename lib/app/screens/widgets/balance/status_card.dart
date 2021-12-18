@@ -83,7 +83,7 @@ class _StatusCardState extends State<StatusCard> {
                                 selector: (context, model) => model.currentAccount,
                                 builder:(context, data, child)
                                 {
-                                  return Text("${shortAmount(widget.appState.currentAccount.tokenQuantity())} AVME",
+                                  return Text("${shortAmount(widget.appState.currentAccount.tokenBalance())} AVME",
                                       style: TextStyle(fontSize: 12));
                                 }
                             )
@@ -98,12 +98,12 @@ class _StatusCardState extends State<StatusCard> {
                             Text(" ",
                                 style: TextStyle(
                                     fontWeight: FontWeight.bold, fontSize: 12)),
-                            Selector<Token, Map>(
-                              selector: (context, activeContracts) => activeContracts.tokenValues,
+                            Selector<Token, String>(
+                              selector: (context, activeContracts) => activeContracts.tokenValue("AVME"),
                               builder: (context, tokenValues, child) {
                                 // widget.appState.watchTokenValueChanges();
                                 contracts.watchTokenValueChanges();
-                                return Text("${shortAmount(tokenValues["AVME"],length: 4, comma: true)} USD",style: TextStyle(fontSize: 12));
+                                return Text("${shortAmount(tokenValues,length: 4, comma: true)} USD",style: TextStyle(fontSize: 12));
                               },),
                           ],
                         ),

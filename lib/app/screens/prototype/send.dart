@@ -439,7 +439,7 @@ class _SendState extends State<Send> {
                               //IS AVME
                               else if (tokenDropdownValue == 2)
                               {
-                                newValue = double.tryParse(value) * double.tryParse(app.activeContracts.token.tokenValues[tokenDropdownValue]);
+                                newValue = double.tryParse(value) * app.activeContracts.token.decimal(tokenDropdownValue).toDouble();
                               }
                               convertedValue = shortAmount(newValue.toString(),comma: true,length: 3);
                               // weiValue = bigIntFixedPointToWei(newValue.toString().replaceAll(r",", "."));

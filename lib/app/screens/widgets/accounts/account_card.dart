@@ -79,7 +79,7 @@ class _AccountCardState extends State<AccountCard> {
                           SizedBox(width: labelSpacing,),
                           LabelText("AVME:"),
                           SizedBox(width: labelSpacing,),
-                          Text("${shortAmount(widget.data.tokenQuantity())}"),
+                          Text("${shortAmount(widget.data.tokenBalance())}"),
                         ],
                       ),
                     ],

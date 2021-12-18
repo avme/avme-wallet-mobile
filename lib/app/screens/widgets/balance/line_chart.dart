@@ -281,7 +281,7 @@ class _TokenChartState extends State<TokenChart> {
       {
         totalDays--;
         double key = (_totalDays - 1)/2;
-        return MapEntry(key, [_totalDays+1, DateFormat('MM/dd').format(DateTime.now()).toString(), double.parse(double.parse(widget.appState.activeContracts.token.tokenValues["AVME"]).toStringAsPrecision(3))]);
+        return MapEntry(key, [_totalDays+1, DateFormat('MM/dd').format(DateTime.now()).toString(), double.parse(widget.appState.activeContracts.token.decimal("AVME").toStringAsPrecision(3))]);
       }
       else
       {

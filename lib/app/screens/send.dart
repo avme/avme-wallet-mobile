@@ -140,7 +140,7 @@ class _SendState extends State<Send> {
                           Center(
                             child: Column(
                               children: [
-                                Text("AVME Balance: ${appState.currentAccount.tokenQuantity}"),
+                                Text("AVME Balance: ${appState.currentAccount.tokenBalance}"),
                                 SizedBox(height: 2,),
                                 Text("AVAX Balance: ${appState.currentAccount.balance}"),
                                 // Text("New Balance: $previewBalance"),
