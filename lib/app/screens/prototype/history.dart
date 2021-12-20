@@ -71,13 +71,12 @@ class _HistoryState extends State<History> {
               app.currentAccount.networkBalance == null || app.currentAccount.currencyTokenBalance == null ? "0,0000000" :
               "${shortAmount((app.currentAccount.networkBalance +
                   app.currentAccount.currencyTokenBalance).toString(),comma: true, length: 7)}",
-              onPressed: () {
+              onPressed: () async {
+                await Clipboard.setData(ClipboardData(text: app.currentAccount.address));
                 NotificationBar().show(
                     context,
                     text: "Address copied to clipboard",
-                    onPressed: () async {
-                      await Clipboard.setData(
-                          ClipboardData(text: app.currentAccount.address));
+                    onPressed: ()  {
                     }
                 );
               },

@@ -194,7 +194,7 @@ class PieChartLegend extends StatelessWidget
           Padding(
             padding: EdgeInsets.only(right:8.0),
           ),
-          Text(this.text),
+          Flexible(child: Text(this.text,style: TextStyle(fontSize: SizeConfig.fontSize*1.3))),
         ],
       ),
     );
