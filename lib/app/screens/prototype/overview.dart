@@ -139,11 +139,12 @@ class _OverviewState extends State<Overview> {
       },
     );
   }
+
   List<Widget> _tokenDetailsCard(AvmeWallet app)
   {
     Map tokensWithBalance = app.currentAccount.tokensBalanceList;
     List<Widget> ret = [
-       TokenValue(
+      TokenTracker(
         image:
         Image.asset(
           'assets/avax_logo.png',
@@ -151,18 +152,18 @@ class _OverviewState extends State<Overview> {
         name: 'AVAX',
         amount: "${shortAmount(app.currentAccount.balance)}",
         marketValue: "${shortAmount(app.currentAccount.networkBalance.toString(),comma: true, length: 3)}",
-        valueDifference: "2,013",
+        asNetworkToken: '',
       )
     ];
     ///Checking for any token recovered
     if(tokensWithBalance.length > 0)
       return ret..addAll(tokensWithBalance.entries.map((entry) {
-        return TokenValue(
+        return TokenTracker(
           image: resolveImage(app.activeContracts.sContracts.contractsRaw[entry.key]["logo"]),
           name: entry.key,
           amount: "${shortAmount(app.currentAccount.tokenWei(name: entry.key))}",
-           marketValue: shortAmount(app.currentAccount.tokenQuantity(name: entry.key),comma: false, length: 3),
-          valueDifference: "2,013",
+          marketValue: shortAmount(app.currentAccount.tokenBalance(name: entry.key),comma: false, length: 3),
+          asNetworkToken: (app.currentAccount.tokensBalanceList[entry.key]["balance"] / app.networkToken.decimal.toDouble()).toString(),
         );
       }).toList());
     return ret;
