@@ -161,8 +161,8 @@ class _OverviewState extends State<Overview> {
           image: resolveImage(app.activeContracts.sContracts.contractsRaw[entry.key]["logo"]),
           name: entry.key,
           amount: "${shortAmount(app.currentAccount.tokenWei(name: entry.key))}",
-           marketValue: shortAmount(app.currentAccount.tokenBalance(name: entry.key),comma: false, length: 3),
-          valueDifference: "2,013",
+          marketValue: shortAmount(app.currentAccount.tokenBalance(name: entry.key),comma: false, length: 3),
+          asNetworkToken: (app.currentAccount.tokensBalanceList[entry.key]["balance"] / app.networkToken.decimal.toDouble()).toString(),
         );
       }).toList());
     return ret;
