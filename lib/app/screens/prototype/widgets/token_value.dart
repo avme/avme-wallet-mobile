@@ -1,10 +1,10 @@
 import 'package:avme_wallet/app/controller/size_config.dart';
-import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
 
 import 'button.dart';
 import 'notification_bar.dart';
+import 'painted_chart.dart';
 
 class TokenValue extends StatefulWidget {
   final Image image;
@@ -160,7 +160,7 @@ class _TokenTrackerState extends State<TokenTracker> {
             )
         ),
         child: Padding(
-          padding: EdgeInsets.all(SizeConfig.safeBlockHorizontal * 2),
+          padding: EdgeInsets.all(SizeConfig.safeBlockHorizontal * 3),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -212,12 +212,26 @@ class _TokenTrackerState extends State<TokenTracker> {
                   )
                 ),
               ),
-              ///Graph
+              //TODO: Recover values in a 30 days period
               Expanded(
                 flex: 3,
-                child: Container(
-                  height: SizeConfig.safeBlockHorizontal * 8,
-                  color: Colors.purple,
+                child: PaintedChart(
+                  width: double.maxFinite,
+                  height: SizeConfig.screenHeight / 7,
+                  chartData: [
+                    150,
+                    95,
+                    82,
+                    80,
+                    79,
+                    75,
+                    77,
+                    78,
+                    50,
+                    62,
+                    40,
+                    80
+                  ],
                 )
               )
             ],
