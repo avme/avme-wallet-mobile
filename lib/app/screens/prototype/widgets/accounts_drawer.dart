@@ -1,5 +1,6 @@
 import 'package:avme_wallet/app/controller/size_config.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
+import 'package:avme_wallet/app/model/account_item.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/screens/prototype/app_drawer.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/button.dart';
@@ -70,9 +71,7 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                   NotificationBar().show(context, text:"Account \"${widget.app.accountList[key].title}\" selected.");
                 },
                 onIconPressed: () {},
-                balance: accountObject.networkBalance == null || accountObject.currencyTokenBalance == null ? "0,0000000" :
-                "${shortAmount((accountObject.networkBalance +
-                    accountObject.currencyTokenBalance).toString(),comma: true, length: 7)}",
+                balance: _totalBalance(accountObject),
                 label: accountObject.title,
                 balanceTween: balanceTween,
             ),
@@ -92,6 +91,19 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
     });
 
     return CustomAppDrawer(header(),finalDrawer.asMap(),footer(widget.app));
+  }
+
+  String _totalBalance(AccountObject accountObject)
+  {
+    List tokensValue = accountObject.tokensBalanceList.entries.map((e) =>
+    e.value["balance"]).toList();
+
+    double totalValue = accountObject.networkBalance;
+
+    tokensValue.forEach((value) => totalValue += value);
+
+    print(tokensValue);
+    return "${shortAmount(totalValue.toString(),comma: true, length: 7)}";
   }
 
   Widget header()
