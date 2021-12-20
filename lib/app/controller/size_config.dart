@@ -22,6 +22,13 @@ class SizeConfig {
   static double fontSizeSmall;
   static double spanSize;
 
+  static List<String> deviceGroups = [
+    "SMALL",
+    "MEDIUM",
+    "LARGE"
+  ];
+
+  static String deviceGroup;
 
   void init(BuildContext context){
 
@@ -42,19 +49,33 @@ class SizeConfig {
     safeBlockHorizontal = (screenWidth - _safeAreaHorizontal) / 100;
     safeBlockVertical = (screenHeight - _safeAreaVertical) / 100;
 
+    ///Discovering device group
+    if(blockSizeHorizontal <= 3.5)
+      deviceGroup = deviceGroups[0];
+    else if(blockSizeHorizontal > 3.5 && blockSizeHorizontal <= 4.40)
+      deviceGroup = deviceGroups[1];
+    else
+      deviceGroup = deviceGroups[2];
+
+
     ///Font Size
-    // titleSize = safeBlockVertical * 6;
-    // labelSize = safeBlockVertical * 4;
-    // fontSize = safeBlockVertical * 3;
-    // fontSizeSmall = safeBlockVertical * 2.5;
-    // spanSize = safeBlockVertical * 2;
-
-
     titleSize = safeBlockHorizontal * 7;
     labelSize = safeBlockHorizontal * 6;
     smallLabel = safeBlockHorizontal * 4;
     fontSize = safeBlockHorizontal * 3;
     fontSizeSmall = safeBlockHorizontal * 2.5;
     spanSize = safeBlockHorizontal * 2;
+
+    ///This is an example for more specific styling with grouping,
+    ///you can use anywhere you want
+    // if(deviceGroup == "SMALL")
+    // {
+    //   titleSize = safeBlockHorizontal * 7;
+    //   labelSize = safeBlockHorizontal * 6;
+    //   smallLabel = safeBlockHorizontal * 4;
+    //   fontSize = safeBlockHorizontal * 3;
+    //   fontSizeSmall = safeBlockHorizontal * 2.5;
+    //   spanSize = safeBlockHorizontal * 2;
+    // }
   }
 }
