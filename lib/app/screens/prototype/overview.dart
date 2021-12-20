@@ -55,13 +55,12 @@ class _OverviewState extends State<Overview> {
               ),
               totalBalance: _totalBalance(app),
               address: app.currentAccount.address,
-              onPressed: () {
+              onPressed: () async {
+                await Clipboard.setData(ClipboardData(text: app.currentAccount.address));
                 NotificationBar().show(
                     context,
                     text: "Address copied to clipboard",
-                    onPressed: () async {
-                      await Clipboard.setData(
-                          ClipboardData(text: app.currentAccount.address));
+                    onPressed: ()  {
                     }
                 );
               },
@@ -161,7 +160,7 @@ class _OverviewState extends State<Overview> {
           image: resolveImage(app.activeContracts.sContracts.contractsRaw[entry.key]["logo"]),
           name: entry.key,
           amount: "${shortAmount(app.currentAccount.tokenWei(name: entry.key))}",
-           marketValue: shortAmount(app.currentAccount.tokenQuantity(name: entry.key),comma: false, length: 3),
+           marketValue: shortAmount(app.currentAccount.tokenBalance(name: entry.key),comma: false, length: 3),
           valueDifference: "2,013",
         );
       }).toList());
