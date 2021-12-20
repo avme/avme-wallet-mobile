@@ -9,13 +9,15 @@ import 'notification_bar.dart';
 
 
 class TokenDistribution extends StatefulWidget {
-  // final Map<String, List<dynamic>> dataPie = {
+  // Map<String, List<dynamic>> dataPie = {
   //   "AVME": [5, AppColors.lightBlue],
   //   "AVAX": [3, Colors.redAccent],
   //   "BRL": [2, Colors.green],
   //   "EUR": [1, Colors.indigo],
   //   "USD": [0.5, Colors.purple],
-  //   // "SAA": [0.15, Colors.white],
+  //   "SAA": [0.15, Colors.white],
+  //   "DAA": [0.15, Colors.white],
+  //   "KAA": [0.15, Colors.white],
   // };
   final Map<String, List<dynamic>> chartData;
 
@@ -25,15 +27,15 @@ class TokenDistribution extends StatefulWidget {
 }
 
 class _TokenDistributionState extends State<TokenDistribution> {
+  bool multiline = false;
   @override
-
-  Map<String, List<dynamic>> dataPie = {
-    "AVME": [0, AppColors.lightBlue],
-    "AVAX": [0, Colors.redAccent],
-    // "SAA": [0.15, Colors.white],
-  };
-
   Widget build(BuildContext context) {
+    SizeConfig().init(context);
+    double piePad = 32;
+    piePad = SizeConfig.deviceGroup == "SMALL" ? 8 : piePad;
+    if(widget.chartData.length > 4)
+      multiline = true;
+    piePad = (piePad / widget.chartData.length) * 2;
 
     return AppCard(
       child: Column(
@@ -47,69 +49,66 @@ class _TokenDistributionState extends State<TokenDistribution> {
                 borderRadius: BorderRadius.circular(8),
                 color: AppColors.darkBlue
             ),
-            child: totalValue(widget.chartData) == 0 ? Padding(
-              padding: const EdgeInsets.symmetric(vertical: 32.0),
-              child: Center(child: Text("No Data to be shown."),),
-            )
-            :
-              Row(
-              children: [
-                Expanded(
-                    flex:6,
-                    child: Container(
-                      child: Padding(
-                        padding: EdgeInsets.only(
-                            left: 28, top: 28, bottom: 28, right: SizeConfig.safeBlockHorizontal*15,
-                            //left: 28, top: 28, bottom: 28, right: 64,
-                            // Ratib: Right dictates the size of the ring for some reason, so I made only it dynamic and removed const
-                            // the bigger the number, the smaller the radius of the circle is
-                        ),
-                        child: Stack(
-                          children: [
-                            PieChart.PieChart(
-                              dataMap: extractValues(widget.chartData),
-                              initialAngleInDegree: 270,
-                              legendOptions: PieChart.LegendOptions(
-                                showLegends: false,
-                              ),
-                              ringStrokeWidth: 12,
-                              colorList: extractColorList(widget.chartData),
-                              chartType: PieChart.ChartType.ring,
-                              chartRadius: 180,
-                              chartValuesOptions: PieChart.ChartValuesOptions(
-                                  showChartValues: false,
-                                  showChartValuesInPercentage: true,
-                                  showChartValuesOutside: true,
-                                  chartValueBackgroundColor: AppColors.cardDefaultColor,
-                                  chartValueStyle: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12
-                                  )
-                              ),
-                            ),
-                            Positioned.fill(
-                              child: Container(
-                                // color: Colors.red,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: buildChartPercentages(extractPercentage(widget.chartData)),
+            child: totalValue(widget.chartData) == 0
+              ? Padding(
+                padding: const EdgeInsets.symmetric(vertical: 32.0),
+                child: Center(child: Text("No Data to be shown."),),
+              )
+              : Row(
+                children: [
+                  Expanded(
+                      flex: SizeConfig.deviceGroup == "SMALL" ? 8 : 6,
+                      child: Container(
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                              left: piePad, top: piePad, bottom: piePad, right: SizeConfig.safeBlockHorizontal*15,
+                              //left: 28, top: 28, bottom: 28, right: 64,
+                              // Ratib: Right dictates the size of the ring for some reason, so I made only it dynamic and removed const
+                              // the bigger the number, the smaller the radius of the circle is
+                          ),
+                          child: Stack(
+                            children: [
+                              PieChart.PieChart(
+                                dataMap: extractValues(widget.chartData),
+                                initialAngleInDegree: 270,
+                                legendOptions: PieChart.LegendOptions(
+                                  showLegends: false,
+                                ),
+                                ringStrokeWidth: 12,
+                                colorList: extractColorList(widget.chartData),
+                                chartType: PieChart.ChartType.ring,
+                                chartRadius: 180,
+                                chartValuesOptions: PieChart.ChartValuesOptions(
+                                    showChartValues: false,
+                                    showChartValuesInPercentage: true,
+                                    showChartValuesOutside: true,
+                                    chartValueBackgroundColor: AppColors.cardDefaultColor,
+                                    chartValueStyle: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12
+                                    )
                                 ),
                               ),
-                            )
-                          ],
+                              Positioned.fill(
+                                child: Container(
+                                  // color: Colors.red,
+                                  child: buildChartPercentages(extractPercentage(widget.chartData), multiline),
+                                ),
+                              )
+                            ],
+                          ),
                         ),
-                      ),
-                    )
-                ),
-                Expanded(
-                    flex:4,
-                    child: Column(
-                      children: buildChartLegend(widget.chartData),
-                    )
-                ),
-              ],
-            ),
+                      )
+                  ),
+                  Expanded(
+                      flex:4,
+                      child: Column(
+                        children: buildChartLegend(widget.chartData),
+                      )
+                  ),
+                ],
+              ),
           ),
           SizedBox(
             height: 12,
@@ -130,9 +129,37 @@ class _TokenDistributionState extends State<TokenDistribution> {
     return data.entries.map((entry) => PieChartLegend(text: entry.key, color: entry.value[1]) ).toList();
   }
 
-  List<Widget> buildChartPercentages(Map data)
+  Widget buildChartPercentages(Map data, bool multiline)
   {
-    return data.entries.map((entry) => PieChartPercentages(text:  entry.value[0], color: entry.value[1]) ).toList();
+    List<PieChartPercentages> list = data.entries.map((entry) => PieChartPercentages(
+      text: entry.value[0],
+      color: entry.value[1],
+      scaling: data.length,
+    )).toList();
+
+    if(!multiline)
+      return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: list,
+    );
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: list.sublist(0, 4),
+        ),
+        SizedBox(
+          width: 8,
+        ),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: list.sublist(4, (list.length)),
+        )
+      ],
+    );
   }
 
   Map<String, double> extractValues(Map data)
@@ -205,8 +232,13 @@ class PieChartPercentages extends StatelessWidget
 {
   final String text;
   final Color color;
-
-  const PieChartPercentages({Key key, @required this.text, @required this.color}) : super(key: key);
+  final int scaling;
+  const PieChartPercentages({
+    Key key,
+    @required this.text,
+    @required this.color,
+    @required this.scaling
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -215,7 +247,8 @@ class PieChartPercentages extends StatelessWidget
       child: Text(this.text,
         style: TextStyle(
           color: this.color,
-          fontSize: SizeConfig.fontSize*1.5,
+          // fontSize: SizeConfig.deviceGroup == "SMALL" ? SizeConfig.fontSize * (1 + (scaling * 0.1) + 0.05) : SizeConfig.fontSize * 1.4,
+          fontSize: SizeConfig.fontSize * (1.4 - (scaling * 0.03)),
         ),
       ),
     );
