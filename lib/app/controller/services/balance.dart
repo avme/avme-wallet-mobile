@@ -20,7 +20,7 @@ import 'package:decimal/decimal.dart';
 ///Spawns a single thread to listen, and update our appState
 Future<bool> balanceSubscription(AvmeWallet appState) async
 {
-  bool didBalanceUpdated = false;
+  bool didBalanceUpdate = false;
   ///Validating if is the default/selected or a specific account to keep track of!
   List<Map<String, dynamic>> accountSpawnData = [];
   Map<int,AccountObject> accounts = appState.accountList;
@@ -39,7 +39,7 @@ Future<bool> balanceSubscription(AvmeWallet appState) async
     else
       accountSpawnData.add({
         "id" : pos ,
-        "updateIn" : 30,
+        "updateIn" : 15,
         "address" : EthereumAddress.fromHex(appState.accountList[pos].address),
       });
 
@@ -97,6 +97,25 @@ Future<bool> balanceSubscription(AvmeWallet appState) async
         ///Calculating the balance
         updatedBalance = balanceUSD * networkTokenValue.toDouble();
 
+        ///Checking if the balance has been incremented
+        //TODO: Fix da sheet
+        // if(accountObject.networkBalance != null
+        //     && accountObject.networkBalance < updatedBalance
+        //     && didBalanceUpdate)
+        // {
+        //   double difference = updatedBalance - accountObject.networkBalance;
+        //   print("[[[DIFFERENCE]]]");
+        //   print(difference);
+        //   if(difference > 0)
+        //     PushNotification.showNotification(
+        //         id: 9,
+        //         title: "Transfer received ($key)",
+        //         body: "Account Update: "
+        //             "You received \$${difference.toStringAsFixed(2)}\n ($key) in the account ${accountObject.title}.",
+        //         payload: "app/history"
+        //     );
+        // }
+
         ///Finally we update the balance in the account
         accountObject.networkBalance = updatedBalance;
         appState.updateAccountObject(accId, accountObject);
@@ -127,29 +146,45 @@ Future<bool> balanceSubscription(AvmeWallet appState) async
         updatedBalance = balanceUSD * tokenValue;
 
         preparedData["balance"] = updatedBalance;
-
+        
         ///Checking the prepared data and inserting it
-        print("NOSSO MAP $key");
-        print(preparedData);
+        // print("NOSSO MAP $key");
+        // print(preparedData);
+
+
+        String mainName = key.replaceAll(" testnet", "");
+        
+        ///Checking if the balance has been incremented
+        if(accountObject.tokensBalanceList[key] != null
+            && accountObject.tokensBalanceList[key]["balance"] < updatedBalance
+            && didBalanceUpdate)
+        {
+          double difference = updatedBalance - accountObject.tokensBalanceList[key]["balance"];
+          if(difference > 0)
+            PushNotification.showNotification(
+              id: 9,
+              title: "Transfer received ($key)",
+              body: "Account Update: "
+                  "You received \$${difference.toStringAsFixed(2)}\n ($key) in the account ${accountObject.title}.",
+              payload: "app/history"
+            );
+        }
 
         accountObject.tokensBalanceList[key] = preparedData;
-        String nonTestnetName = key.replaceAll(" testnet", "");
-        // print("NON");
-        // print(nonTestnetName);
-        // print("CONTAINS");
-        print(appState.activeContracts.tokens.contains(nonTestnetName));
-        if(appState.activeContracts.tokens.contains(nonTestnetName))
+        
+        print(appState.activeContracts.tokens.contains(mainName));
+        if(appState.activeContracts.tokens.contains(mainName))
         {
-          accountObject.tokensBalanceList[nonTestnetName] = preparedData;
+          accountObject.tokensBalanceList[mainName] = preparedData;
         }
-        didBalanceUpdated = true;
+        didBalanceUpdate = true;
       }
     });
   });
 
   do await Future.delayed(Duration(milliseconds: 150));
-  while(!didBalanceUpdated);
-  return didBalanceUpdated;
+  while(!didBalanceUpdate);
+  return didBalanceUpdate;
 }
 
 // ///Isolated function to watch balance changes
