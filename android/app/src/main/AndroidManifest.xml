@@ -2,7 +2,7 @@
     package="com.avme.avme_wallet">
     <uses-permission android:name="android.permission.INTERNET"/>
    <application
-        android:label="avme_wallet"
+        android:label="AVME Wallet"
         android:icon="@mipmap/launcher_icon">
         <activity
             android:name=".MainActivity"
