@@ -87,13 +87,10 @@ class WalletManager
 
   String newMnemonic()
   {
-    // Gera mnemomics
-    String mnemonic =
-        "blossom skate magnet magic put task famous square because attract clog ketchup";
+    // String mnemonic =
+    //     "blossom skate magnet magic put task famous square because attract clog ketchup";
 
-    // UNCOMMENT THE NEXT LINE TO GENERATE ANOTHER
-    // String mnemonic = bip39.generateMnemonic();
-    print(mnemonic);
+    String mnemonic = bip39.generateMnemonic();
 
     return mnemonic;
   }
@@ -239,7 +236,6 @@ class WalletManager
       bool res = await services.balanceSubscription(appState);
       print("services.balanceSubscription returned: $res");
     }
-
   }
 
   void stopBalanceSubscription(AvmeWallet appState)
@@ -260,14 +256,14 @@ class WalletManager
       appState.killService("valueSubscription");
   }
 
-  Future<Map<String,dynamic>> sendTransaction(AvmeWallet wallet, String address, BigInt amount, tokenId, {List<ValueNotifier> listNotifier}) async
+  Future<Map<String,dynamic>> sendTransaction(AvmeWallet wallet, String address, BigInt amount, String token, {List<ValueNotifier> listNotifier}) async
   {
     if (!await services.hasEnoughBalanceToPayTaxes(wallet.currentAccount.networkTokenBalance))
     {
       return {"title" : "Attention", "status": 500, "message": "Not enough AVAX to complete the transaction."};
     }
     wallet.lastTransactionWasSucessful.retrievingData = true;
-    String url = await services.sendTransaction(wallet, address, amount, tokenId, listNotifier: listNotifier);
+    String url = await services.sendTransaction(wallet, address, amount, token, listNotifier: listNotifier);
     return {"title": "", "status": 200, "message": url};
   }
 

@@ -23,8 +23,16 @@ Future<bool> hasEnoughBalanceToPayTaxes(BigInt balance) async {
   return tax > balance ? false : true;
 }
 
-Future<String> sendTransaction(AvmeWallet appState, String receiverAddress, BigInt amount, int tokenId, {List<ValueNotifier> listNotifier}) async
+Future<String> sendTransaction(
+  AvmeWallet appState,
+  String receiverAddress,
+  BigInt amount,
+  String token,
+  {List<ValueNotifier> listNotifier}) async
 {
+  // print(amount.toString());
+  // print(token);
+  // return "a";
   Client httpClient = Client();
   Web3Client ethClient = Web3Client(url, httpClient);
   BigInt addToFee = BigInt.from((5 * pow(10,9)));
@@ -37,21 +45,17 @@ Future<String> sendTransaction(AvmeWallet appState, String receiverAddress, BigI
       value: EtherAmount.inWei(amount),
   );
 
-  //Todo ASAP: change from token id to token identifier
-  ///1: AVAX, 2: AVME
-
   listNotifier[0].value = 40;
   listNotifier[1].value = "Signing Transaction";
   String transactionHash;
   Web3Client transactionClient;
-  if(tokenId == 1)
+  if(token == "AVAX")
   {
     Credentials accountCredentials = appState.currentAccount.walletObj.privateKey;
-    // transactionHash = await ethClient.sendTransaction(accountCredentials, transaction, chainId: 43113);
     Uint8List signedTransaction = await ethClient.signTransaction(
       accountCredentials,
       transaction,
-      chainId:43113,
+      chainId:int.tryParse(env["CHAIN_ID"]) ?? 43113,
     );
     print("[signedTransaction]");
     print(signedTransaction);
@@ -67,9 +71,9 @@ Future<String> sendTransaction(AvmeWallet appState, String receiverAddress, BigI
       maxGas: 70000,
       gasPrice: gasPrice
     );
-    EthereumAddress contractAddress = EthereumAddress.fromHex(contracts["AVME testnet"][1]);
-    ContractAbi abi = contracts["AVME testnet"][0];
-    int chainId = int.tryParse(contracts["AVME testnet"][2]);
+    EthereumAddress contractAddress = EthereumAddress.fromHex(contracts[token][1]);
+    ContractAbi abi = contracts[token][0];
+    int chainId = int.tryParse(contracts[token][2]);
     ERC20 contract = ERC20(abi, address: contractAddress, client: ethClient, chainId: chainId);
     Credentials accountCredentials = appState.currentAccount.walletObj.privateKey;
     listNotifier[0].value = 60;
@@ -86,17 +90,15 @@ Future<String> sendTransaction(AvmeWallet appState, String receiverAddress, BigI
   print(transactionHash);
   listNotifier[0].value = 90;
   listNotifier[1].value = "Confirming Transaction";
-  /*Recovering Transaction hash*/
-  TransactionInformation transactionInformation;
-  TransactionReceipt transactionReceipt;
+
   int secondsPassed = 0;
   while(true) {
     try {
       await Future.delayed(Duration(seconds:1));
-      transactionReceipt = await transactionClient.getTransactionReceipt(transactionHash);
+      TransactionReceipt transactionReceipt = await transactionClient.getTransactionReceipt(transactionHash);
       print("[info] Receipt: $transactionReceipt");
       if(transactionReceipt.status) {
-        transactionInformation = await transactionClient.getTransactionByHash(transactionHash);
+        TransactionInformation transactionInformation = await transactionClient.getTransactionByHash(transactionHash);
         print("[Info] seconds passed: $secondsPassed, and returned $transactionInformation");
         if(transactionInformation != null)
         {
