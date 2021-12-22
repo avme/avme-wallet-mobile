@@ -5,9 +5,11 @@ import 'package:avme_wallet/app/model/active_contracts.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/button.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/card.dart';
+import 'package:avme_wallet/app/screens/prototype/widgets/labeltext.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/neon_button.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/notification_bar.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/popup.dart';
+import 'package:avme_wallet/app/screens/prototype/widgets/textform.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:avme_wallet/external/contracts/erc20_contract.dart';
 import 'package:flutter/material.dart';
@@ -66,7 +68,7 @@ class _TokensState extends State<Tokens> {
                     Column(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        AppButton(onPressed: (){}, text: "NEW TOKEN",),
+                        AppButton(onPressed: () => showTokenPopup(app), text: "NEW TOKEN",),
                         SizedBox(height: SizeConfig.safeBlockVertical,),
                         AppButton(onPressed: (){}, text: "NEW TOKEN FROM ADDRESS",),
                         SizedBox(height: SizeConfig.safeBlockVertical,),
@@ -244,7 +246,6 @@ class _TokensState extends State<Tokens> {
               this.selectedToken = tokenName;
             });
           },
-
           child: TokenItem(
             tokenName: tokenName,
             contractObj: activeContracts.sContracts,
@@ -253,6 +254,180 @@ class _TokensState extends State<Tokens> {
         )
       ).toList(),
     );
+  }
+
+  void showTokenPopup(AvmeWallet app)
+  {
+    ScrollController controller = ScrollController();
+    TextEditingController filterController = TextEditingController();
+    List<Widget> rows = [];
+    Map contractsRaw = app.activeContracts.sContracts.contractsRaw;
+    List activeContracts = app.activeContracts.tokens;
+    String selected = "";
+    showDialog(context: context, builder: (_) =>
+      StatefulBuilder(builder: (context, setState) {
+        rows = [];
+        ///Filtering
+        Map filtered = {};
+        if(filterController.text.length > 0)
+          contractsRaw.forEach((key, param) {
+            if(key.toString().toUpperCase().contains(filterController.text.toUpperCase())
+              || param['symbol'].toUpperCase().contains(filterController.text.toUpperCase()))
+              filtered[key] = param;
+          });
+        if (filtered.length == 0)
+          filtered = contractsRaw;
+        filtered.forEach((key, param) {
+          if(!activeContracts.contains(key))
+            rows.add(
+              GestureDetector(
+                onTap: (){
+                  setState((){
+                    selected = key;
+                  });
+                },
+                child: Padding(
+                  padding: EdgeInsets.only(right: SizeConfig.safeBlockVertical / 2),
+                  child: Card(
+                    color: key == selected ? AppColors.purple : AppColors.cardDefaultColor,
+                    child: ListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.symmetric(horizontal: SizeConfig.safeBlockHorizontal, vertical: SizeConfig.safeBlockVertical),
+                      subtitle: Text(key),
+                      leading: resolveImage(param['logo'], width: SizeConfig.safeBlockVertical * 8),
+                      title: Text(param['symbol']),
+                      // trailing: Text(key),
+                    ),
+                  ),
+                ),
+              )
+            );
+        });
+        return AppPopupWidget(
+          title: 'Add new Tokens',
+          canClose: true,
+          cancelable: false,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppLabelText("Filter", fontSize: 18,),
+                SizedBox(
+                  height: SizeConfig.safeBlockVertical * 2,
+                ),
+                AppTextFormField(
+                  controller: filterController,
+                  hintText: 'Filter by Symbol or Name',
+                  onChanged: (String value) {
+                    print(value);
+                    if(value.length > 0)
+                      setState((){});
+                  },
+                ),
+                SizedBox(
+                  height: SizeConfig.safeBlockVertical * 2,
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: AppColors.darkBlue
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      left: SizeConfig.safeBlockVertical,
+                      top: SizeConfig.safeBlockVertical,
+                      bottom: SizeConfig.safeBlockVertical,
+                      right: SizeConfig.safeBlockVertical / 2
+                    ),
+                    child: Column(
+                      children: [
+                        selected.length != 0
+                          ? SizedBox(height: SizeConfig.safeBlockVertical * 2,)
+                          : Container(),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            selected.length != 0
+                              ? Padding(
+                                padding: EdgeInsets.only(right: SizeConfig.safeBlockVertical),
+                                child: RichText(text: TextSpan(
+                                  children: [
+                                    TextSpan(text: "Selected: "),
+                                    TextSpan(text: selected, style: TextStyle(fontWeight: FontWeight.bold)),
+                                  ]),
+                                ),
+                              )
+                              : Container(),
+                          ],
+                        ),
+                        selected.length != 0
+                          ? SizedBox(height: SizeConfig.safeBlockVertical * 2,)
+                          : Container(),
+                        ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxHeight: SizeConfig.safeBlockVertical * 30,
+                          ),
+                          child: Scrollbar(
+                              controller: controller,
+                              child: ListView.builder(
+                                controller: controller,
+                                shrinkWrap: true,
+                                itemCount: rows.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  return rows[index];
+                                },
+                              )
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              ],
+            ),
+            SizedBox(
+              height: SizeConfig.safeBlockVertical * 2,
+            ),
+            AppButton(
+              enabled: selected.length > 0 ? true : false,
+              onPressed: () async {
+                ValueNotifier<int> percentage = ValueNotifier(0);
+                ValueNotifier<String> label = ValueNotifier("Loading...");
+                List<ValueNotifier> loadingNotifier = [
+                  percentage,
+                  label
+                ];
+                await showDialog(context: context, builder: (_) =>
+                  StatefulBuilder(
+                    builder: (builder, setState){
+                      return ProgressPopup(
+                        listNotifier: loadingNotifier,
+                        future: app.walletManager.enableTokenFromTokenList(context, selected, notifier: loadingNotifier)
+                          .then((result) {
+                            Navigator.of(context).pop();
+                          }
+                        ),
+                        title: "Processing...",
+                      );
+                    },
+                  )
+                );
+
+              },
+              text: "ADD TOKEN"
+            ),
+            SizedBox(
+              height: SizeConfig.safeBlockVertical * 2,
+            ),
+            AppButton(onPressed: () {
+              Navigator.of(context).pop();
+              selected = "";
+            }, text: "CLOSE"),
+          ],
+        );
+      }
+    ));
   }
 }
 class TokenItem extends StatefulWidget
