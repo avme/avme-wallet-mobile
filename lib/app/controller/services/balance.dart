@@ -59,8 +59,6 @@ Future<bool> balanceSubscription(AvmeWallet appState) async
     serviceData
   );
   receivePort.listen((data) {
-    // print(data);
-
     List<Map> balanceData = data["_balanceSubscription"]["balance"];
     int accId = data["_balanceSubscription"]["id"];
 
@@ -209,38 +207,6 @@ Future<bool> balanceSubscription(AvmeWallet appState) async
 // }
 
 
-Future<void> requestBalanceFromNetwork(Map<String, List> contracts, Map<int, String> addresses) async
-{
-  // List<ContractAbi> contractAbiList = contractDetails.values.map<ContractAbi>((list) => list[0]).toList();
-  // print(contractAbiList[0].name);
-  // contractAbiList = [contractAbiList[0]];
-  // String address = contractDetails[1];
-  Map<int, List> data = {};
-
-  contracts.values.forEach((contractDetails) async {
-    ContractAbi contractAbi = contractDetails[0];
-    EthereumAddress contractAddress = EthereumAddress.fromHex(contractDetails[1]);
-    int chainId = int.tryParse(contractDetails[2]);
-    // print('requestBalanceFromNetwork(${contractAbi.name},$contractAddress,$chainId)');
-    await Future.forEach(addresses.entries, (entry) async{
-      EthereumAddress accountAddress = EthereumAddress.fromHex(entry.value);
-      String url = !contractAbi.name.contains('testnet') ? env['NETWORK_URL'] : env["TESTNET_URL"];
-      http.Client httpClient = http.Client();
-      Web3Client ethClient = Web3Client(url, httpClient);
-
-      ERC20 contract = ERC20(contractAbi, address: contractAddress, client: ethClient, chainId: chainId);
-
-      BigInt balance = await contract.balanceOf(accountAddress);
-      String digit = balance.toDouble() != 0 ? weiToFixedPoint(balance.toString()) : "0";
-      print("TOKEN:${contractAbi.name} | ACC-ID:${entry.key} | WEI:$balance | DIGITS:$digit");
-      data[entry.key] = [
-        entry.value,
-        shortAmount(digit,length: 6),
-      ];
-    });
-  });
-}
-
 void _startBalanceSubscription(ServiceData param)
 {
   param.data["accounts"].forEach((account) {
@@ -268,12 +234,20 @@ void _balanceSubscription(ServiceData account) async
   Map<String,ERC20> contractsERC20 = {};
 
   account.data["activeTokens"].forEach((String tokenName) {
+    try
+    {
       contractsERC20[tokenName] = ERC20(
         contracts[tokenName][0], // ContractAbi Object
         address: EthereumAddress.fromHex(contracts[tokenName][1]), // String Address
         client: ethClient,
         chainId: int.tryParse(contracts[tokenName][2]), //Chain ID
       );
+    }
+    catch(e)
+    {
+      print("$tokenName -> $e");
+      throw e;
+    }
     }
   );
   int seconds = 0;
@@ -329,6 +303,7 @@ Future<bool> valueSubscription(AvmeWallet appState) async
     "activeTokens": appState.activeContracts.tokens,
     "contractRaw": appState.activeContracts.sContracts.contractsRaw
   };
+
   // Box<TokenChart> box = Boxes.getHistory();
   ServiceData isolateData = ServiceData(data,isolatePort.sendPort);
   appState.services["valueSubscription"] = await Isolate.spawn(startValueSubscription,isolateData);
