@@ -8,10 +8,12 @@ import 'package:avme_wallet/external/contracts/erc20_contract.dart';
 import 'package:bip32/bip32.dart';
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:bip32/bip32.dart' as bip32;
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:io';
 import 'package:hex/hex.dart';
 import 'package:http/http.dart';
+import 'package:provider/provider.dart';
 import 'package:web3dart/credentials.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:aes_crypt/aes_crypt.dart';
@@ -284,13 +286,6 @@ class WalletManager
     return data;
   }
 
-  Future<void> requestBalanceFromNetwork(AvmeWallet wallet) async
-  {
-    Map<String,List> contracts = Contracts.getInstance().contracts;
-    Map<int,String> pkeys = wallet.accountList.map((key,value) => MapEntry(key, value.address));
-    await services.requestBalanceFromNetwork(contracts, pkeys);
-  }
-
   ERC20 signer(String contractAddress, int chainId, ContractAbi abi)
   {
     Client httpClient = Client();
@@ -315,5 +310,34 @@ class WalletManager
     token.removeToken(tokenName);
     await app.activeContracts.removeToken(tokenName);
     await restartTokenServices(app);
+  }
+
+  Future<void> enableTokenFromTokenList(BuildContext context, String token, {List<ValueNotifier> notifier = const []})
+  async {
+
+    if(notifier.length > 0)
+    {
+      notifier[0].value = 20;
+      notifier[1].value = "Requesting data...";
+      AvmeWallet app = Provider.of<AvmeWallet>(context, listen: false);
+      bool abiMounted = app.activeContracts.sContracts.enableContract(token);
+      if(!abiMounted)
+        return;
+      notifier[0].value = 60;
+      notifier[1].value = "Saving token data...";
+      await app.activeContracts.addToken(token);
+      notifier[0].value = 90;
+      notifier[1].value = "Restarting services...";
+      await restartTokenServices(app);
+    }
+    else
+    {
+      AvmeWallet app = Provider.of<AvmeWallet>(context, listen: false);
+      app.activeContracts.sContracts.enableContract(token);
+      await app.activeContracts.addToken(token);
+      await restartTokenServices(app);
+    }
+
+    // app.activeContracts.sContracts.addContract(abi, address, chainId, name, res)
   }
 }

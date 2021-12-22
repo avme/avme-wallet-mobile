@@ -1,18 +1,11 @@
 import 'package:avme_wallet/app/controller/contacts.dart';
-import 'package:avme_wallet/app/controller/services/balance.dart';
-import 'package:avme_wallet/app/controller/services/contract.dart';
-import 'package:avme_wallet/app/controller/services/push_notification.dart';
-import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/active_contracts.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/screens/login.dart';
-import 'package:avme_wallet/app/screens/prototype/widgets/notification_bar.dart';
 import 'package:avme_wallet/app/screens/welcome.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
 
 class InitialLoading extends StatefulWidget {
@@ -41,14 +34,14 @@ class _InitialLoadingState extends State<InitialLoading>{
           if(snapshot.data == null)
             return Container(
               decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: <Color>[
-                        AppColors.purpleVariant1,
-                        AppColors.purpleBlue
-                      ]
-                  )
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: <Color>[
+                    AppColors.purpleVariant1,
+                    AppColors.purpleBlue
+                  ]
+                )
               ),
               child: Center(
                 child: Column(
@@ -64,8 +57,8 @@ class _InitialLoadingState extends State<InitialLoading>{
                       child: Text(
                         "AVME",
                         style: TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.w700
+                          fontSize: 32,
+                          fontWeight: FontWeight.w700
                         ),
                       ),
                     )
@@ -76,14 +69,14 @@ class _InitialLoadingState extends State<InitialLoading>{
           else
             return Container(
               decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: <Color>[
-                        AppColors.purpleVariant1,
-                        AppColors.purpleBlue
-                      ]
-                  )
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: <Color>[
+                    AppColors.purpleVariant1,
+                    AppColors.purpleBlue
+                  ]
+                )
               ),
             );
         },
@@ -93,6 +86,9 @@ class _InitialLoadingState extends State<InitialLoading>{
 
   Future<void> startWalletServices(BuildContext context) async
   {
+    do await Future.delayed(Duration(milliseconds: 250));
+    while(!activeContracts.initialized);
+
     await Future.delayed(Duration(milliseconds: 500),() async{
       if(!wallet.services.containsKey("valueSubscription"))
         wallet.walletManager.startValueSubscription(wallet);

@@ -10,6 +10,7 @@ class ActiveContracts extends ChangeNotifier
 {
   final FileManager fileManager;
   Contracts sContracts;
+  bool initialized = false;
   Token token;
   List<String> tokens = [
     "AVME testnet",
@@ -20,12 +21,15 @@ class ActiveContracts extends ChangeNotifier
 
   ActiveContracts(this.fileManager){
     Future<File> _fileTokens = tokensFile();
-    sContracts = Contracts.getInstance();
-    sContracts.initialize();
     token = Token();
     _fileTokens.then((File file) async {
       List<String> tokensInFile = List<String>.from(jsonDecode(await file.readAsString()));
       this.tokens = tokensInFile ?? this.tokens;
+      sContracts = Contracts.getInstance();
+      sContracts.initialize(this.tokens).then((_) {
+        initialized = true;
+        notifyListeners();
+      });
     });
   }
 
@@ -33,13 +37,10 @@ class ActiveContracts extends ChangeNotifier
   {
     await this.fileManager.getDocumentsFolder();
     String fileFolder = this.fileManager.documentsFolder;
-    // print(fileFolder);
     await this.fileManager.checkPath(fileFolder);
     File file = File("${fileFolder}tokens${this.fileManager.ext}");
     if(!await file.exists())
-    {
       await file.writeAsString(this.fileManager.encoder.convert(tokens));
-    }
     return file;
   }
 
