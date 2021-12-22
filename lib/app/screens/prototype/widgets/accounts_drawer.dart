@@ -220,22 +220,10 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                 right: SizeConfig.safeBlockHorizontal*8,
                 top: SizeConfig.safeBlockVertical*4,
             ),
-            // future: futureDelayed(seconds: 8),
             future: previewAccounts(setState, app),
           )
       )
     );
-  }
-
-  Future futureDelayed({int seconds}) async
-  {
-    await Future.delayed(Duration(seconds: seconds ?? 10),(){
-      print("DONE");
-    });
-    return
-    [
-      Center(child:Text("i cant let you go"))
-    ];
   }
 
   Future<List<Widget>> previewAccounts(StateSetter setter, AvmeWallet app) async

@@ -108,14 +108,6 @@ class _DebugOverlayState extends State<DebugOverlay> {
                                   Row(
                                     children: [
                                       GestureDetector(onTap: () async {
-                                        AvmeWallet app = Provider.of<AvmeWallet>(context,listen: false);
-                                        app.walletManager.requestBalanceFromNetwork(app);
-                                      }, child: Text("REQUEST BALANCE (ALL)"))
-                                    ],
-                                  ),
-                                  Row(
-                                    children: [
-                                      GestureDetector(onTap: () async {
                                         tokens.addToken("AVME");
                                         tokens.addToken("AVME testnet");
                                       }, child: Text("+TOKEN AVME"))
