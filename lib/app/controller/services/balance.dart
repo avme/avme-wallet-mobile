@@ -469,7 +469,7 @@ void watchTokenPriceHistory(ServiceData param) async
 
 Future<Map> getTokenPriceUSD(Decimal avaxUnitPriceUSD, String url, Map body, String tokenName) async
 {
-  String response = await httpGetRequest(url, body);
+  String response = await httpGetRequest(url, body: body);
   Decimal avaxPrice = avaxUnitPriceUSD;
   Decimal derivedETH = Decimal.parse(json.decode(response)["data"]["token"]["derivedETH"]);
   Decimal tokenValue = derivedETH * avaxPrice;
@@ -478,7 +478,7 @@ Future<Map> getTokenPriceUSD(Decimal avaxUnitPriceUSD, String url, Map body, Str
 
 Future<String> getAVMEPriceUSD(String avaxUnitPriceUSD, String url, Map body) async
 {
-  String response = await httpGetRequest(url, body);
+  String response = await httpGetRequest(url, body: body);
   Decimal avaxPrice = Decimal.parse(avaxUnitPriceUSD);
   Decimal derivedETH = Decimal.parse(json.decode(response)["data"]["token"]["derivedETH"]);
   Decimal avmeValue = derivedETH * avaxPrice;
@@ -487,7 +487,7 @@ Future<String> getAVMEPriceUSD(String avaxUnitPriceUSD, String url, Map body) as
 
 Future<Decimal> getAVAXPriceUSD(Map body, url) async
 {
-  String response = await httpGetRequest(url, body);
+  String response = await httpGetRequest(url, body: body);
   String token0Label = json.decode(response)["data"]["pair"]["token0"]["symbol"];
   String token1Label = json.decode(response)["data"]["pair"]["token1"]["symbol"];
   Decimal token0Price = Decimal.parse(json.decode(response)["data"]["pair"]["token0Price"]);
@@ -498,7 +498,7 @@ Future<Decimal> getAVAXPriceUSD(Map body, url) async
 
 Future<String> getTokenChartHistory(Map body, url) async
 {
-  String response = await httpGetRequest(url, body);
+  String response = await httpGetRequest(url, body: body);
   return response;
 }
 

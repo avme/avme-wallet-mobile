@@ -163,11 +163,22 @@ Image resolveImage(String res, {double height, double width})
     : Image.asset(res, fit: fit, height: height, width: width,);
 }
 
-Future<String> httpGetRequest(String urlString, Map body, {Map headers = const {"Content-Type": "application/json"}}) async
+Future<String> httpGetRequest(
+    String urlString,
+    {
+      Map body,
+      Map<String,String> headers = const {"Content-Type": "application/json"},
+      String method = "POST"
+    }) async
 {
   Uri url = Uri.parse(urlString);
-  var response = await http.post(url,
-      body: json.encode(body),
-      headers: headers);
+  http.Response response;
+  if(method.toUpperCase() == "POST")
+    response = await http.post(url,
+        body: json.encode(body),
+        headers: headers);
+  else if(method.toUpperCase() == "GET")
+    response = await http.get(url,
+        headers: headers);
   return response.body;
 }
