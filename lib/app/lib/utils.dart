@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/services.dart';
 import 'package:hex/hex.dart';
 import 'package:flutter/material.dart';
@@ -157,9 +158,14 @@ void closeApp()
 
 Image resolveImage(String res, {double height, double width})
 {
-  BoxFit fit = BoxFit.scaleDown;
+  BoxFit fit = BoxFit.contain;
   return res.contains("http")
-    ? Image.network(res, fit: fit, height: height, width: width,)
+    // ? Image.network(res, fit: fit, height: height, width: width,)
+    ? Image(image: CachedNetworkImageProvider(
+        res,
+        maxHeight: 128,
+        maxWidth: 128,
+      ), fit: fit, height: height, width: width)
     : Image.asset(res, fit: fit, height: height, width: width,);
 }
 
