@@ -467,15 +467,6 @@ void watchTokenPriceHistory(ServiceData param) async
   }
 }
 
-Future<String> httpGetRequest(String urlString, Map body) async
-{
-  Uri url = Uri.parse(urlString);
-  var response = await http.post(url,
-      body: json.encode(body),
-      headers: {"Content-Type": "application/json"});
-  return response.body;
-}
-
 Future<Map> getTokenPriceUSD(Decimal avaxUnitPriceUSD, String url, Map body, String tokenName) async
 {
   String response = await httpGetRequest(url, body);

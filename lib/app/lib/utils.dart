@@ -1,11 +1,11 @@
+import 'dart:convert';
 import 'dart:math';
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:avme_wallet/app/model/app.dart';
 import 'package:flutter/services.dart';
 import 'package:hex/hex.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
 
 void snack(texto, BuildContext context)
 {
@@ -161,4 +161,13 @@ Image resolveImage(String res, {double height, double width})
   return res.contains("http")
     ? Image.network(res, fit: fit, height: height, width: width,)
     : Image.asset(res, fit: fit, height: height, width: width,);
+}
+
+Future<String> httpGetRequest(String urlString, Map body, {Map headers = const {"Content-Type": "application/json"}}) async
+{
+  Uri url = Uri.parse(urlString);
+  var response = await http.post(url,
+      body: json.encode(body),
+      headers: headers);
+  return response.body;
 }
