@@ -4,6 +4,7 @@ import 'package:avme_wallet/app/screens/widgets/screen_indicator.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'neon_button.dart';
 import 'notification_bar.dart';
@@ -551,7 +552,7 @@ class ProgressPopup extends StatefulWidget {
     ),
     this.margin,
     this.actions,
-    this.showIndicator = true,
+    this.showIndicator = false,
     this.textStyle = const TextStyle(
         fontSize: 24,
         fontWeight: FontWeight.w500
@@ -595,200 +596,200 @@ class _ProgressPopupState extends State<ProgressPopup> with SingleTickerProvider
     }
     SizeConfig().init(context);
     return GestureDetector(
-      onTap: () => null,
+      onTap: () => env["DEBUG_MODE"] == "TRUE" ? Navigator.of(context).pop() : null,
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: Builder(
           builder: (BuildContext context) =>
-              Center(
-                child: ListView(
-                  physics: NeverScrollableScrollPhysics(),
-                  shrinkWrap: true,
-                  children: [
-                    GestureDetector(
-                      onTap: () => null,
-                      child: WillPopScope(
-                        onWillPop: () async {
-                          NotificationBar().show(
-                            context,
-                            text: "please wait for the current operation to finish."
-                          );
-                          return false;
-                        },
-                        child: FutureBuilder(
-                          future: widget.future,
-                          builder: (BuildContext context, snapshot)
+            Center(
+              child: ListView(
+                physics: NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                children: [
+                  GestureDetector(
+                    onTap: () => null,
+                    child: WillPopScope(
+                      onWillPop: () async {
+                        NotificationBar().show(
+                          context,
+                          text: "please wait for the current operation to finish."
+                        );
+                        return false;
+                      },
+                      child: FutureBuilder(
+                        future: widget.future,
+                        builder: (BuildContext context, snapshot)
+                        {
+                          if(snapshot.data == null)
                           {
-                            if(snapshot.data == null)
-                            {
-                              return AlertDialog(
-                                  backgroundColor: AppColors.cardDefaultColor,
-                                  contentPadding: EdgeInsets.all(SizeConfig.safeBlockHorizontal * 6),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8)
-                                  ),
-                                  content: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      Padding(
-                                        padding: EdgeInsets.only(right: SizeConfig.safeBlockHorizontal * 6),
-                                        child: Column(
-                                          children: [
-                                            Container(
-                                              // color: Colors.green,
-                                              child: SizedBox(
-                                                height: SizeConfig.safeBlockVertical * 5.5,
-                                                width: SizeConfig.safeBlockVertical * 5.5,
-                                                child: CircularProgressIndicator(
-                                                  color: AppColors.purple,
-                                                  strokeWidth: SizeConfig.titleSize / 5,
-                                                ),
+                            return AlertDialog(
+                                backgroundColor: AppColors.cardDefaultColor,
+                                contentPadding: EdgeInsets.all(SizeConfig.safeBlockHorizontal * 6),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8)
+                                ),
+                                content: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding: EdgeInsets.only(right: SizeConfig.safeBlockHorizontal * 6),
+                                      child: Column(
+                                        children: [
+                                          Container(
+                                            // color: Colors.green,
+                                            child: SizedBox(
+                                              height: SizeConfig.safeBlockVertical * 5.5,
+                                              width: SizeConfig.safeBlockVertical * 5.5,
+                                              child: CircularProgressIndicator(
+                                                color: AppColors.purple,
+                                                strokeWidth: SizeConfig.titleSize / 5,
                                               ),
                                             ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Container(
+                                      // color:Colors.blue,
+                                      child: Flexible(
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.start,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            ValueListenableBuilder(
+                                              valueListenable: _listNotifier[0],
+                                              builder: (BuildContext context, text, Widget child) =>
+                                                Text("Loading $text%", textAlign: TextAlign.left,)),
+                                            SizedBox(height: 8),
+                                            ValueListenableBuilder(
+                                              valueListenable: _listNotifier[1],
+                                              builder: (BuildContext context, text, Widget child) =>
+                                                Text("$text",style: AppTextStyles.span, textAlign: TextAlign.left,))
                                           ],
                                         ),
                                       ),
-                                      Container(
-                                        // color:Colors.blue,
-                                        child: Flexible(
-                                          child: Column(
-                                            mainAxisAlignment: MainAxisAlignment.start,
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              ValueListenableBuilder(
-                                                valueListenable: _listNotifier[0],
-                                                builder: (BuildContext context, text, Widget child) =>
-                                                  Text("Loading $text%", textAlign: TextAlign.left,)),
-                                              SizedBox(height: 8),
-                                              ValueListenableBuilder(
-                                                valueListenable: _listNotifier[1],
-                                                builder: (BuildContext context, text, Widget child) =>
-                                                  Text("$text",style: AppTextStyles.span, textAlign: TextAlign.left,))
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  )
-                              );
-                            }
-                            else {
-                              return AlertDialog(
-                                  insetPadding: widget.margin ??
-                                      Dialog().insetPadding,
-                                  buttonPadding: const EdgeInsets.all(0),
-                                  actionsPadding: EdgeInsets.only(
-                                      right: widget.padding.right,
-                                      bottom: widget.padding.top,
-                                      top: 16
-                                  ),
-                                  backgroundColor: AppColors.cardDefaultColor,
-                                  contentPadding: EdgeInsets.all(0),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8)
-                                  ),
-                                  content: Container(
-                                    width: double.maxFinite,
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
+                                    ),
+                                  ],
+                                )
+                            );
+                          }
+                          else {
+                            return AlertDialog(
+                                insetPadding: widget.margin ??
+                                    Dialog().insetPadding,
+                                buttonPadding: const EdgeInsets.all(0),
+                                actionsPadding: EdgeInsets.only(
+                                    right: widget.padding.right,
+                                    bottom: widget.padding.top,
+                                    top: 16
+                                ),
+                                backgroundColor: AppColors.cardDefaultColor,
+                                contentPadding: EdgeInsets.all(0),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8)
+                                ),
+                                content: Container(
+                                  width: double.maxFinite,
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
 
-                                        ///Header
-                                        Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Row(
-                                            mainAxisAlignment: MainAxisAlignment
-                                                .center,
-                                            children: [
-                                              Expanded(
-                                                  child: Column(
-                                                    crossAxisAlignment: CrossAxisAlignment
-                                                        .start,
-                                                    children: [
-
-                                                      ///Close button
-                                                      IconButton(
-                                                        icon: Icon(Icons.close,
-                                                          color: Colors.white),
-                                                        highlightColor: Colors.transparent,
-                                                        splashColor: Colors.transparent,
-                                                        onPressed: () {
-                                                            Navigator.of(context).pop();
-                                                        },
-                                                      ),
-                                                    ],
-                                                  )
-                                              ),
-                                              Expanded(
-                                                flex: 2,
+                                      ///Header
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment
+                                              .center,
+                                          children: [
+                                            Expanded(
                                                 child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment
+                                                      .start,
                                                   children: [
-                                                    Text(
-                                                      widget.title,
-                                                      style: widget.textStyle,
-                                                      textAlign: TextAlign.center,
+
+                                                    ///Close button
+                                                    IconButton(
+                                                      icon: Icon(Icons.close,
+                                                        color: Colors.white),
+                                                      highlightColor: Colors.transparent,
+                                                      splashColor: Colors.transparent,
+                                                      onPressed: () {
+                                                          Navigator.of(context).pop();
+                                                      },
                                                     ),
                                                   ],
-                                                ),
-                                              ),
-                                              Expanded(
-                                                child: Container(),
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                        // widget.showIndicator
-                                        //     ? FractionallySizedBox(
-                                        //   widthFactor: 0.84,
-                                        //   child: ScreenIndicator(
-                                        //     height: 20,
-                                        //     width: MediaQuery
-                                        //         .of(context)
-                                        //         .size
-                                        //         .width,
-                                        //   ),
-                                        // )
-                                        //     : Container(),
-                                        Column(
-                                          children: [
-                                            Column(
-                                              children:
-                                                snapshot.data,
-                                            ),
-                                            SizedBox(
-                                              height: 24,
-                                            ),
-                                            Column(
-                                              children: [
-                                                AppButton(
-                                                  onPressed: (){
-                                                    Navigator.of(context).pop();
-                                                  },
-                                                  expanded: false,
-                                                  text: "Ok",
-
                                                 )
-                                              ]
                                             ),
-                                            SizedBox(
-                                              height: 24,
+                                            Expanded(
+                                              flex: 2,
+                                              child: Column(
+                                                children: [
+                                                  Text(
+                                                    widget.title,
+                                                    style: widget.textStyle,
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                ],
+                                              ),
                                             ),
+                                            Expanded(
+                                              child: Container(),
+                                            )
                                           ],
                                         ),
-                                      ],
-                                    ),
-                                  )
-                              );
-                            }
+                                      ),
+                                      widget.showIndicator
+                                          ? FractionallySizedBox(
+                                        widthFactor: 0.84,
+                                        child: ScreenIndicator(
+                                          height: 20,
+                                          width: MediaQuery
+                                              .of(context)
+                                              .size
+                                              .width,
+                                        ),
+                                      )
+                                          : Container(),
+                                      Column(
+                                        children: [
+                                          Column(
+                                            children:
+                                              snapshot.data,
+                                          ),
+                                          SizedBox(
+                                            height: 24,
+                                          ),
+                                          Column(
+                                            children: [
+                                              AppButton(
+                                                onPressed: (){
+                                                  Navigator.of(context).pop();
+                                                },
+                                                expanded: false,
+                                                text: "Ok",
+
+                                              )
+                                            ]
+                                          ),
+                                          SizedBox(
+                                            height: 24,
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                )
+                            );
                           }
-                        )
-                        ,
-                      ),
+                        }
+                      )
+                      ,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
+            ),
         ),
       ),
     );
