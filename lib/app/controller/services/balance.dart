@@ -251,6 +251,7 @@ void _balanceSubscription(ServiceData account) async
     }
   );
   int seconds = 0;
+  List<String> blackList = [];
   while(true)
   {
     await Future.delayed(Duration(seconds: seconds), () async{
@@ -260,11 +261,20 @@ void _balanceSubscription(ServiceData account) async
         /// Tokens balance as List<Map<String TokenName, BigInt balance>>
         tokenBalance = await Future.wait(
           contractsERC20.entries.map((contractItem) {
+            if(blackList.contains(contractItem.key))
+              return Future.value({contractItem.key : {"empty"}});
             return wrapAsList(identifier: contractItem.key,
               future: contractItem.value.balanceOf(address));
           })
         );
       tokenBalance.insert(0, {"AVAX": balance.getInWei});
+      tokenBalance.forEach((Map map) {
+        if(map.entries.first.value == "empty")
+          blackList.add(map.keys.first);
+      });
+      blackList.forEach((blacklisted) =>
+        tokenBalance.removeWhere((element) => element.containsKey(blacklisted))
+      );
       account.sendPort.send(
         {
           "_balanceSubscription": {"balance" : tokenBalance, "id" : account.data["id"]}
@@ -289,7 +299,7 @@ Future<Map> wrapAsList({String identifier , Future future}) async
     {
       print("[WARNING -> wrapAsList] Balance Subscription failed while processing $identifier, \n at $e");
     }
-    return {"empty": {}};
+    return {identifier: "empty"};
   }
   return {identifier: result};
 }
