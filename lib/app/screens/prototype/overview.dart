@@ -20,6 +20,16 @@ class Overview extends StatefulWidget {
 }
 
 class _OverviewState extends State<Overview> {
+  bool initialPieAnimate = true;
+
+  @override
+  void initState()
+  {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      initialPieAnimate = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -124,7 +134,8 @@ class _OverviewState extends State<Overview> {
               },
             ),
             TokenDistribution(
-                chartData: _tokenDistribution(app)
+                chartData: _tokenDistribution(app),
+                shouldAnimate: initialPieAnimate,
             ),
             ]
             ..addAll(_tokenDetailsCard(app))

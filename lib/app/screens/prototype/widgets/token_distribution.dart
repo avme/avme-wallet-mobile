@@ -20,8 +20,8 @@ class TokenDistribution extends StatefulWidget {
   //   "KAA": [0.15, Colors.white],
   // };
   final Map<String, List<dynamic>> chartData;
-
-  const TokenDistribution({Key key, @required this.chartData}) : super(key: key);
+  final bool shouldAnimate;
+  const TokenDistribution({Key key, @required this.chartData, @required this.shouldAnimate}) : super(key: key);
   @override
   _TokenDistributionState createState() => _TokenDistributionState();
 }
@@ -69,6 +69,9 @@ class _TokenDistributionState extends State<TokenDistribution> {
                           child: Stack(
                             children: [
                               PieChart.PieChart(
+                                animationDuration: widget.shouldAnimate
+                                  ? Duration(milliseconds: 800)
+                                  : Duration.zero,
                                 dataMap: extractValues(widget.chartData),
                                 initialAngleInDegree: 270,
                                 legendOptions: PieChart.LegendOptions(
