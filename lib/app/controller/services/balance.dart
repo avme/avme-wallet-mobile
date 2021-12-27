@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:isolate';
 import 'package:avme_wallet/app/controller/services/contract.dart';
+import 'package:avme_wallet/app/controller/services/database_token_value.dart';
 import 'package:avme_wallet/app/controller/services/push_notification.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/account_item.dart';
@@ -10,6 +11,7 @@ import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/model/boxes.dart';
 import 'package:avme_wallet/app/model/service_data.dart';
 import 'package:avme_wallet/app/model/token_chart.dart';
+import 'package:avme_wallet/app/model/token_data.dart';
 import 'package:avme_wallet/external/contracts/erc20_contract.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive/hive.dart';
@@ -338,32 +340,51 @@ Future<bool> valueSubscription(AvmeWallet appState) async
       });
     }
 
-    // if(data.containsKey("watchTokenPriceHistory"))
-    // {
-    //   Map response = data["watchTokenPriceHistory"];
-    //   print(response['tokenChart']["data"].runtimeType);
-    //   TokenChart dashboardChart = TokenChart();
-    //   Map tokenMap = {};
-    //   Map metaCoinMap = {};
-    //
-    //   List tokenList = response['tokenChart']['data']['tokenDayDatas'];
-    //   List metaCoinList =  response['metaCoinHistory']['data']['tokenDayDatas'];
-    //
-    //   tokenList.forEach((element) {
-    //     tokenMap[element["date"]] = element["priceUSD"];
-    //   });
-    //   metaCoinList.forEach((element) {
-    //     metaCoinMap[element["date"]] = element["priceUSD"];
-    //   });
-    //
-    //   tokenMap.forEach((key, value) {
-    //     Decimal metaCoinValue = Decimal.fromInt(1) / Decimal.parse(metaCoinMap[key]);
-    //     Decimal tokenValue = metaCoinValue * Decimal.parse(value);
-    //     // print("$key: value:$tokenValue");
-    //     dashboardChart.addToList(key, tokenValue.toString());
-    //   });
-    //   box.put(0,dashboardChart);
-    // }
+    if(data.containsKey("watchTokenPriceHistory"))
+    {
+      //TODO: Change this entire thing to support multiple tokens, for now only AVAX works, and finish stuff here
+      Map response = data["watchTokenPriceHistory"];
+      print(response['tokenChart']["data"].runtimeType);
+      TokenChart dashboardChart = TokenChart();
+      Map tokenMap = {};
+      Map metaCoinMap = {};
+
+      List tokenList = response['tokenChart']['data']['tokenDayDatas'];
+      List metaCoinList =  response['metaCoinHistory']['data']['tokenDayDatas'];
+
+      tokenList.forEach((element) {
+        tokenMap[element["date"]] = element["priceUSD"];
+      });
+      metaCoinList.forEach((element) {
+        metaCoinMap[element["date"]] = element["priceUSD"];
+      });
+
+      // tokenMap.forEach((date, value) {
+      //   int epochDay = date;
+      //   ///Gabriel: Aqui ele faz o cálculo para cada dia
+      //   Decimal metaCoinValue = Decimal.fromInt(1) / Decimal.parse(metaCoinMap[epochDay]);
+      //   Decimal tokenValue = metaCoinValue * Decimal.parse(value);
+      //
+      //   print("AVAX === day: $epochDay | value:$metaCoinValue");
+      //
+      //   ///Pseudo insert em database
+      //   List<Map> databaseChart = [];
+      //   databaseChart.insert(0, {
+      //     "tokenName" : "AVME",
+      //     "value": tokenValue,
+      //     "datetime": epochDay
+      //   });
+      //
+      //   //Apenas para testes
+      //   DatabaseInterface.instance.create(TokenValue(
+      //       tokenName: 'AVAX', value: metaCoinValue.toDouble(), dateTime: epochDay))
+      //       .then((value) {
+      //     DatabaseInterface.instance.read(epochDay).then((value) => print('Inserindo na database: $value'));
+      //   });
+      //
+      //   dashboardChart.addToList(epochDay, tokenValue.toString());
+      // });
+    }
   });
   do await Future.delayed(Duration(milliseconds: 150));
   while(!didValueUpdated);
@@ -378,7 +399,7 @@ void startValueSubscription(ServiceData param)
   // watchTokenPriceHistory(
   //   ServiceData({
   //       "url" : url,
-  //       "tokenBodyRequest" : {"query": "{tokenDayDatas(first: 30,orderBy: date,orderDirection: desc,where:{token: \"[CONTRACT_ADDRESS]\"}) { date priceUSD }}"},
+  //       "tokenBodyRequest" : {"query": "{tokenDayDatas(first: 30,orderBy: date,orderDirection: desc,where:{token: \"0xde3a24028580884448a5397872046a019649b084\"}) { date priceUSD }}"},
   //       "metaCoinBodyRequest" : {"query": "{tokenDayDatas(first: 30,orderBy: date,orderDirection: desc,where:{token: \"0xde3a24028580884448a5397872046a019649b084\"}) { date priceUSD }}"},
   //     }
   //   ,param.sendPort));
