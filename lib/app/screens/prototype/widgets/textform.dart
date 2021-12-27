@@ -1,5 +1,7 @@
+import 'package:avme_wallet/app/controller/size_config.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 
 class AppTextFormField extends StatefulWidget {
@@ -22,6 +24,7 @@ class AppTextFormField extends StatefulWidget {
   final EdgeInsets contentPadding;
   final bool isDense;
   final TextAlign textAlign;
+  final int maxLength;
 
   const AppTextFormField({
     Key key,
@@ -46,8 +49,9 @@ class AppTextFormField extends StatefulWidget {
         vertical: 16,
         horizontal: 12
     ),
+    this.maxLength
   }) : super(key: key);
-  
+
   @override
   _AppTextFormFieldState createState() => _AppTextFormFieldState();
 }
@@ -59,6 +63,11 @@ class _AppTextFormFieldState extends State<AppTextFormField> with TickerProvider
   Animation<double> fade;
   @override
   void initState() {
+    super.initState();
+
+    if(widget.controller == null)
+      throw Exception(['No controller found for AppTextFormField']);
+
     myFocus = FocusNode();
     animation = AnimationController(
       vsync: this,
@@ -74,9 +83,11 @@ class _AppTextFormFieldState extends State<AppTextFormField> with TickerProvider
         hideFloatingIcon = !hideFloatingIcon;
       });
     });
-    super.initState();
+    if(widget.maxLength != null)
+      widget.controller.addListener(() {
+        setState(() {});
+      });
   }
-
   @override
   Widget build(BuildContext context) {
     myFocus = widget.focusNode ?? myFocus;
@@ -90,7 +101,8 @@ class _AppTextFormFieldState extends State<AppTextFormField> with TickerProvider
     );
 
     EdgeInsets contentPadding = widget.contentPadding;
-    contentPadding = EdgeInsets.only(top:16, bottom: 16, left:12, right: hideFloatingIcon ? 12 : 40);
+    contentPadding = EdgeInsets.only(top:16, bottom: 16, left:12, right: !hideFloatingIcon && widget.icon != null ? 40 : 12);
+    // contentPadding = EdgeInsets.only(top:16, bottom: 16, left:12, right: hideFloatingIcon ? 12 : 40);
 
     ///Testing if isDense is true, we set same as the default in
     ///"flutter: material/input_decorator.dart", since the padding ain't
@@ -105,67 +117,83 @@ class _AppTextFormFieldState extends State<AppTextFormField> with TickerProvider
         Column(
           children: [
             TextFormField(
-                enabled: widget.enabled,
-                validator: widget.validator,
-                controller: widget.controller,
-                cursorColor: widget.cursorColor,
-                obscureText: widget.obscureText,
-                initialValue: widget.initialValue,
-                textAlign: widget.textAlign,
-                focusNode: myFocus,
-                keyboardType: widget.keyboardType,
-                onChanged: widget.onChanged,
-                decoration: InputDecoration(
-                  isDense: widget.isDense,
-                  filled: true,
-                  hintText: widget.hintText,
-                  fillColor: AppColors.darkBlue,
-                  focusedErrorBorder: fieldBorder.copyWith(
-                      borderSide: BorderSide(
-                        width: 2,
-                        color: Colors.red,
-                      )
+              maxLength: widget.maxLength,
+              maxLengthEnforcement: widget.maxLength != null
+                ? MaxLengthEnforcement.enforced
+                : MaxLengthEnforcement.none,
+              enabled: widget.enabled,
+              validator: widget.validator,
+              controller: widget.controller,
+              cursorColor: widget.cursorColor,
+              obscureText: widget.obscureText,
+              initialValue: widget.initialValue,
+              textAlign: widget.textAlign,
+              focusNode: myFocus,
+              keyboardType: widget.keyboardType,
+              onChanged: widget.onChanged,
+              decoration: InputDecoration(
+                isDense: widget.isDense,
+                filled: true,
+                hintText: widget.hintText,
+                fillColor: AppColors.darkBlue,
+                focusedErrorBorder: fieldBorder.copyWith(
+                  borderSide: BorderSide(
+                    width: 2,
+                    color: Colors.red,
+                  )
+                ),
+                errorBorder: fieldBorder.copyWith(
+                  borderSide: BorderSide(
+                    width: 2,
+                    color: AppColors.labelDefaultColor,
+                  )
+                ),
+                labelText: widget.labelText,
+                floatingLabelBehavior: widget.floatingLabelBehavior,
+                contentPadding: contentPadding,
+                enabledBorder: fieldBorder.copyWith(
+                  borderSide: BorderSide(
+                    width: 2,
+                    color: cLabelStyle,
                   ),
-                  errorBorder: fieldBorder.copyWith(
-                      borderSide: BorderSide(
-                        width: 2,
-                        color: AppColors.labelDefaultColor,
-                      )
+                ),
+                disabledBorder: OutlineInputBorder(
+                  borderRadius: fieldBorder.borderRadius,
+                  borderSide: BorderSide(
+                    width: 0,
+                    color: Colors.transparent
+                  )
+                ),
+                labelStyle: TextStyle(
+                  color: cLabelStyle,
+                  fontWeight: fLabelStyle,
+                  fontSize: 20
+                ),
+                focusedBorder: fieldBorder.copyWith(
+                  borderSide: BorderSide(
+                    width: 2,
+                    color: AppColors.purple
                   ),
-                  labelText: widget.labelText,
-                  floatingLabelBehavior: widget.floatingLabelBehavior,
-                  contentPadding: contentPadding,
-                  enabledBorder: fieldBorder.copyWith(
-                    borderSide: BorderSide(
-                      width: 2,
-                      color: cLabelStyle,
-                    ),
-                  ),
-                  disabledBorder: OutlineInputBorder(
-                      borderRadius: fieldBorder.borderRadius,
-                      borderSide: BorderSide(
-                          width: 0,
-                          color: Colors.transparent
-                      )
-                  ),
-                  labelStyle: TextStyle(
-                      color: cLabelStyle,
-                      fontWeight: fLabelStyle,
-                      fontSize: 20
-                  ),
-                  focusedBorder: fieldBorder.copyWith(
-                    borderSide: BorderSide(
-                        width: 2,
-                        color: AppColors.purple
-                    ),
-                  ),
-                )
+                ),
+                counter: widget.maxLength != null
+                  ? Align(
+                      alignment: Alignment.centerRight.add(Alignment(SizeConfig.blockSizeHorizontal / 100 * 1.5, 0)),
+                      child: Container(
+                        // color:Colors.red,
+                        child: Text("${widget.controller.text.length}/${widget.maxLength}",
+                          textDirection: TextDirection.rtl,
+                          style: AppTextStyles.span.copyWith(fontSize: 14),
+                        )
+                      ),
+                    )
+                  : null
+              )
             ),
           ],
         ),
         widget.icon != null
             ? Positioned.fill(
-            child: Align(
+              child: Align(
                 alignment: Alignment.topRight,
                 child: FadeTransition(
                   opacity: fade,
@@ -183,18 +211,17 @@ class _AppTextFormFieldState extends State<AppTextFormField> with TickerProvider
                             child: Padding(
                               padding: const EdgeInsets.all(9),
                               child: Container(
-                                  color: AppColors.darkBlue,
-                                  child: widget.icon)
-                              ,
+                                color: AppColors.darkBlue,
+                                child: widget.icon),
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                  ),
+                  )
                 )
-            )
-        )
+              )
             : Container()
       ],
     );
