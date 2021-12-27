@@ -138,10 +138,10 @@ class _AppPopupWidgetState extends State<AppPopupWidget> {
                             horizontal: SizeConfig.safeBlockHorizontal * 4,
                           ),
                           buttonPadding: EdgeInsets.zero,
-                          actionsPadding: EdgeInsets.symmetric(
+                          actionsPadding: popupActions.length > 0 ? EdgeInsets.symmetric(
                               vertical: SizeConfig.safeBlockHorizontal * 4,
                               horizontal: SizeConfig.safeBlockHorizontal * 4
-                          ),
+                          ) : EdgeInsets.only(top: SizeConfig.safeBlockHorizontal * 5),
                           backgroundColor: AppColors.cardDefaultColor,
                           contentPadding: EdgeInsets.zero,
                           shape: RoundedRectangleBorder(
