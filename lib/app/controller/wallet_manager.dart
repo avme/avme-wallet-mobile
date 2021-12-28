@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:avme_wallet/app/controller/services/contract.dart';
+import 'package:avme_wallet/app/model/account_item.dart';
 import 'package:avme_wallet/app/model/active_contracts.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/model/token.dart';
@@ -306,21 +307,32 @@ class WalletManager
   ///Removes token from appState Queue
   Future<void> removeToken(AvmeWallet app, String tokenName) async
   {
+    print("REMOVE TOKEN $tokenName");
     Token token = app.activeContracts.token;
     token.removeToken(tokenName);
+
+    ///Removing stored balance from every account
+    Map<int, AccountObject> accounts = app.accountList;
+    accounts.forEach((key, AccountObject accountObject) {
+      accountObject.tokensBalanceList.removeWhere((tokenKey, value) {
+        print("tokenKey $tokenKey, tokenName $tokenName");
+        return tokenKey == tokenName;
+      });
+    });
+
     await app.activeContracts.removeToken(tokenName);
     await restartTokenServices(app);
+
   }
 
-  Future<void> enableTokenFromTokenList(BuildContext context, String token, {List<ValueNotifier> notifier = const []})
+  Future<void> addNewToken(BuildContext context, String token, {List<ValueNotifier> notifier = const []})
   async {
-
     if(notifier.length > 0)
     {
       notifier[0].value = 20;
       notifier[1].value = "Requesting data...";
       AvmeWallet app = Provider.of<AvmeWallet>(context, listen: false);
-      bool abiMounted = app.activeContracts.sContracts.enableContract(token);
+      bool abiMounted = await app.activeContracts.sContracts.enableContract(token);
       if(!abiMounted)
         return;
       notifier[0].value = 60;
