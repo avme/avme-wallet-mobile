@@ -2,11 +2,14 @@ import 'dart:convert';
 import 'dart:math';
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:hex/hex.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:web3dart/credentials.dart';
 
 void snack(texto, BuildContext context)
 {
@@ -156,17 +159,22 @@ void closeApp()
     exit(0);
 }
 
-Image resolveImage(String res, {double height, double width})
-{
+Image resolveImage(String res, {double height, double width}) {
   BoxFit fit = BoxFit.contain;
-  return res.contains("http")
-    // ? Image.network(res, fit: fit, height: height, width: width,)
-    ? Image(image: CachedNetworkImageProvider(
-        res,
-        maxHeight: 128,
-        maxWidth: 128,
-      ), fit: fit, height: height, width: width)
-    : Image.asset(res, fit: fit, height: height, width: width,);
+
+  if (res.contains('http')){
+    return Image(image: CachedNetworkImageProvider(
+      res,
+      maxHeight: 128,
+      maxWidth: 128,
+    ), fit: fit, height: height, width: width);
+  }
+  else if (res.contains('assets/'))
+  {
+    return Image.asset(res, fit: fit, height: height, width: width);
+  }
+  else
+    return Image.file(File(res), fit: fit, height: height, width: width);
 }
 
 Future<String> httpGetRequest(
@@ -187,4 +195,28 @@ Future<String> httpGetRequest(
     response = await http.get(url,
         headers: headers);
   return response.body;
+}
+
+Future<EthereumAddress> sanitizeAddress(String hex) async
+{
+  try {
+    EthereumAddress address = await Future.value(EthereumAddress.fromHex(hex));
+    return address;
+  }
+  on ArgumentError catch(e,s)
+  {
+    print("ArgumentError at sanitizeAddress -> Bad address: $e");
+    print(s);
+  }
+  return null;
+}
+
+Future<Uint8List> captureWidget(GlobalKey key) async
+{
+  if(key == null) return null;
+  RenderRepaintBoundary boundary = key.currentContext.findRenderObject();
+  final image = await boundary.toImage(pixelRatio: 2);
+  final byteData = await image.toByteData(format: ImageByteFormat.png);
+  final pngBytes = byteData.buffer.asUint8List();
+  return pngBytes;
 }
