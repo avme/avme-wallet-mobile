@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:avme_wallet/app/controller/services/contract.dart';
 import 'package:avme_wallet/app/controller/size_config.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
@@ -16,6 +18,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import 'widgets/widget_painter.dart';
+
 class Tokens extends StatefulWidget {
   final List<String> protectedTokens = [
     "AVME testnet",
@@ -29,7 +33,7 @@ class _TokensState extends State<Tokens> {
 
   String selectedToken = "AVME testnet";
   AvmeWallet app;
-
+  GlobalKey imageKey;
   @override
   void initState() {
     app = Provider.of<AvmeWallet>(context, listen: false);
@@ -70,7 +74,7 @@ class _TokensState extends State<Tokens> {
                       children: [
                         AppButton(onPressed: () => showTokenPopup(app), text: "NEW TOKEN",),
                         SizedBox(height: SizeConfig.safeBlockVertical,),
-                        AppButton(onPressed: (){}, text: "NEW TOKEN FROM ADDRESS",),
+                        AppButton(onPressed: () => showTokenFromAddress(app), text: "NEW TOKEN FROM ADDRESS",),
                         SizedBox(height: SizeConfig.safeBlockVertical,),
                         !widget.protectedTokens.contains(this.selectedToken)
                           ? AppButton(onPressed: () => removeToken(selectedToken), text: "REMOVE TOKEN",)
@@ -139,6 +143,132 @@ class _TokensState extends State<Tokens> {
     );
   }
 
+  Future<void> addedTokenDetails({
+    String tokenName,
+    int contractDecimals,
+    String symbol,
+    String address,
+    Contracts contractManager,
+    String image = "",
+    bool updateTokens = true
+  })
+  async {
+    print("DEVERIA ADICIONA? $updateTokens");
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AppPopupWidget(
+          title: "Token Details",
+          // showIndicator: false,
+          cancelable: false,
+          margin: EdgeInsets.symmetric(horizontal: SizeConfig.safeBlockHorizontal * 12),
+          children: [
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: SizeConfig.screenWidth / 4
+              ),
+              child: image.length == 0
+                ? WidgetToImage(
+                  builder: (key) {
+                    this.imageKey = key;
+                    return SizedBox(
+                      width: 100,
+                      height: 100,
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          CustomPaint(
+                            painter: Circle(),
+                          ),
+                          Align(
+                            child: Text(tokenName[0], style: TextStyle(
+                              fontSize: 64,
+                              fontWeight: FontWeight.bold,
+                            ),),
+                            alignment: Alignment.center,
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                )
+                : resolveImage(image),
+            ),
+            SizedBox(
+              height: SizeConfig.safeBlockVertical * 2,
+            ),
+            Text(symbol, style: AppTextStyles.label.copyWith(fontSize: 22),),
+            SizedBox(height: SizeConfig.safeBlockVertical),
+            RichText(text: TextSpan(
+              children: <TextSpan> [
+                TextSpan(text: "Name: ", style: AppTextStyles.label),
+                TextSpan(text: "$tokenName",),
+              ]
+            )),
+            SizedBox(height: SizeConfig.safeBlockVertical),
+            RichText(text: TextSpan(
+              children: <TextSpan> [
+                TextSpan(text: "Decimals: ", style: AppTextStyles.label),
+                // TextSpan(text: "18",),
+                TextSpan(text: contractDecimals.toString(),),
+              ]
+            )),
+            SizedBox(height: SizeConfig.safeBlockVertical),
+            RichText(text: TextSpan(
+              text: "Address: ", style: AppTextStyles.label
+            )),
+            SizedBox(height: SizeConfig.safeBlockVertical),
+            GestureDetector(
+              onTap: () async {
+                await Clipboard.setData(
+                  ClipboardData(text: address));
+                NotificationBar().show(context,text: "Contract address copied to clipboard");
+              },
+              child: Container(
+                color: Colors.transparent,
+                child: RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: address.substring(0,30) + "\n",
+                      ),
+                      TextSpan(
+                        text: address.substring(30),
+                      ),
+                    ],
+                    style: TextStyle(
+                      decoration: TextDecoration.underline,
+                      decorationStyle: TextDecorationStyle.double,
+                      color: Colors.blue
+                    )
+                  )
+                ),
+              ),
+            ),
+            SizedBox(height: SizeConfig.safeBlockVertical * 2),
+            AppButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              text: "CLOSE"
+            )
+          ],
+        );
+      },
+    ).then((val) async {
+      if(updateTokens)
+      {
+        Uint8List bytes = await captureWidget(this.imageKey);
+        bool imageSaved = await contractManager.saveTokenLogo(bytes, address);
+        print("IMAGE SAVED? $imageSaved");
+        await addTokenPopup(tokenName);
+      }
+
+    });
+  }
+
   Future<void> details(ActiveContracts activeContracts, String tokenName)
   async {
     AvmeWallet app = Provider.of<AvmeWallet>(context, listen: false);
@@ -159,7 +289,7 @@ class _TokensState extends State<Tokens> {
           title: "Token Details",
           // showIndicator: false,
           cancelable: false,
-          margin: EdgeInsets.symmetric(horizontal: SizeConfig.safeBlockHorizontal * 8),
+          margin: EdgeInsets.symmetric(horizontal: SizeConfig.safeBlockHorizontal * 12),
           children: [
             ConstrainedBox(
               constraints: BoxConstraints(
@@ -204,7 +334,16 @@ class _TokensState extends State<Tokens> {
                 child: RichText(
                   textAlign: TextAlign.center,
                   text: TextSpan(
-                    text: activeContracts.sContracts.contractsRaw[tokenName]["address"],
+                    children: [
+                      TextSpan(
+                        text:
+                          activeContracts.sContracts.contractsRaw[tokenName]["address"].toString().substring(0,30) + "\n",
+                      ),
+                      TextSpan(
+                        text:
+                        activeContracts.sContracts.contractsRaw[tokenName]["address"].toString().substring(30),
+                      ),
+                    ],
                     style: TextStyle(
                         decoration: TextDecoration.underline,
                         decorationStyle: TextDecorationStyle.double,
@@ -253,6 +392,131 @@ class _TokensState extends State<Tokens> {
           ),
         )
       ).toList(),
+    );
+  }
+
+  void showTokenFromAddress(AvmeWallet app)
+  {
+    // bool validAddress = false;
+    bool validAddress = true;
+    TextEditingController contractAddress = TextEditingController(
+      text: ""
+    );
+    showDialog(context: context, builder: (_) =>
+      StatefulBuilder(builder: (context,setState) {
+        return AppPopupWidget(
+          title: "Add new Token",
+            cancelable: false,
+            canClose: true,
+            padding: EdgeInsets.zero,
+            children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children:
+              [
+                AppLabelText("Token Address", fontSize: 18,),
+                SizedBox(
+                  height: SizeConfig.safeBlockVertical * 2,
+                ),
+                AppTextFormField(
+                  maxLength: 42,
+                  controller: contractAddress,
+                  hintText: 'e.g. 0x123456789ABCDEF...',
+                  onChanged: (String value) {
+                    if(value.length == 42)
+                      setState((){
+                        validAddress = true;
+                      });
+                    else if(validAddress)
+                      setState((){
+                        validAddress = !validAddress;
+                      });
+                  },
+                ),
+                SizedBox(
+                  height: SizeConfig.safeBlockVertical * 2,
+                ),
+                AppButton(
+                  enabled: validAddress,
+                  onPressed: () async {
+                    Contracts contractManager = app.activeContracts.sContracts;
+                    ValueNotifier<int> percentage = ValueNotifier(0);
+                    ValueNotifier<String> label = ValueNotifier("Loading...");
+                    List<ValueNotifier> loadingNotifier = [
+                      percentage,
+                      label
+                    ];
+                    ///Checking if was already added
+                    Map<String,Map> discoveredToken = {};
+                    contractManager.contractsRaw.forEach((key, Map value) {
+                      if(value["address"] == contractAddress.text)
+                      {
+                        discoveredToken[key] = value;
+                        bool shouldUpdate = !app.activeContracts.tokens.contains(discoveredToken.entries.first.key);
+                        if(shouldUpdate)
+                          app.activeContracts.addToken(discoveredToken.entries.first.key);
+                        addedTokenDetails(
+                          tokenName: discoveredToken.entries.first.key,
+                          symbol: discoveredToken.entries.first.value["symbol"],
+                          address: discoveredToken.entries.first.value["address"],
+                          contractDecimals: int.parse(discoveredToken.entries.first.value["decimals"]),
+                          contractManager: contractManager,
+                          image: discoveredToken.entries.first.value["logo"],
+                          updateTokens: shouldUpdate
+                        );
+                      }
+                    });
+                    if(discoveredToken.length > 0)
+                      return null;
+                    await showDialog(context: context, builder: (_) =>
+                      StatefulBuilder(
+                        builder: (builder, setState){
+                          return ProgressPopup(
+                            showIndicator: false,
+                            listNotifier: loadingNotifier,
+                            future: contractManager
+                              .addTokenFromAddress(
+                                accountAddress: app.currentAccount.address,
+                                contractAddress: contractAddress.text,
+                              )
+                              .then((List result) async {
+                                if(result.length == 0)
+                                  return [
+                                    Text("Sorry, but no Contracts was found.")
+                                  ];
+                                else
+                                {
+                                  Navigator.of(context).pop();
+                                  await Future.delayed(Duration(milliseconds: 250));
+                                  Navigator.of(context).pop();
+                                  addedTokenDetails(
+                                    tokenName: result[0],
+                                    symbol: result[1],
+                                    address: result[2],
+                                    contractDecimals: result[3],
+                                    contractManager: contractManager
+                                  );
+                                }
+                              }
+                            ),
+                            title: "Warning",
+                          );
+                        },
+                      )
+                    );
+                  },
+                  text: "ADD TOKEN"),
+                SizedBox(
+                  height: SizeConfig.safeBlockVertical * 2,
+                ),
+                AppButton(onPressed: () {
+                  Navigator.of(context).pop();
+                }, text: "CANCEL"),
+              ]
+            )
+          ]
+        );
+      })
     );
   }
 
@@ -319,7 +583,6 @@ class _TokensState extends State<Tokens> {
                   controller: filterController,
                   hintText: 'Filter by Symbol or Name',
                   onChanged: (String value) {
-                    print(value);
                     if(value.length > 0)
                       setState((){});
                   },
@@ -392,28 +655,9 @@ class _TokensState extends State<Tokens> {
             AppButton(
               enabled: selected.length > 0 ? true : false,
               onPressed: () async {
-                ValueNotifier<int> percentage = ValueNotifier(0);
-                ValueNotifier<String> label = ValueNotifier("Loading...");
-                List<ValueNotifier> loadingNotifier = [
-                  percentage,
-                  label
-                ];
-                await showDialog(context: context, builder: (_) =>
-                  StatefulBuilder(
-                    builder: (builder, setState){
-                      return ProgressPopup(
-                        listNotifier: loadingNotifier,
-                        future: app.walletManager.enableTokenFromTokenList(context, selected, notifier: loadingNotifier)
-                          .then((result) {
-                            Navigator.of(context).pop();
-                          }
-                        ),
-                        title: "Processing...",
-                      );
-                    },
-                  )
-                );
-
+                await addTokenPopup(selected);
+                await Future.delayed(Duration(milliseconds: 50));
+                Navigator.of(context).pop();
               },
               text: "ADD TOKEN"
             ),
@@ -423,11 +667,35 @@ class _TokensState extends State<Tokens> {
             AppButton(onPressed: () {
               Navigator.of(context).pop();
               selected = "";
-            }, text: "CLOSE"),
+            }, text: "CANCEL"),
           ],
         );
       }
     ));
+  }
+
+  Future addTokenPopup(String token) async {
+    ValueNotifier<int> percentage = ValueNotifier(0);
+    ValueNotifier<String> label = ValueNotifier("Loading...");
+    List<ValueNotifier> loadingNotifier = [
+      percentage,
+      label
+    ];
+    await showDialog(context: context, builder: (_) =>
+      StatefulBuilder(
+        builder: (builder, setState){
+          return ProgressPopup(
+            listNotifier: loadingNotifier,
+            future: app.walletManager.addNewToken(context, token, notifier: loadingNotifier)
+                .then((result) {
+              Navigator.of(context).pop();
+            }
+            ),
+            title: "Processing...",
+          );
+        },
+      )
+    );
   }
 }
 class TokenItem extends StatefulWidget

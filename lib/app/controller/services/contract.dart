@@ -1,8 +1,19 @@
+import 'dart:async';
 import 'dart:convert';
 
+import 'dart:isolate';
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:avme_wallet/app/controller/file_manager.dart';
+import 'package:avme_wallet/app/model/service_data.dart';
+import 'package:avme_wallet/external/contracts/erc20_contract.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/retry.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
+import 'package:http/http.dart' as http;
 class Contracts {
   static final Contracts _contracts = Contracts._internal();
 
@@ -14,7 +25,7 @@ class Contracts {
 
   /// This is the simplest/raw list of contracts, used to build widgets
   /// based on the key
-  Map<String,Map<String,String>> contractsRaw = {};
+  Map<String,Map> contractsRaw = {};
 
   /// We're using the contract name as key, and a list with its data, as follows
   /// {"AVME": [<ContractAbi>"Contract Abi",<String>"ContractAddress", <String>"ChainID"]}
@@ -69,21 +80,90 @@ class Contracts {
         "logo" : data["logoURI"],
       };
     });
-    // contractsRaw.forEach((key, value) => print("$key - ${value["address"]}"));
+
+    List<String> pendingList = [];
+
     tokens.forEach((token) {
+      if(!contractsRaw.containsKey(token))
+        pendingList.add(token);
+      else
+        contracts[token] = [
+          mountAbi(contractsRaw[token]["abi"], token), //ContractAbi
+          contractsRaw[token]["address"],
+          contractsRaw[token]["chainId"]
+        ];
+    });
+
+    if(pendingList.length > 0)
+    {
+      FileManager fm = FileManager();
+      String path = await fm.getDocumentsFolder();
+      path = "${path}CustomTokens/";
+      bool fileExists = await fm.checkPath(path);
+      if(!fileExists)
+        throw Exception('Exception at "Contracts.initialize"-> pending ${pendingList.toString()} but the folder "$path" does not exist.');
+      path = "${path}tokens.json";
+
+      File file = File(path);
+      List customTokens = [];
+
+      if(await file.exists())
+      {
+        customTokens = jsonDecode(await file.readAsString()) as List;
+        pendingList.forEach((pending) {
+          customTokens.forEach((map) {
+            Map entry = map;
+            if(entry.containsKey(pending))
+            {
+              contractsRaw[pending] = entry[pending];
+              contracts[pending] = [
+                mountAbi(contractsRaw[pending]["abi"], pending), //ContractAbi
+                contractsRaw[pending]["address"],
+                contractsRaw[pending]["chainId"]
+              ];
+            }
+          });
+        });
+      }
+      else
+        throw Exception('Exception at "Contracts.initialize" -> pending ${pendingList.toString()} but the file "$path" does not exist.');
+    }
+  }
+
+  Future<bool> enableContract(String token)
+  async {
+    try
+    {
+      if(!contractsRaw.containsKey(token))
+      {
+        FileManager fm = FileManager();
+        String path = await fm.getDocumentsFolder();
+        path = "${path}CustomTokens/";
+        bool fileExists = await fm.checkPath(path);
+        if(!fileExists)
+          throw Exception('Exception at "enableContract" -> Path not created "$path"');
+        path = "${path}tokens.json";
+
+        File file = File(path);
+        List customTokens = [];
+
+        if(await file.exists())
+        {
+          customTokens = jsonDecode(await file.readAsString()) as List;
+          customTokens.forEach((map) {
+            Map entry = map;
+            if(entry.containsKey(token))
+              contractsRaw[token] = entry[token];
+          });
+        }
+        else
+          throw Exception('Exception at "enableContract" -> No Contract found named "$token"');
+      }
       contracts[token] = [
-        mountAbi(contractsRaw[token]["abi"], token), //ContractAbi
+        mountAbi(contractsRaw[token]["abi"], token),
         contractsRaw[token]["address"],
         contractsRaw[token]["chainId"]
       ];
-    });
-  }
-
-  bool enableContract(String token)
-  {
-    try
-    {
-      contracts[token] = [mountAbi(contractsRaw[token]["abi"], token),contractsRaw[token]["address"],contractsRaw[token]["chainId"]];
     }
     catch(e)
     {
@@ -94,4 +174,147 @@ class Contracts {
   }
 
   ContractAbi mountAbi(String abi, String name)=> ContractAbi.fromJson(abi, name);
+
+  Future<List> addTokenFromAddress({
+    String contractAddress,
+    String accountAddress,
+  }) async {
+
+    String name = "erc20_contract";
+    int chainId = 43114;
+    EthereumAddress selectedAccount = await sanitizeAddress(accountAddress);
+    http.Client httpClient = http.Client();
+
+    Web3Client web3client = Web3Client(env['NETWORK_URL'], httpClient);
+
+    ERC20 erc20Contract = ERC20(
+      mountAbi(erc20Abi, name),
+      address: await sanitizeAddress(contractAddress),
+      client: web3client,
+      chainId: chainId
+    );
+
+    ///Token Fields
+    BigInt balance = BigInt.zero;
+    BigInt totalSupply = BigInt.zero;
+    String symbol = "";
+    String tokenName = "";
+    int decimals = 0;
+    Duration timeoutDuration = Duration(seconds: 5);
+    try
+    {
+      ///Symbol check
+      Future fSymbol = erc20Contract.symbol();
+      fSymbol.timeout(timeoutDuration, onTimeout: () =>
+        throw TimeoutException("Timeout Exception at addTokenFromAddress -> Symbol timeout"));
+      symbol = await fSymbol as String;
+      print("symbol $symbol");
+
+      ///Balance check
+      Future fBalance = erc20Contract.balanceOf(selectedAccount);
+      // Future fBalance = Future.delayed(Duration(seconds: 5), () => erc20Contract.balanceOf(selectedAccount));
+      fBalance.timeout(timeoutDuration, onTimeout: () =>
+        throw TimeoutException("Timeout Exception at addTokenFromAddress -> Balance timeout"));
+      balance = await fBalance as BigInt;
+      print("balance $balance");
+
+      ///Total supply
+      Future fSupply = erc20Contract.totalSupply();
+      fSupply.timeout(timeoutDuration, onTimeout: () =>
+        throw TimeoutException("Timeout Exception at addTokenFromAddress -> Total Supply timeout"));
+      totalSupply = await fSupply as BigInt;
+      print("Total Supply $totalSupply");
+
+      ///Token Name
+      Future fName = erc20Contract.name();
+      fName.timeout(timeoutDuration, onTimeout: () =>
+        throw TimeoutException("Timeout Exception at addTokenFromAddress -> Total Token Name timeout"));
+      tokenName = await fName as String;
+      print("Token Name $tokenName");
+
+      ///Decimals
+      Future fDecimals = erc20Contract.decimals();
+      fDecimals.timeout(timeoutDuration, onTimeout: () =>
+        throw TimeoutException("Timeout Exception at addTokenFromAddress -> Total Token Name timeout"));
+      decimals = (await fDecimals as BigInt).toInt();
+      print("Token Name $decimals");
+
+      // return true;
+    }
+    catch(e,s)
+    {
+      print(e); print(s);
+      return [];
+    }
+
+
+
+    FileManager fm = FileManager();
+    String path = await fm.getDocumentsFolder();
+    path = "${path}CustomTokens/";
+    await fm.checkPath(path);
+    String imagePath = "$path$contractAddress.png";
+    path = "${path}tokens.json";
+
+    File file = File(path);
+    List tokens = [];
+    if(await file.exists())
+    {
+      tokens = jsonDecode(await file.readAsString()) as List;
+      print(tokens);
+    }
+
+    bool contains = false;
+    tokens.forEach((element) {
+      print(element.keys);
+      if(element.containsKey(tokenName))
+        contains = true;
+    });
+
+    Map newToken = {
+      "abi": erc20Abi,
+      "address": contractAddress,
+      "decimals": decimals.toString(),
+      "chainId": chainId.toString(),
+      "symbol": symbol,
+      "logo": imagePath
+    };
+
+    if(!contains)
+    {
+      tokens.add({tokenName:newToken});
+      ///Saving the new Token
+      file.writeAsString(fm.encoder.convert(tokens));
+    }
+    return [
+      tokenName,
+      symbol,
+      contractAddress,
+      decimals
+    ];
+  }
+
+  Future<bool> saveTokenLogo(Uint8List bytes, String address) async
+  {
+    try
+    {
+      FileManager fm = FileManager();
+      String path = await fm.getDocumentsFolder();
+
+      path = "${path}CustomTokens/";
+      await fm.checkPath(path);
+      path = "$path$address.png";
+
+      File file = File(path);
+      if(await file.exists())
+        return true;
+      file.writeAsBytes(bytes);
+      return true;
+    }
+    catch(e)
+    {
+      print('Exception at "saveTokenLogo": $e');
+      return false;
+    }
+  }
 }
