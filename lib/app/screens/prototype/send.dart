@@ -80,7 +80,7 @@ class _SendState extends State<Send> {
                   ),
                   AppTextFormField(
                     controller: addressController,
-                    hintText: '0x4214496147525148769976fb554a8388117e25b1',
+                    hintText: 'e.g. 0x123456789ABCDEF...',
                     validator: (value) {
                       if (value.length != 42 || !isHex(value)) {
                         return 'This is not a valid address';
