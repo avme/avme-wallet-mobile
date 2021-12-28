@@ -271,7 +271,7 @@ void _balanceSubscription(ServiceData account) async
         );
       tokenBalance.insert(0, {"AVAX": balance.getInWei});
       tokenBalance.forEach((Map map) {
-        if(map.entries.first.value == "empty")
+        if(map.entries.first.value == "empty" && !blackList.contains(map.entries.first.key))
           blackList.add(map.keys.first);
       });
       blackList.forEach((blacklisted) =>
@@ -282,6 +282,7 @@ void _balanceSubscription(ServiceData account) async
           "_balanceSubscription": {"balance" : tokenBalance, "id" : account.data["id"]}
         }
       );
+      print(blackList);
       if(seconds == 0) seconds = account.data["updateIn"];
     });
   }
@@ -405,7 +406,7 @@ void startValueSubscription(ServiceData param)
   //   ,param.sendPort));
 
 
-  Map<String,Map<String,String>> contractsRaw = param.data["contractRaw"];
+  Map<String,Map> contractsRaw = param.data["contractRaw"];
   String tokenRequest = "{token(id: \"CONTRACT_ADDRESS\"){symbol derivedETH}}";
   Map<String,Map<String,String>> paramList = {};
   param.data["activeTokens"].forEach((String token)
@@ -431,13 +432,23 @@ void listenValue(ServiceData param) async
   String url = param.data["url"];
   Map <String, Map<String,dynamic>> tokenBodyRequest = param.data["tokenBodyRequest"];
   Map <String, String> avaxBodyRequest = param.data["avaxBodyRequest"];
-
+  List blackList = [];
   while(true)
   {
     await Future.delayed(Duration(seconds: seconds), () async {
       Decimal avaxPrice = await getAVAXPriceUSD(avaxBodyRequest, url);
-      List<Map> tokenValue = await Future.wait(tokenBodyRequest.entries.map((entry) => getTokenPriceUSD(avaxPrice, url, entry.value, entry.key)));
+      List<Map> tokenValue = await Future.wait(
+        tokenBodyRequest.entries.map((entry) {
+          if(blackList.contains(entry.key))
+            return Future.value({entry.key:Decimal.zero});
+          return getTokenPriceUSD(avaxPrice, url, entry.value, entry.key);
+        })
+      );
       tokenValue.add({"AVAX":avaxPrice});
+      tokenValue.forEach((Map map) {
+        if(map.entries.first.value == Decimal.zero && !blackList.contains(map.entries.first.key))
+          blackList.add(map.entries.first.key);
+      });
       print(tokenValue);
       param.sendPort.send(
         {"listenValue": tokenValue});
@@ -475,20 +486,21 @@ void watchTokenPriceHistory(ServiceData param) async
 
 Future<Map> getTokenPriceUSD(Decimal avaxUnitPriceUSD, String url, Map body, String tokenName) async
 {
-  String response = await httpGetRequest(url, body: body);
-  Decimal avaxPrice = avaxUnitPriceUSD;
-  Decimal derivedETH = Decimal.parse(json.decode(response)["data"]["token"]["derivedETH"]);
-  Decimal tokenValue = derivedETH * avaxPrice;
-  return {tokenName:tokenValue};
-}
-
-Future<String> getAVMEPriceUSD(String avaxUnitPriceUSD, String url, Map body) async
-{
-  String response = await httpGetRequest(url, body: body);
-  Decimal avaxPrice = Decimal.parse(avaxUnitPriceUSD);
-  Decimal derivedETH = Decimal.parse(json.decode(response)["data"]["token"]["derivedETH"]);
-  Decimal avmeValue = derivedETH * avaxPrice;
-  return avmeValue.toString();
+  try
+  {
+    String response = await httpGetRequest(url, body: body);
+    Decimal avaxPrice = avaxUnitPriceUSD;
+    Map data = json.decode(response)["data"]["token"];
+    if(data == null)
+      throw Exception("Failed to recover value from $tokenName, block chain returned null");
+    Decimal derivedETH = Decimal.parse(data["derivedETH"]);
+    Decimal tokenValue = derivedETH * avaxPrice;
+    return {tokenName:tokenValue};
+  } catch(e)
+  {
+    print('Exception at getTokenPriceUSD -> Token Name: $tokenName, Details:\n$e');
+    return {tokenName: Decimal.zero};
+  }
 }
 
 Future<Decimal> getAVAXPriceUSD(Map body, url) async
