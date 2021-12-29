@@ -8,9 +8,7 @@ import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/account_item.dart';
 import 'package:avme_wallet/app/model/active_contracts.dart';
 import 'package:avme_wallet/app/model/app.dart';
-import 'package:avme_wallet/app/model/boxes.dart';
 import 'package:avme_wallet/app/model/service_data.dart';
-import 'package:avme_wallet/app/model/token_chart.dart';
 import 'package:avme_wallet/app/model/token_data.dart';
 import 'package:avme_wallet/external/contracts/erc20_contract.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -346,7 +344,6 @@ Future<bool> valueSubscription(AvmeWallet appState) async
       //TODO: Change this entire thing to support multiple tokens, for now only AVAX works, and finish stuff here
       Map response = data["watchTokenPriceHistory"];
       print(response['tokenChart']["data"].runtimeType);
-      TokenChart dashboardChart = TokenChart();
       Map tokenMap = {};
       Map metaCoinMap = {};
 

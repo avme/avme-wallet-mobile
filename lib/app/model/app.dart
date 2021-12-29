@@ -6,9 +6,7 @@ import 'package:avme_wallet/app/screens/prototype/widgets/popup.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'active_contracts.dart';
-import 'boxes.dart';
 import 'network_token.dart';
-import 'token_chart.dart';
 import 'transaction_information.dart';
 import 'package:hive/hive.dart';
 import 'package:web3dart/credentials.dart';
@@ -57,19 +55,7 @@ class AvmeWallet extends ChangeNotifier
     notifyListeners();
   }
 
-
-
   TransactionInformation lastTransactionWasSucessful = new TransactionInformation();
-  Box<TokenChart> dashboardBox = Boxes.getHistory();
-  TokenChart dashboard = TokenChart();
-
-  void displayTokenChart()
-  {
-    if(dashboardBox.length > 0)
-    {
-      dashboard = dashboardBox.values.elementAt(0);
-    }
-  }
 
   void wasLastTransactionInformationSuccessful()
   {

@@ -20,7 +20,6 @@ class _BalanceState extends State<Balance> {
 
     appState = Provider.of<AvmeWallet>(context);
     // appState.walletManager.startBalanceSubscription(appState);
-    appState.displayTokenChart();
     appState.services.keys.forEach((key) {
       print("KEYS:$key");
     });
@@ -40,7 +39,6 @@ class _BalanceState extends State<Balance> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   ///AVME value chart
-                  TokenChart(appState),
                   SizedBox(
                     height: 8,
                   ),
