@@ -16,6 +16,7 @@ class InitialLoading extends StatefulWidget {
 class _InitialLoadingState extends State<InitialLoading>{
   AvmeWallet wallet;
   ActiveContracts activeContracts;
+  Future serviceSpawner;
   @override
   void initState()
   {
@@ -23,13 +24,14 @@ class _InitialLoadingState extends State<InitialLoading>{
     Provider.of<ContactsController>(context, listen: false);
     activeContracts = Provider.of<ActiveContracts>(context, listen: false);
     super.initState();
+    serviceSpawner = startWalletServices(context);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: FutureBuilder(
-        future: startWalletServices(context),
+        future: serviceSpawner,
         builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
           if(snapshot.data == null)
             return Container(
