@@ -1,18 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:isolate';
-import 'package:avme_wallet/app/controller/services/contract.dart';
-import 'package:avme_wallet/app/controller/services/database_token_value.dart';
+import 'package:avme_wallet/app/controller/database/value_history.dart';
 import 'package:avme_wallet/app/controller/services/push_notification.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/account_item.dart';
-import 'package:avme_wallet/app/model/active_contracts.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/model/service_data.dart';
-import 'package:avme_wallet/app/model/token_data.dart';
+import 'package:avme_wallet/app/model/value_history.dart';
 import 'package:avme_wallet/external/contracts/erc20_contract.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:web3dart/web3dart.dart';
 import 'package:decimal/decimal.dart';
@@ -171,6 +168,7 @@ Future<bool> balanceSubscription(AvmeWallet appState) async
         accountObject.tokensBalanceList[key] = preparedData;
         
         print(appState.activeContracts.tokens.contains(mainName));
+
         if(appState.activeContracts.tokens.contains(mainName))
         {
           accountObject.tokensBalanceList[mainName] = preparedData;
@@ -185,28 +183,6 @@ Future<bool> balanceSubscription(AvmeWallet appState) async
   return didBalanceUpdate;
 }
 
-// ///Isolated function to watch balance changes
-// void avaxBalanceChanges(ServiceData account) async
-// {
-//   EthereumAddress address = account.data["address"];
-//   http.Client httpClient = http.Client();
-//   Web3Client ethClient = Web3Client(account.data["url"], httpClient);
-//   int seconds = 0;
-//   while(true)
-//   {
-//     await Future.delayed(Duration(seconds: seconds), () async{
-//       EtherAmount balance = await ethClient.getBalance(address);
-//       account.sendPort.send(
-//         {
-//           "metacoin": {"balance" : balance.getInWei, "id" : account.data["id"]}
-//         }
-//       );
-//       if(seconds == 0) seconds = account.data["updateIn"];
-//     });
-//   }
-// }
-
-
 void _startBalanceSubscription(ServiceData param)
 {
   param.data["accounts"].forEach((account) {
@@ -214,7 +190,6 @@ void _startBalanceSubscription(ServiceData param)
     account["contracts"] = param.data["contracts"];
     account["activeTokens"] = param.data["activeTokens"];
     account["contractAddress"] = param.data["contractAddress"];
-    // avaxBalanceChanges(ServiceData(account,param.sendPort));
     _balanceSubscription(ServiceData(account,param.sendPort));
   });
 }
@@ -231,7 +206,7 @@ void _balanceSubscription(ServiceData account) async
   ///Remember, mounted contracts is stored as
   ///[<ContractAbi>"Contract Abi", <String>"ContractAddress", <String>"ChainID"]
 
-  Map<String,ERC20> contractsERC20 = {};
+  Map<String, ERC20> contractsERC20 = {};
 
   account.data["activeTokens"].forEach((String tokenName) {
     try
@@ -248,8 +223,7 @@ void _balanceSubscription(ServiceData account) async
       print("$tokenName -> $e");
       throw e;
     }
-    }
-  );
+  });
   int seconds = 0;
   List<String> blackList = [];
   while(true)
@@ -257,16 +231,22 @@ void _balanceSubscription(ServiceData account) async
     await Future.delayed(Duration(seconds: seconds), () async{
       /// AVAX/Network balance
       EtherAmount balance = await ethClient.getBalance(address);
+
       List<Map> tokenBalance = [];
-        /// Tokens balance as List<Map<String TokenName, BigInt balance>>
-        tokenBalance = await Future.wait(
-          contractsERC20.entries.map((contractItem) {
-            if(blackList.contains(contractItem.key))
-              return Future.value({contractItem.key : {"empty"}});
-            return wrapAsList(identifier: contractItem.key,
-              future: contractItem.value.balanceOf(address));
-          })
-        );
+
+      /// Tokens balance as List<Map<String TokenName, BigInt balance>>
+      tokenBalance = await Future.wait(
+        contractsERC20.entries.map((contractItem) {
+          if(blackList.contains(contractItem.key))
+            return Future.value({contractItem.key : {"empty"}});
+          return wrapAsList(
+            identifier: contractItem.key,
+            future: contractItem.value.balanceOf(address),
+            processName: "_balanceSubscription"
+          );
+        })
+      );
+
       tokenBalance.insert(0, {"AVAX": balance.getInWei});
       tokenBalance.forEach((Map map) {
         if(map.entries.first.value == "empty" && !blackList.contains(map.entries.first.key))
@@ -287,7 +267,7 @@ void _balanceSubscription(ServiceData account) async
 }
 
 ///Simple wrapper to identify later
-Future<Map> wrapAsList({String identifier , Future future}) async
+Future<Map> wrapAsList({String identifier, Future future, String processName}) async
 {
   dynamic result = false;
   print("wrapping $identifier");
@@ -298,7 +278,7 @@ Future<Map> wrapAsList({String identifier , Future future}) async
   {
     if(e is RangeError)
     {
-      print("[WARNING -> wrapAsList] Balance Subscription failed while processing $identifier, \n at $e");
+      print("[WARNING -> wrapAsList | $processName] Balance Subscription failed while processing $identifier, \n at $e");
     }
     return {identifier: "empty"};
   }
@@ -315,11 +295,20 @@ Future<bool> valueSubscription(AvmeWallet appState) async
     "contractRaw": appState.activeContracts.sContracts.contractsRaw
   };
 
-  // Box<TokenChart> box = Boxes.getHistory();
+  Map<String, List<int>> missingDates = {};
+
+  ValueHistoryTable tokenHistory = ValueHistoryTable.instance;
+
+  await Future.forEach(appState.activeContracts.tokens, (String token) async {
+    missingDates[token] = await tokenHistory.getMissingDays(token.toUpperCase());
+  });
+
+  data["avaxDates"]= await tokenHistory.getMissingDays("AVAX");
+  data['missingDates'] = missingDates;
+
   ServiceData isolateData = ServiceData(data,isolatePort.sendPort);
   appState.services["valueSubscription"] = await Isolate.spawn(startValueSubscription,isolateData);
-
-  isolatePort.listen((data) {
+  isolatePort.listen((dynamic data) async {
     if(data.containsKey("listenValue"))
     {
       List response = data["listenValue"];
@@ -338,50 +327,25 @@ Future<bool> valueSubscription(AvmeWallet appState) async
         didValueUpdated = true;
       });
     }
-
-    if(data.containsKey("watchTokenPriceHistory"))
-    {
-      //TODO: Change this entire thing to support multiple tokens, for now only AVAX works, and finish stuff here
-      Map response = data["watchTokenPriceHistory"];
-      print(response['tokenChart']["data"].runtimeType);
-      Map tokenMap = {};
-      Map metaCoinMap = {};
-
-      List tokenList = response['tokenChart']['data']['tokenDayDatas'];
-      List metaCoinList =  response['metaCoinHistory']['data']['tokenDayDatas'];
-
-      tokenList.forEach((element) {
-        tokenMap[element["date"]] = element["priceUSD"];
+    ///Processing AVAX days
+    if(data.containsKey("networkTokenHistory")) {
+      Map<String, dynamic> response = data["networkTokenHistory"];
+      List<Map> missingDays = response["data"]["tokenDayDatas"].cast<Map>();
+      bool pending = await updateTokenHistory(tokenName: "AVAX", days: missingDays, db: tokenHistory);
+      SendPort waitAvaxPort = data['waitAvaxPort'];
+      waitAvaxPort.send(pending);
+    }
+    ///Processing Tokens days
+    if(data.containsKey("tokensHistory")) {
+      print("SOMETHING RETURNED");
+      print(data["tokensHistory"]);
+      List<Map> tokens = data["tokensHistory"];
+      await Future.forEach(tokens, (Map tokenData) async
+      {
+        String tokenName = tokenData.entries.first.key;
+        List<Map> missingDays = tokenData.entries.first.value["data"]["tokenDayDatas"].cast<Map>();
+        await updateTokenHistory(tokenName: tokenName, days: missingDays, db: tokenHistory);
       });
-      metaCoinList.forEach((element) {
-        metaCoinMap[element["date"]] = element["priceUSD"];
-      });
-
-      // tokenMap.forEach((date, value) {
-      //   int epochDay = date;
-      //   ///Gabriel: Aqui ele faz o cálculo para cada dia
-      //   Decimal metaCoinValue = Decimal.fromInt(1) / Decimal.parse(metaCoinMap[epochDay]);
-      //   Decimal tokenValue = metaCoinValue * Decimal.parse(value);
-      //
-      //   print("AVAX === day: $epochDay | value:$metaCoinValue");
-      //
-      //   ///Pseudo insert em database
-      //   List<Map> databaseChart = [];
-      //   databaseChart.insert(0, {
-      //     "tokenName" : "AVME",
-      //     "value": tokenValue,
-      //     "datetime": epochDay
-      //   });
-      //
-      //   //Apenas para testes
-      //   DatabaseInterface.instance.create(TokenValue(
-      //       tokenName: 'AVAX', value: metaCoinValue.toDouble(), dateTime: epochDay))
-      //       .then((value) {
-      //     DatabaseInterface.instance.read(epochDay).then((value) => print('Inserindo na database: $value'));
-      //   });
-      //
-      //   dashboardChart.addToList(epochDay, tokenValue.toString());
-      // });
     }
   });
   do await Future.delayed(Duration(milliseconds: 150));
@@ -389,53 +353,101 @@ Future<bool> valueSubscription(AvmeWallet appState) async
   return didValueUpdated;
 }
 
-void startValueSubscription(ServiceData param)
-{
-
-  // print("Spawning watchTokenPriceHistory");
-  //
-  // watchTokenPriceHistory(
-  //   ServiceData({
-  //       "url" : url,
-  //       "tokenBodyRequest" : {"query": "{tokenDayDatas(first: 30,orderBy: date,orderDirection: desc,where:{token: \"0xde3a24028580884448a5397872046a019649b084\"}) { date priceUSD }}"},
-  //       "metaCoinBodyRequest" : {"query": "{tokenDayDatas(first: 30,orderBy: date,orderDirection: desc,where:{token: \"0xde3a24028580884448a5397872046a019649b084\"}) { date priceUSD }}"},
-  //     }
-  //   ,param.sendPort));
-
-
-  Map<String,Map> contractsRaw = param.data["contractRaw"];
-  String tokenRequest = "{token(id: \"CONTRACT_ADDRESS\"){symbol derivedETH}}";
-  Map<String,Map<String,String>> paramList = {};
-  param.data["activeTokens"].forEach((String token)
+Future<bool> updateTokenHistory({
+  List<Map> days,
+  String tokenName,
+  ValueHistoryTable db
+})
+async {
+  await Future.forEach(days, (Map day) async
   {
-    // if(!token.contains('testnet'))
-      paramList[token] = {"query":tokenRequest.replaceFirst('CONTRACT_ADDRESS', token.contains('testnet')
-        ? param.data["contractRaw"]["AVME"]['address']
-        : param.data["contractRaw"][token]['address'])};
+    String price = day['priceUSD'];
+    int date = day['date'];
+    Decimal value = Decimal.parse(price);
+    TokenHistory inserted = await db.insert(
+      TokenHistory(tokenName: tokenName, value: value, dateTime: date)
+    );
+    print(inserted);
   });
+  return true;
+}
+Future<void> startValueSubscription(ServiceData param) async
+{
+  String url = param.data["url"];
 
+  Map<String, Map<String, String>> tokenHistoryBody = {};
+  
+  Map<String, Map> contractsRaw = param.data["contractRaw"];
+  String listenBody = "{token(id: \"CONTRACT_ADDRESS\"){symbol derivedETH}}";
+  String watchPriceBody = "{tokenDayDatas(first: 30,orderBy: date,orderDirection: desc, where:{token: \"CONTRACT_ADDRESS\", date_in:[FILTERED_DAYS]}) { date priceUSD }}";
+  Map<String, List<int>> missingDates = param.data["missingDates"];
+  Map<String, Map<String, String>> tokenValueParam = {};
+
+  Future.forEach(param.data["activeTokens"], (String token) async {
+    String tokenValue = "";
+    String watchToken = "";
+    ///Não é Testnet, do contrario atribuir a consulta como AVME
+    if(!token.contains('testnet'))
+    {
+      print("USING $token");
+      tokenValue = listenBody.replaceFirst('CONTRACT_ADDRESS', contractsRaw[token]['address']);
+      if(missingDates[token].length > 0)
+        watchToken = watchPriceBody.replaceFirst('CONTRACT_ADDRESS', contractsRaw[token]['address'])
+          .replaceFirst('FILTERED_DAYS', missingDates[token].join(', '));
+    }
+    else
+    {
+      tokenValue = listenBody.replaceFirst('CONTRACT_ADDRESS', contractsRaw["AVME"]['address']);
+      if(missingDates[token].length > 0)
+        watchToken = watchPriceBody.replaceFirst('CONTRACT_ADDRESS', contractsRaw["AVME"]['address'])
+          .replaceFirst(', date_in:[FILTERED_DAYS]', '');
+    }
+    tokenValueParam[token] = {"query": tokenValue};
+    if(watchToken != "")
+      tokenHistoryBody[token] = {"query": watchToken};
+  });
+  
   listenValue(
-      ServiceData({
-        "url" : param.data["url"],
-        "tokenBodyRequest" : paramList,
-        "avaxBodyRequest" : {"query": "{pair(id: \"0x9ee0a4e21bd333a6bb2ab298194320b8daa26516\") {token0 {symbol} token1 {symbol} token0Price token1Price}}"},
-      }
-    ,param.sendPort));
+    ServiceData({
+      "url" : url,
+      "tokensRequest" : tokenValueParam,
+      "avaxBodyRequest" : {"query": "{pair(id: \"0x9ee0a4e21bd333a6bb2ab298194320b8daa26516\") {token0 {symbol} token1 {symbol} token0Price token1Price}}"},
+    },
+    param.sendPort));
+  
+  Map<String, dynamic> data = {
+    "url" : url,
+    "tokensRequest" : tokenHistoryBody,
+  };
+
+  ///Mounting AVAX dates filter
+  List<int> avax = param.data["avaxDates"];
+  
+  if(avax.length > 0)
+  {
+    data["networkTokenRequest"] = {
+      "query": "{tokenDayDatas(first: 30,orderBy: date,orderDirection: desc,where:{token: \"0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7\", date_in:[FILTERED_DAYS]}) { date priceUSD }}"
+        .replaceFirst("FILTERED_DAYS", avax.join(', '))
+    };
+  }
+  
+  watchTokenPriceHistory(ServiceData(data,param.sendPort));
 }
 
 void listenValue(ServiceData param) async
 {
   int seconds = 0;
   String url = param.data["url"];
-  Map <String, Map<String,dynamic>> tokenBodyRequest = param.data["tokenBodyRequest"];
+  Map <String, Map<String,dynamic>> tokensRequest = param.data["tokensRequest"];
   Map <String, String> avaxBodyRequest = param.data["avaxBodyRequest"];
   List blackList = [];
-  while(true)
+
+  do
   {
     await Future.delayed(Duration(seconds: seconds), () async {
       Decimal avaxPrice = await getAVAXPriceUSD(avaxBodyRequest, url);
       List<Map> tokenValue = await Future.wait(
-        tokenBodyRequest.entries.map((entry) {
+        tokensRequest.entries.map((entry) {
           if(blackList.contains(entry.key))
             return Future.value({entry.key:Decimal.zero});
           return getTokenPriceUSD(avaxPrice, url, entry.value, entry.key);
@@ -448,36 +460,68 @@ void listenValue(ServiceData param) async
       });
       print(tokenValue);
       param.sendPort.send(
-        {"listenValue": tokenValue});
+          {"listenValue": tokenValue});
     });
     if(seconds == 0) seconds = 5;
   }
+  while(true);
 }
 
 void watchTokenPriceHistory(ServiceData param) async
 {
-
-  int seconds = 0;
   String url = param.data["url"];
-  Map <String, dynamic> tokenBodyRequest = param.data["tokenBodyRequest"];
-  Map <String, dynamic> metaCoinBodyRequest = param.data["metaCoinBodyRequest"];
-  String tokenHistory;
-  String metaCoinHistory;
+  Map <String, Map<String,dynamic>> tokensRequest = param.data["tokensRequest"];
+  Map <String, dynamic> networkTokenRequest = param.data["networkTokenRequest"] ?? {};
 
-  while(true)
+  bool pendingAvaxHistory = true;
+  if(networkTokenRequest.length != 0)
   {
-    await Future.delayed(Duration(seconds: seconds), () async{
-      tokenHistory = await getTokenChartHistory(tokenBodyRequest, url);
-      metaCoinHistory = await getTokenChartHistory(metaCoinBodyRequest, url);
+    /**
+     * Using a receive port because we can't use SQLite to operate inside
+     * another Isolate, so we sent the data back to the mainThread and wait...
+     **/
+    ReceivePort socket = ReceivePort();
 
-      param.sendPort.send({
-        "watchTokenPriceHistory":{
-          "tokenChart": json.decode(tokenHistory),
-          "metaCoinHistory": json.decode(metaCoinHistory)
-        }
-      });
+    socket.listen((pending) {
+      if(pending is bool && pending == true)
+          pendingAvaxHistory = !pending;
     });
-    if(seconds == 0) seconds = 3600;
+
+    String networkTokenHistory = await httpGetRequest(url, body: networkTokenRequest);
+
+    param.sendPort.send({
+      "networkTokenHistory" : jsonDecode(networkTokenHistory),
+      'waitAvaxPort':socket.sendPort
+    });
+  }
+  else
+    pendingAvaxHistory = false;
+
+  do await Future.delayed(Duration(milliseconds: 50)); while(pendingAvaxHistory);
+
+  if(tokensRequest.length > 0)
+  {
+    List<Map> rawMissingDays = await Future.wait(
+      tokensRequest.entries.map((entry) {
+        return wrapAsList(
+          processName: "watchTokenPriceHistory",
+          identifier: entry.key,
+          future: httpGetRequest(url, body: entry.value),
+        );
+      })
+    );
+    List<Map> missingDays = [];
+    rawMissingDays.forEach((tokenData) {
+      String key = tokenData.entries.first.key;
+      dynamic data = json.decode(tokenData.entries.first.value);
+      missingDays.add({key : data});
+    });
+
+    rawMissingDays = [];
+
+    param.sendPort.send({
+      "tokensHistory": missingDays
+    });
   }
 }
 
@@ -486,12 +530,18 @@ Future<Map> getTokenPriceUSD(Decimal avaxUnitPriceUSD, String url, Map body, Str
   try
   {
     String response = await httpGetRequest(url, body: body);
+
     Decimal avaxPrice = avaxUnitPriceUSD;
+
     Map data = json.decode(response)["data"]["token"];
+
     if(data == null)
       throw Exception("Failed to recover value from $tokenName, block chain returned null");
+
     Decimal derivedETH = Decimal.parse(data["derivedETH"]);
+
     Decimal tokenValue = derivedETH * avaxPrice;
+
     return {tokenName:tokenValue};
   } catch(e)
   {
@@ -509,12 +559,6 @@ Future<Decimal> getAVAXPriceUSD(Map body, url) async
   Decimal token1Price = Decimal.parse(json.decode(response)["data"]["pair"]["token1Price"]);
 
   return token0Label == "WAVAX" ? token1Price : token0Price;
-}
-
-Future<String> getTokenChartHistory(Map body, url) async
-{
-  String response = await httpGetRequest(url, body: body);
-  return response;
 }
 
 Future<Map<int,List>> requestBalanceByAddress(Map<int, String> addresses) async
