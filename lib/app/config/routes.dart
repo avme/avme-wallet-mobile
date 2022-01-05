@@ -5,7 +5,7 @@ import 'package:avme_wallet/app/screens/qrcode_reader.dart';
 import 'package:avme_wallet/app/screens/welcome.dart';
 import 'package:flutter/material.dart';
 import 'package:avme_wallet/app/screens/tabswallet.dart';
-import 'package:avme_wallet/app/screens/initial_loading.dart';
+import 'package:avme_wallet/app/screens/splashscreen.dart';
 import 'package:avme_wallet/app/screens/new_password.dart';
 import 'package:avme_wallet/app/screens/login_old.dart';
 import 'package:avme_wallet/app/screens/debug_options.dart';
@@ -18,7 +18,7 @@ String defaultRoute = '/initialLoad';
 /// Routes that can be called anywere by their name
 Map<String,WidgetBuilder> routes =
 {
-  '/initialLoad' : (context) => InitialLoading(),
+  '/initialLoad' : (context) => SplashScreen(),
   '/registerPassword' : (context) => NewPassword(),
   '/home' : (context) => TabsWallet(),
   '/debugOptions' : (context) => Options(),

@@ -8,12 +8,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 
-class InitialLoading extends StatefulWidget {
+class SplashScreen extends StatefulWidget {
   @override
-  _InitialLoadingState createState() => _InitialLoadingState();
+  _SplashScreenState createState() => _SplashScreenState();
 }
 
-class _InitialLoadingState extends State<InitialLoading>{
+class _SplashScreenState extends State<SplashScreen>{
   AvmeWallet wallet;
   ActiveContracts activeContracts;
   Future serviceSpawner;
