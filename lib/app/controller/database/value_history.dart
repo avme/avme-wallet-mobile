@@ -131,6 +131,19 @@ class ValueHistoryTable {
     }
   }
 
+  Future<List<TokenHistory>> readLastFour(String tokenName) async {
+    final database = await instance.database;
+    final result = await database.query(
+        ValueHistoryFields.table,
+        columns: ValueHistoryFields.values,
+        limit: 4,
+        orderBy: '${ValueHistoryFields.id} ASC',
+        where: '${ValueHistoryFields.tokenName} = ?',
+        whereArgs: [tokenName]
+    );
+    return result.map((map) => TokenHistory.fromMap(map)).toList();
+  }
+
   ///Retorna uma lista de TokenValues com todas as linhas da database (30)
   Future<List<TokenHistory>> readAll() async {
     final database = await instance.database;
