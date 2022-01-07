@@ -1,6 +1,10 @@
+import 'package:avme_wallet/app/controller/database/value_history.dart';
+import 'package:avme_wallet/app/controller/services/database_token_value.dart';
 import 'package:avme_wallet/app/controller/size_config.dart';
+import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'button.dart';
 import 'notification_bar.dart';
@@ -128,6 +132,7 @@ class TokenTracker extends StatefulWidget {
     @required this.marketValue,
     @required this.asNetworkToken,
     @required this.name
+
   }) : super(key: key);
   @override
   _TokenTrackerState createState() => _TokenTrackerState();
@@ -136,6 +141,7 @@ class TokenTracker extends StatefulWidget {
 class _TokenTrackerState extends State<TokenTracker> {
   @override
   Widget build(BuildContext context) {
+    AvmeWallet app = Provider.of<AvmeWallet>(context, listen:false);
     return ConstrainedBox(
       constraints: BoxConstraints(
         minHeight: SizeConfig.screenHeight / 5
@@ -215,23 +221,44 @@ class _TokenTrackerState extends State<TokenTracker> {
               //TODO: Recover values in a 30 days period
               Expanded(
                 flex: 3,
-                child: PaintedChart(
-                  width: double.maxFinite,
-                  height: SizeConfig.screenHeight / 7,
-                  chartData: [
-                    150,
-                    95,
-                    82,
-                    80,
-                    79,
-                    75,
-                    77,
-                    78,
-                    50,
-                    62,
-                    40,
-                    80
-                  ],
+                child: FutureBuilder(
+                  //future: requestLastFourBalance(widget.name),
+                  future: lastFiveBalance(widget.name,app),
+                  builder: (context,snapshot){
+                    if(snapshot.data!=null){
+                      final List tokenValues = snapshot.data;
+                      return PaintedChart(
+                        width: double.maxFinite,
+                        height: SizeConfig.screenHeight / 7,
+                        chartData: [
+                          tokenValues.elementAt(4),
+                          tokenValues.elementAt(3),
+                          tokenValues.elementAt(2),
+                          tokenValues.elementAt(1),
+                          tokenValues.elementAt(0),
+                          // 150,
+                          // 95,
+                          // 82,
+                          // 80,
+                          // 79,
+                          // 75,
+                          // 77,
+                          // 78,
+                          // 50,
+                          // 62,
+                          // 40,
+                          // 80
+                        ],
+                      );
+                    }
+                    return Center(child: Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: CircularProgressIndicator(
+                        color: AppColors.purple,
+                        strokeWidth: 6,
+                      ),
+                    ));
+                  }
                 )
               )
             ],
@@ -242,3 +269,19 @@ class _TokenTrackerState extends State<TokenTracker> {
   }
 }
 
+Future<List> lastFiveBalance(String name,AvmeWallet appState) async {
+  //print('CHAMANDO LAST FIVE BALANCE');
+  List tokenValues = [];
+  if (name=='AVAX'){
+    tokenValues.add(double.tryParse(appState.networkToken.value));
+  } else {
+    tokenValues.add(double.tryParse(appState.activeContracts.token.tokenValue(name)));
+    }
+        await ValueHistoryTable.instance.readLastFour(name).then((value) => {
+      value.forEach((element) {
+        tokenValues.add(element.value.toDouble());
+      })
+    });
+    //print('tokenValues $tokenValues');
+    return tokenValues;
+  }
