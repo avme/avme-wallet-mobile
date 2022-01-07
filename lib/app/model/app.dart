@@ -2,9 +2,13 @@ import 'dart:isolate';
 
 import 'package:avme_wallet/app/controller/file_manager.dart';
 import 'package:avme_wallet/app/controller/wallet_manager.dart';
+import 'package:avme_wallet/app/model/token.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/popup.dart';
+import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:provider/provider.dart';
+import '../../main.dart';
 import 'active_contracts.dart';
 import 'network_token.dart';
 import 'transaction_information.dart';
@@ -172,6 +176,40 @@ class AvmeWallet extends ChangeNotifier
       //...error
       return [false, authMap["message"]];
     }
-
   }
+}
+
+class WalletInterface {
+
+  static BuildContext _currentContext = NavigationService.globalContext.currentContext;
+
+  AvmeWallet _wallet;
+
+  List<String> _enabledTokens = [];
+  Decimal _avaxRaw = Decimal.zero;
+  String _avaxValue = '';
+  NetworkToken _networkToken;
+  Token _tokens;
+  List<AccountObject> _accounts;
+
+  final bool listen;
+
+  WalletInterface({this.listen = true}) {
+    this._wallet = Provider.of<AvmeWallet>(_currentContext, listen: this.listen);
+    _enabledTokens = this.wallet.activeContracts.tokens;
+    _networkToken = this.wallet.networkToken;
+    _avaxRaw = this._networkToken.decimal;
+    _avaxValue = this._networkToken.value;
+    _tokens = this.wallet.activeContracts.token;
+    _accounts = this.wallet.accountList.entries.map((e) => e.value).toList();
+  }
+
+  AvmeWallet get wallet => this._wallet;
+  List<String> get enabledTokens => this._enabledTokens;
+
+  Decimal get avaxRaw => this._avaxRaw;
+  String get avaxValue => this._avaxValue;
+  String tokenValue(String tokenName) => _tokens.tokenValue(tokenName);
+  Decimal tokenRaw(String tokenName) => _tokens.decimal(tokenName);
+  List<AccountObject> get accounts => this._accounts;
 }

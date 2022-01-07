@@ -46,11 +46,17 @@ class AvmeWalletApp extends StatelessWidget {
     ));
     return OverlaySupport.global(
       child: MaterialApp(
+        navigatorKey: NavigationService.globalContext,
         theme: avmeTheme,
         initialRoute: defaultRoute,
         routes: routes),
     );
   }
+}
+
+class NavigationService {
+  static GlobalKey<NavigatorState> globalContext =
+    GlobalKey<NavigatorState>();
 }
 
 
