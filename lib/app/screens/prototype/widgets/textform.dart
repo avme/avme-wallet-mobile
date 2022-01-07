@@ -65,9 +65,6 @@ class _AppTextFormFieldState extends State<AppTextFormField> with TickerProvider
   void initState() {
     super.initState();
 
-    if(widget.controller == null)
-      throw Exception(['No controller found for AppTextFormField']);
-
     myFocus = FocusNode();
     animation = AnimationController(
       vsync: this,
@@ -83,10 +80,14 @@ class _AppTextFormFieldState extends State<AppTextFormField> with TickerProvider
         hideFloatingIcon = !hideFloatingIcon;
       });
     });
-    if(widget.maxLength != null)
-      widget.controller.addListener(() {
-        setState(() {});
-      });
+    if(widget.controller != null)
+    {
+      if(widget.maxLength != null)
+        widget.controller.addListener(() {
+          setState(() {});
+        });
+    }
+
   }
   @override
   Widget build(BuildContext context) {
