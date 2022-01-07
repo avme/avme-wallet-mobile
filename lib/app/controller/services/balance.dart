@@ -400,7 +400,7 @@ Future<void> startValueSubscription(ServiceData param) async
       tokenValue = listenBody.replaceFirst('CONTRACT_ADDRESS', contractsRaw["AVME"]['address']);
       if(missingDates[token].length > 0)
         watchToken = watchPriceBody.replaceFirst('CONTRACT_ADDRESS', contractsRaw["AVME"]['address'])
-          .replaceFirst(', date_in:[FILTERED_DAYS]', '');
+            .replaceFirst('FILTERED_DAYS', missingDates[token].join(', '));
     }
     tokenValueParam[token] = {"query": tokenValue};
     if(watchToken != "")
