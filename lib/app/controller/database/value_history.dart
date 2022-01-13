@@ -113,6 +113,7 @@ class ValueHistoryTable {
     return _filterDays;
   }
 
+  ///Retorna todas as entradas na data especificada
   Future<TokenHistory> read(int date) async {
     //TODO:modificar baseado em o que o usuário quer ler com outras entradas fora data
     final database = await instance.database;
@@ -131,12 +132,14 @@ class ValueHistoryTable {
     }
   }
 
-  Future<List<TokenHistory>> readLastFour(String tokenName) async {
+  ///Retorna os ultimos valores [limit] salvos na database do token [tokenName]
+  ///limit máximo de 30, pois apenas os ultimos 30 dias são salvos na database
+  Future<List<TokenHistory>> readAmount(String tokenName, int limit) async {
     final database = await instance.database;
     final result = await database.query(
         ValueHistoryFields.table,
         columns: ValueHistoryFields.values,
-        limit: 4,
+        limit: limit,
         orderBy: '${ValueHistoryFields.id} ASC',
         where: '${ValueHistoryFields.tokenName} = ?',
         whereArgs: [tokenName]
