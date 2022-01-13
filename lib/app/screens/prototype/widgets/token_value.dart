@@ -230,6 +230,7 @@ class _TokenTrackerState extends State<TokenTracker> {
                       return PaintedChart(
                         width: double.maxFinite,
                         height: SizeConfig.screenHeight / 7,
+                        name: widget.name,
                         chartData: [
                           tokenValues.elementAt(4),
                           tokenValues.elementAt(3),
@@ -277,7 +278,7 @@ Future<List> lastFiveBalance(String name,AvmeWallet appState) async {
   } else {
     tokenValues.add(double.tryParse(appState.activeContracts.token.tokenValue(name)));
     }
-        await ValueHistoryTable.instance.readLastFour(name).then((value) => {
+        await ValueHistoryTable.instance.readAmount(name,4).then((value) => {
       value.forEach((element) {
         tokenValues.add(element.value.toDouble());
       })
