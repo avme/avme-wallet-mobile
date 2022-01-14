@@ -271,7 +271,6 @@ class _TokenTrackerState extends State<TokenTracker> {
 }
 
 Future<List> lastFiveBalance(String name,AvmeWallet appState) async {
-  //print('CHAMANDO LAST FIVE BALANCE');
   List tokenValues = [];
   if (name=='AVAX'){
     tokenValues.add(double.tryParse(appState.networkToken.value));
@@ -283,6 +282,5 @@ Future<List> lastFiveBalance(String name,AvmeWallet appState) async {
         tokenValues.add(element.value.toDouble());
       })
     });
-    //print('tokenValues $tokenValues');
     return tokenValues;
   }
