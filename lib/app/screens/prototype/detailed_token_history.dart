@@ -8,6 +8,7 @@ import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/card.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/notification_bar.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -27,32 +28,23 @@ class _SyncFusionChartState extends State<SyncFusionChart> {
 
   late DateFormat dateFormat;
   late CrosshairBehavior _crosshairBehavior;
-  BoxDecoration _boxDecoration = BoxDecoration(
-    /*
-    gradient: LinearGradient(
-        begin: Alignment.centerLeft, 
-        end: Alignment.bottomRight, 
-        colors: <Color>[ 
-          Color(0xFF521380),
-          Color(0xFF35174F),
-        ]
-    ),
-     */
-    //color: Color(0xFF521380),
-    //border: Border.all(color: AppColors.purple, width: 3.0),
-    //border: Border.all(color: AppColors.cardDefaultColor, width: 3.0),
-    color: AppColors.cardDefaultColor,
-    //borderRadius: BorderRadius.circular(10),
-  );
+  late List<ChartSampleData> _chartData;
+  late double _minVal ,_maxVal ,_chartMinVal ,_chartMaxVal;
+
+  Icon uparrow = Icon(Icons.arrow_upward,color: Colors.green);
+  Icon downarrow = Icon(Icons.arrow_downward,color: Colors.red);
+  Icon line = Icon(Icons.horizontal_rule,color: Colors.white);
 
   @override
   void initState() {
-
+    //Maybe remove this, this would make so the date axis would display as
+    //the user's phone locale, but leaving could also be used to force an US style
     initializeDateFormatting();
     _crosshairBehavior = CrosshairBehavior(
         enable: true,
         activationMode: ActivationMode.singleTap,
-        shouldAlwaysShow: true
+        shouldAlwaysShow: true,
+        lineDashArray: [5,5]
     );
     super.initState();
   }
@@ -60,10 +52,6 @@ class _SyncFusionChartState extends State<SyncFusionChart> {
   @override
   Widget build(BuildContext context) {
     AvmeWallet app = Provider.of<AvmeWallet>(context, listen:false);
-    List<String> availableTokens = ["AVAX"];
-    availableTokens.addAll(app.currentAccount.tokensBalanceList.keys);
-    print('availableTokens: $availableTokens');
-    //TODO: Add a list with all avaliable tokens, user can tap a token and switch graph
     /*
     For the list to work, best thing to do is to change most of the code so it
     will load based on the current variable and not a set parameter like it currently is.
@@ -72,77 +60,171 @@ class _SyncFusionChartState extends State<SyncFusionChart> {
     List can be just a setState that changes the name variable
      */
 
+    tokenCard(){
+
+      List<Widget> _image = [], _textList = [];
+      List<Widget> _floatValue = [Text('Value: ${_chartData.last.close.toStringAsFixed(4)}',style: TextStyle(fontSize: SizeConfig.fontSize*1.3))];
+      double _percentage;
+
+      Tooltip tooltip(String message, String title, double size){
+        return Tooltip(
+          decoration: BoxDecoration(
+              color: AppColors.blue2,
+              borderRadius: BorderRadius.circular(4)
+          ),
+          message: message,
+          textStyle: TextStyle(color: Colors.white),
+          preferBelow: false,
+          child: Text(title,style: TextStyle(fontSize: SizeConfig.fontSize*size),),
+        );
+      }
+
+      _percentage = 100-((_chartData.last.close*100)/_chartData.last.open);
+
+      if (_chartData.last.close>_chartData.last.open)
+      {
+        _floatValue..add(uparrow)
+          ..add(Text('\$${_chartData.last.close.toString().substring(0,8)}',style: TextStyle(fontSize: SizeConfig.fontSize*1.3,color: Colors.green),));
+      } if (_chartData.last.close<_chartData.last.open) {
+        _floatValue..add(downarrow)
+          //..add(Text('\$${_chartData.last.close.toString().substring(0,8)}',style: TextStyle(fontSize: SizeConfig.fontSize*1.6,color: Colors.red),));
+          ..add(Text('${_percentage.toString().substring(0,4)}%',style: TextStyle(fontSize: SizeConfig.fontSize*1.3,color: Colors.red),));
+      } else {
+        _floatValue..add(line)
+          ..add(Text('\$${_chartData.last.close.toString().substring(0,8)}',style: TextStyle(fontSize: SizeConfig.fontSize*1.3,color: Colors.white),));
+      }
+
+      if(widget.tokenName=='AVAX')
+      {
+
+        _image..add(Text('Balance:',style: TextStyle(fontSize: SizeConfig.fontSize*2),))
+          ..add(Text(shortAmount(app.currentAccount.balance),style: TextStyle(fontSize: SizeConfig.fontSize),))
+          ..add(resolveImage('assets/avax_logo.png', width: SizeConfig.safeBlockVertical * 10));
+
+        _textList..add(Text('Token Info:',style: TextStyle(fontSize: SizeConfig.fontSize*1.8)))
+          ..add(SizedBox(height: SizeConfig.safeBlockVertical,))
+          ..add(Text('Name: Avalanche',style: TextStyle(fontSize: SizeConfig.fontSize*1.3)))
+          ..add(Text('Symbol: ${widget.tokenName}',style: TextStyle(fontSize: SizeConfig.fontSize*1.3)))
+          ..add(Row(children: _floatValue))
+          ..add(Text('Highest: ${_chartMaxVal.toStringAsFixed(4)}',style: TextStyle(fontSize: SizeConfig.fontSize*1.3,color: AppColors.labelDisabledColor)))
+          ..add(Text('Lowest: ${_chartMinVal.toStringAsFixed(4)}',style: TextStyle(fontSize: SizeConfig.fontSize*1.3,color: AppColors.labelDisabledColor)));
+
+      } else {
+
+        _image..add(Text('Balance:',style: TextStyle(fontSize: SizeConfig.fontSize*1.8),))
+          ..add(Text(shortAmount(shortAmount(app.currentAccount.tokenWei(name: widget.tokenName))),style: TextStyle(fontSize: SizeConfig.fontSize),))
+          ..add(resolveImage(app.activeContracts.sContracts.contractsRaw[widget.tokenName]!["logo"], width: SizeConfig.safeBlockVertical * 10));
+
+        _textList..add(Text('Token Info:',style: TextStyle(fontSize: SizeConfig.fontSize*2)))
+          ..add(SizedBox(height: SizeConfig.safeBlockVertical,))
+          ..add(Text(
+              'Name: ${app.activeContracts.sContracts.contractsRaw.keys.firstWhere(
+                      (element) => app.activeContracts.sContracts.contractsRaw[element]!['symbol']==widget.tokenName)}',
+              style: TextStyle(fontSize: SizeConfig.fontSize*1.3)))
+          ..add(Text('Symbol: ${widget.tokenName}',style: TextStyle(fontSize: SizeConfig.fontSize*1.3)))
+          ..add(Row(children: _floatValue))
+          ..add(Text('Highest: ${_chartMaxVal.toStringAsFixed(4)}',style: TextStyle(fontSize: SizeConfig.fontSize*1.3,color: AppColors.labelDisabledColor)))
+          ..add(Text('Lowest: ${_chartMinVal.toStringAsFixed(4)}',style: TextStyle(fontSize: SizeConfig.fontSize*1.3,color: AppColors.labelDisabledColor)));
+
+        /*
+        _image..add(resolveImage(app.activeContracts.sContracts.contractsRaw[widget.tokenName]!["logo"], width: SizeConfig.safeBlockVertical * 7))
+          ..add(tooltip('Token name', widget.tokenName, 1.6));
+
+          _textList..add(tooltip('Token amount', shortAmount(app.currentAccount.tokenWei(name: widget.tokenName)),2))
+          ..add(tooltip('Market value', shortAmount(app.currentAccount.tokenBalance(name: widget.tokenName),comma: false, length: 3), 1.6))
+          ..add(Tooltip(
+            decoration: BoxDecoration(
+                color: AppColors.blue2,
+                borderRadius: BorderRadius.circular(4)
+            ),
+            message: 'Last day difference',
+            textStyle: TextStyle(color: Colors.white),
+            preferBelow: false,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: _floatValue,
+            ),
+          ));
+         */
+
+         }
+
+      return Expanded(
+        flex: 3,
+        child: Container(
+            width: double.maxFinite,
+            //color: Colors.lightGreenAccent[100],
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Expanded(flex: 6,
+                    child: Container(
+                      padding: EdgeInsets.only(left: SizeConfig.safeBlockHorizontal*2),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: _textList,
+                      ),
+                    )
+                ),
+                Expanded(flex: 4,
+                    child: Container(
+                        //color: Colors.yellow,
+                        //padding: EdgeInsets.all(SizeConfig.safeBlockVertical*3),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: _image,
+                        )
+                    )
+                ),
+              ],
+            )
+        ),
+      );
+    }
+
     valueList(){
 
       List<Widget> rows = [];
 
-      availableTokens.forEach((tokenName) {
-        if (tokenName == 'AVAX')
-        {
-          rows.add(
-            Container(
-                margin: EdgeInsets.symmetric(vertical: SizeConfig.safeBlockVertical),
-                child: Row(
+      _chartData.forEach((element) {
+        rows.add(
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
                   children: [
-                    Padding(
-                      padding: EdgeInsets.only(right:SizeConfig.safeBlockVertical * 1.5),
-                      child: resolveImage('assets/avax_logo.png', width: SizeConfig.safeBlockVertical * 3.5),
-                    ),
-                    Text(tokenName, style: AppTextStyles.label,),
-                  ],
+                    (element.segmentColor==Colors.green) ? uparrow : downarrow,
+                    //'${element.x.month}/${element.x.day.toString().length==1 ? '0'+element.x.day.toString() : element.x.day.toString()}'
+                    Text('${element.x.month.toString().length==1 ? '0':''}${element.x.month.toString()}'
+                        '/${element.x.day.toString().length==1 ? '0':''}${element.x.day.toString()}'
+                        '/${element.x.year.toString().substring(2,4)}',
+                      style: TextStyle(fontSize: SizeConfig.fontSize*1.3,overflow: TextOverflow.ellipsis),),
+                  ]
                 ),
-              ),
-          );
-        }
-        if(tokenName != availableTokens.first)
-        {
-          rows.add(
-              Container(
-                margin: EdgeInsets.symmetric(vertical: SizeConfig.safeBlockVertical),
-                child: Row(
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.only(right:SizeConfig.safeBlockVertical * 1.5),
-                      child: resolveImage(app.activeContracts.sContracts.contractsRaw[tokenName]!["logo"], width: SizeConfig.safeBlockVertical * 3.5),
-                    ),
-                    Text("$tokenName (${app.activeContracts.sContracts
-                        .contractsRaw[tokenName]!["symbol"]})", style: AppTextStyles.label,),
-                  ],
-                ),
-              ),
-          );
-        }
+                Text('\$${element.close}',style: TextStyle(fontSize: SizeConfig.fontSize*1.3),)
+              ],
+            )
+        );
       });
-      rows.add(
-        Container(
-          margin: EdgeInsets.symmetric(vertical: SizeConfig.safeBlockVertical),
-          child: Row(
-            children: [
-              Padding(
-                padding: EdgeInsets.only(right:SizeConfig.safeBlockVertical * 1.5),
-                child: resolveImage('assets/avax_logo.png', width: SizeConfig.safeBlockVertical * 3.5),
-              ),
-              Text("change this to a list of date - value", style: AppTextStyles.label,),
-            ],
-          ),
-        ),
-      );
-      print('rows: $rows');
 
       return Expanded(
-        flex: 1,
+        flex: 3,
         child: Container(
           color: AppColors.darkBlue,
           margin: EdgeInsets.only(
             left: SizeConfig.safeBlockHorizontal*4,
             right: SizeConfig.safeBlockHorizontal*4,
           ),
-          padding: EdgeInsets.only(
-            left: SizeConfig.safeBlockHorizontal*4,
-            right: SizeConfig.safeBlockHorizontal*4,
-          ),
-          child: ListView(
-            children: rows,
+          child: ListView.separated(
+            itemCount: _chartData.length,
+            separatorBuilder: (BuildContext context, int index) => Divider(height: 0),
+            itemBuilder: (BuildContext context, int index)
+            {
+              return ListTile(
+                title: rows.reversed.elementAt(index),
+              );
+            },
           ),
         ),
       );
@@ -150,12 +232,14 @@ class _SyncFusionChartState extends State<SyncFusionChart> {
 
     graph(AsyncSnapshot snapshot){
       final Map<String,dynamic> _chartInfo = snapshot.data as Map<String,dynamic>;
-      final List<ChartSampleData> _chartData = _chartInfo['chartData'];
+      _chartData = _chartInfo['chartData'];
       final variation = ((_chartInfo['maxVal'] - _chartInfo['minVal'])/0.8)/8;
-      final minVal = _chartInfo['minVal'] - variation;
-      final maxVal = _chartInfo['maxVal'] + variation;
+      _chartMinVal = _chartInfo['minVal'];
+      _chartMaxVal = _chartInfo['maxVal'];
+      _minVal = _chartInfo['minVal'] - variation;
+      _maxVal = _chartInfo['maxVal'] + variation;
       print('minVal ${_chartInfo['minVal']}, maxVal ${_chartInfo['maxVal']}');
-      print('INFO: variation $variation, minVal $minVal, maxVal $maxVal');
+      print('INFO: variation $variation, minVal $_minVal, maxVal $_maxVal');
       return Scaffold(
         //backgroundColor: AppColors.cardDefaultColor,
         body: AppCard(
@@ -163,16 +247,19 @@ class _SyncFusionChartState extends State<SyncFusionChart> {
             //color: AppColors.cardDefaultColor,
             child: Column(
               children: [
+                //Token Details such as name and value
+                tokenCard(),
                 Expanded(
-                  flex: 2,
+                  flex: 6,
                   child: Container(
                     width: double.maxFinite,
-                    padding: EdgeInsets.only(right: SizeConfig.safeBlockHorizontal*2,top: SizeConfig.safeBlockVertical),
+                    margin: EdgeInsets.only(top: SizeConfig.safeBlockVertical),
+                    padding: EdgeInsets.only(right: SizeConfig.safeBlockHorizontal*2,bottom: SizeConfig.safeBlockVertical),
                     //margin: EdgeInsets.only(top: SizeConfig.safeBlockVertical),
                     child: SfCartesianChart(
                       crosshairBehavior: _crosshairBehavior,
                       //borderColor: AppColors.purple,
-                      borderWidth: 2,
+                      //borderWidth: 2,
                       //plotAreaBorderColor: Colors.green,
                       plotAreaBackgroundColor: AppColors.darkBlue,
                       zoomPanBehavior: ZoomPanBehavior(
@@ -197,6 +284,7 @@ class _SyncFusionChartState extends State<SyncFusionChart> {
                         )
                       ],
                       primaryXAxis: DateTimeAxis(
+                          labelStyle: TextStyle(fontSize: SizeConfig.fontSize),
                           dateFormat: DateFormat.MMMd(Platform.localeName),
                           majorGridLines: MajorGridLines(width: 1,dashArray: [1,5]),
                           interval: 5,
@@ -209,8 +297,9 @@ class _SyncFusionChartState extends State<SyncFusionChart> {
                           )
                       ),
                       primaryYAxis: NumericAxis(
-                          minimum: minVal,
-                          maximum: maxVal,
+                          labelStyle: TextStyle(fontSize: SizeConfig.fontSize),
+                          minimum: _minVal,
+                          maximum: _maxVal,
                           interval: variation,
                           numberFormat: NumberFormat.simpleCurrency(decimalDigits: 3),
                           interactiveTooltip: InteractiveTooltip(
@@ -221,39 +310,7 @@ class _SyncFusionChartState extends State<SyncFusionChart> {
                     ),
                   ),
                 ),
-
-                Expanded(
-                  flex: 1,
-                  child: Container(
-                      width: double.maxFinite,
-                      //color: Colors.lightGreenAccent[100],
-                      child: Row(
-                        children: [
-                          Expanded(flex: 1,
-                              child: Container(
-                                padding: EdgeInsets.all(SizeConfig.safeBlockVertical*4),
-                                child: Image.asset(
-                                    'assets/avax_logo.png',
-                                    fit: BoxFit.contain),
-                              )
-                          ),
-                          Expanded(flex: 1,
-                              child: Container(
-                                padding: EdgeInsets.only(right: SizeConfig.safeBlockHorizontal*2),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    Text('still under progress', style: TextStyle(fontSize: SizeConfig.fontSize*2)),
-                                    Text('23.412778', style: TextStyle(fontSize: SizeConfig.fontSize*2)),
-                                    Text('\$1861.64646',style: AppTextStyles.span.copyWith(fontSize: SizeConfig.fontSize*2)),
-                                  ],
-                                ),
-                              )
-                          ),
-                        ],
-                      )
-                  ),
-                ),
+                //List showing each date and value
                 valueList(),
               ],
             ),
@@ -265,7 +322,8 @@ class _SyncFusionChartState extends State<SyncFusionChart> {
     //Prepare the info and load the graph with it
     return SafeArea(
       child: FutureBuilder(
-        future: readFromDatabase(widget.tokenName,app),
+        future: Future.delayed(Duration(milliseconds: 400)).then((value) => readFromDatabase(widget.tokenName,app)),
+        //future: readFromDatabase(widget.tokenName,app),
         builder: (BuildContext context,snapshot){
           if(snapshot.connectionState == ConnectionState.done){
             return graph(snapshot);
