@@ -6,8 +6,11 @@ class Token extends ChangeNotifier
   Map<String, Decimal> _tokenValues = {};
 
   void updateToken(String key, Decimal value) {
-    _tokenValues[key] = value;
-    notifyListeners();
+    if(this._tokenValues[key] != value)
+    {
+      _tokenValues[key] = value;
+      notifyListeners();
+    }
   }
 
   void removeToken(String key)
