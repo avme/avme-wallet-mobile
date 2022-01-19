@@ -107,14 +107,17 @@ class _SyncFusionChartState extends State<SyncFusionChart> {
                               builder: (_, AsyncSnapshot<Widget> snapshot){
                                 if(snapshot.data != null)
                                   return snapshot.data!;
-                                else return Center(
-                                    child: Padding(
-                                      padding: EdgeInsets.all(8.0),
-                                      child: CircularProgressIndicator(
-                                        color: AppColors.purple,
-                                        strokeWidth: 6,
-                                      ),
-                                    )
+                                else return Expanded(
+                                  flex: 6,
+                                  child: Center(
+                                      child: Padding(
+                                        padding: EdgeInsets.all(8.0),
+                                        child: CircularProgressIndicator(
+                                          color: AppColors.purple,
+                                          strokeWidth: 6,
+                                        ),
+                                      )
+                                  ),
                                 );
                               },
                             ),
@@ -445,7 +448,7 @@ class _SyncFusionChartState extends State<SyncFusionChart> {
     List<ChartSampleData> days = [];
     bool isFirst = true;
     double _aux = 0, _minVal = 0, _maxVal = 0;
-    await ValueHistoryTable.instance.readAmount(tokenName, 30).then((value) =>
+    await ValueHistoryTable.instance.readAmount(tokenName, 30).then((value)
     {
       value.reversed.forEach((element) {
         if (isFirst)
@@ -462,7 +465,7 @@ class _SyncFusionChartState extends State<SyncFusionChart> {
           if (element.value.toDouble()>_maxVal) _maxVal = element.value.toDouble();
           if (element.value.toDouble()<_minVal) _minVal = element.value.toDouble();
         }
-      })
+      });
     });
     _chartData = days;
     return {"chartSampleData": days, "aux": [_aux, _minVal, _maxVal]};
@@ -490,7 +493,7 @@ class _SyncFusionChartState extends State<SyncFusionChart> {
           ,aux,
           currentValue)
       );
-    this._chartData.forEach((element) => print(element));
+    //this._chartData.forEach((element) => print(element));
     _chartInfo = {
       'chartData' : this._chartData,
       'minVal' : minVal,

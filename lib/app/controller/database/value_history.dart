@@ -140,7 +140,7 @@ class ValueHistoryTable {
         ValueHistoryFields.table,
         columns: ValueHistoryFields.values,
         limit: limit,
-        orderBy: '${ValueHistoryFields.id} ASC',
+        orderBy: '${ValueHistoryFields.dateTime} DESC',
         where: '${ValueHistoryFields.tokenName} = ?',
         whereArgs: [tokenName]
     );
