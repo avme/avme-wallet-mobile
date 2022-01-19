@@ -21,7 +21,8 @@ class TokenDistribution extends StatefulWidget {
   // };
   final Map<String, List<dynamic>> chartData;
   final bool shouldAnimate;
-  const TokenDistribution({Key key, @required this.chartData, @required this.shouldAnimate}) : super(key: key);
+  final TabController appScaffoldTabController;
+  const TokenDistribution({Key key, @required this.chartData, @required this.shouldAnimate, this.appScaffoldTabController}) : super(key: key);
   @override
   _TokenDistributionState createState() => _TokenDistributionState();
 }
@@ -116,12 +117,8 @@ class _TokenDistributionState extends State<TokenDistribution> {
           SizedBox(
             height: 12,
           ),
-          AppNeonButton(onPressed: (){
-            NotificationBar().show(
-                context,
-                text: "Not implemented"
-            );
-          }, text: "SHOW AVAILABLE TOKENS"),
+          AppNeonButton(onPressed: () => widget.appScaffoldTabController.index = 0
+          , text: "SHOW AVAILABLE TOKENS"),
         ],
       ),
     );
