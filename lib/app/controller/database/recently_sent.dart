@@ -39,19 +39,11 @@ class RecentlySentTable {
     CREATE TABLE ${RecentlySentFields.table}(
     ${RecentlySentFields.id} $idType,
     ${RecentlySentFields.name} $varcharNameType,
-    ${RecentlySentFields.contactId} $varcharAddressType
+    ${RecentlySentFields.address} $varcharAddressType
     )
     ''';
     print(createTbQuery);
     await db.execute(createTbQuery);
-
-    String insert = '''
-    INSERT INTO ${RecentlySentFields.table} (${RecentlySentFields.name}, ${RecentlySentFields.contactId}) values
-      ('User One','0x4214496147525148769976fb554a8388117e25b1'),
-      ('User Two','0x4214496147525148769976fb554a8388117e25b2'),
-      ('User Three','0x4214496147525148769976fb554a8388117e25b3');
-    ''';
-    await db.execute(insert);
   }
 
   /// Insere Contato na database.
@@ -68,7 +60,7 @@ class RecentlySentTable {
     final result = await database.query(RecentlySentFields.table, orderBy: '${RecentlySentFields.id} DESC');
     bool isInTable = false;
     result.forEach((element) {
-      if(element['contactId']==values.contactId)
+      if(element['address']==values.address)
       {
         isInTable = true;
       }
@@ -78,15 +70,15 @@ class RecentlySentTable {
       //Se ja for existente na tabela, deletar a entrada e adicionar a entrada novamente
       print('Já existe na tabela');
 
-      delete(values.contactId).then((value) async {
+      delete(values.address).then((value) async {
         if(value!=0)
         {
-          print('Delete address ${values.contactId} successfull');
-          values = values.copy(name: values.name, contactId: values.contactId);
+          print('Delete address ${values.address} successfull');
+          values = values.copy(name: values.name, address: values.address);
           final id = await database.insert(RecentlySentFields.table, values.toMap());
           values = values.copy(id: id);
         } else {
-          print('Error deleting address ${values.contactId}');
+          print('Error deleting address ${values.address}');
           values = values.copy();
         }
       });
@@ -95,7 +87,7 @@ class RecentlySentTable {
       //Se não for existente e tiver três, delete o ultimo contato qualquer e adicione o novo
       print('Não existe na tabela');
       if(result.length==3) await deleteLast();
-      values = values.copy(name: values.name, contactId: values.contactId);
+      values = values.copy(name: values.name, address: values.address);
       print('values $values');
       final id = await database.insert(RecentlySentFields.table, values.toMap());
       return values.copy(id: id);
@@ -114,18 +106,17 @@ class RecentlySentTable {
 
     final query = await database.delete(
       RecentlySentFields.table,
-      where: '${RecentlySentFields.contactId} = ?',
+      where: '${RecentlySentFields.address} = ?',
       whereArgs: [address],
     );
 
     if(query==0)
     {
       print('An error occurred deleting address $address');
-      return query;
     } else {
       print('Address $address successfully deleted');
-      return query;
     }
+    return query;
   }
 
   ///Deletar o ultimo id
@@ -134,9 +125,9 @@ class RecentlySentTable {
     final queryResult = await database.query(RecentlySentFields.table,orderBy: '${RecentlySentFields.id} ASC',limit: 1);
     if(queryResult.isNotEmpty)
     {
-      final filtered = queryResult.map((map) => RecentlySent.fromMap(map)).toList()[0].contactId;
+      final filtered = queryResult.map((map) => RecentlySent.fromMap(map)).toList()[0].address;
       final query =  await database.rawDelete(
-          'DELETE FROM ${RecentlySentFields.table} WHERE ${RecentlySentFields.contactId} = \'$filtered\''
+          'DELETE FROM ${RecentlySentFields.table} WHERE ${RecentlySentFields.address} = \'$filtered\''
       );
       if(query==0)
       {
