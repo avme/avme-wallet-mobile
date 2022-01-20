@@ -1,12 +1,14 @@
 import 'dart:convert';
 
 import 'package:avme_wallet/app/controller/contacts.dart';
+import 'package:avme_wallet/app/controller/database/recently_sent.dart';
 import 'package:avme_wallet/app/controller/services/contract.dart';
 import 'package:avme_wallet/app/controller/size_config.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/active_contracts.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/model/contacts.dart';
+import 'package:avme_wallet/app/model/recently_sent.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/button.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/card.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/labeltext.dart';
@@ -198,61 +200,92 @@ class _SendState extends State<Send> {
                 )
             ),
             AppCard(
-              child: GestureDetector(
-                //onTap: () => NotificationBar().show(context, text:"Not implemented."),
-                child: Container(
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      color: AppColors.darkBlue
+              child: Column(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(
+                      top: SizeConfig.safeBlockVertical,
+                      bottom: SizeConfig.safeBlockVertical*1.8,
+                      left: SizeConfig.safeBlockHorizontal*2
+                    ),
+                    child: Container(alignment: Alignment.centerLeft,child: AppLabelText("Frequent contacts")),
                   ),
-                  child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 18,
-                          horizontal: 14
-                      ),
-                      //Todo: Implement "address/contact list" with updated contact storage
-                      child: Row(
-                        children: [
-                          Expanded(
-                            flex: 2,
-                            child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: contactList()!=null
-                                    ? [Container(
-                                    height: SizeConfig.safeBlockVertical*32,
-                                    child: SingleChildScrollView(child: contactList()))]
-                                    : [Text('Empty'),Text('Contacts'),Text('List')]
-                              /*
-                            Icon(Icons.account_circle_outlined, size: 32,),
-                            Padding(
-                              padding: const EdgeInsets.only(left: 8.0),
-                              child: Text("Address book", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),),
-                            ),
-                             */
-                              //texto adicionado abaixo
-
-                              //texto adicionado acima
-
-                            ),
-                          ),
-                          /*
-                      Expanded(
+                  Container(
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        color: AppColors.darkBlue
+                    ),
+                    child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 18,
+                            horizontal: 14
+                        ),
+                        //Todo: Implement "address/contact list" with updated contact storage
                         child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            Icon(Icons.arrow_forward_ios, color: AppColors.labelDefaultColor,)
+                            Expanded(
+                              flex: 2,
+                              child: FutureBuilder(
+                                    future: contactList(),
+                                    builder: (BuildContext context, snapshot)
+                                      {
+                                        if (snapshot.connectionState==ConnectionState.done)
+                                          {
+                                            if(snapshot.hasError)
+                                              {
+                                                return Container(
+                                                  height: SizeConfig.safeBlockVertical*32,
+                                                  child: Padding(
+                                                    padding: EdgeInsets.all(8.0),
+                                                    child: Text('Something went wrong')
+                                                  ),
+                                                );
+                                              }
+                                            return snapshot.data;
+                                          } else {
+                                          return Container(
+                                            height: SizeConfig.safeBlockVertical*32,
+                                            child: Padding(
+                                              padding: EdgeInsets.all(8.0),
+                                              child: CircularProgressIndicator(
+                                                color: AppColors.purple,
+                                                strokeWidth: 6,
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      }
+                                  )
+                                /*
+                              Icon(Icons.account_circle_outlined, size: 32,),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 8.0),
+                                child: Text("Address book", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),),
+                              ),
+                               */
+                                //texto adicionado abaixo
+
+                                //texto adicionado acima
+                            ),
+                            /*
+                        Expanded(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Icon(Icons.arrow_forward_ios, color: AppColors.labelDefaultColor,)
+                            ],
+                          )
+                        ),
+                        */
                           ],
                         )
-                      ),
-                      */
-                        ],
-                      )
+                    ),
                   ),
-                ),
+                ],
               ),
             ),
+            /*
             AppCard(
               child:
               Column(
@@ -373,6 +406,7 @@ class _SendState extends State<Send> {
                 ],
               ),
             ),
+             */
 
             Padding(
               padding: const EdgeInsets.only(
@@ -400,7 +434,37 @@ class _SendState extends State<Send> {
     );
   }
 
-  contactList(){
+  Future<Widget> contactList() async {
+    List<Widget> list = [];
+    List<RecentlySent> recentlySent = [];
+    await RecentlySentTable.instance.readAll().then((value) =>
+    recentlySent = value);
+
+    if(recentlySent.length!=0)
+    {
+      for (int i = 0; i < recentlySent.length; i++) {
+        list.add(contactWidget(
+            Contact(recentlySent.elementAt(i).name, recentlySent.elementAt(i).address)));
+        if (i >= 0 && i < recentlySent.length - 1)
+          list.add(Divider());
+      }
+    }
+
+    if (list.isNotEmpty)
+      {
+        return Column(
+          children: list,
+        );
+      } else {
+        return Padding(
+          padding: EdgeInsets.all(SizeConfig.safeBlockVertical),
+          child: Center(
+              child: Text("No contacts found.")
+          ),
+        );
+      }
+
+    /*
     return Consumer<ContactsController>(
         builder: (BuildContext context, controller, _)
         {
@@ -417,6 +481,7 @@ class _SendState extends State<Send> {
           return row;
         }
     );
+     */
   }
 
   Widget contactWidget(Contact contact) {
@@ -428,10 +493,8 @@ class _SendState extends State<Send> {
               subject: "Sharing \"${contact.address}\" address."
           );
         */
-        setState(() {
-          addressController.text = contact.address;
-          NotificationBar().show(context, text:"Contact ${contact.name} filled in Address Field");
-        });
+        addressController.text = contact.address;
+        NotificationBar().show(context, text:"Contact ${contact.name} filled in Address Field");
       },
       child: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -866,20 +929,44 @@ class _SendState extends State<Send> {
     ];
     await showDialog(context: context, builder: (_) =>
         StatefulBuilder(builder: (builder, setState){
-          return ProgressPopup(
-              title: "Warning",
-              listNotifier: loadingNotifier,
-              future: app.walletManager.sendTransaction(app, addressController.text, value, token, listNotifier:loadingNotifier)
-                  .then((response) async{
-                if(response["status"] == 200)
-                {
-                  Navigator.of(context).pop();
-                  await Future.delayed(Duration(milliseconds: 250));
-                  displayTransactionHash(response["message"]);
-                }
-                else
-                  Navigator.of(context).pop();
-              })
+          return Consumer<ContactsController>(
+            builder: (BuildContext context, controller, _) {
+              return ProgressPopup(
+                  title: "Warning",
+                  listNotifier: loadingNotifier,
+                  future: app.walletManager.sendTransaction(
+                      app, addressController.text, value, token,
+                      listNotifier: loadingNotifier)
+                      .then((response) async {
+                    if (response["status"] == 200) {
+
+                      int position = -1;
+                      controller.contacts.forEach((key, value) {
+                        if(value.address==addressController.text)
+                          position = key;
+                      });
+
+                      if(position!=-1)
+                      {
+                        //Existe em contatos, apenas inserir, a interface da database dá conta
+                        //de verificar se já existe na database ou se precisa inserir
+
+                        //Se não existir na lista de contatos, não deve ser colocado na database, pois não é um contato
+
+                        await RecentlySentTable.instance.insert(
+                            RecentlySent(name: controller.contacts[position].name,address: controller.contacts[position].address)
+                        );
+                      }
+
+                      Navigator.of(context).pop();
+                      await Future.delayed(Duration(milliseconds: 250));
+                      displayTransactionHash(response["message"]);
+                    }
+                    else
+                      Navigator.of(context).pop();
+                  })
+              );
+            }
           );
         })
     );
