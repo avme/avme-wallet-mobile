@@ -2,17 +2,20 @@ import 'package:avme_wallet/app/screens/prototype/widgets/notification_bar.dart'
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
 
+import '../detailed_token_history.dart';
+
 class PaintedChart extends StatelessWidget {
 
   final double width;
   final double height;
+  final String name;
   final List<double> chartData;
   final Function onTap;
 
   const PaintedChart({
     @required this.width,
     @required this.height,
-    this.chartData, this.onTap
+    this.name, this.chartData, this.onTap
   });
 
   @override
@@ -36,7 +39,8 @@ class PaintedChart extends StatelessWidget {
       );
     }
     return GestureDetector(
-      onTap: this.onTap ?? () => NotificationBar().show(context, text: "Not implemented"),
+      //onTap: this.onTap ?? () => NotificationBar().show(context, text: "${this.name} graph: Not implemented"),
+      onTap: this.onTap ?? () => Navigator.push(context, MaterialPageRoute(builder: (context) => SyncFusionChart(tokenName: this.name))),
       child: Container(
         width: width,
         height: height,

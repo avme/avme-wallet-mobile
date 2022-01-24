@@ -1,5 +1,7 @@
+import 'package:avme_wallet/app/controller/database/recently_sent.dart';
 import 'package:avme_wallet/app/controller/file_manager.dart';
 import 'package:avme_wallet/app/model/contacts.dart';
+import 'package:avme_wallet/app/model/recently_sent.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:io';
 import 'dart:convert';
@@ -29,7 +31,7 @@ class ContactsController extends ChangeNotifier {
     File file = File("${fileFolder}contacts${this.fileManager.ext}");
     if(!await file.exists())
     {
-
+      /*
       await file.writeAsString(this.fileManager.encoder.convert({
         "contacts" : [
           {
@@ -46,27 +48,39 @@ class ContactsController extends ChangeNotifier {
           }
         ]
       }));
+    */
     }
     return file;
   }
 
   void addContact(String name ,String address)
-  {
-    int newKey = contacts.keys.last + 1;
+  async {
+    int newKey;
+    (contacts.isEmpty) ? newKey = 0 : newKey = contacts.keys.last + 1;
     contacts[newKey] = Contact(name, address);
+    //add to Recently Thinged database for testing porpuses.  Should be instead added to when the user sends tokens instead
+    await RecentlySentTable.instance.insert(RecentlySent(name: name, address: address));
     _updateContactsFile();
   }
 
   void removeContact(int position)
-  {
-    contacts.removeWhere((key, value) => key == position);
+  async {
+    if (contacts.containsKey(position)) {
+      String address = contacts[position].address;
+      contacts.remove(position);
+      await RecentlySentTable.instance.delete(address);
+    }
+    // contacts.removeWhere((key, value) => key == position);
     // contacts.removeAt(position);
     _updateContactsFile();
   }
 
   void updateContact(int position, String name, String address)
-  {
+  async {
+    String tempAddress = contacts[position].address;
     contacts[position] = Contact(name, address);
+    await RecentlySentTable.instance.delete(tempAddress);
+    await RecentlySentTable.instance.insert(RecentlySent(name: name,address: address));
     _updateContactsFile();
   }
 

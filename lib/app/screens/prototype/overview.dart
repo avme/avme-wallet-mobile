@@ -136,6 +136,7 @@ class _OverviewState extends State<Overview> {
             TokenDistribution(
                 chartData: _tokenDistribution(app),
                 shouldAnimate: initialPieAnimate,
+                appScaffoldTabController: widget.appScaffoldTabController,
             ),
             ]
             ..addAll(_tokenDetailsCard(app))

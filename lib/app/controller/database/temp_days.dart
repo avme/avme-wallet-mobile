@@ -14,18 +14,21 @@ class TempDays {
   //Checar se já existe database, se sim, retornar; se não, criar uma nova
   Future<Database> get database async {
     if (_database != null) return _database!;
-
     _database = await _initDB('$table.db');
 
     return _database!;
   }
 
   Future<Database> _initDB(String filePath) async {
-    return await openDatabase(join(await getDatabasesPath(),filePath), version: 1, onCreate: _createDB);
+    Database _db = await openDatabase(join(await getDatabasesPath(),filePath), version: 1);
+    print("DROPPING IF EXISTS");
+    await _db.execute('DROP TABLE IF EXISTS $table;');
+    await _createDB(_db, 2);
+
+    return _db;
   }
 
   Future _createDB(Database db, int version) async {
-    await db.execute('DROP TABLE IF EXISTS $table;');
     await db.execute('''
     CREATE TABLE $table(
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -66,14 +69,13 @@ class TempDays {
       (cast(strftime('%s', date('now', '-29 days')) as int), date('now', '-29 days')),
       (cast(strftime('%s', date('now', '-30 days')) as int), date('now', '-30 days'));
     ''';
-    print(insert);
     await db.execute(insert);
   }
 
   Future<List<Map>> recoverThirty()
   async {
     final database = await instance.database;
-    return await database.rawQuery('SELECT dateepoch FROM $table;');
+    return await database.rawQuery('SELECT dateepoch, datetime(dateepoch, \'unixepoch\') as converted FROM $table;');
   }
 
 }

@@ -6,8 +6,11 @@ class NetworkToken extends ChangeNotifier
   Decimal _value = Decimal.zero;
 
   void updateToken(Decimal value) {
-    this._value = value;
-    notifyListeners();
+    if(this._value != value)
+    {
+      this._value = value;
+      notifyListeners();
+    }
   }
 
   String get value => this._value.toString();
