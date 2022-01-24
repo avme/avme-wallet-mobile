@@ -1,16 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'dart:isolate';
 import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:avme_wallet/app/controller/file_manager.dart';
-import 'package:avme_wallet/app/model/service_data.dart';
 import 'package:avme_wallet/external/contracts/erc20_contract.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/retry.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:http/http.dart' as http;
