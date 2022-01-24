@@ -3,6 +3,7 @@ import 'dart:math';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
+import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -159,14 +160,23 @@ void closeApp()
     exit(0);
 }
 
-Image resolveImage(String res, {double height, double width}) {
-  BoxFit fit = BoxFit.contain;
+Image resolveImage(String res, {
+  double height = 128,
+  double width = 128,
+  BoxFit fit = BoxFit.contain
+}) {
+  double _default = 128;
+
+  if(height != _default)
+    width = height;
+  else if(width != _default)
+    height = width;
 
   if (res.contains('http')){
     return Image(image: CachedNetworkImageProvider(
       res,
-      maxHeight: 128,
-      maxWidth: 128,
+      maxHeight: height.ceil(),
+      maxWidth: width.ceil(),
     ), fit: fit, height: height, width: width);
   }
   else if (res.contains('assets/'))
@@ -177,13 +187,60 @@ Image resolveImage(String res, {double height, double width}) {
     return Image.file(File(res), fit: fit, height: height, width: width);
 }
 
+CachedNetworkImage cachedImage(String res, {
+  double height = 128,
+  double width = 128,
+  BoxFit fit = BoxFit.contain,
+  bool ignoreSize = false
+}) {
+  double _default = 128;
+  if(!ignoreSize)
+  {
+    if(height != _default)
+      width = height;
+    else if(width != _default)
+      height = width;
+  }
+  else
+  {
+    width = null;
+    height = null;
+  }
+  return CachedNetworkImage(
+    imageUrl: res,
+    fit: fit,
+    width: width,
+    height: height,
+    placeholder: (context, url) =>
+      Center(
+        child: SizedBox(
+          width: 64,
+          height: 64,
+          child: CircularProgressIndicator(
+            color: AppColors.purple,
+            strokeWidth: 6,
+          ),
+        ),
+      ),
+    errorWidget: (context, url, error) => Expanded(child: Icon(Icons.error, color: Colors.red,)),
+  );
+  /*
+  return Image(image: CachedNetworkImageProvider(
+    res,
+    maxHeight: height.ceil(),
+    maxWidth: width.ceil(),
+  ), fit: fit, height: height, width: width);
+  */
+
+}
+
 Future<String> httpGetRequest(
-    String urlString,
-    {
-      Map body,
-      Map<String,String> headers = const {"Content-Type": "application/json"},
-      String method = "POST"
-    }) async
+  String urlString,
+  {
+    Map body,
+    Map<String,String> headers = const {"Content-Type": "application/json"},
+    String method = "POST"
+  }) async
 {
   Uri url = Uri.parse(urlString);
   http.Response response;
