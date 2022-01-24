@@ -173,3 +173,49 @@ class AppButton extends StatelessWidget {
     );
   }
 }
+
+class AppIconButton extends StatelessWidget {
+
+  final double iconSize;
+  final VisualDensity visualDensity;
+  final EdgeInsetsGeometry padding;
+  final AlignmentGeometry alignment;
+  final Color color;
+  final Function onPressed;
+  final Widget icon;
+
+
+  const AppIconButton(
+    {
+      Key key,
+      this.iconSize = 24.0,
+      this.visualDensity,
+      this.padding = const EdgeInsets.all(8.0),
+      this.alignment = Alignment.center,
+      this.color,
+      @required this.onPressed,
+      @required this.icon,
+    }
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return Theme(
+      data:
+        avmeTheme.copyWith(
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+      ),
+      child: IconButton(
+        color: this.color,
+        alignment: this.alignment,
+        padding: this.padding,
+        onPressed: this.onPressed,
+        icon: this.icon,
+        iconSize: this.iconSize,
+        visualDensity: this.visualDensity,
+      ),
+    );
+  }
+}
+
