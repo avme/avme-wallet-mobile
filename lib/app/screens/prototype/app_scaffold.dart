@@ -41,7 +41,7 @@ class _State extends State<AppScaffold>
   ///the build method kicks in, we make a Map<String,Widget>
 
   final List<String> routeLabels = [
-    'Tokens', 'Overview', 'History', 'Send', 'Contacts', 'Exchange', 'About'];
+    'Assets', 'Overview', 'History', 'Send', 'Contacts', 'Exchange', 'About'];
 
   final List<Widget> routeWidgets = [];
 
@@ -73,7 +73,7 @@ class _State extends State<AppScaffold>
     );
 
     routeWidgets.addAll([
-      Tokens(),
+      TokenTabs(),
       Overview(appScaffoldTabController: this.appScaffoldTabController,),
       History(appScaffoldTabController: this.appScaffoldTabController,),
       Send(appScaffoldTabController: this.appScaffoldTabController,),
@@ -263,11 +263,11 @@ class _State extends State<AppScaffold>
             routeWidgets: this.routeWidgets,
             appScaffoldTabController: this.appScaffoldTabController,
           ),
-            DebugOverlay(
-              connected: connectionStatus,
-              connectionType: connectionType,
-              tabController: appScaffoldTabController,
-            )
+          DebugOverlay(
+            connected: connectionStatus,
+            connectionType: connectionType,
+            tabController: appScaffoldTabController,
+          )
         ],
       ),
     );
