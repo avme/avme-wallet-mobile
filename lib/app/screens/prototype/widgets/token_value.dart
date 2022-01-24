@@ -274,13 +274,23 @@ Future<List> lastFiveBalance(String name,AvmeWallet appState) async {
   List tokenValues = [];
   if (name=='AVAX'){
     tokenValues.add(double.tryParse(appState.networkToken.value));
-  } else {
-    tokenValues.add(double.tryParse(appState.activeContracts.token.tokenValue(name)));
-    }
-        await ValueHistoryTable.instance.readAmount(name,4).then((value) => {
-      value.forEach((element) {
-        tokenValues.add(element.value.toDouble());
-      })
-    });
-    return tokenValues;
   }
+  else
+    tokenValues.add(double.tryParse(appState.activeContracts.token.tokenValue(name)));
+  await ValueHistoryTable.instance.readAmount(name,4).then((value) => {
+    value.forEach((element) {
+      tokenValues.add(element.value.toDouble());
+    })
+  });
+  if(tokenValues.length > 2)
+    return tokenValues;
+  return [
+    5.0,
+    5.0,
+    5.0,
+    5.0,
+    5.0,
+    5.0,
+  ];
+  return tokenValues;
+}
