@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:avme_wallet/app/controller/database/nfts.dart';
 import 'package:avme_wallet/app/controller/services/nft_contract.dart';
 import 'package:avme_wallet/app/controller/size_config.dart';
+import 'package:avme_wallet/app/lib/extensions.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/account_item.dart';
 import 'package:avme_wallet/app/model/app.dart';
@@ -55,6 +56,13 @@ class _NFTManagementState extends State<NFTManagement> {
   NFTData _galleryData;
   Map rawContractsNft;
 
+  List<String> bigPictureModes = [
+    "AUTO",
+    "SHOWN",
+    "HIDDEN"
+  ];
+  String currentBigPictureMode;
+
   StateSetter nftManagementState;
 
   @override
@@ -63,6 +71,7 @@ class _NFTManagementState extends State<NFTManagement> {
     nftContracts = NFTContracts.getInstance();
     wi = WalletInterface(listen: false);
     pending = nftContracts.initialize();
+    currentBigPictureMode = bigPictureModes.first;
     _initialize = initialize();
   }
 
@@ -161,131 +170,187 @@ class _NFTManagementState extends State<NFTManagement> {
   Widget build(BuildContext context) {
     SizeConfig().init(context);
     nftManagementState = setState;
-    return ClipRRect(
-      borderRadius: BorderRadius.all(Radius.circular(8)),
-      child: Container(
-        color: AppColors.darkBlue,
-        child: Column(
-          children: [
-            Expanded(
-              flex: 10,
+    return Column(
+      children: [
+        Expanded(
+          flex: 1,
+          child: ClipRRect(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+            child: Container(
+              color: AppColors.darkBlue,
               child: Container(
-                color: AppColors.darkBlue,
-                child: FutureBuilder(
-                  future: _initialize,
-                  builder: (_, AsyncSnapshot<NFTData> init){
-                    if(init.data == null)
-                    {
-                      return Center(
-                        child: SizedBox(
-                          width: 80,
-                          height: 80,
-                          child: CircularProgressIndicator(
-                            color: AppColors.purple,
-                            strokeWidth: 6,
-                          ),
-                        ),
-                      );
-                    }
-                    else if(galleryData.contracts.length == 0)
-                    {
-                      return Center(
-                        child: introduction(),
-                      );
-                    }
+                color: AppColors.darkBlue.withOpacity(0.4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          FutureBuilder(
+                            future: _initialize,
+                            builder: (_, loaded){
 
-                    return NFTBigPicture(
-                      nftData: galleryData,
-                      filter: showFilters,
-                      addContract: newNFTToken,
-                      pageState: setState,
-                    );
-                    // else
-                    // {
-                    //   return FadeIndexedStack(
-                    //     index: selectedGallery,
-                    //     children: [
-                    //       NFTBigPicture(
-                    //         nftData: galleryData,
-                    //         filter: showFilters,
-                    //         addContract: newNFTToken,
-                    //         pageState: setState,
-                    //       ),
-                    //       gallery(galleryData)
-                    //     ],
-                    //   );
-                    // }
-                  },
-                )
+                              int bigPictureMode = this.bigPictureModes.indexOf(this.currentBigPictureMode);
+
+                              ///Defining Icon based on bigPictureMode
+                              IconData icon = Icons.image_search;
+                              switch(bigPictureMode) {
+                                case 1:
+                                  icon = Icons.image;
+                                  break;
+                                case 2:
+                                  icon = Icons.hide_image;
+                                  break;
+                              }
+
+                              if(loaded.data != null)
+                                return AppIconButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      if(bigPictureMode == 2)
+                                        this.currentBigPictureMode = this.bigPictureModes[0];
+                                      else
+                                        this.currentBigPictureMode = this.bigPictureModes[bigPictureMode+1];
+
+                                      NotificationBar().show(context, text: "Changed preview to ${this.currentBigPictureMode.capitalize()}.");
+                                    });
+                                  },
+                                  icon: Icon(icon)
+                                );
+                              return AppIconButton(
+                                onPressed: () => showFilters(),
+                                  icon: Icon(icon, color: AppColors.labelDisabledColor,)
+                              );
+                            },
+                          )
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          FutureBuilder(
+                            future: _initialize,
+                            builder: (_, loaded){
+                              if(loaded.data != null)
+                                return AppIconButton(
+                                  onPressed: () => showFilters(),
+                                  icon: Icon(Icons.search)
+                                );
+                              return AppIconButton(
+                                icon: Icon(Icons.search, color: AppColors.labelDisabledColor,)
+                              );
+                            }
+                          ),
+                          SizedBox(
+                            width: SizeConfig.safeBlockVertical * 6,
+                            child: Theme(
+                              data:
+                              avmeTheme.copyWith(
+                                splashColor: Colors.transparent,
+                                highlightColor: Colors.transparent,
+                              ),
+                              child: PopupMenuButton(
+                                  padding: EdgeInsets.all(0),
+                                  onSelected: (value) {
+                                    switch (value) {
+                                      case 0:
+                                        newNFTToken(setState);
+                                        break;
+                                    }
+                                  },
+                                  itemBuilder: (context) =>
+                                  [
+                                    PopupMenuItem(
+                                      child: Text("Add Contract"),
+                                      value: 0,
+                                    ),
+                                  ]
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
               ),
             ),
-            ///Old grid selection
-            // Expanded(
-            //   flex: 1,
-            //   child: Row(
-            //     children: [
-            //       Expanded(
-            //         child: Container(
-            //           child: AppIconButton(
-            //             icon: Icon(Icons.list),
-            //             onPressed: () {
-            //               if(this.selectedGallery != 0) {
-            //                 setState((){
-            //                   this.selectedGallery = 0;
-            //                 });
-            //               }
-            //             },
-            //           ),
-            //         )
-            //       ),
-            //       SizedBox(
-            //         height: 20,
-            //         width: 2,
-            //         child: Container(
-            //           color: Colors.white.withOpacity(0.2),
-            //         ),
-            //       ),
-            //       Expanded(
-            //           child: Container(
-            //             child: AppIconButton(
-            //               icon: Icon(Icons.grid_view),
-            //               onPressed: () {
-            //                 if(this.selectedGallery != 1) {
-            //                   setState((){
-            //                     this.selectedGallery = 1;
-            //                   });
-            //                 }
-            //               },
-            //             ),
-            //           )
-            //       ),
-            //     ],
-            //   ),
-            // ),
-            // AppButton(onPressed: () => setState((){}), text: "force update")
-          ],
+          ),
         ),
-      )
-    );
-  }
+        SizedBox(
+          height: 12,
+        ),
+        Expanded(
+          flex: 10,
+          child: ClipRRect(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+            child: Container(
+              color: AppColors.darkBlue,
+              child: Column(
+                children: [
+                  Expanded(
+                    child: Container(
+                      color: AppColors.darkBlue,
+                      child: FutureBuilder(
+                        future: _initialize,
+                        builder: (_, AsyncSnapshot<NFTData> init){
+                          if(init.data == null)
+                          {
+                            return Center(
+                              child: SizedBox(
+                                width: 80,
+                                height: 80,
+                                child: CircularProgressIndicator(
+                                  color: AppColors.purple,
+                                  strokeWidth: 6,
+                                ),
+                              ),
+                            );
+                          }
+                          else if(galleryData.contracts.length == 0)
+                          {
+                            return Center(
+                              child: introduction(),
+                            );
+                          }
 
-  Widget introduction()
-  {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            LabelText("You haven't added any NFT Token Contract..."),
-            SizedBox(height: SizeConfig.safeBlockVertical * 2,),
-            AppButton(
-              expanded: false,
-              onPressed: () => newNFTToken(setState),
-              text: "Add NFT Contract",
+                          return NFTBigPicture(
+                            nftData: galleryData,
+                            filter: showFilters,
+                            addContract: newNFTToken,
+                            pageState: setState,
+                            // visible: true,
+                            mode: this.currentBigPictureMode,
+                          );
+                          // else
+                          // {
+                          //   return FadeIndexedStack(
+                          //     index: selectedGallery,
+                          //     children: [
+                          //       NFTBigPicture(
+                          //         nftData: galleryData,
+                          //         filter: showFilters,
+                          //         addContract: newNFTToken,
+                          //         pageState: setState,
+                          //       ),
+                          //       gallery(galleryData)
+                          //     ],
+                          //   );
+                          // }
+                        },
+                      )
+                    ),
+                  ),
+                ],
+              ),
             )
-          ],
+          ),
         ),
       ],
     );
@@ -350,14 +415,14 @@ class _NFTManagementState extends State<NFTManagement> {
                         ),
                       ),
                   ).toList()..insert(0,
-                    DropdownMenuItem<String>(
-                      value: defaultDropdownValue,
-                      child: Row(
-                        children: [
-                          Text(defaultDropdownValue, style: AppTextStyles.label,),
-                        ],
-                      ),
-                    )
+                      DropdownMenuItem<String>(
+                        value: defaultDropdownValue,
+                        child: Row(
+                          children: [
+                            Text(defaultDropdownValue, style: AppTextStyles.label,),
+                          ],
+                        ),
+                      )
                   ),
                 ),
                 SizedBox(
@@ -375,26 +440,48 @@ class _NFTManagementState extends State<NFTManagement> {
                   height: SizeConfig.safeBlockVertical * 4,
                 ),
                 AppButton(
-                  onPressed: () async {
-                    Navigator.of(context).pop();
-                    applyFilters();
-                  },
-                  text: "APPLY"
+                    onPressed: () async {
+                      Navigator.of(context).pop();
+                      applyFilters();
+                    },
+                    text: "APPLY"
                 ),
                 SizedBox(
                   height: SizeConfig.safeBlockVertical * 2,
                 ),
                 AppButton(
-                  onPressed: () async {
-                    Navigator.of(context).pop();
-                  },
-                  text: "CANCEL"
+                    onPressed: () async {
+                      Navigator.of(context).pop();
+                    },
+                    text: "CANCEL"
                 ),
               ],
             ),
           ]
         );
       })
+    );
+  }
+
+  Widget introduction()
+  {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            LabelText("You haven't added any NFT Token Contract..."),
+            SizedBox(height: SizeConfig.safeBlockVertical * 2,),
+            AppButton(
+              expanded: false,
+              onPressed: () => newNFTToken(setState),
+              text: "Add NFT Contract",
+            )
+          ],
+        ),
+      ],
     );
   }
 
@@ -414,10 +501,7 @@ class _NFTManagementState extends State<NFTManagement> {
       });
       return;
     }
-
     NFTData filtered = _galleryData.applyFilter(selectedToken, filterText);
-
-    print(filtered.collection.keys);
 
     setState(() {
       galleryData = filtered;
@@ -439,87 +523,86 @@ class _NFTManagementState extends State<NFTManagement> {
           padding: EdgeInsets.zero,
           children: [
             Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children:
-                [
-                  AppLabelText("Token Address", fontSize: 18,),
-                  SizedBox(
-                    height: SizeConfig.safeBlockVertical * 2,
-                  ),
-                  AppTextFormField(
-                    maxLength: 42,
-                    controller: contractAddress,
-                    hintText: 'e.g. 0x123456789ABCDEF...',
-                    onChanged: (String value) {
-                      if(value.length == 42)
-                        setState((){
-                          validAddress = true;
-                        });
-                      else if(validAddress)
-                        setState((){
-                          validAddress = !validAddress;
-                        });
-                    },
-                  ),
-                  SizedBox(
-                    height: SizeConfig.safeBlockVertical * 2,
-                  ),
-                  AppButton(
-                    enabled: validAddress,
-                    onPressed: () async {
-                      ValueNotifier<int> percentage = ValueNotifier(0);
-                      ValueNotifier<String> label = ValueNotifier("Loading...");
-                      List<ValueNotifier> loadingNotifier = [
-                        percentage,
-                        label
-                      ];
-                      String exists = await nftTable.exists(contractAddress.text);
-                      if(exists.length > 0){
-                        Navigator.pop(context);
-                        NotificationBar().show(context, text: "You can't add the same NFT Contract twice.");
-                        return null;
-                      }
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppLabelText("Token Address", fontSize: 18,),
+                SizedBox(
+                  height: SizeConfig.safeBlockVertical * 2,
+                ),
+                AppTextFormField(
+                  maxLength: 42,
+                  controller: contractAddress,
+                  hintText: 'e.g. 0x123456789ABCDEF...',
+                  onChanged: (String value) {
+                    if(value.length == 42)
+                      setState((){
+                        validAddress = true;
+                      });
+                    else if(validAddress)
+                      setState((){
+                        validAddress = !validAddress;
+                      });
+                  },
+                ),
+                SizedBox(
+                  height: SizeConfig.safeBlockVertical * 2,
+                ),
+                AppButton(
+                  enabled: validAddress,
+                  onPressed: () async {
+                    ValueNotifier<int> percentage = ValueNotifier(0);
+                    ValueNotifier<String> label = ValueNotifier("Loading...");
+                    List<ValueNotifier> loadingNotifier = [
+                      percentage,
+                      label
+                    ];
+                    String exists = await nftTable.exists(contractAddress.text);
+                    if(exists.length > 0){
+                      Navigator.pop(context);
+                      NotificationBar().show(context, text: "You can't add the same NFT Contract twice.");
+                      return null;
+                    }
 
-                      await showDialog(context: context, builder: (_) =>
-                        StatefulBuilder(
-                          builder: (builder, setState){
-                            return ProgressPopup(
-                              showIndicator: false,
-                              listNotifier: loadingNotifier,
-                              future: nftContracts
-                                  .addTokenFromAddress(
-                                accountAddress: wi.wallet.currentAccount.address,
-                                contractAddress: contractAddress.text,
-                              )
-                              .then((Map map) async {
-                                if(map.length == 0)
-                                  return [
-                                    Text("Sorry, but no Contracts was found.")
-                                  ];
-                                else
-                                {
-                                  Navigator.of(context).pop();
-                                  await Future.delayed(Duration(milliseconds: 250));
-                                  Navigator.of(context).pop();
-                                  _initialize = initialize();
-                                  nftState((){});
-                                }
+                    await showDialog(context: context, builder: (_) =>
+                      StatefulBuilder(
+                        builder: (builder, setState){
+                          return ProgressPopup(
+                            showIndicator: false,
+                            listNotifier: loadingNotifier,
+                            future: nftContracts
+                                .addTokenFromAddress(
+                              accountAddress: wi.wallet.currentAccount.address,
+                              contractAddress: contractAddress.text,
+                            )
+                            .then((Map map) async {
+                              if(map.length == 0)
+                                return [
+                                  Text("Sorry, but no Contracts was found.")
+                                ];
+                              else
+                              {
+                                Navigator.of(context).pop();
+                                await Future.delayed(Duration(milliseconds: 250));
+                                Navigator.of(context).pop();
+                                _initialize = initialize();
+                                nftState((){});
                               }
-                              ),
-                              title: "Warning",
-                            );
-                          },
-                        )
-                      );
-                    },
-                    text: "ADD TOKEN"),
-                  SizedBox(
-                    height: SizeConfig.safeBlockVertical * 2,
-                  ),
-                  AppButton(onPressed: () {
-                    Navigator.of(context).pop();
-                  }, text: "CANCEL"),
-                ]
+                            }
+                            ),
+                            title: "Warning",
+                          );
+                        },
+                      )
+                    );
+                  },
+                  text: "ADD TOKEN"),
+                SizedBox(
+                  height: SizeConfig.safeBlockVertical * 2,
+                ),
+                AppButton(onPressed: () {
+                  Navigator.of(context).pop();
+                }, text: "CANCEL"),
+              ]
             )
           ]
         );
@@ -567,26 +650,64 @@ class NFTBigPicture extends StatefulWidget {
   final Function filter;
   final Function addContract;
   final StateSetter pageState;
+  final String mode;
+
   const NFTBigPicture({
     Key key,
     @required this.nftData,
     @required this.filter,
     @required this.addContract,
     @required this.pageState,
+    @required this.mode,
   }) : super(key: key);
 
   @override
   _NFTBigPictureState createState() => _NFTBigPictureState();
 }
 
-class _NFTBigPictureState extends State<NFTBigPicture> {
+class _NFTBigPictureState extends State<NFTBigPicture>
+  with TickerProviderStateMixin {
 
   int selectedGallery = 0;
   Map bigPicture = {};
   int gridSize = 4;
+
+  bool visible = true;
+  AnimationController displayController;
+  Animation<double> displayAnimation;
+
   @override
   void initState() {
+
+    displayController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds:250)
+    );
+
+    displayAnimation = CurvedAnimation(parent: displayController, curve: Curves.ease);
     super.initState();
+  }
+
+  @override
+  void didUpdateWidget(NFTBigPicture oldWidget) {
+    if(widget.mode != oldWidget.mode) {
+      switch(widget.mode.toUpperCase())
+      {
+        case "AUTO":
+          if(this.visible)
+            displayController.forward(from: displayAnimation.value);
+          else
+            displayController.reverse(from: displayAnimation.value);
+          break;
+        case "SHOWN":
+          displayController.forward();
+          break;
+        case "HIDDEN":
+          displayController.reverse();
+      }
+    }
+
+    super.didUpdateWidget(oldWidget);
   }
 
   @override
@@ -603,13 +724,33 @@ class _NFTBigPictureState extends State<NFTBigPicture> {
       symbol[key] = widget.nftData.contracts[key]["symbol"];
     });
 
+    ///Checking visibility at every build method a.k.a setState calls too
+    if(widget.mode.toUpperCase() == "AUTO")
+      if(visible)
+        displayController.forward();
+      else
+        displayController.reverse();
+
     return Column(
       children: [
-        nftDisplay(),
-        Expanded(
-          flex: 0,
-          child: Container(
-            color: Colors.red,
+        ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: SizeConfig.safeBlockVertical * 32,
+          ),
+          child: SizeTransition(
+            axis: Axis.vertical,
+            sizeFactor: displayAnimation,
+            axisAlignment: -1,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                FadeBigPicture(
+                  data: this.bigPicture.length > 0
+                    ? this.bigPicture
+                    : widget.nftData.lastSelected,
+                ),
+              ],
+            )
           ),
         ),
         nftSelection(
@@ -619,71 +760,6 @@ class _NFTBigPictureState extends State<NFTBigPicture> {
         ),
         viewport()
       ],
-    );
-  }
-
-  Widget nftDisplay()
-  {
-    return Expanded(
-      flex: 12,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          FadeBigPicture(
-            data: this.bigPicture.length > 0
-              ? this.bigPicture
-              : widget.nftData.lastSelected,
-          ),
-          Column(
-            children: [
-              Expanded(
-                flex: 2,
-                child: Container(
-                  color: AppColors.darkBlue.withOpacity(0.4),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      AppIconButton(onPressed: () => widget.filter(),
-                          icon: Icon(Icons.search)),
-                      SizedBox(
-                        width: SizeConfig.safeBlockVertical * 6,
-                        child: Theme(
-                          data:
-                          avmeTheme.copyWith(
-                            splashColor: Colors.transparent,
-                            highlightColor: Colors.transparent,
-                          ),
-                          child: PopupMenuButton(
-                              padding: EdgeInsets.all(0),
-                              onSelected: (value) {
-                                switch (value) {
-                                  case 0:
-                                    widget.addContract(widget.pageState);
-                                    break;
-                                }
-                              },
-                              itemBuilder: (context) =>
-                              [
-                                PopupMenuItem(
-                                  child: Text("Add Contract"),
-                                  value: 0,
-                                ),
-                              ]
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Expanded(
-                flex: 10,
-                child: Container(),
-              )
-            ],
-          )
-        ],
-      ),
     );
   }
 
@@ -721,50 +797,46 @@ class _NFTBigPictureState extends State<NFTBigPicture> {
 
   Widget viewport()
   {
-    return Expanded(
-      flex: 2,
-      child: Row(
-        children: [
-          Expanded(
-              child: Container(
-                child: AppIconButton(
-                  icon: Icon(Icons.grid_view),
-                  onPressed: () {
-                    if(this.selectedGallery != 0) {
-                      setState((){
-                        this.selectedGallery = 0;
-                      });
-                    }
-                  },
-                ),
-              )
-          ),
-          SizedBox(
-            height: 20,
-            width: 2,
-            child: Container(
-              color: Colors.white.withOpacity(0.2),
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            child: AppIconButton(
+              icon: Icon(Icons.grid_view),
+              onPressed: () {
+                if(this.selectedGallery != 0) {
+                  setState((){
+                    this.selectedGallery = 0;
+                  });
+                }
+              },
             ),
+          )
+        ),
+        SizedBox(
+          height: 20,
+          width: 2,
+          child: Container(
+            color: Colors.white.withOpacity(0.2),
           ),
-          Expanded(
-              child: Container(
-                child: AppIconButton(
-                  icon: Icon(Icons.list),
-                  onPressed: () {
-                    if(this.selectedGallery != 1) {
-                      setState((){
-                        this.selectedGallery = 1;
-                      });
-                    }
-                  },
-                ),
-              )
-          ),
-        ],
-      ),
+        ),
+        Expanded(
+          child: Container(
+            child: AppIconButton(
+              icon: Icon(Icons.list),
+              onPressed: () {
+                if(this.selectedGallery != 1) {
+                  setState((){
+                    this.selectedGallery = 1;
+                  });
+                }
+              },
+            ),
+          )
+        ),
+      ],
     );
   }
-
 
   Widget gridGallery({
     @required Map<String, String> images,
@@ -780,92 +852,109 @@ class _NFTBigPictureState extends State<NFTBigPicture> {
       child: Row(
         children: [
           Expanded(
-            child: GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisSpacing: SizeConfig.safeBlockHorizontal * 3.33,
-                mainAxisSpacing: SizeConfig.safeBlockHorizontal * 3.33,
-                crossAxisCount: gridSize,
-                childAspectRatio: (gridSize % 2 == 0 ? 1 : 3/4)
-              ),
-              physics: BouncingScrollPhysics(),
-              scrollDirection: Axis.vertical,
-              shrinkWrap: true,
-              itemCount: nfts.length,
-              itemBuilder: (_, index) {
-                return ClipRRect(
-                  borderRadius: BorderRadius.all(Radius.circular(12)),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          if(this.bigPicture !=nfts[index])
-                            setState(() {
+            child: NotificationListener(
+              onNotification: (type)
+              {
+                if(type is ScrollStartNotification || type is ScrollEndNotification)
+                {
+                  print("THE ELDER SCROLLS");
+                  if(widget.mode.toUpperCase() == "AUTO")
+                    if(visible)
+                      setState(() {
+                        visible = false;
+                      });
+                }
+                return true;
+              },
+              child: GridView.builder(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisSpacing: SizeConfig.safeBlockHorizontal * 3.33,
+                  mainAxisSpacing: SizeConfig.safeBlockHorizontal * 3.33,
+                  crossAxisCount: gridSize,
+                  childAspectRatio: (gridSize % 2 == 0 ? 1 : 3/4)
+                ),
+                physics: BouncingScrollPhysics(),
+                scrollDirection: Axis.vertical,
+                shrinkWrap: true,
+                itemCount: nfts.length,
+                itemBuilder: (_, index) {
+                  return ClipRRect(
+                    borderRadius: BorderRadius.all(Radius.circular(12)),
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            if(widget.mode.toUpperCase() == "AUTO")
+                              visible = true;
+                            ///Setting bigPicture visibility
+                            if(this.bigPicture !=nfts[index])
                               this.bigPicture = nfts[index];
-                            });
-                        },
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Expanded(
-                              flex: 2,
-                              child: Container(
-                                color: Colors.white60,
-                                child: Stack(
-                                  fit: StackFit.expand,
-                                  children: [
-                                    cachedImage(nfts[index]['imageUrl'], fit: BoxFit.cover),
-                                    Padding(
-                                      padding: EdgeInsets.all(SizeConfig.safeBlockHorizontal * 1.33),
-                                      child: Column(
-                                        children: [
-                                          Flexible(
-                                            child: Align(
-                                              alignment: Alignment.topRight,
-                                              child: textOutline(
-                                                  "#${nfts[index]["tokenId"]}",
-                                                  fontSize: 12
-                                              )
-                                            )
-                                          ),
-                                          Expanded(
-                                            child: Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                              crossAxisAlignment: CrossAxisAlignment.end,
-                                              children: [
-                                                Flexible(
-                                                  child: textOutline(
-                                                    nfts[index]["tokenName"],
+                            setState(() {});
+                          },
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Expanded(
+                                flex: 2,
+                                child: Container(
+                                  color: Colors.white60,
+                                  child: Stack(
+                                    fit: StackFit.expand,
+                                    children: [
+                                      cachedImage(nfts[index]['imageUrl'], fit: BoxFit.cover),
+                                      Padding(
+                                        padding: EdgeInsets.all(SizeConfig.safeBlockHorizontal * 1.33),
+                                        child: Column(
+                                          children: [
+                                            Flexible(
+                                              child: Align(
+                                                alignment: Alignment.topRight,
+                                                child: textOutline(
+                                                    "#${nfts[index]["tokenId"]}",
                                                     fontSize: 12
+                                                )
+                                              )
+                                            ),
+                                            Expanded(
+                                              child: Row(
+                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                crossAxisAlignment: CrossAxisAlignment.end,
+                                                children: [
+                                                  Flexible(
+                                                    child: textOutline(
+                                                      nfts[index]["tokenName"],
+                                                      fontSize: 12
+                                                    ),
                                                   ),
-                                                ),
-                                                SizedBox(
-                                                  width: SizeConfig.blockSizeHorizontal * 4,
-                                                  height: SizeConfig.blockSizeHorizontal * 4,
-                                                  child: resolveImage(
-                                                    images[nfts[index]["tokenName"]],
+                                                  SizedBox(
                                                     width: SizeConfig.blockSizeHorizontal * 4,
                                                     height: SizeConfig.blockSizeHorizontal * 4,
+                                                    child: resolveImage(
+                                                      images[nfts[index]["tokenName"]],
+                                                      width: SizeConfig.blockSizeHorizontal * 4,
+                                                      height: SizeConfig.blockSizeHorizontal * 4,
+                                                    )
                                                   )
-                                                )
-                                              ],
+                                                ],
+                                              ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                    )
-                                  ],
-                                )
+                                          ],
+                                        ),
+                                      )
+                                    ],
+                                  )
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              }),
+                      ],
+                    ),
+                  );
+                }),
+            ),
           ),
         ],
       ),
@@ -880,134 +969,156 @@ class _NFTBigPictureState extends State<NFTBigPicture> {
     @required List<Map> nfts
   })
   {
-    return ListView.builder(
-      physics: BouncingScrollPhysics(),
-      scrollDirection: Axis.vertical,
-      shrinkWrap: true,
-      itemCount: nfts.length,
-      itemBuilder: (_, index) =>
-        Column(
-          children: [
-            GestureDetector(
-              onTap: () {
-                if(this.bigPicture !=nfts[index])
-                  setState(() {
-                    this.bigPicture = nfts[index];
-                  });
-              },
-              child: Padding(
-                padding: EdgeInsets.all(SizeConfig.safeBlockVertical * 0.66),
-                child: Container(
-                  color: AppColors.darkBlue,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: Container(
-                          height: SizeConfig.safeBlockVertical * 10,
-                          child: Padding(
-                            padding: EdgeInsets.all(SizeConfig.safeBlockHorizontal * 1.33),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.all(Radius.circular(8)),
-                              child: Stack(
-                                fit: StackFit.expand,
-                                children: [
-                                  cachedImage(
-                                    nfts[index]['imageUrl'],
-                                    fit: BoxFit.cover
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(4),
-                                    child: Column(
-                                      children: [
-                                        Expanded(
-                                          child: Align(
-                                            alignment: Alignment.topRight,
-                                            child: textOutline(
-                                              "#${nfts[index]["tokenId"]}",
-                                              fontSize: 12
-                                            )
-                                          )
-                                        ),
-                                        Expanded(
-                                          child: Align(
-                                            alignment: Alignment.bottomRight,
-                                            child: SizedBox(
-                                              width: SizeConfig.blockSizeHorizontal * 4,
-                                              height: SizeConfig.blockSizeHorizontal * 4,
-                                              child: resolveImage(
-                                                images[nfts[index]["tokenName"]],
-                                                width: SizeConfig.blockSizeHorizontal * 4,
-                                                height: SizeConfig.blockSizeHorizontal * 4,
+    return NotificationListener(
+      onNotification: (type)
+      {
+        if(type is ScrollStartNotification || type is ScrollEndNotification)
+        {
+          print("THE ELDER SCROLLS");
+          if(widget.mode.toUpperCase() == "AUTO")
+            if(visible)
+              setState(() {
+                visible = false;
+              });
+        }
+        return true;
+      },
+      child: ListView.builder(
+        physics: BouncingScrollPhysics(),
+        scrollDirection: Axis.vertical,
+        shrinkWrap: true,
+        itemCount: nfts.length,
+        itemBuilder: (_, index) =>
+          Column(
+            children: [
+              GestureDetector(
+                onTap: () {
+                  if(widget.mode.toUpperCase() == "AUTO")
+                    visible = true;
+                  if(this.bigPicture !=nfts[index])
+                      this.bigPicture = nfts[index];
+                  setState(() {});
+                },
+                child: Padding(
+                  padding: EdgeInsets.all(SizeConfig.safeBlockVertical * 0.66),
+                  child: Container(
+                    color: AppColors.darkBlue,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: 1,
+                          child: Container(
+                            height: SizeConfig.safeBlockVertical * 10,
+                            child: Padding(
+                              padding: EdgeInsets.all(SizeConfig.safeBlockHorizontal * 1.33),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.all(Radius.circular(8)),
+                                child: Stack(
+                                  fit: StackFit.expand,
+                                  children: [
+                                    cachedImage(
+                                      nfts[index]['imageUrl'],
+                                      fit: BoxFit.cover
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(4),
+                                      child: Column(
+                                        children: [
+                                          Expanded(
+                                            child: Align(
+                                              alignment: Alignment.topRight,
+                                              child: textOutline(
+                                                "#${nfts[index]["tokenId"]}",
+                                                fontSize: 12
                                               )
                                             )
-                                          )
-                                        ),
-                                      ],
-                                    ),
-                                  )
-                                ],
+                                          ),
+                                          Expanded(
+                                            child: Align(
+                                              alignment: Alignment.bottomRight,
+                                              child: SizedBox(
+                                                width: SizeConfig.blockSizeHorizontal * 4,
+                                                height: SizeConfig.blockSizeHorizontal * 4,
+                                                child: resolveImage(
+                                                  images[nfts[index]["tokenName"]],
+                                                  width: SizeConfig.blockSizeHorizontal * 4,
+                                                  height: SizeConfig.blockSizeHorizontal * 4,
+                                                )
+                                              )
+                                            )
+                                          ),
+                                        ],
+                                      ),
+                                    )
+                                  ],
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: Padding(
-                          padding: EdgeInsets.all(SizeConfig.safeBlockHorizontal * 1.33),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              ///Title
-                              Text(
-                                nfts[index]["title"].replaceAll("", "\u{200B}"),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
+                        Expanded(
+                          flex: 2,
+                          child: Padding(
+                            padding: EdgeInsets.all(SizeConfig.safeBlockHorizontal * 1.33),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ///Title
+                                Text(
+                                  nfts[index]["title"].replaceAll("", "\u{200B}"),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
                                 ),
-                              ),
-                              ///Subtitle
-                              Text(
-                                nfts[index]["properties"]["description"]["description"].replaceAll("", "\u{200B}"),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: AppColors.labelDefaultColor
+                                ///Subtitle
+                                Text(
+                                  nfts[index]["properties"]["description"]["description"].replaceAll("", "\u{200B}"),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: AppColors.labelDefaultColor
+                                  ),
                                 ),
-                              ),
-                              ///Contract Symbol
-                              Text(
-                                symbol[nfts[index]["tokenName"]].replaceAll("", "\u{200B}"),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontStyle: FontStyle.italic,
-                                  fontSize: 14,
+                                ///Contract Symbol
+                                Text(
+                                  symbol[nfts[index]["tokenName"]].replaceAll("", "\u{200B}"),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontStyle: FontStyle.italic,
+                                    fontSize: 14,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-            index == (nfts.length - 1)
-                ? Container()
-                : Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Divider(color: Colors.white,height: 0,),
-            )
-          ],
-        )
+              index == (nfts.length - 1)
+                  ? Container()
+                  : Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Divider(color: Colors.white,height: 0,),
+              )
+            ],
+          )
+      ),
     );
+  }
+
+  @override
+  void dispose() {
+    displayController.dispose();
+    super.dispose();
   }
 
 }
@@ -1050,18 +1161,20 @@ Text textOutline(
   );
 }
 
+
 class FadeBigPicture extends StatefulWidget {
 
   final Map data;
   final Duration duration;
   final bool showDetails;
+
   const FadeBigPicture({
     Key key,
     this.showDetails = false,
     @required this.data,
     this.duration = const Duration(
-      milliseconds: 750,
-    )
+      milliseconds: 650,
+    ),
   }) : super(key: key);
 
   @override
@@ -1073,6 +1186,7 @@ class _FadeBigPictureState extends State<FadeBigPicture>
 
   AnimationController _controller;
   AnimationController cardController;
+
   bool _showDetails;
 
   @override
@@ -1089,7 +1203,6 @@ class _FadeBigPictureState extends State<FadeBigPicture>
   void initState() {
     _controller = AnimationController(vsync: this, duration: widget.duration);
     _controller.forward();
-
     cardController = AnimationController(vsync: this, duration: Duration(
       milliseconds: 100
     ));
@@ -1130,10 +1243,6 @@ class _FadeBigPictureState extends State<FadeBigPicture>
                 child: Column(
                   children: [
                     Expanded(
-                      flex: 2,
-                      child: Container(),
-                    ),
-                    Expanded(
                       flex: 10,
                       child: Padding(
                         padding: EdgeInsets.all(SizeConfig.safeBlockHorizontal * 3.33),
@@ -1172,7 +1281,6 @@ class _FadeBigPictureState extends State<FadeBigPicture>
                                 ),
                               ],
                             ),
-
                             AppButton(
                               expanded: false,
                               onPressed: () {
