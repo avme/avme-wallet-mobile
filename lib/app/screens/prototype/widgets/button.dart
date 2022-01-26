@@ -193,7 +193,7 @@ class AppIconButton extends StatelessWidget {
       this.padding = const EdgeInsets.all(8.0),
       this.alignment = Alignment.center,
       this.color,
-      @required this.onPressed,
+      this.onPressed,
       @required this.icon,
     }
   );
