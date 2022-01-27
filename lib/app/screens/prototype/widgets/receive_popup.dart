@@ -37,7 +37,7 @@ class _ReceivePopupState extends State<ReceivePopup> {
       padding: EdgeInsets.all(0),
       cancelable: false,
       textStyle: TextStyle(
-          fontSize: 18,
+          fontSize: SizeConfig.fontSizeLarge*1.2,
           fontWeight: FontWeight.w500
       ),
       margin: EdgeInsets.all(SizeConfig.safeBlockHorizontal*4),
@@ -81,12 +81,12 @@ class _ReceivePopupState extends State<ReceivePopup> {
                             children: [
                               Padding(
                                 padding: const EdgeInsets.only(right:12.0),
-                                child: Icon(Icons.copy),
+                                child: Icon(Icons.copy,size: SizeConfig.fontSizeHuge*1.3,),
                               ),
                               Flexible(
                                 child: Column(
                                   children: [
-                                    Text(widget.address),
+                                    Text(widget.address,style: TextStyle(fontSize: SizeConfig.fontSizeLarge),),
                                   ],
                                 ),
                               )

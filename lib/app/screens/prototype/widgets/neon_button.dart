@@ -56,8 +56,8 @@ class AppNeonButton extends StatelessWidget {
     TextStyle btnStyle = this.textStyle == null
         ? TextStyle(
         color: Colors.white,
-        fontSize: this.size ?? SizeConfig.smallLabel)
-        : this.textStyle.copyWith(fontSize: this.size ?? SizeConfig.smallLabel);
+        fontSize: this.size ?? SizeConfig.labelSizeSmall)
+        : this.textStyle.copyWith(fontSize: this.size ?? SizeConfig.labelSizeSmall);
 
     children.add(
       Flexible(

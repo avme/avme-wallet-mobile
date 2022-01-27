@@ -128,7 +128,7 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                     Text(
                         "Accounts",
                         style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 18)
+                            fontWeight: FontWeight.bold, fontSize: SizeConfig.fontSizeLarge*1.2)
                     ),
                   ],
                 ),
@@ -184,7 +184,8 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
           expanded: false,
           paddingText: EdgeInsets.symmetric(horizontal: 16),
           textStyle: TextStyle(
-              color: Colors.white
+            color: Colors.white,
+              fontSize: SizeConfig.fontSize*1.2
           ),
         ),
         AppButton(
@@ -195,7 +196,8 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
           expanded: false,
           paddingText: EdgeInsets.symmetric(horizontal: 24),
           textStyle: TextStyle(
-              color: Colors.white
+            color: Colors.white,
+            fontSize: SizeConfig.fontSize*1.2
           ),
         ),
       ],

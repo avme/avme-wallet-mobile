@@ -91,6 +91,7 @@ class _AppTextFormFieldState extends State<AppTextFormField> with TickerProvider
   }
   @override
   Widget build(BuildContext context) {
+    SizeConfig().init(context);
     myFocus = widget.focusNode ?? myFocus;
     Color cLabelStyle = AppColors.labelDefaultColor;
     FontWeight fLabelStyle = FontWeight.w900;
@@ -168,7 +169,7 @@ class _AppTextFormFieldState extends State<AppTextFormField> with TickerProvider
                 labelStyle: TextStyle(
                   color: cLabelStyle,
                   fontWeight: fLabelStyle,
-                  fontSize: 20
+                  fontSize: SizeConfig.fontSize
                 ),
                 focusedBorder: fieldBorder.copyWith(
                   borderSide: BorderSide(
@@ -183,7 +184,7 @@ class _AppTextFormFieldState extends State<AppTextFormField> with TickerProvider
                         // color:Colors.red,
                         child: Text("${widget.controller.text.length}/${widget.maxLength}",
                           textDirection: TextDirection.rtl,
-                          style: AppTextStyles.span.copyWith(fontSize: 14),
+                          style: AppTextStyles.span.copyWith(fontSize: SizeConfig.fontSize),
                         )
                       ),
                     )

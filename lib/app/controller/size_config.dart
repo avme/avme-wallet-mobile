@@ -1,3 +1,7 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:avme_wallet/app/controller/file_manager.dart';
 import 'package:flutter/widgets.dart';
 
 ///Thank Daniele Cambi - @dancamdev from Medium for writing the article!
@@ -17,23 +21,27 @@ class SizeConfig {
 
   static double titleSize;
   static double labelSize;
-  static double smallLabel;
+  static double labelSizeSmall;
+  static double fontSizeHuge;
+  static double fontSizeLarge;
   static double fontSize;
   static double fontSizeSmall;
   static double spanSize;
 
+  static String deviceGroup; //Default based on device size
   static List<String> deviceGroups = [
     "SMALL",
     "MEDIUM",
     "LARGE"
   ];
 
-  static String deviceGroup;
+  static final List<int> deviceGroupsSize = [
+    0, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+  ];
+  //0 = default
+  static int deviceGroupCustom = 0;
 
   void init(BuildContext context){
-
-    //TODO: Implement setting "FontSize" to define between the enum
-    //{small, normal, large}
 
     _mediaQueryData = MediaQuery.of(context);
 
@@ -57,14 +65,72 @@ class SizeConfig {
     else
       deviceGroup = deviceGroups[2];
 
+    //Get settings.json value
+    final FileManager fileManager = FileManager();
+    Future<File> settingsFile()
+    async {
+      await fileManager.getDocumentsFolder();
+      String fileFolder = "${fileManager.documentsFolder}";
+      await fileManager.checkPath(fileFolder);
+      File file = File("${fileFolder}settings${fileManager.ext}");
+      if(!await file.exists())
+      {
+        await file.writeAsString(fileManager.encoder.convert({
+          "display" : [
+            {
+              "deviceGroupCustom": "0"
+            }
+          ]}
+        ));
+      }
+      return file;
+    }
+    Future<File> fileContacts = settingsFile();
+    fileContacts.then((File file) async {
+      print('File $file');
+      Map contents = jsonDecode(await file.readAsString());
+      print('contents["display"] ${contents["display"]}');
+      List deviceGroupCustomMap = contents["display"];
+      deviceGroupCustom = int.tryParse(deviceGroupCustomMap.asMap()[0]["deviceGroupCustom"]);
+      //print('deviceGroupCustomMap.asMap()["deviceGroupCustom"] ${deviceGroupCustomMap.asMap()[0]["deviceGroupCustom"]}');
+    });
 
-    ///Font Size
-    titleSize = safeBlockHorizontal * 7;
-    labelSize = safeBlockHorizontal * 6;
-    smallLabel = safeBlockHorizontal * 4;
-    fontSize = safeBlockHorizontal * 3;
-    fontSizeSmall = safeBlockHorizontal * 2.5;
-    spanSize = safeBlockHorizontal * 2;
+    double variation = 1.0;
+
+    if(deviceGroupCustom==0) //default
+        {
+      ///Default font size, will check for the device's size
+      if(deviceGroup=='MEDIUM')
+      {
+        ///Font Size Default/Medium
+        variation = 1.0;
+      } else if (deviceGroup=='SMALL')
+      {
+        ///Font Size Default/Small
+        variation = 0.8;
+      } else if (deviceGroup=='LARGE'){
+        ///Font Size Default/Large
+        variation = 1.2;
+      }
+    } else {
+      ///This will check for the user's input on size, if the value isn't Default
+      variation = deviceGroupCustom/10;
+    }
+
+    print('deviceGroup $deviceGroup');
+    print('deviceGroupCustom $deviceGroupCustom');
+    print('variation: $variation');
+
+
+    titleSize = (safeBlockHorizontal * 7)*variation;
+    labelSize = (safeBlockHorizontal * 6)*variation;
+    labelSizeSmall = (safeBlockHorizontal * 4)*variation;
+    fontSizeHuge = (safeBlockHorizontal * 5)*variation;
+    fontSizeLarge = (safeBlockHorizontal * 4)*variation;
+    fontSize = (safeBlockHorizontal * 3)*variation;
+    fontSizeSmall = (safeBlockHorizontal * 2.5)*variation;
+    spanSize = (safeBlockHorizontal * 2)*variation;
+
 
     ///This is an example for more specific styling with grouping,
     ///you can use anywhere you want
@@ -72,7 +138,7 @@ class SizeConfig {
     // {
     //   titleSize = safeBlockHorizontal * 7;
     //   labelSize = safeBlockHorizontal * 6;
-    //   smallLabel = safeBlockHorizontal * 4;
+    //   labelSizeSmall = safeBlockHorizontal * 4;
     //   fontSize = safeBlockHorizontal * 3;
     //   fontSizeSmall = safeBlockHorizontal * 2.5;
     //   spanSize = safeBlockHorizontal * 2;

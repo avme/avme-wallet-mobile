@@ -352,7 +352,7 @@ class _SyncFusionChartState extends State<SyncFusionChart> {
                             SizedBox(
                               width: SizeConfig.safeBlockHorizontal / 2,
                             ),
-                            Text("${_percentage.toString().substring(0,5)} %"),
+                            Text("${_percentage.toString().substring(0,5)} %", style: TextStyle(fontSize: SizeConfig.fontSize),),
                           ]
                         ),
                       )

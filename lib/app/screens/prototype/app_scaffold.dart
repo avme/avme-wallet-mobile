@@ -429,12 +429,7 @@ class _AppTabBarState extends State<AppTabBar> {
                       child: Text(
                         "$key",
                         style: TextStyle(
-                            //fontWeight: FontWeight.bold, fontSize: 18),),
-                            //fontWeight: FontWeight.bold, fontSize: SizeConfig.labelSize*0.77),),
                             fontWeight: FontWeight.bold, fontSize: SizeConfig.labelSize*0.5+6),),
-                            // Ratib: experimenting with a few differente sizes, I realized if you multiply by half (or divide by two) and add an amount,
-                            // you can make it smaller on bigger screens and bigger on smaller screens.  Makes sizes very similar
-                            // on different displays, hopefully won't overflow
                     ),
                   ),
                 ],

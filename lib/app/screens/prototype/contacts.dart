@@ -285,11 +285,11 @@ class _ContactsState extends State<Contacts> {
                 itemBuilder: (context) =>
                 [
                   PopupMenuItem(
-                    child: Text("Add"),
+                    child: Text("Add",style: TextStyle(fontSize: SizeConfig.fontSizeLarge)),
                     value: 0,
                   ),
                   PopupMenuItem(
-                    child: Text("Edit"),
+                    child: Text("Edit",style: TextStyle(fontSize: SizeConfig.fontSizeLarge)),
                     value: 1,
                   ),
 
@@ -496,15 +496,29 @@ class _ContactsState extends State<Contacts> {
                         ),
                       )
                     ) : Container(),
-                    Icon(Icons.account_circle_outlined, size: 32, color: AppColors.purple,),
+                    Icon(
+                      Icons.account_circle_outlined,
+                      size: SizeConfig.titleSize*1.3,
+                      color: AppColors.purple,
+                    ),
                     Flexible(
                       child: Padding(
                         padding: const EdgeInsets.only(left: 8.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(contact.name, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
-                            Text(contact.address, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey),),
+                            Text(
+                              contact.name,
+                              style: TextStyle(
+                                  fontSize: SizeConfig.fontSizeLarge, fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              contact.address,
+                              style: TextStyle(
+                                  fontSize: SizeConfig.fontSize,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey),
+                            ),
                           ],
                         ),
                       ),
