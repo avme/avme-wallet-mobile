@@ -36,6 +36,7 @@ dependencies:
   bip32: ^1.0.7
   http: ^0.13.0
   aes_crypt: ^0.1.1
+  flutter_restart: ^0.0.3
   flutter_spinkit: ^5.0.0
   flutter_dotenv: ^3.1.0
   provider: ^5.0.0
