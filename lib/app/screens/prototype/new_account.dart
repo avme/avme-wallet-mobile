@@ -834,7 +834,7 @@ class FormMnemonic {
                   style: TextStyle(
                     color: AppColors.purple,
                     fontWeight: FontWeight.bold,
-                    fontSize: SizeConfig.smallLabel
+                    fontSize: SizeConfig.labelSizeSmall
                   ),
                 ),
               ),

@@ -141,6 +141,7 @@ class TokenTracker extends StatefulWidget {
 class _TokenTrackerState extends State<TokenTracker> {
   @override
   Widget build(BuildContext context) {
+    SizeConfig().init(context);
     AvmeWallet app = Provider.of<AvmeWallet>(context, listen:false);
     return ConstrainedBox(
       constraints: BoxConstraints(
@@ -191,7 +192,7 @@ class _TokenTrackerState extends State<TokenTracker> {
                           padding: EdgeInsets.symmetric(horizontal: SizeConfig.safeBlockHorizontal * 2),
                           child: Text(widget.name,
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: SizeConfig.fontSizeLarge*1.2,
                             ),
                           ),
                         ),
@@ -201,17 +202,17 @@ class _TokenTrackerState extends State<TokenTracker> {
                     SizedBox(height: 8,),
                     Text(widget.amount,
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: SizeConfig.fontSizeLarge*1.2,
                       ),
                     ),
                     SizedBox(height: 8,),
                     Text("\$${widget.marketValue}",
-                      style: AppTextStyles.span
+                      style: AppTextStyles.span.copyWith(fontSize: SizeConfig.fontSizeLarge)
                     )]..addAll(widget.asNetworkToken.length > 0
                     ? [
                       SizedBox(height: 8,),
                       Text(widget.asNetworkToken,
-                        style: AppTextStyles.span
+                        style: AppTextStyles.span.copyWith(fontSize: SizeConfig.fontSizeLarge)
                       ),
                     ]
                     : []

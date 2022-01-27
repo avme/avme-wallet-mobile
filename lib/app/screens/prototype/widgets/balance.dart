@@ -66,7 +66,7 @@ class _OverviewAndButtonsState extends State<OverviewAndButtons> {
                           SizedBox(height: 4,),
                           Text("${widget.difference}",
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: SizeConfig.fontSize,
                               )),
                           SizedBox(height: 18,),
                           Row(
@@ -82,7 +82,7 @@ class _OverviewAndButtonsState extends State<OverviewAndButtons> {
                                   children: [
                                     Text("${widget.address}",
                                       style: TextStyle(
-                                          fontSize: 12
+                                          fontSize: SizeConfig.fontSize
                                       ),),
                                   ],
                                 ),

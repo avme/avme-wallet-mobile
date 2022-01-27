@@ -1,3 +1,4 @@
+import 'package:avme_wallet/app/controller/size_config.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/screens/widgets/custom_widgets.dart';
@@ -16,6 +17,8 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
+
+    SizeConfig().init(context);
 
     double height = MediaQuery.of(context).size.height * 1 / 3;
     double width = MediaQuery.of(context).size.width * 1 / 1.25;

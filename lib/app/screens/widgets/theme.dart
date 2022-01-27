@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:avme_wallet/app/controller/size_config.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
 
@@ -119,13 +120,13 @@ class MaterialStates
 }
 
 class AppTextStyles {
-    static const span = TextStyle(
+    static final span = TextStyle(
         color: Colors.grey,
-        fontSize: 12
+        fontSize: SizeConfig.fontSize*1.3
     );
-    static const label = TextStyle(
+    static final label = TextStyle(
         color: Colors.white,
-        fontSize: 18,
+        fontSize: SizeConfig.fontSizeLarge*1.3,
         fontWeight: FontWeight.bold
     );
 }

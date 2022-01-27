@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:avme_wallet/app/controller/size_config.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
 
@@ -63,6 +64,7 @@ class _GradientCardState extends State<GradientCard> {
 
   @override
   Widget build(BuildContext context) {
+    SizeConfig().init(context);
     return GradientContainer(
         decorationTween: widget.balanceTween,
         onPressed: (){},
@@ -83,11 +85,11 @@ class _GradientCardState extends State<GradientCard> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(widget.label),
+                        Text(widget.label,style: TextStyle(fontSize: SizeConfig.fontSizeLarge)),
                         SizedBox(height: 8,),
                         Text("\$${widget.balance}",
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: SizeConfig.fontSizeLarge*1.1,
                           ),),
                         SizedBox(height: 18,),
                         Row(
@@ -100,7 +102,7 @@ class _GradientCardState extends State<GradientCard> {
                                 children: [
                                   Text("${widget.address}",
                                     style: TextStyle(
-                                      fontSize: 12
+                                      fontSize: SizeConfig.fontSize
                                     ),
                                   ),
                                 ],

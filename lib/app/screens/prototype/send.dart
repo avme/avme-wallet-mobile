@@ -81,6 +81,8 @@ class _SendState extends State<Send> {
                   EdgeInsets.only(bottom: SizeConfig.safeBlockVertical),
                   child: AppLabelText(
                     "Address",
+                    textStyle: TextStyle(color: AppColors.labelDefaultColor),
+                    fontSize: SizeConfig.fontSizeLarge,
                   ),
                 ),
                 AppTextFormField(
@@ -129,6 +131,8 @@ class _SendState extends State<Send> {
                     padding: EdgeInsets.only(bottom: SizeConfig.safeBlockVertical),
                     child: AppLabelText(
                       "Available Tokens",
+                      textStyle: TextStyle(color: AppColors.labelDefaultColor),
+                      fontSize: SizeConfig.fontSizeLarge,
                     ),
                   ),
                   DropdownButtonFormField<String>(
@@ -151,7 +155,7 @@ class _SendState extends State<Send> {
                         if (_preTokenForm.currentState != null)
                           _preTokenForm.currentState.validate();
                       },
-                      style: const TextStyle(color: Colors.white),
+                      style: TextStyle(color: Colors.white,fontSize: SizeConfig.fontSize),
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: AppColors.darkBlue,
@@ -301,8 +305,12 @@ class _SendState extends State<Send> {
                   color: AppColors.darkBlue
                 ),
                 child: ExpansionTile(
-                  title: AppLabelText("Frequent contacts"),
-                  subtitle: Text('Tap to expand', style: AppTextStyles.span),
+                  title: AppLabelText(
+                    "Frequent contacts",
+                    textStyle: TextStyle(color: AppColors.labelDefaultColor),
+                    fontSize: SizeConfig.fontSizeLarge,
+                  ),
+                  subtitle: Text('Tap to expand', style: AppTextStyles.span.copyWith(fontSize: SizeConfig.fontSize*1.2)),
                   collapsedIconColor: AppColors.labelDefaultColor,
                   iconColor: AppColors.purpleVariant2,
 
@@ -368,7 +376,7 @@ class _SendState extends State<Send> {
                     Container(),
                     Icon(
                       Icons.account_circle_outlined,
-                      size: 32,
+                      size: SizeConfig.titleSize*1.3,
                       color: AppColors.purple,
                     ),
                     Flexible(
@@ -380,12 +388,12 @@ class _SendState extends State<Send> {
                             Text(
                               contact.name,
                               style: TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.bold),
+                                  fontSize: SizeConfig.fontSizeLarge, fontWeight: FontWeight.bold),
                             ),
                             Text(
                               contact.address,
                               style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: SizeConfig.fontSize,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.grey),
                             ),
@@ -473,12 +481,12 @@ class _SendState extends State<Send> {
                           ? Text(
                           "1 AVAX = ${shortAmount(app.networkToken.decimal.toString(), length: 6, comma: true)}",
                           style: AppTextStyles.span.copyWith(
-                              fontSize: SizeConfig.smallLabel))
+                              fontSize: SizeConfig.labelSizeSmall))
                           : Text(
                           "1 ${app.activeContracts.sContracts.contractsRaw[tokenDropdownValue]["symbol"]} = "
                               "${shortAmount(app.activeContracts.token.decimal(tokenDropdownValue).toString(), length: 6, comma: true)}",
                           style: AppTextStyles.span.copyWith(
-                              fontSize: SizeConfig.smallLabel)),
+                              fontSize: SizeConfig.labelSizeSmall)),
                       SizedBox(
                         height: SizeConfig.safeBlockVertical,
                       ),
@@ -543,7 +551,7 @@ class _SendState extends State<Send> {
                       Text(
                         "Balance Preview",
                         style: AppTextStyles.span
-                            .copyWith(fontSize: SizeConfig.smallLabel),
+                            .copyWith(fontSize: SizeConfig.labelSizeSmall),
                       ),
                       SizedBox(
                         height: SizeConfig.safeBlockVertical,
@@ -616,7 +624,8 @@ class _SendState extends State<Send> {
                                     const EdgeInsets.only(left: 8.0),
                                     child: Text(
                                       "Automatic gas limit",
-                                      style: TextStyle(fontSize: 12.0),
+                                      // style: TextStyle(fontSize: 12.0),
+                                      style: TextStyle(fontSize: SizeConfig.fontSize),
                                     ),
                                   )
                                 ],
@@ -632,7 +641,7 @@ class _SendState extends State<Send> {
                             children: [
                               Text(
                                 "Gas limit in (WEI)",
-                                style: TextStyle(fontSize: 12.0),
+                                style: TextStyle(fontSize: SizeConfig.fontSize),
                               )
                             ],
                           ),
@@ -706,7 +715,7 @@ class _SendState extends State<Send> {
                                     const EdgeInsets.only(left: 8.0),
                                     child: Text(
                                       "Recommended fees",
-                                      style: TextStyle(fontSize: 12.0),
+                                      style: TextStyle(fontSize: SizeConfig.fontSize),
                                     ),
                                   )
                                 ],
@@ -722,7 +731,7 @@ class _SendState extends State<Send> {
                             children: [
                               Text(
                                 "Gas price (In GWEI)",
-                                style: TextStyle(fontSize: 12.0),
+                                style: TextStyle(fontSize: SizeConfig.fontSize),
                               )
                             ],
                           ),

@@ -53,7 +53,7 @@ class _TokenDistributionState extends State<TokenDistribution> {
             child: totalValue(widget.chartData) == 0
               ? Padding(
                 padding: const EdgeInsets.symmetric(vertical: 32.0),
-                child: Center(child: Text("No Data to be shown."),),
+                child: Center(child: Text("No Data to be shown.",style: AppTextStyles.label.copyWith(fontSize: SizeConfig.fontSizeLarge)),),
               )
               : Row(
                 children: [

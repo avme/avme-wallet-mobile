@@ -37,6 +37,7 @@ class _HistoryState extends State<History> {
   @override
   Widget build(BuildContext context) {
     AppColors appColors = AppColors();
+    SizeConfig().init(context);
 
     return Consumer<AvmeWallet>(
       builder: (context, app, _){
@@ -199,7 +200,7 @@ class _HistoryState extends State<History> {
                         bottom: 20,
                         left: 16.0
                       ),
-                      child: Text("Transactions", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
+                      child: Text("Transactions", style: AppTextStyles.label,),
                     ),
                     Container(
                       decoration: BoxDecoration(
@@ -419,16 +420,17 @@ class _BalanceAndButtonsState extends State<BalanceAndButtons> {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               SizedBox(height: 8,),
-                              Text("Current Balance"),
+                              Text("Current Balance",style: TextStyle(fontSize: SizeConfig.labelSize*0.6)),
                               SizedBox(height: 8,),
                               Text("\$${widget.totalBalance}",
                                 style: TextStyle(
-                                  fontSize: 26,
+                                  fontSize: SizeConfig.labelSize,
                                 ),),
                               SizedBox(height: 8,),
                               Text("${widget.difference}",
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  //fontSize: 12,
+                                  fontSize: SizeConfig.fontSize,
                                 )
                               ),
                               SizedBox(height: 8,),
