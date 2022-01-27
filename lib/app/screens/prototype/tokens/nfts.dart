@@ -81,8 +81,14 @@ class _NFTManagementState extends State<NFTManagement> {
     Map contracts = await nftContracts.initialize();
 
     if(contracts.length == 0)
-      return NFTData(lastSelected: {}, contracts: {}, collection: {});
+    {
+      this.galleryData = NFTData(contracts: {}, collection: {}, lastSelected: {});
+      this._galleryData = NFTData(contracts: {}, collection: {}, lastSelected: {});
+      return this.galleryData;
+    }
+
     Map<String,List> _metadata = {};
+
     for(int i = 0; i < contracts.length; i++)
     {
       String tokenName = contracts.entries.elementAt(i).key;
@@ -191,7 +197,7 @@ class _NFTManagementState extends State<NFTManagement> {
                         children: [
                           FutureBuilder(
                             future: _initialize,
-                            builder: (_, loaded){
+                            builder: (_, AsyncSnapshot<NFTData> loaded){
 
                               int bigPictureMode = this.bigPictureModes.indexOf(this.currentBigPictureMode);
 
@@ -206,7 +212,7 @@ class _NFTManagementState extends State<NFTManagement> {
                                   break;
                               }
 
-                              if(loaded.data != null)
+                              if(loaded.data != null && loaded.data.contracts.length > 0)
                                 return AppIconButton(
                                   onPressed: () {
                                     setState(() {
@@ -236,8 +242,8 @@ class _NFTManagementState extends State<NFTManagement> {
                         children: [
                           FutureBuilder(
                             future: _initialize,
-                            builder: (_, loaded){
-                              if(loaded.data != null)
+                            builder: (_, AsyncSnapshot<NFTData> loaded){
+                              if(loaded.data != null && loaded.data.contracts.length > 0)
                                 return AppIconButton(
                                   onPressed: () => showFilters(),
                                   icon: Icon(Icons.search)
@@ -247,32 +253,41 @@ class _NFTManagementState extends State<NFTManagement> {
                               );
                             }
                           ),
-                          SizedBox(
-                            width: SizeConfig.safeBlockVertical * 6,
-                            child: Theme(
-                              data:
-                              avmeTheme.copyWith(
-                                splashColor: Colors.transparent,
-                                highlightColor: Colors.transparent,
-                              ),
-                              child: PopupMenuButton(
-                                  padding: EdgeInsets.all(0),
-                                  onSelected: (value) {
-                                    switch (value) {
-                                      case 0:
-                                        newNFTToken(setState);
-                                        break;
-                                    }
-                                  },
-                                  itemBuilder: (context) =>
-                                  [
-                                    PopupMenuItem(
-                                      child: Text("Add Contract"),
-                                      value: 0,
+                          FutureBuilder(
+                            future: _initialize,
+                            builder: (_, AsyncSnapshot<NFTData> loaded) {
+                              if(loaded.data != null && loaded.data.contracts.length > 0)
+                                return SizedBox(
+                                  width: SizeConfig.safeBlockVertical * 6,
+                                  child: Theme(
+                                    data:
+                                    avmeTheme.copyWith(
+                                      splashColor: Colors.transparent,
+                                      highlightColor: Colors.transparent,
                                     ),
-                                  ]
-                              ),
-                            ),
+                                    child: PopupMenuButton(
+                                      padding: EdgeInsets.all(0),
+                                      onSelected: (value) {
+                                        switch (value) {
+                                          case 0:
+                                            newNFTToken(setState);
+                                            break;
+                                        }
+                                      },
+                                      itemBuilder: (context) =>
+                                      [
+                                        PopupMenuItem(
+                                          child: Text("Add Contract"),
+                                          value: 0,
+                                        ),
+                                      ]
+                                    ),
+                                  ),
+                                );
+                              return AppIconButton(
+                                icon: Icon(Icons.adaptive.more, color: AppColors.labelDisabledColor,)
+                              );
+                            }
                           ),
                         ],
                       ),
