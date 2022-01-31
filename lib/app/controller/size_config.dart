@@ -76,23 +76,24 @@ class SizeConfig {
       if(!await file.exists())
       {
         await file.writeAsString(fileManager.encoder.convert({
-          "display" : [
+          "display" :
             {
               "deviceGroupCustom": "0"
+            },
+          "options" :
+            {
+              "debugMode" : false
             }
-          ]}
+        }
         ));
       }
       return file;
     }
     Future<File> fileContacts = settingsFile();
     fileContacts.then((File file) async {
-      print('File $file');
       Map contents = jsonDecode(await file.readAsString());
-      print('contents["display"] ${contents["display"]}');
-      List deviceGroupCustomMap = contents["display"];
-      deviceGroupCustom = int.tryParse(deviceGroupCustomMap.asMap()[0]["deviceGroupCustom"]);
-      //print('deviceGroupCustomMap.asMap()["deviceGroupCustom"] ${deviceGroupCustomMap.asMap()[0]["deviceGroupCustom"]}');
+      Map<String,dynamic>deviceGroupCustomMap = Map<String, dynamic>.from(contents["display"]);
+      deviceGroupCustom = int.tryParse(deviceGroupCustomMap["deviceGroupCustom"]);
     });
 
     double variation = 1.0;
@@ -116,11 +117,6 @@ class SizeConfig {
       ///This will check for the user's input on size, if the value isn't Default
       variation = deviceGroupCustom/10;
     }
-
-    print('deviceGroup $deviceGroup');
-    print('deviceGroupCustom $deviceGroupCustom');
-    print('variation: $variation');
-
 
     titleSize = (safeBlockHorizontal * 7)*variation;
     labelSize = (safeBlockHorizontal * 6)*variation;
