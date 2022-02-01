@@ -124,15 +124,15 @@ class _TokenManagementState extends State<TokenManagement> {
           ],
           actions: [
             AppButton(
-                expanded:false,
-                onPressed: () async{
-                  await app.walletManager.removeToken(app,tokenName);
-                  Navigator.of(context).pop();
-                  setState(() {
-                    this.selectedToken = widget.protectedTokenManagement.first;
-                  });
-                },
-                text: "Remove"
+              expanded:false,
+              onPressed: () async{
+                await app.walletManager.removeToken(app,tokenName);
+                Navigator.of(context).pop();
+                setState(() {
+                  this.selectedToken = widget.protectedTokenManagement.first;
+                });
+              },
+              text: "Remove"
             )
           ],
         );
@@ -667,7 +667,8 @@ class _TokenManagementState extends State<TokenManagement> {
             ],
           );
         }
-        ));
+      )
+    );
   }
 
   Future addTokenPopup(String token) async {
