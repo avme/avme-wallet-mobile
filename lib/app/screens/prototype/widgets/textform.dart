@@ -25,6 +25,7 @@ class AppTextFormField extends StatefulWidget {
   final bool isDense;
   final TextAlign textAlign;
   final int maxLength;
+  final TextInputAction textInputAction;
 
   const AppTextFormField({
     Key key,
@@ -49,7 +50,8 @@ class AppTextFormField extends StatefulWidget {
         vertical: 16,
         horizontal: 12
     ),
-    this.maxLength
+    this.maxLength,
+    this.textInputAction
   }) : super(key: key);
 
   @override
@@ -119,6 +121,7 @@ class _AppTextFormFieldState extends State<AppTextFormField> with TickerProvider
         Column(
           children: [
             TextFormField(
+              textInputAction: widget.textInputAction,
               maxLength: widget.maxLength,
               maxLengthEnforcement: widget.maxLength != null
                 ? MaxLengthEnforcement.enforced

@@ -124,6 +124,10 @@ class AppTextStyles {
         color: Colors.grey,
         fontSize: SizeConfig.fontSize*1.3
     );
+    static final spanWhite = TextStyle(
+        color: Colors.white,
+        fontSize: SizeConfig.fontSize*1.3
+    );
     static final label = TextStyle(
         color: Colors.white,
         fontSize: SizeConfig.fontSizeLarge*1.3,

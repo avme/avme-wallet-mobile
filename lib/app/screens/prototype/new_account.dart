@@ -59,6 +59,7 @@ class _NewAccountState extends State<NewAccount> {
     appWalletManager = Provider.of<AvmeWallet>(context, listen: false);
     this.walletSeed = this.walletSeed ?? appWalletManager.walletManager.newMnemonic();
     this.walletSeedMap = this.walletSeed.split(' ').asMap();
+    print('this.walletSeed = ${this.walletSeed}');
     phraseFocusNode.addListener(() {
       setState(() => null);
     });
@@ -302,7 +303,7 @@ class _NewAccountState extends State<NewAccount> {
 
     seed.forEach((key, value) {
 
-      if(key.remainder(6) == 0 && key != 0)
+      if(key.remainder(12) == 0 && key != 0)
         row++;
 
       columnMap[row] = columnMap[row] ?? [];
@@ -311,13 +312,15 @@ class _NewAccountState extends State<NewAccount> {
           children: [
             Text(" ${key+1}. ",
               style: TextStyle(
-                color: Colors.blue
+                color: Colors.blue,
+                  fontSize: SizeConfig.fontSizeHuge
               ),
             ),
             Text(value,
               style: TextStyle(
                 color: Colors.white70,
-                fontWeight: FontWeight.bold
+                fontWeight: FontWeight.bold,
+                  fontSize: SizeConfig.fontSizeHuge
               ),
             ),
           ],
@@ -363,17 +366,22 @@ class _NewAccountState extends State<NewAccount> {
                   ),
                   cancelable: false,
                   children: [
-                    Text(this.warning1),
+                    Text(this.warning1,style: TextStyle(fontSize: SizeConfig.fontSizeLarge*0.5+8)),
                     Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 12),
+                      padding: EdgeInsets.symmetric(
+                        vertical: SizeConfig.blockSizeVertical),
                       child: Divider(),
                     ),
                     getSeedList(this.walletSeedMap),
                     Padding(
+                      padding: EdgeInsets.symmetric(
+                          vertical: SizeConfig.blockSizeVertical),
+                      child: Divider(),
+                    ),
+                    Padding(
                       // padding: const EdgeInsets.symmetric(vertical: 32),
-                      padding: EdgeInsets.only(top: 24),
-                      child: Text(this.warning2),
+                      padding: EdgeInsets.only(top: SizeConfig.blockSizeVertical),
+                      child: Text(this.warning2,style: TextStyle(fontSize: SizeConfig.fontSizeLarge*0.5+8)),
                     )
                   ],
                   actions: [
@@ -628,136 +636,17 @@ class _NewAccountState extends State<NewAccount> {
   AppButton createAccount() {
     return AppButton(
       onPressed: () {
-        ScrollController read = ScrollController();
-        ScrollController write = ScrollController();
         if(_phraseFormState.currentState.validate() == true && _rephraseFormState.currentState.validate() == true)
         {
           ///First we gathered the keys to hide and make the user verify
           formMnemonic = new FormMnemonic(mnemonic: this.walletSeed);
-          String invalidMnemonic = "";
           FocusScopeNode currentFocus = FocusScope.of(this.context);
           currentFocus.unfocus();
           Future.delayed(Duration(milliseconds: 200), (){
             showDialog(context: context, builder: (_) =>
-              StatefulBuilder(builder: (builder, setState) =>
-                AppPopupWidget(
-                  title: "Warning",
-                  canClose: false,
-                  children: [
-                    ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxHeight: SizeConfig.safeBlockVertical * 50
-                      ),
-                      child: Scrollbar(
-                        isAlwaysShown: true,
-                        thickness: 4,
-                        controller: read,
-                        child: SingleChildScrollView(
-                          controller: read,
-                          child: Column(
-                            children: [
-                              Padding(
-                                padding: EdgeInsets.only(top: SizeConfig.safeBlockVertical * 2,),
-                                child: Text(this.warning1),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(12),
-                                child: Divider(),
-                              ),
-                              getSeedList(this.walletSeedMap),
-                              Padding(
-                                padding: EdgeInsets.only(top: 24),
-                                child: Text(this.warning2),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    )
-                  ],
-                  actions: [
-                    AppNeonButton(
-                      expanded: false,
-                      onPressed: () async {
-                        Navigator.of(context).pop();
-                        await showDialog(context: context, builder: (_) =>
-                          StatefulBuilder(builder: (builder, setState) =>
-                            AppPopupWidget(
-                              title: "Verify Mnemonic",
-                              margin: EdgeInsets.symmetric(horizontal: 8),
-                              children: [
-                                Text("Fill in Mnemonic Phrase Below"),
-                                ConstrainedBox(
-                                  constraints: BoxConstraints(
-                                      maxHeight: SizeConfig.safeBlockVertical * 50
-                                  ),
-                                  child: Scrollbar(
-                                      isAlwaysShown: true,
-                                      thickness: 4,
-                                      controller: write,
-                                      child: SingleChildScrollView(
-                                        controller: write,
-                                        child: Column(
-                                          children: [
-                                            Padding(
-                                              padding: const EdgeInsets.only(top: 16),
-                                              child: formMnemonic.build(),
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.only(top: 8.0),
-                                              child: Text(invalidMnemonic,
-                                                style: TextStyle(color: Colors.red),),
-                                            ),
-                                          ],
-                                        ),
-                                      )
-                                  ),
-                                ),
-                              ],
-                              actions: [
-                                AppNeonButton(
-                                  onPressed: () async {
-                                    wrongMnemonic = formMnemonic.validate();
-                                    if(wrongMnemonic > -1)
-                                    {
-                                      setState((){
-                                        invalidMnemonic = warningMnemonic+(wrongMnemonic+1).toString();
-                                      });
-                                    }
-                                    else
-                                    {
-                                      setState((){
-                                        invalidMnemonic = "";
-                                      });
-                                      Navigator.of(context).pop();
-                                      await showDialog(context: context, builder: (_) => StatefulBuilder(builder: (builder, setState){
-                                        return ProgressPopup(
-                                          title: "Creating",
-                                          future: appWalletManager.walletManager.makeAccount(phraseController.text, appWalletManager,mnemonic: this.walletSeed)
-                                            .then((result) {
-                                              // Creates the user account
-                                              appWalletManager.changeCurrentWalletId = 0;
-                                              Navigator.pop(context);
-                                              Navigator.pushReplacementNamed(context, "app/overview");
-                                              NotificationBar().show(context, text: "Account #0 selected");
-                                          }));
-                                      }));
-                                      return;
-                                    }
-                                  },
-                                  expanded: false,
-                                  text: "VERIFY"
-                                ),
-                              ]
-                            )
-                          )
-                        );
-                        // Navigator.of(context).pop();
-                      },
-                      text: "CONTINUE",
-                    )
-                  ]
-                )
+              MnemonicsPreAccCreation(
+                warning1: warning1,warning2: warning2, walletSeedMap: walletSeedMap,
+                  appWalletManager: appWalletManager, walletSeed: walletSeed, phraseController: phraseController,
               )
             );
           });
@@ -768,6 +657,169 @@ class _NewAccountState extends State<NewAccount> {
     );
   }
 }
+
+class MnemonicsPreAccCreation extends StatefulWidget {
+  final String warning1, warning2, walletSeed;
+  final Map<dynamic,dynamic> walletSeedMap;
+  final AvmeWallet appWalletManager;
+  final TextEditingController phraseController;
+
+  const MnemonicsPreAccCreation({
+    Key key, this.warning1, this.warning2, this.walletSeed, this.walletSeedMap,
+    this.appWalletManager, this.phraseController
+  }) : super(key: key);
+
+  @override
+  _MnemonicsPreAccCreationState createState() => _MnemonicsPreAccCreationState();
+}
+
+class _MnemonicsPreAccCreationState extends State<MnemonicsPreAccCreation> {
+  ScrollController read = ScrollController();
+  bool endOfScroll = false;
+
+  _listener() {
+    final maxScroll = read.position.maxScrollExtent;
+    //final minScroll = read.position.minScrollExtent;
+    if (read.offset >= maxScroll) {
+      setState(() {
+        endOfScroll = true;
+      });
+    }
+
+    if (read.offset < maxScroll) {
+      setState(() {
+        endOfScroll = false;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    read.addListener(_listener);
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    read.removeListener(_listener);
+    read.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AppPopupWidget(
+        title: "Warning",
+        canClose: false,
+        children: [
+          ConstrainedBox(
+            constraints: BoxConstraints(
+                maxHeight: SizeConfig.safeBlockVertical * 50
+            ),
+            child: Scrollbar(
+              isAlwaysShown: true,
+              thickness: 4,
+              controller: read,
+              child: SingleChildScrollView(
+                controller: read,
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.only(top: SizeConfig.safeBlockVertical * 2,),
+                      child: Text(widget.warning1,style: TextStyle(fontSize: SizeConfig.fontSizeLarge*0.5+10)),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Divider(),
+                    ),
+                    getSeedList(widget.walletSeedMap),
+                    Padding(
+                      padding: EdgeInsets.only(top: 24),
+                      child: Text(widget.warning2,style: TextStyle(fontSize: SizeConfig.fontSizeLarge*0.5+10)),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          )
+        ],
+        actions: [
+          AppNeonButton(
+            enabled: endOfScroll,
+            expanded: false,
+            onPressed: () async {
+              Navigator.of(context).pop();
+              await showDialog(context: context, builder: (_) => StatefulBuilder(builder: (builder, setState){
+                return ProgressPopup(
+                    title: "Creating",
+                    future: widget.appWalletManager.walletManager.makeAccount(widget.phraseController.text, widget.appWalletManager,mnemonic: widget.walletSeed)
+                        .then((result) {
+                      // Creates the user account
+                      widget.appWalletManager.changeCurrentWalletId = 0;
+                      Navigator.pop(context);
+                      Navigator.pushReplacementNamed(context, "app/overview");
+                      NotificationBar().show(context, text: "Account #0 selected");
+                    }));
+              }));
+            },
+            text: "CONTINUE",
+          )
+        ]
+    );
+  }
+  Widget getSeedList(Map seed)
+  {
+
+    Map<int,List<Widget>> columnMap = {};
+    int row = 0;
+
+    seed.forEach((key, value) {
+
+      if(key.remainder(12) == 0 && key != 0)
+        row++;
+
+      columnMap[row] = columnMap[row] ?? [];
+      columnMap[row].add(
+          Row(
+            children: [
+              Text(" ${key+1}. ",
+                style: TextStyle(
+                    color: Colors.blue,
+                    fontSize: SizeConfig.fontSizeHuge
+                ),
+              ),
+              Text(value,
+                style: TextStyle(
+                    color: Colors.white70,
+                    fontWeight: FontWeight.bold,
+                    fontSize: SizeConfig.fontSizeHuge
+                ),
+              ),
+            ],
+          )
+      );
+      // print("row[$row] ${key+1} - $value");
+    });
+
+    List<Widget> columnWidgets = [];
+    columnMap.values.forEach((value) {
+      columnWidgets.add(
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.max,
+              children: value.toList(),
+            ),
+          )
+      );
+    });
+
+    return Row(
+      children: columnWidgets,
+    );
+  }
+}
+
 
 class FormMnemonic {
 

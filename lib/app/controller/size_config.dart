@@ -104,10 +104,10 @@ class SizeConfig {
       } else if (deviceGroup=='SMALL')
       {
         ///Font Size Default/Small
-        variation = 0.8;
+        variation = 0.9;
       } else if (deviceGroup=='LARGE'){
         ///Font Size Default/Large
-        variation = 1.2;
+        variation = 1.1;
       }
     } else {
       ///This will check for the user's input on size, if the value isn't Default
