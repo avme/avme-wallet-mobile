@@ -79,10 +79,6 @@ class SizeConfig {
           "display" :
             {
               "deviceGroupCustom": "0"
-            },
-          "options" :
-            {
-              "debugMode" : false
             }
         }
         ));

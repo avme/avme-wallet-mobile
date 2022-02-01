@@ -18,7 +18,6 @@ class Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<Settings> {
-  bool debugMode = false;
   TextEditingController textInput = TextEditingController(
       text: ""
   );
@@ -28,6 +27,8 @@ class _SettingsState extends State<Settings> {
     SizeConfig().init(context);
     String textSize = getTextSize();
     textInput.text = getTextSize();
+    //always starts false
+    bool debugMode = Provider.of<AvmeWallet>(context,listen: false).debugMode;
     return Theme(
       data: screenTheme,
       child: Scaffold(
@@ -49,7 +50,7 @@ class _SettingsState extends State<Settings> {
                         ListTile(
                           title: Text("Debug Mode",style: TextStyle(fontSize: SizeConfig.fontSizeLarge)),
                           leading: Icon(Icons.bug_report_outlined),
-                          onTap: () => setState(() => this.debugMode = !this.debugMode),
+                          onTap: () => setState(() => debugMode = !debugMode),
                           subtitle: Text(
                               debugMode ? "Enabled" : "Disabled"
                           ),
@@ -57,7 +58,7 @@ class _SettingsState extends State<Settings> {
                             value: debugMode,
                             onChanged: (bool value) {
                               Provider.of<AvmeWallet>(context,listen: false).debugMode = !(Provider.of<AvmeWallet>(context,listen: false).debugMode);
-                              setState(() => this.debugMode = !this.debugMode);
+                              setState(() => debugMode = !debugMode);
                             },
                           ),
                         ),
@@ -69,7 +70,7 @@ class _SettingsState extends State<Settings> {
                             fieldFocus.requestFocus();
                             await exampleTextPopup(fieldFocus);
                             setState((){});
-                            // setState(() => this.debugMode = !this.debugMode);
+                            // setState(() => debugMode = !debugMode);
                           },
                           subtitle: Text(textSize),
                         ),
@@ -83,7 +84,7 @@ class _SettingsState extends State<Settings> {
                           fieldFocus.requestFocus();
                           await exampleTextPopup(fieldFocus);
                           setState((){});
-                          // setState(() => this.debugMode = !this.debugMode);
+                          // setState(() => debugMode = !debugMode);
                         },
                         subtitle: Text(this.textInput.value.text),
                       ),
@@ -340,8 +341,11 @@ class _SettingsState extends State<Settings> {
 
 }
 
-///1 = save size, 2 = save debugMode, 3 = read debugMode
-void file(int option,String input) async {
+///1 = save size, 2 = save debugMode
+Future<int> file(int option,String input) async {
+
+  //Code has maybe too many checks for different occurrences, would be easier
+  //on the phone to leave it more straightforward if we don't add more options
 
   final FileManager fileManager = FileManager();
 
@@ -370,10 +374,6 @@ void file(int option,String input) async {
         "display" :
           {
             "deviceGroupCustom": "0"
-          },
-        "options" :
-          {
-            "debugMode" : false
           }
       }
       ));
@@ -395,7 +395,7 @@ void file(int option,String input) async {
       fileRead["display"]["deviceGroupCustom"] = "${int.tryParse(input)}";
       break;
     case 2:
-      fileRead["options"]["debugMode"] = input;
+      //fileRead["options"]["debugMode"] = input;
       break;
     default:
       print('Something went wrong');
@@ -405,6 +405,8 @@ void file(int option,String input) async {
   file.then((File file) async {
     file.writeAsString(fileManager.encoder.convert(fileRead));
   });
+
+  return 0;
 
 }
 
