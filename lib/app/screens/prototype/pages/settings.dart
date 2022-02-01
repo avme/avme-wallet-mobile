@@ -1,13 +1,16 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:avme_wallet/app/controller/file_manager.dart';
 import 'package:avme_wallet/app/controller/size_config.dart';
+import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/button.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/card.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/popup.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_restart/flutter_restart.dart';
+import 'package:provider/provider.dart';
 
 class Settings extends StatefulWidget {
   @override
@@ -15,7 +18,6 @@ class Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<Settings> {
-  bool debugMode = false;
   TextEditingController textInput = TextEditingController(
       text: ""
   );
@@ -25,6 +27,8 @@ class _SettingsState extends State<Settings> {
     SizeConfig().init(context);
     String textSize = getTextSize();
     textInput.text = getTextSize();
+    //always starts false
+    bool debugMode = Provider.of<AvmeWallet>(context,listen: false).debugMode;
     return Theme(
       data: screenTheme,
       child: Scaffold(
@@ -46,13 +50,16 @@ class _SettingsState extends State<Settings> {
                         ListTile(
                           title: Text("Debug Mode",style: TextStyle(fontSize: SizeConfig.fontSizeLarge)),
                           leading: Icon(Icons.bug_report_outlined),
-                          onTap: () => setState(() => this.debugMode = !this.debugMode),
+                          onTap: () => setState(() => debugMode = !debugMode),
                           subtitle: Text(
                               debugMode ? "Enabled" : "Disabled"
                           ),
                           trailing: Switch(
                             value: debugMode,
-                            onChanged: (bool value) => setState(() => this.debugMode = !this.debugMode),
+                            onChanged: (bool value) {
+                              Provider.of<AvmeWallet>(context,listen: false).debugMode = !(Provider.of<AvmeWallet>(context,listen: false).debugMode);
+                              setState(() => debugMode = !debugMode);
+                            },
                           ),
                         ),
                         ListTile(
@@ -63,7 +70,7 @@ class _SettingsState extends State<Settings> {
                             fieldFocus.requestFocus();
                             await exampleTextPopup(fieldFocus);
                             setState((){});
-                            // setState(() => this.debugMode = !this.debugMode);
+                            // setState(() => debugMode = !debugMode);
                           },
                           subtitle: Text(textSize),
                         ),
@@ -77,7 +84,7 @@ class _SettingsState extends State<Settings> {
                           fieldFocus.requestFocus();
                           await exampleTextPopup(fieldFocus);
                           setState((){});
-                          // setState(() => this.debugMode = !this.debugMode);
+                          // setState(() => debugMode = !debugMode);
                         },
                         subtitle: Text(this.textInput.value.text),
                       ),
@@ -218,7 +225,7 @@ class _SettingsState extends State<Settings> {
                 // Phoenix.rebirth(context);
                 // Navigator.of(context).pop();
                 //displaySendTokens(context);
-                saveFontSize(textInput.text);
+                file(1,textInput.text);
               }
               Navigator.push(
                   context,
@@ -247,8 +254,8 @@ class _SettingsState extends State<Settings> {
                     );
                   })
               );
-              await Future.delayed(Duration(seconds: 2));
-              FlutterRestart.restartApp();
+              //await Future.delayed(Duration(seconds: 2));
+              //FlutterRestart.restartApp();
             },
             textStyle: AppTextStyles.label,
             text: "SAVE (Requires restart)",
@@ -334,7 +341,11 @@ class _SettingsState extends State<Settings> {
 
 }
 
-void saveFontSize(String fontSize) async {
+///1 = save size, 2 = save debugMode
+Future<int> file(int option,String input) async {
+
+  //Code has maybe too many checks for different occurrences, would be easier
+  //on the phone to leave it more straightforward if we don't add more options
 
   final FileManager fileManager = FileManager();
 
@@ -360,27 +371,42 @@ void saveFontSize(String fontSize) async {
     {
       //add em SizeConfig tambem
       await file.writeAsString(fileManager.encoder.convert({
-        "display" : [
+        "display" :
           {
             "deviceGroupCustom": "0"
           }
-        ]}
+      }
       ));
     }
 
     return file;
   }
 
-  Future<File> fileContacts = settingsFile();
-  fileContacts.then((File file) async {
-    file.writeAsString(fileManager.encoder.convert({
-      "display" : [
-        {
-          "deviceGroupCustom": "${int.tryParse(fontSize)}"
-        }
-      ]}
-    ));
+  Future<File> file = settingsFile();
+  Map<String,dynamic> fileRead = {};
+
+  await file.then((value) async {
+    fileRead = json.decode(await value.readAsString());
   });
+
+  print('input $input');
+  switch(option){
+    case 1:
+      fileRead["display"]["deviceGroupCustom"] = "${int.tryParse(input)}";
+      break;
+    case 2:
+      //fileRead["options"]["debugMode"] = input;
+      break;
+    default:
+      print('Something went wrong');
+  }
+  print(fileRead);
+
+  file.then((File file) async {
+    file.writeAsString(fileManager.encoder.convert(fileRead));
+  });
+
+  return 0;
 
 }
 

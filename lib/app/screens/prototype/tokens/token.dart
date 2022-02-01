@@ -276,6 +276,18 @@ class _TokenManagementState extends State<TokenManagement> {
         activeContracts.sContracts.contracts[tokenName][0]
     );
 
+    try{
+      await contractSigner.decimals();
+    } catch(e) {
+      NotificationBar().show(
+          context,
+          text: 'An error occurred',
+          onPressed: ()  {
+          }
+      );
+      throw FormatException('An error occurred');
+    }
+
     int contractDecimals = (await contractSigner.decimals()).toInt();
 
     showDialog<void>(
