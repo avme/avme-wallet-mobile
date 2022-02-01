@@ -93,7 +93,7 @@ class WalletManager
     // String mnemonic =
     //     "blossom skate magnet magic put task famous square because attract clog ketchup";
 
-    String mnemonic = bip39.generateMnemonic();
+    String mnemonic = bip39.generateMnemonic(strength: 256);
 
     return mnemonic;
   }

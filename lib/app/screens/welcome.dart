@@ -1,6 +1,7 @@
 import 'package:avme_wallet/app/controller/services/push_notification.dart';
 import 'package:avme_wallet/app/controller/size_config.dart';
 import 'package:avme_wallet/app/model/app.dart';
+import 'package:avme_wallet/app/screens/prototype/import_account.dart';
 import 'package:avme_wallet/app/screens/prototype/new_account.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/button.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/neon_button.dart';
@@ -82,9 +83,11 @@ class _WelcomeState extends State<Welcome> {
                               height: buttonSpacing,
                             ),
                             AppNeonButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                Navigator.push(context,
+                                    MaterialPageRoute(builder: (builder) => ImportAccount()));
+                              },
                               text: "IMPORT WALLET",
-                              enabled: false,
                             ),
                             SizedBox(
                               height: buttonSpacing,

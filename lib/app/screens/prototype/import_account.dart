@@ -20,13 +20,13 @@ class _ImportAccountState extends State<ImportAccount> {
 
   FormMnemonic formMnemonic = FormMnemonic();
   int wrongMnemonic = -1;
-  String warningMnemonic = " Oops, looks like you forgot to fill number ";
+  bool isAllFilled = true;
+  String invalidMnemonic = '';
 
   @override
   Widget build(BuildContext context) {
 
     ScrollController write = ScrollController();
-    String invalidMnemonic = '';
 
     SizeConfig().init(context);
 
@@ -71,44 +71,54 @@ class _ImportAccountState extends State<ImportAccount> {
                                 ///Fields
                                 Column(
                                   children: [
-                                    Text("Fill in mnemonic phrase below",style: AppTextStyles.spanWhite,),
+                                    Text("Fill in mnemonic phrase",style: AppTextStyles.spanWhite,),
                                     Text("to import an account",style: AppTextStyles.spanWhite,),
                                     ConstrainedBox(
                                       constraints: BoxConstraints(
                                           maxHeight: SizeConfig.safeBlockVertical * 50
                                       ),
-                                      child: Scrollbar(
-                                          isAlwaysShown: true,
-                                          thickness: 4,
-                                          controller: write,
-                                          child: SingleChildScrollView(
+                                      child: Padding(
+                                        padding: EdgeInsets.only(bottom: SizeConfig.blockSizeVertical*2),
+                                        child: Scrollbar(
+                                            isAlwaysShown: true,
+                                            thickness: 4,
                                             controller: write,
-                                            child: Column(
-                                              children: [
-                                                Padding(
-                                                  padding: const EdgeInsets.only(top: 16),
-                                                  child: formMnemonic.build(),
-                                                ),
-                                                Padding(
-                                                  padding: const EdgeInsets.only(top: 8.0),
-                                                  child: Text(invalidMnemonic,
-                                                    style: TextStyle(color: Colors.red),),
-                                                ),
-                                                AppNeonButton(
-                                                    onPressed: () async {
-                                                      wrongMnemonic = formMnemonic.validate();
-                                                      if(wrongMnemonic > -1)
-                                                      {
-                                                        setState((){
-                                                          invalidMnemonic = warningMnemonic+(wrongMnemonic+1).toString();
-                                                        });
-                                                      }
-                                                      else
-                                                      {
-                                                        setState((){
-                                                          invalidMnemonic = "";
-                                                        });
-                                                        /*
+                                            child: SingleChildScrollView(
+                                              controller: write,
+                                              child: Column(
+                                                children: [
+                                                  Padding(
+                                                    padding: const EdgeInsets.only(top: 16),
+                                                    child: formMnemonic.build(),
+                                                  ),
+                                                ],
+                                              ),
+                                            )
+                                        ),
+                                      ),
+                                    ),
+                                    isAllFilled ? Padding(padding: const EdgeInsets.all(0),)
+                                        : Padding(
+                                            padding: const EdgeInsets.only(bottom: 8.0),
+                                            child: Text(invalidMnemonic,style: AppTextStyles.span.copyWith(color: Colors.red),),
+                                          ),
+                                    AppNeonButton(
+                                        onPressed: () async {
+                                          wrongMnemonic = formMnemonic.validate();
+                                          if(wrongMnemonic != 24)
+                                          {
+                                            setState((){
+                                              invalidMnemonic = 'Oops, looks like you forgot to fill a field';
+                                              isAllFilled = false;
+                                            });
+                                          }
+                                          else
+                                          {
+                                            setState((){
+                                              invalidMnemonic = '';
+                                              isAllFilled = true;
+                                            });
+                                            /*
                                                         Navigator.of(context).pop();
                                                         await showDialog(context: context, builder: (_) => StatefulBuilder(builder: (builder, setState){
                                                           return ProgressPopup(
@@ -123,17 +133,12 @@ class _ImportAccountState extends State<ImportAccount> {
                                                               }));
                                                         }));
                                                          */
-                                                        return;
-                                                      }
-                                                    },
-                                                    expanded: false,
-                                                    text: "IMPORT"
-                                                ),
-                                              ],
-                                            ),
-                                          )
-                                      ),
-                                    )
+                                            return;
+                                          }
+                                        },
+                                        expanded: false,
+                                        text: "IMPORT"
+                                    ),
                                   ],
                                 )
                               ],
@@ -234,11 +239,12 @@ class FormMnemonic {
 
   int validate()
   {
-    int validated = -1;
+    int validated = 0;
     this.removedKeys.forEach((key) {
-      print("${this.mnemonicControlDict[key]?.text} != ${this.mnemonicDict[key]}");
-      if(this.mnemonicControlDict[key]?.text != this.mnemonicDict[key] && validated == -1)
-        validated = key;
+      print("${this.mnemonicControlDict[key]?.text} != (null)");
+      if(this.mnemonicControlDict[key]?.text != '')
+        ++validated;
+      print('validated $validated');
     });
     return validated;
   }
@@ -248,6 +254,8 @@ class FormMnemonic {
     Map<int,List<Widget>> columnMap = {};
     int column = 0;
 
+    TextInputAction textInputAction = TextInputAction.next;
+
     double paddingHorizontal = SizeConfig.safeBlockHorizontal * 2;
     EdgeInsets columnPadding = EdgeInsets.all(paddingHorizontal);
     this.mnemonicDict.forEach((key, value) {
@@ -255,73 +263,47 @@ class FormMnemonic {
       if(key.remainder(12) == 0 && key != 0)
         column++;
 
+      if(key==23) textInputAction = TextInputAction.done;
+
       columnMap[column] = columnMap[column] ?? [];
       columnMap[column]?.add(
         Padding(
           padding: column > 0 ? columnPadding.copyWith(left:paddingHorizontal) : columnPadding.copyWith(right:paddingHorizontal),
-          child:Container(
-            color: Colors.white,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: Text(" ${key+1}.",
-                    style: TextStyle(
-                        color: AppColors.purple,
-                        fontWeight: FontWeight.bold,
-                        fontSize: SizeConfig.labelSizeSmall
-                    ),
+          child:Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Text("${key+1}.",
+                  style: TextStyle(
+                      color: AppColors.purple,
+                      fontWeight: FontWeight.bold,
+                      fontSize: SizeConfig.labelSizeSmall
                   ),
                 ),
-                Expanded(
-                  flex: 4,
-                  child: Padding(
-                    padding: EdgeInsets.only(right:SizeConfig.safeBlockHorizontal * 4),
-                    child: AppTextFormField(
-                      enabled: this.removedKeys.contains(key),
-                      controller: this.mnemonicControlDict[key],
-                      textAlign: TextAlign.end,
-                      // keyboardType: TextInputType.number,
-                      contentPadding: EdgeInsets.symmetric(
-                          vertical: 6,
-                          horizontal: 4
-                      ),
-                      isDense: true,
+              ),
+              Expanded(
+                flex: 4,
+                child: Padding(
+                  padding: EdgeInsets.only(right:SizeConfig.safeBlockHorizontal * 4),
+                  child: AppTextFormField(
+                    textInputAction: textInputAction,
+                    enabled: this.removedKeys.contains(key),
+                    controller: this.mnemonicControlDict[key],
+                    textAlign: TextAlign.end,
+                    // keyboardType: TextInputType.number,
+                    contentPadding: EdgeInsets.symmetric(
+                        vertical: 6,
+                        horizontal: 4
                     ),
+                    isDense: true,
                   ),
                 ),
-                //
-                // Expanded(
-                //   child: TextField(
-                //     controller: this.mnemonicControlDict[key],
-                //     enabled: this.removedKeys.contains(key),
-                //     style: TextStyle(
-                //       color: Colors.white70,
-                //       fontWeight: FontWeight.bold
-                //     ),
-                //     decoration: InputDecoration(
-                //       floatingLabelBehavior: FloatingLabelBehavior.always,
-                //       contentPadding: EdgeInsets.all(0),
-                //       disabledBorder: UnderlineInputBorder(
-                //         borderSide: BorderSide(color: Colors.grey, width: 1),
-                //       ),
-                //       enabledBorder: UnderlineInputBorder(
-                //         borderSide: BorderSide(color: Colors.white, width: 2)
-                //       ),
-                //       labelStyle: TextStyle(
-                //         color: AppColors.labelDefaultColor,
-                //         fontWeight: FontWeight.w500,
-                //         fontSize: 20
-                //       ),
-                //     )
-                //   ),
-                // ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       );
-      print("row[$column] ${key+1} - $value");
+      print("row[$column] ${key+1} - ${this.mnemonicControlDict[key]?.text}");
     });
 
     List<Widget> columnWidgets = [];
