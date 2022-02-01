@@ -18,6 +18,7 @@ class AppButton extends StatelessWidget {
   final EdgeInsets paddingText;
   final TextOverflow textOverflow;
   final int maxLines;
+  final bool square;
 
   const AppButton({
     @required this.onPressed,
@@ -37,6 +38,7 @@ class AppButton extends StatelessWidget {
     this.textOverflow = TextOverflow.ellipsis,
     this.maxLines = 1,
     this.buttonPadding,
+    this.square = false,
   });
 
   // @override
@@ -166,6 +168,12 @@ class AppButton extends StatelessWidget {
                   return AppColors.violet;
                 return null;
               }),
+              shape: !this.square
+                ? null
+                : MaterialStateProperty.all<RoundedRectangleBorder>(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.zero)
+                  ),
               shadowColor: MaterialStateProperty.all<Color>(Colors.transparent),
               padding: MaterialStateProperty.all<EdgeInsetsGeometry>(EdgeInsets.zero),
           )
