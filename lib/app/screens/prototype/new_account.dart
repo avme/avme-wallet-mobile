@@ -82,14 +82,14 @@ class _NewAccountState extends State<NewAccount> {
       resizeToAvoidBottomInset: true,
       body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: <Color>[
-              AppColors.purpleVariant1,
-              AppColors.purpleBlue
-            ]
-          )
+            gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: <Color>[
+                  AppColors.purpleVariant1,
+                  AppColors.purpleBlue
+                ]
+            )
         ),
         child: Center(
           child: SingleChildScrollView(
@@ -189,17 +189,17 @@ class _NewAccountState extends State<NewAccount> {
           Expanded(child: Container(
             color: Colors.pink,
           ))
-      ],
-    ),
-    Padding(
-      padding: EdgeInsets.symmetric(
-        vertical: SizeConfig.safeBlockVertical * 3,
+        ],
       ),
-      child: ScreenIndicator(
-        height: 20,
-        width: MediaQuery.of(context).size.width,
-      ),
-    ),];
+      Padding(
+        padding: EdgeInsets.symmetric(
+          vertical: SizeConfig.safeBlockVertical * 3,
+        ),
+        child: ScreenIndicator(
+          height: 20,
+          width: MediaQuery.of(context).size.width,
+        ),
+      ),];
   }
 
   int maxCharacteresInsideTextField(BuildContext context)
@@ -242,34 +242,34 @@ class _NewAccountState extends State<NewAccount> {
             children: [
               Text(" ${key+1}." + (key > 8 ? "  " : "   "),
                 style: TextStyle(
-                  color: Colors.blue
+                    color: Colors.blue
                 ),
               ),
               Expanded(
                 child: TextField(
-                  controller: new TextEditingController(
-                    text: selectedKeys.contains(key) ? null : value,
-                  ),
-                  enabled: selectedKeys.contains(key),
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontWeight: FontWeight.bold
-                  ),
-                  decoration: InputDecoration(
-                    floatingLabelBehavior: FloatingLabelBehavior.always,
-                    contentPadding: EdgeInsets.all(0),
-                    disabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey, width: 1),
+                    controller: new TextEditingController(
+                      text: selectedKeys.contains(key) ? null : value,
                     ),
-                    enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white, width: 2)
+                    enabled: selectedKeys.contains(key),
+                    style: TextStyle(
+                        color: Colors.white70,
+                        fontWeight: FontWeight.bold
                     ),
-                    labelStyle: TextStyle(
-                      color: phraseFocusNode.hasFocus ? Colors.white : AppColors.labelDefaultColor,
-                      fontWeight: phraseFocusNode.hasFocus ? FontWeight.w900 : FontWeight.w500,
-                      fontSize: 20
-                    ),
-                  )
+                    decoration: InputDecoration(
+                      floatingLabelBehavior: FloatingLabelBehavior.always,
+                      contentPadding: EdgeInsets.all(0),
+                      disabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey, width: 1),
+                      ),
+                      enabledBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: Colors.white, width: 2)
+                      ),
+                      labelStyle: TextStyle(
+                          color: phraseFocusNode.hasFocus ? Colors.white : AppColors.labelDefaultColor,
+                          fontWeight: phraseFocusNode.hasFocus ? FontWeight.w900 : FontWeight.w500,
+                          fontSize: 20
+                      ),
+                    )
                 ),
               ),
             ],
@@ -282,13 +282,13 @@ class _NewAccountState extends State<NewAccount> {
     List<Widget> columnWidgets = [];
     columnMap.forEach((index,value) {
       columnWidgets.add(
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.max,
-            children: value,
-          ),
-        )
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.max,
+              children: value,
+            ),
+          )
       );
     });
 
@@ -308,23 +308,23 @@ class _NewAccountState extends State<NewAccount> {
 
       columnMap[row] = columnMap[row] ?? [];
       columnMap[row].add(
-        Row(
-          children: [
-            Text(" ${key+1}. ",
-              style: TextStyle(
-                color: Colors.blue,
-                  fontSize: SizeConfig.fontSizeHuge
+          Row(
+            children: [
+              Text(" ${key+1}. ",
+                style: TextStyle(
+                    color: Colors.blue,
+                    fontSize: SizeConfig.fontSizeHuge
+                ),
               ),
-            ),
-            Text(value,
-              style: TextStyle(
-                color: Colors.white70,
-                fontWeight: FontWeight.bold,
-                  fontSize: SizeConfig.fontSizeHuge
+              Text(value,
+                style: TextStyle(
+                    color: Colors.white70,
+                    fontWeight: FontWeight.bold,
+                    fontSize: SizeConfig.fontSizeHuge
+                ),
               ),
-            ),
-          ],
-        )
+            ],
+          )
       );
       // print("row[$row] ${key+1} - $value");
     });
@@ -332,13 +332,13 @@ class _NewAccountState extends State<NewAccount> {
     List<Widget> columnWidgets = [];
     columnMap.values.forEach((value) {
       columnWidgets.add(
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.max,
-            children: value.toList(),
-          ),
-        )
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.max,
+              children: value.toList(),
+            ),
+          )
       );
     });
 
@@ -356,98 +356,98 @@ class _NewAccountState extends State<NewAccount> {
             onTap: () {
               showDialog(context: context, builder: (_) {
                 return AppPopupWidget(
-                  canClose: true,
-                  title: "This is your key phrase",
-                  padding: EdgeInsets.only(
-                    left: 32,
-                    right: 32,
-                    top: 16,
-                    bottom: 8
-                  ),
-                  cancelable: false,
-                  children: [
-                    Text(this.warning1,style: TextStyle(fontSize: SizeConfig.fontSizeLarge*0.5+8)),
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                        vertical: SizeConfig.blockSizeVertical),
-                      child: Divider(),
+                    canClose: true,
+                    title: "This is your key phrase",
+                    padding: EdgeInsets.only(
+                        left: 32,
+                        right: 32,
+                        top: 16,
+                        bottom: 8
                     ),
-                    getSeedList(this.walletSeedMap),
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                          vertical: SizeConfig.blockSizeVertical),
-                      child: Divider(),
-                    ),
-                    Padding(
-                      // padding: const EdgeInsets.symmetric(vertical: 32),
-                      padding: EdgeInsets.only(top: SizeConfig.blockSizeVertical),
-                      child: Text(this.warning2,style: TextStyle(fontSize: SizeConfig.fontSizeLarge*0.5+8)),
-                    )
-                  ],
-                  actions: [
-                    AppNeonButton(
-                      text: "Ok",
-                      expanded: false,
-                      onPressed: () => Navigator.of(context).pop(),
-                    )
-                  ]
+                    cancelable: false,
+                    children: [
+                      Text(this.warning1,style: TextStyle(fontSize: SizeConfig.fontSizeLarge*0.5+8)),
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                            vertical: SizeConfig.blockSizeVertical),
+                        child: Divider(),
+                      ),
+                      getSeedList(this.walletSeedMap),
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                            vertical: SizeConfig.blockSizeVertical),
+                        child: Divider(),
+                      ),
+                      Padding(
+                        // padding: const EdgeInsets.symmetric(vertical: 32),
+                        padding: EdgeInsets.only(top: SizeConfig.blockSizeVertical),
+                        child: Text(this.warning2,style: TextStyle(fontSize: SizeConfig.fontSizeLarge*0.5+8)),
+                      )
+                    ],
+                    actions: [
+                      AppNeonButton(
+                        text: "Ok",
+                        expanded: false,
+                        onPressed: () => Navigator.of(context).pop(),
+                      )
+                    ]
                 );
               }
-            );
+              );
             },
             child: TextField(
-              controller: new TextEditingController(
-                text:
-                this.walletSeed.substring(0, maxCharacteresInsideTextField(context)).trim() + "..."
-              ),
-              enabled: false,
-              cursorColor: AppColors.labelDefaultColor,
-              decoration: InputDecoration(
-                disabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(width: 2,
-                    color: Colors.grey[600]
-                  )
+                controller: new TextEditingController(
+                    text:
+                    this.walletSeed.substring(0, maxCharacteresInsideTextField(context)).trim() + "..."
                 ),
-                labelText: "Seed",
-                floatingLabelBehavior: FloatingLabelBehavior.always,
-                border: OutlineInputBorder(
-                  borderSide: BorderSide(width: 2,
-                    color: AppColors.labelDefaultColor
-                  )
-                ),
-                labelStyle: TextStyle(
-                  color: Colors.grey[600],
-                  fontWeight: FontWeight.w500,
-                  fontSize: SizeConfig.labelSize
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(width: 2,
-                    color: Colors.white
+                enabled: false,
+                cursorColor: AppColors.labelDefaultColor,
+                decoration: InputDecoration(
+                  disabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(width: 2,
+                          color: Colors.grey[600]
+                      )
                   ),
-                ),
-              )
+                  labelText: "Seed",
+                  floatingLabelBehavior: FloatingLabelBehavior.always,
+                  border: OutlineInputBorder(
+                      borderSide: BorderSide(width: 2,
+                          color: AppColors.labelDefaultColor
+                      )
+                  ),
+                  labelStyle: TextStyle(
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w500,
+                      fontSize: SizeConfig.labelSize
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(width: 2,
+                        color: Colors.white
+                    ),
+                  ),
+                )
             ),
           ),
           Positioned.fill(
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: SizedBox(
-                height: double.infinity,
-                width: 48,
-                child: IconButton(
-                  onPressed: () {
-                    NotificationBar().show(context, text: "A new key phrase was generated");
-                    setState(() {
-                      this.walletSeed = appWalletManager.walletManager.newMnemonic();
-                      this.walletSeedMap = this.walletSeed.split(' ').asMap();
-                    });
-                  },
-                  icon: Icon(Icons.refresh),
-                  splashColor: Colors.transparent,
-                  highlightColor: Colors.transparent,
-                ),
+              child: Align(
+                  alignment: Alignment.centerRight,
+                  child: SizedBox(
+                    height: double.infinity,
+                    width: 48,
+                    child: IconButton(
+                      onPressed: () {
+                        NotificationBar().show(context, text: "A new key phrase was generated");
+                        setState(() {
+                          this.walletSeed = appWalletManager.walletManager.newMnemonic();
+                          this.walletSeedMap = this.walletSeed.split(' ').asMap();
+                        });
+                      },
+                      icon: Icon(Icons.refresh),
+                      splashColor: Colors.transparent,
+                      highlightColor: Colors.transparent,
+                    ),
+                  )
               )
-            )
           ),
         ],
       ),
@@ -462,83 +462,83 @@ class _NewAccountState extends State<NewAccount> {
         child: Stack(
           children: [
             TextFormField(
-              validator: (string) {
-                if(string.length  <=5)
-                  return "This field cannot be empty";
-                else
-                  return null;
-              },
-              controller: this.phraseController,
-              cursorColor: AppColors.labelDefaultColor,
-              obscureText: true,
-              focusNode: phraseFocusNode,
-              onChanged: (string) {
-                if(string.length > 5)
-                  this.phraseIcon = new Icon(Icons.done_sharp, color: Colors.green,);
-                else
-                  this.phraseIcon = new Icon(Icons.close_rounded, color: Colors.red,);
-                setState(() => null);
-              },
-              decoration: InputDecoration(
-                focusedErrorBorder: OutlineInputBorder(
-                  borderSide: BorderSide(width: 2,
-                    color: Colors.red
-                  )
-                ),
-                errorBorder: OutlineInputBorder(
-                  borderSide: BorderSide(width: 2,
-                    color: AppColors.labelDefaultColor
-                  )
-                ),
-                labelText: "Passphrase",
-                floatingLabelBehavior: FloatingLabelBehavior.always,
-                contentPadding: textFieldButtonPadding,
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(width: 2,
-                    color: AppColors.labelDefaultColor,
+                validator: (string) {
+                  if(string.length  <=5)
+                    return "This field cannot be empty";
+                  else
+                    return null;
+                },
+                controller: this.phraseController,
+                cursorColor: AppColors.labelDefaultColor,
+                obscureText: true,
+                focusNode: phraseFocusNode,
+                onChanged: (string) {
+                  if(string.length > 5)
+                    this.phraseIcon = new Icon(Icons.done_sharp, color: Colors.green,);
+                  else
+                    this.phraseIcon = new Icon(Icons.close_rounded, color: Colors.red,);
+                  setState(() => null);
+                },
+                decoration: InputDecoration(
+                  focusedErrorBorder: OutlineInputBorder(
+                      borderSide: BorderSide(width: 2,
+                          color: Colors.red
+                      )
                   ),
-                ),
-                labelStyle: TextStyle(
-                  color: phraseFocusNode.hasFocus ? Colors.white : AppColors.labelDefaultColor,
-                  fontWeight: phraseFocusNode.hasFocus ? FontWeight.w900 : FontWeight.w500,
-                  fontSize: SizeConfig.labelSize
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(width: 2,
-                    color: Colors.white
+                  errorBorder: OutlineInputBorder(
+                      borderSide: BorderSide(width: 2,
+                          color: AppColors.labelDefaultColor
+                      )
                   ),
-                ),
-              )
-            ),
-            Positioned.fill(
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: Container(
-                  // color: Color.fromRGBO(255, 50, 50, 0.2),
-                  child: SizedBox(
-                    // height: 12,
-                    width: 48,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SizedBox(
-                          width: 48,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: this.phraseIcon,
-                          ),
-                        ),
-                        SizedBox(
-                          height:
-                          (_phraseFormState.currentState != null ?
-                          (_phraseFormState.currentState.validate() == true ? null : 20) :
-                          null),
-                        )
-                      ],
+                  labelText: "Passphrase",
+                  floatingLabelBehavior: FloatingLabelBehavior.always,
+                  contentPadding: textFieldButtonPadding,
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(width: 2,
+                      color: AppColors.labelDefaultColor,
+                    ),
+                  ),
+                  labelStyle: TextStyle(
+                      color: phraseFocusNode.hasFocus ? Colors.white : AppColors.labelDefaultColor,
+                      fontWeight: phraseFocusNode.hasFocus ? FontWeight.w900 : FontWeight.w500,
+                      fontSize: SizeConfig.labelSize
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(width: 2,
+                        color: Colors.white
                     ),
                   ),
                 )
-              )
+            ),
+            Positioned.fill(
+                child: Align(
+                    alignment: Alignment.centerRight,
+                    child: Container(
+                      // color: Color.fromRGBO(255, 50, 50, 0.2),
+                      child: SizedBox(
+                        // height: 12,
+                        width: 48,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SizedBox(
+                              width: 48,
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: this.phraseIcon,
+                              ),
+                            ),
+                            SizedBox(
+                              height:
+                              (_phraseFormState.currentState != null ?
+                              (_phraseFormState.currentState.validate() == true ? null : 20) :
+                              null),
+                            )
+                          ],
+                        ),
+                      ),
+                    )
+                )
             )
           ],
         ),
@@ -554,78 +554,78 @@ class _NewAccountState extends State<NewAccount> {
         child: Stack(
           children: [
             TextFormField(
-              validator: (string) {
-                if(string == this.phraseController.text)
-                  return null;
-                else
-                  return "Passphrases don't match";
-              },
-              controller: this.rePhraseController,
-              cursorColor: AppColors.labelDefaultColor,
-              obscureText: true,
-              focusNode: rePhraseFocusNode,
-              onChanged: (string) {
-                // print("${this.phraseController.text} | $string");
-                if(string.length > 5 && string == this.phraseController.text)
-                  this.rePhraseIcon = new Icon(Icons.done_sharp, color: Colors.green,);
-                else
-                  this.rePhraseIcon = new Icon(Icons.close_rounded, color: Colors.red,);
-                setState(() => null);
-              },
-              decoration: InputDecoration(
-                focusedErrorBorder: OutlineInputBorder(
-                  borderSide: BorderSide(width: 2,
-                    color: Colors.red
-                  )
-                ),
-                errorBorder: OutlineInputBorder(
-                  borderSide: BorderSide(width: 2,
-                    color: AppColors.labelDefaultColor
-                  )
-                ),
-                labelText: "Confirm passphrase",
-                floatingLabelBehavior: FloatingLabelBehavior.always,
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(width: 2,
-                    color: AppColors.labelDefaultColor
-                  )
-                ),
-                labelStyle: TextStyle(
-                  color: rePhraseFocusNode.hasFocus ? Colors.white : AppColors.labelDefaultColor,
-                  fontWeight: rePhraseFocusNode.hasFocus ? FontWeight.w900 : FontWeight.w500,
-                  fontSize: SizeConfig.labelSize
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(width: 2,
-                    color: Colors.white
-                  ),
-                ),
-              )
-            ),
-            Positioned.fill(
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: Container(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      SizedBox(
-                        width: 48,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: this.rePhraseIcon,
-                        ),
-                      ),
-                      SizedBox(
-                        height:
-                        (_rephraseFormState.currentState != null ?
-                        (_rephraseFormState.currentState.validate() == true ? null : 20) :
-                        null),
+                validator: (string) {
+                  if(string == this.phraseController.text)
+                    return null;
+                  else
+                    return "Passphrases don't match";
+                },
+                controller: this.rePhraseController,
+                cursorColor: AppColors.labelDefaultColor,
+                obscureText: true,
+                focusNode: rePhraseFocusNode,
+                onChanged: (string) {
+                  // print("${this.phraseController.text} | $string");
+                  if(string.length > 5 && string == this.phraseController.text)
+                    this.rePhraseIcon = new Icon(Icons.done_sharp, color: Colors.green,);
+                  else
+                    this.rePhraseIcon = new Icon(Icons.close_rounded, color: Colors.red,);
+                  setState(() => null);
+                },
+                decoration: InputDecoration(
+                  focusedErrorBorder: OutlineInputBorder(
+                      borderSide: BorderSide(width: 2,
+                          color: Colors.red
                       )
-                    ],
+                  ),
+                  errorBorder: OutlineInputBorder(
+                      borderSide: BorderSide(width: 2,
+                          color: AppColors.labelDefaultColor
+                      )
+                  ),
+                  labelText: "Confirm passphrase",
+                  floatingLabelBehavior: FloatingLabelBehavior.always,
+                  enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(width: 2,
+                          color: AppColors.labelDefaultColor
+                      )
+                  ),
+                  labelStyle: TextStyle(
+                      color: rePhraseFocusNode.hasFocus ? Colors.white : AppColors.labelDefaultColor,
+                      fontWeight: rePhraseFocusNode.hasFocus ? FontWeight.w900 : FontWeight.w500,
+                      fontSize: SizeConfig.labelSize
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(width: 2,
+                        color: Colors.white
+                    ),
                   ),
                 )
-              )
+            ),
+            Positioned.fill(
+                child: Align(
+                    alignment: Alignment.centerRight,
+                    child: Container(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                            width: 48,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: this.rePhraseIcon,
+                            ),
+                          ),
+                          SizedBox(
+                            height:
+                            (_rephraseFormState.currentState != null ?
+                            (_rephraseFormState.currentState.validate() == true ? null : 20) :
+                            null),
+                          )
+                        ],
+                      ),
+                    )
+                )
             )
           ],
         ),
@@ -644,10 +644,11 @@ class _NewAccountState extends State<NewAccount> {
           currentFocus.unfocus();
           Future.delayed(Duration(milliseconds: 200), (){
             showDialog(context: context, builder: (_) =>
-              MnemonicsPreAccCreation(
-                warning1: warning1,warning2: warning2, walletSeedMap: walletSeedMap,
-                  appWalletManager: appWalletManager, walletSeed: walletSeed, phraseController: phraseController,
-              )
+                MnemonicsPreAccCreation(
+                    warning1: warning1,warning2: warning2, walletSeedMap: walletSeedMap,
+                    appWalletManager: appWalletManager, walletSeed: walletSeed,
+                    phraseController: phraseController
+                )
             );
           });
         }
@@ -676,6 +677,7 @@ class MnemonicsPreAccCreation extends StatefulWidget {
 class _MnemonicsPreAccCreationState extends State<MnemonicsPreAccCreation> {
   ScrollController read = ScrollController();
   bool endOfScroll = false;
+  bool showMnemonics = true;
 
   _listener() {
     final maxScroll = read.position.maxScrollExtent;
@@ -708,65 +710,74 @@ class _MnemonicsPreAccCreationState extends State<MnemonicsPreAccCreation> {
 
   @override
   Widget build(BuildContext context) {
-    return AppPopupWidget(
-        title: "Warning",
-        canClose: false,
-        children: [
-          ConstrainedBox(
-            constraints: BoxConstraints(
-                maxHeight: SizeConfig.safeBlockVertical * 50
-            ),
-            child: Scrollbar(
-              isAlwaysShown: true,
-              thickness: 4,
-              controller: read,
-              child: SingleChildScrollView(
+    return Container(
+      child: showMnemonics
+          ? AppPopupWidget(
+          title: "Warning",
+          canClose: false,
+          children: [
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                  maxHeight: SizeConfig.safeBlockVertical * 50
+              ),
+              child: Scrollbar(
+                isAlwaysShown: true,
+                thickness: 4,
                 controller: read,
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.only(top: SizeConfig.safeBlockVertical * 2,),
-                      child: Text(widget.warning1,style: TextStyle(fontSize: SizeConfig.fontSizeLarge*0.5+10)),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Divider(),
-                    ),
-                    getSeedList(widget.walletSeedMap),
-                    Padding(
-                      padding: EdgeInsets.only(top: 24),
-                      child: Text(widget.warning2,style: TextStyle(fontSize: SizeConfig.fontSizeLarge*0.5+10)),
-                    ),
-                  ],
+                child: SingleChildScrollView(
+                  controller: read,
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.only(top: SizeConfig.safeBlockVertical * 2,),
+                        child: Text(widget.warning1,style: TextStyle(fontSize: SizeConfig.fontSizeLarge*0.5+10)),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Divider(),
+                      ),
+                      getSeedList(widget.walletSeedMap),
+                      Padding(
+                        padding: EdgeInsets.only(top: 24),
+                        child: Text(widget.warning2,style: TextStyle(fontSize: SizeConfig.fontSizeLarge*0.5+10)),
+                      ),
+                    ],
+                  ),
                 ),
               ),
+            )
+          ],
+          actions: [
+            AppNeonButton(
+              enabled: endOfScroll,
+              expanded: false,
+              onPressed: () async {
+                //Navigator.of(context).pop();
+                setState(() {showMnemonics=false;});
+                await showDialog(context: context, builder: (_) => StatefulBuilder(builder: (builder, setState){
+                  return ProgressPopup(
+                      title: "Creating",
+                      future: widget.appWalletManager.walletManager.makeAccount(widget.phraseController.text, widget.appWalletManager,mnemonic: widget.walletSeed)
+                          .then((result) {
+                        // Creates the user account
+                        widget.appWalletManager.changeCurrentWalletId = 0;
+                        //Navigator.pop(context);
+                        Navigator.pushReplacementNamed(context,"app/overview");
+                        NotificationBar().show(context, text: "Account #0 selected");
+                      }));
+                }));
+              },
+              text: "CONTINUE",
+            )
+          ]
+      )
+          : SizedBox(
+              height: 10,
+              width: 12,
             ),
-          )
-        ],
-        actions: [
-          AppNeonButton(
-            enabled: endOfScroll,
-            expanded: false,
-            onPressed: () async {
-              Navigator.of(context).pop();
-              await showDialog(context: context, builder: (_) => StatefulBuilder(builder: (builder, setState){
-                return ProgressPopup(
-                    title: "Creating",
-                    future: widget.appWalletManager.walletManager.makeAccount(widget.phraseController.text, widget.appWalletManager,mnemonic: widget.walletSeed)
-                        .then((result) {
-                      // Creates the user account
-                      widget.appWalletManager.changeCurrentWalletId = 0;
-                      Navigator.pop(context);
-                      Navigator.pushReplacementNamed(context, "app/overview");
-                      NotificationBar().show(context, text: "Account #0 selected");
-                    }));
-              }));
-            },
-            text: "CONTINUE",
-          )
-        ]
     );
   }
+
   Widget getSeedList(Map seed)
   {
 
@@ -884,9 +895,9 @@ class FormMnemonic {
               Expanded(
                 child: Text(" ${key+1}." + (key > 8 ? "  " : "   "),
                   style: TextStyle(
-                    color: AppColors.purple,
-                    fontWeight: FontWeight.bold,
-                    fontSize: SizeConfig.labelSizeSmall
+                      color: AppColors.purple,
+                      fontWeight: FontWeight.bold,
+                      fontSize: SizeConfig.labelSizeSmall
                   ),
                 ),
               ),
@@ -969,13 +980,13 @@ class FormMnemonic {
     List<Widget> columnWidgets = [];
     columnMap.forEach((index,value) {
       columnWidgets.add(
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.max,
-            children: value,
-          ),
-        )
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.max,
+              children: value,
+            ),
+          )
       );
     });
 
