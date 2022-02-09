@@ -6,6 +6,7 @@ import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/contacts.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/button.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/card.dart';
+import 'package:avme_wallet/app/screens/prototype/widgets/labeltext.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/neon_button.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/notification_bar.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/popup.dart';
@@ -48,193 +49,201 @@ class _ContactsState extends State<Contacts> {
         return ListView(
           children: [
             AppCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.only(
-                          //top: 12.0,
-                          bottom: bottomInset,
-                          left: 16.0
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          LabelText("Contacts", fontSize: SizeConfig.fontSize*1.8),
-                          // IconButton(onPressed: () {
-                          //
-                          // }, icon: FaIcon(FontAwesomeIcons.ellipsisV))
-                          options(controller, setState)
-                        ],
-                      )
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(bottom: bottomInset*3),
-                      child: searchBar(controller.contacts),
-                    ),
-                    this.editMode ? Padding(
-                      padding: const EdgeInsets.only(bottom: 24.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Expanded(
-                            child: Row(
-                              children: [
-                                Flexible(child: Text("$selected Selected"))
-                              ],
-                            ),
-                          ),
-                          Expanded(
-                              flex: 4,
-                              child:
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  ///Display edit popup
-                                  AppButton(
-                                    onPressed: this.editPopupEnabled ? () {
-                                      this.checkerList.forEach((key) =>
-                                        editPopup(controller, key: key,
-                                          setter: setState));
-                                    } : null,
-                                    iconData: Icons.edit,
-                                    text: "Edit",
-                                    expanded: false,
-                                    paddingBetweenIcons: 6,
-                                    height: 38,
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    buttonPadding: buttonPadding,
-                                  ),
-                                  SizedBox(
-                                    width: 8,
-                                  ),
-                                  ///Display Delete confirmation
-                                  AppButton(
-                                    onPressed: (){
-                                      showDialog<void>(
-                                        context: context,
-                                        barrierDismissible: false, // user must tap button!
-                                        builder: (BuildContext context) {
-                                          return AlertDialog(
-                                            backgroundColor: AppColors.darkBlue,
-                                            title: Text('Warning!'),
-                                            insetPadding: EdgeInsets.symmetric(horizontal: 20),
-                                            content: SingleChildScrollView(
-                                              child: RichText(
-                                                text: TextSpan(
-                                                  children: <TextSpan> [
-                                                    TextSpan(
-                                                      text: 'You\'re about to delete '
-                                                    ),
-                                                    TextSpan(
-                                                      text: (this.selected > 1 ? '$selected contacts' : '$selected contact'),
-                                                      style: TextStyle(
-                                                        fontWeight: FontWeight.bold
-                                                      )
-                                                    ),
-                                                    TextSpan(
-                                                      text: ', this process cannot be reverted!'
-                                                    )
-                                                  ]
-                                                ),
-                                              )
-                                            ),
-                                            actions: [
-                                              AppNeonButton(
-                                                expanded:false,
-                                                onPressed: () => Navigator.of(context).pop(),
-                                                text: "Cancel"
-                                              ),
-                                              AppButton(
-                                                expanded:false,
-                                                onPressed: () {
-                                                  Navigator.of(context).pop();
-                                                  setState(() {
-                                                    this.checkerList.forEach((selected) {
-                                                      controller.removeContact(selected);
-                                                    });
-                                                    NotificationBar().show(
-                                                      context,
-                                                      text: selected == 1 ? "$selected Contact was removed." : "$selected Contacts were removed."
-                                                    );
-                                                    cancel();
-                                                  });
-                                                },
-                                                text: "Delete"
-                                              )
-                                            ],
-                                          );
-                                        },
-                                      );
-                                    },
-                                    iconData: Icons.delete_outline,
-                                    text: "Delete",
-                                    expanded: false,
-                                    paddingBetweenIcons: 6,
-                                    height: 38,
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    buttonPadding: buttonPadding,
-                                  ),
-                                  SizedBox(
-                                    width: 8,
-                                  ),
-                                  AppButton(
-                                    onPressed: () => setState(() => cancel()),
-                                    iconData: Icons.close,
-                                    text: "Cancel",
-                                    expanded: false,
-                                    paddingBetweenIcons: 6,
-                                    height: 38,
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    buttonPadding: buttonPadding,
-                                  )
-                                ],
-                              )
-                          ),
-                        ],
-                      ),
-                    ) : Container(),
-                    Container(
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            color: AppColors.darkBlue
+                child: Container(
+                  padding: EdgeInsets.all(4),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.only(
+                            //top: 12.0,
+                            bottom: bottomInset,
+                            left: 16.0
                         ),
-                        child: GestureDetector(
-                          onLongPress: (){
-                            if(!this.editMode && controller.contacts.length > 0)
-                            {
-                              NotificationBar().show(context, text: "Entering Editing mode");
-                              setState(() {
-                                this.editMode = true;
-                              });
-                            }
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height / 2.2),
-                              child:
-                                controller.contacts.length == 0
-                                ? ListView(
-                                  shrinkWrap: true,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            AppLabelText(
+                            "Contacts",
+                            textStyle:
+                                TextStyle(color: AppColors.labelDefaultColor),
+                            fontSize: SizeConfig.fontSizeHuge,
+                          ),
+                            // IconButton(onPressed: () {
+                            //
+                            // }, icon: FaIcon(FontAwesomeIcons.ellipsisV))
+                            options(controller, setState)
+                          ],
+                        )
+                      ),
+                      Padding(
+                        padding: EdgeInsets.only(bottom: bottomInset*3),
+                        child: searchBar(controller.contacts),
+                      ),
+                      this.editMode ? Padding(
+                        padding: const EdgeInsets.only(bottom: 24.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  Flexible(child: Text("$selected Selected"))
+                                ],
+                              ),
+                            ),
+                            Expanded(
+                                flex: 4,
+                                child:
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
-                                    Padding(
-                                      padding: const EdgeInsets.all(16.0),
-                                      child: Center(
-                                        child: Text("No contacts found.")
-                                      ),
+                                    ///Display edit popup
+                                    AppButton(
+                                      onPressed: this.editPopupEnabled ? () {
+                                        this.checkerList.forEach((key) =>
+                                          editPopup(controller, key: key,
+                                            setter: setState));
+                                      } : null,
+                                      iconData: Icons.edit,
+                                      text: "Edit",
+                                      expanded: false,
+                                      paddingBetweenIcons: 6,
+                                      height: 38,
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      buttonPadding: buttonPadding,
+                                    ),
+                                    SizedBox(
+                                      width: 8,
+                                    ),
+                                    ///Display Delete confirmation
+                                    AppButton(
+                                      onPressed: (){
+                                        showDialog<void>(
+                                          context: context,
+                                          barrierDismissible: false, // user must tap button!
+                                          builder: (BuildContext context) {
+                                            return AlertDialog(
+                                              backgroundColor: AppColors.darkBlue,
+                                              title: Text('Warning!'),
+                                              insetPadding: EdgeInsets.symmetric(horizontal: 20),
+                                              content: SingleChildScrollView(
+                                                child: RichText(
+                                                  text: TextSpan(
+                                                    children: <TextSpan> [
+                                                      TextSpan(
+                                                        text: 'You\'re about to delete '
+                                                      ),
+                                                      TextSpan(
+                                                        text: (this.selected > 1 ? '$selected contacts' : '$selected contact'),
+                                                        style: TextStyle(
+                                                          fontWeight: FontWeight.bold
+                                                        )
+                                                      ),
+                                                      TextSpan(
+                                                        text: ', this process cannot be reverted!'
+                                                      )
+                                                    ]
+                                                  ),
+                                                )
+                                              ),
+                                              actions: [
+                                                AppNeonButton(
+                                                  expanded:false,
+                                                  onPressed: () => Navigator.of(context).pop(),
+                                                  text: "Cancel"
+                                                ),
+                                                AppButton(
+                                                  expanded:false,
+                                                  onPressed: () {
+                                                    Navigator.of(context).pop();
+                                                    setState(() {
+                                                      this.checkerList.forEach((selected) {
+                                                        controller.removeContact(selected);
+                                                      });
+                                                      NotificationBar().show(
+                                                        context,
+                                                        text: selected == 1 ? "$selected Contact was removed." : "$selected Contacts were removed."
+                                                      );
+                                                      cancel();
+                                                    });
+                                                  },
+                                                  text: "Delete"
+                                                )
+                                              ],
+                                            );
+                                          },
+                                        );
+                                      },
+                                      iconData: Icons.delete_outline,
+                                      text: "Delete",
+                                      expanded: false,
+                                      paddingBetweenIcons: 6,
+                                      height: 38,
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      buttonPadding: buttonPadding,
+                                    ),
+                                    SizedBox(
+                                      width: 8,
+                                    ),
+                                    AppButton(
+                                      onPressed: () => setState(() => cancel()),
+                                      iconData: Icons.close,
+                                      text: "Cancel",
+                                      expanded: false,
+                                      paddingBetweenIcons: 6,
+                                      height: 38,
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      buttonPadding: buttonPadding,
                                     )
                                   ],
                                 )
-                                : ListView(
-                                  shrinkWrap: true,
-                                  children: contactsList(controller.contacts),
-                                ),
                             ),
+                          ],
+                        ),
+                      ) : Container(),
+                      Container(
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              color: AppColors.darkBlue
                           ),
-                        )
-                    )
-                  ],
+                          child: GestureDetector(
+                            onLongPress: (){
+                              if(!this.editMode && controller.contacts.length > 0)
+                              {
+                                NotificationBar().show(context, text: "Entering Editing mode");
+                                setState(() {
+                                  this.editMode = true;
+                                });
+                              }
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height / 2.2),
+                                child:
+                                  controller.contacts.length == 0
+                                  ? ListView(
+                                    shrinkWrap: true,
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.all(16.0),
+                                        child: Center(
+                                          child: Text("No contacts found.")
+                                        ),
+                                      )
+                                    ],
+                                  )
+                                  : ListView(
+                                    shrinkWrap: true,
+                                    children: contactsList(controller.contacts),
+                                  ),
+                              ),
+                            ),
+                          )
+                      )
+                    ],
+                  ),
                 ),
             ),
           ],

@@ -43,8 +43,8 @@ class _SendState extends State<Send> {
   List<String> availableTokens = ["Select a Token", "AVAX"];
 
   TextEditingController addressController = new TextEditingController(
-    // text: "0xf98c7b41ca66169e3f32193d39365d3c88fe72ba"
-  );
+      // text: "0xf98c7b41ca66169e3f32193d39365d3c88fe72ba"
+      );
   FocusNode phraseFocusNode = new FocusNode();
 
   AvmeWallet app;
@@ -78,7 +78,7 @@ class _SendState extends State<Send> {
               children: [
                 Padding(
                   padding:
-                  EdgeInsets.only(bottom: SizeConfig.safeBlockVertical),
+                      EdgeInsets.only(bottom: SizeConfig.safeBlockVertical),
                   child: AppLabelText(
                     "Address",
                     textStyle: TextStyle(color: AppColors.labelDefaultColor),
@@ -121,106 +121,107 @@ class _SendState extends State<Send> {
         ),
         AppCard(
             child: Padding(
-              padding: EdgeInsets.symmetric(
-                  vertical: SizeConfig.safeBlockVertical,
-                  horizontal: SizeConfig.safeBlockHorizontal * 2),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: EdgeInsets.only(bottom: SizeConfig.safeBlockVertical),
-                    child: AppLabelText(
-                      "Available Tokens",
-                      textStyle: TextStyle(color: AppColors.labelDefaultColor),
-                      fontSize: SizeConfig.fontSizeLarge,
-                    ),
-                  ),
-                  DropdownButtonFormField<String>(
-                      isExpanded: true,
-                      value: tokenDropdownValue,
-                      icon: new Icon(
-                        Icons.keyboard_arrow_down,
-                        color: AppColors.labelDefaultColor,
-                        size: 28,
-                      ),
-                      elevation: 16,
-                      validator: (String selected) {
-                        if (selected == "Select a Token") {
-                          return "Please select a token";
-                        }
-                        return null;
-                      },
-                      onChanged: (String selectedValue) {
-                        tokenDropdownValue = selectedValue;
-                        if (_preTokenForm.currentState != null)
-                          _preTokenForm.currentState.validate();
-                      },
-                      style: TextStyle(color: Colors.white,fontSize: SizeConfig.fontSize),
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: AppColors.darkBlue,
-                        contentPadding: const EdgeInsets.symmetric(
-                            vertical: 14, horizontal: 12),
-                        enabledBorder: fieldBorder.copyWith(
-                          borderSide: BorderSide(
-                            width: 2,
-                            color: cLabelStyle,
-                          ),
-                        ),
-                        errorBorder: fieldBorder.copyWith(
-                            borderSide: BorderSide(
-                              width: 2,
-                              color: AppColors.labelDefaultColor,
-                            )),
-                      ),
-                      items: availableTokens.map<DropdownMenuItem<String>>((value) {
-                        if (value == "AVAX")
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Row(
-                              children: [
-                                Padding(
-                                  padding: EdgeInsets.only(
-                                      right: SizeConfig.safeBlockVertical * 1.5),
-                                  child: resolveImage('assets/avax_logo.png',
-                                      width: SizeConfig.safeBlockVertical * 3.5),
-                                ),
-                                Text(
-                                  value,
-                                  style: AppTextStyles.label,
-                                ),
-                              ],
-                            ),
-                          );
-                        if (value != availableTokens.first)
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Row(
-                              children: [
-                                Padding(
-                                  padding: EdgeInsets.only(
-                                      right: SizeConfig.safeBlockVertical * 1.5),
-                                  child: resolveImage(
-                                      app.activeContracts.sContracts
-                                          .contractsRaw[value]["logo"],
-                                      width: SizeConfig.safeBlockVertical * 3.5),
-                                ),
-                                Text(
-                                  "$value (${app.activeContracts.sContracts.contractsRaw[value]["symbol"]})",
-                                  style: AppTextStyles.label,
-                                ),
-                              ],
-                            ),
-                          );
-                        else
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value),
-                          );
-                      }).toList())
-                ],
+          padding: EdgeInsets.symmetric(
+              vertical: SizeConfig.safeBlockVertical,
+              horizontal: SizeConfig.safeBlockHorizontal * 2),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: EdgeInsets.only(bottom: SizeConfig.safeBlockVertical),
+                child: AppLabelText(
+                  "Available Tokens",
+                  textStyle: TextStyle(color: AppColors.labelDefaultColor),
+                  fontSize: SizeConfig.fontSizeLarge,
+                ),
               ),
-            )),
+              DropdownButtonFormField<String>(
+                  isExpanded: true,
+                  value: tokenDropdownValue,
+                  icon: new Icon(
+                    Icons.keyboard_arrow_down,
+                    color: AppColors.labelDefaultColor,
+                    size: 28,
+                  ),
+                  elevation: 16,
+                  validator: (String selected) {
+                    if (selected == "Select a Token") {
+                      return "Please select a token";
+                    }
+                    return null;
+                  },
+                  onChanged: (String selectedValue) {
+                    tokenDropdownValue = selectedValue;
+                    if (_preTokenForm.currentState != null)
+                      _preTokenForm.currentState.validate();
+                  },
+                  style: TextStyle(
+                      color: Colors.white, fontSize: SizeConfig.fontSize),
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: AppColors.darkBlue,
+                    contentPadding: const EdgeInsets.symmetric(
+                        vertical: 14, horizontal: 12),
+                    enabledBorder: fieldBorder.copyWith(
+                      borderSide: BorderSide(
+                        width: 2,
+                        color: cLabelStyle,
+                      ),
+                    ),
+                    errorBorder: fieldBorder.copyWith(
+                        borderSide: BorderSide(
+                      width: 2,
+                      color: AppColors.labelDefaultColor,
+                    )),
+                  ),
+                  items: availableTokens.map<DropdownMenuItem<String>>((value) {
+                    if (value == "AVAX")
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Row(
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.only(
+                                  right: SizeConfig.safeBlockVertical * 1.5),
+                              child: resolveImage('assets/avax_logo.png',
+                                  width: SizeConfig.safeBlockVertical * 3.5),
+                            ),
+                            Text(
+                              value,
+                              style: AppTextStyles.label,
+                            ),
+                          ],
+                        ),
+                      );
+                    if (value != availableTokens.first)
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Row(
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.only(
+                                  right: SizeConfig.safeBlockVertical * 1.5),
+                              child: resolveImage(
+                                  app.activeContracts.sContracts
+                                      .contractsRaw[value]["logo"],
+                                  width: SizeConfig.safeBlockVertical * 3.5),
+                            ),
+                            Text(
+                              "$value (${app.activeContracts.sContracts.contractsRaw[value]["symbol"]})",
+                              style: AppTextStyles.label,
+                            ),
+                          ],
+                        ),
+                      );
+                    else
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                  }).toList())
+            ],
+          ),
+        )),
         FutureBuilder(
             future: contactList(),
             builder: (BuildContext context, snapshot) {
@@ -236,13 +237,11 @@ class _SendState extends State<Send> {
                 return snapshot.data;
               } else {
                 return Container(
-                  height: SizeConfig.safeBlockVertical * 32,
-                  child: Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: CircularProgressIndicator(
-                      color: AppColors.purple,
-                      strokeWidth: 6,
-                    ),
+                  margin: EdgeInsets.all(8),
+                  alignment: Alignment.center,
+                  child: CircularProgressIndicator(
+                    color: AppColors.purple,
+                    strokeWidth: 6,
                   ),
                 );
               }
@@ -298,22 +297,23 @@ class _SendState extends State<Send> {
         child: Column(
           children: [
             Theme(
-              data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+              data:
+                  Theme.of(context).copyWith(dividerColor: Colors.transparent),
               child: Container(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8.0),
-                  color: AppColors.darkBlue
-                ),
+                    borderRadius: BorderRadius.circular(8.0),
+                    color: AppColors.darkBlue),
                 child: ExpansionTile(
                   title: AppLabelText(
                     "Frequent contacts",
                     textStyle: TextStyle(color: AppColors.labelDefaultColor),
                     fontSize: SizeConfig.fontSizeLarge,
                   ),
-                  subtitle: Text('Tap to expand', style: AppTextStyles.span.copyWith(fontSize: SizeConfig.fontSize*1.2)),
+                  subtitle: Text('Tap to expand',
+                      style: AppTextStyles.span
+                          .copyWith(fontSize: SizeConfig.fontSize * 1.2)),
                   collapsedIconColor: AppColors.labelDefaultColor,
                   iconColor: AppColors.purpleVariant2,
-
                   children: [
                     Container(
                       decoration: BoxDecoration(
@@ -376,7 +376,7 @@ class _SendState extends State<Send> {
                     Container(),
                     Icon(
                       Icons.account_circle_outlined,
-                      size: SizeConfig.titleSize*1.3,
+                      size: SizeConfig.titleSize * 1.3,
                       color: AppColors.purple,
                     ),
                     Flexible(
@@ -388,7 +388,8 @@ class _SendState extends State<Send> {
                             Text(
                               contact.name,
                               style: TextStyle(
-                                  fontSize: SizeConfig.fontSizeLarge, fontWeight: FontWeight.bold),
+                                  fontSize: SizeConfig.fontSizeLarge,
+                                  fontWeight: FontWeight.bold),
                             ),
                             Text(
                               contact.address,
@@ -406,15 +407,15 @@ class _SendState extends State<Send> {
               ),
               Expanded(
                   child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Icon(
-                        Icons.arrow_forward_ios,
-                        color: AppColors.labelDefaultColor,
-                      )
-                    ],
-                  )),
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    color: AppColors.labelDefaultColor,
+                  )
+                ],
+              )),
             ],
           ),
         ),
@@ -431,361 +432,365 @@ class _SendState extends State<Send> {
     String msgNoBalance = "Not enough balance.";
     BigInt weiValue = BigInt.zero;
     TextEditingController gasLimit =
-    TextEditingController(text: env["MAX_GAS"]);
+        TextEditingController(text: env["MAX_GAS"]);
     TextEditingController gasFee =
-    TextEditingController(text: env["GAS_PRICE"]);
+        TextEditingController(text: env["GAS_PRICE"]);
     TextEditingController amount = TextEditingController();
     showDialog(
         context: context,
         builder: (_) => StatefulBuilder(builder: (builder, setState) {
-          SizeConfig().init(context);
-          return Consumer<AvmeWallet>(
-            builder: (context, AvmeWallet app, _) => Form(
-              key: _sendTokenForm,
-              child: AppPopupWidget(
-                scrollable: true,
-                title: "SEND TOKENS",
-                canClose: true,
-                margin: EdgeInsets.all(32),
-                cancelable: false,
-                padding: EdgeInsets.symmetric(vertical: 16, horizontal: 32),
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+              SizeConfig().init(context);
+              return Consumer<AvmeWallet>(
+                builder: (context, AvmeWallet app, _) => Form(
+                  key: _sendTokenForm,
+                  child: AppPopupWidget(
+                    scrollable: true,
+                    title: "SEND TOKENS",
+                    canClose: true,
+                    margin: EdgeInsets.all(32),
+                    cancelable: false,
+                    padding: EdgeInsets.symmetric(vertical: 16, horizontal: 32),
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Padding(
-                            padding: EdgeInsets.only(right: 8.0),
-                            child: resolveImage(
-                                tokenDropdownValue == "AVAX"
-                                    ? 'assets/avax_logo.png'
-                                    : app.activeContracts.sContracts
-                                    .contractsRaw[
-                                tokenDropdownValue]["logo"],
-                                width: SizeConfig.safeBlockVertical * 3.5),
-                          ),
-                          Text(
-                            availableTokens.firstWhere(
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.only(right: 8.0),
+                                child: resolveImage(
+                                    tokenDropdownValue == "AVAX"
+                                        ? 'assets/avax_logo.png'
+                                        : app.activeContracts.sContracts
+                                                .contractsRaw[
+                                            tokenDropdownValue]["logo"],
+                                    width: SizeConfig.safeBlockVertical * 3.5),
+                              ),
+                              Text(
+                                availableTokens.firstWhere(
                                     (element) => element == tokenDropdownValue),
-                            style: TextStyle(
-                                fontSize: SizeConfig.labelSize * 0.7 + 6),
+                                style: TextStyle(
+                                    fontSize: SizeConfig.labelSize * 0.7 + 6),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      SizedBox(
-                        height: SizeConfig.safeBlockVertical,
-                      ),
-                      tokenDropdownValue == "AVAX"
-                          ? Text(
-                          "1 AVAX = ${shortAmount(app.networkToken.decimal.toString(), length: 6, comma: true)}",
-                          style: AppTextStyles.span.copyWith(
-                              fontSize: SizeConfig.labelSizeSmall))
-                          : Text(
-                          "1 ${app.activeContracts.sContracts.contractsRaw[tokenDropdownValue]["symbol"]} = "
-                              "${shortAmount(app.activeContracts.token.decimal(tokenDropdownValue).toString(), length: 6, comma: true)}",
-                          style: AppTextStyles.span.copyWith(
-                              fontSize: SizeConfig.labelSizeSmall)),
-                      SizedBox(
-                        height: SizeConfig.safeBlockVertical,
-                      ),
-                      TextFormField(
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          hintText: "0.50",
-                        ),
-                        cursorColor: AppColors.labelDefaultColor,
-                        controller: amount,
-                        keyboardType: TextInputType.number,
-                        textAlign: TextAlign.end,
-                        onChanged: (String value) {
-                          setState(() {
-                            if (double.tryParse(value) != null &&
-                                double.tryParse(value) > 0) {
-                              double newValue = 0;
-                              if (value.length == 0 || value == null)
-                                return newValue;
-                              //IS AVAX
-                              if (tokenDropdownValue == "AVAX")
-                                newValue = double.tryParse(value) *
-                                    double.tryParse(app.networkToken.value);
-                              //IS AVME
-                              else {
-                                newValue = double.tryParse(value) *
-                                    app.activeContracts.token
-                                        .decimal(tokenDropdownValue)
-                                        .toDouble();
+                          SizedBox(
+                            height: SizeConfig.safeBlockVertical,
+                          ),
+                          tokenDropdownValue == "AVAX"
+                              ? Text(
+                                  "1 AVAX = ${shortAmount(app.networkToken.decimal.toString(), length: 6, comma: true)}",
+                                  style: AppTextStyles.span.copyWith(
+                                      fontSize: SizeConfig.labelSizeSmall))
+                              : Text(
+                                  "1 ${app.activeContracts.sContracts.contractsRaw[tokenDropdownValue]["symbol"]} = "
+                                  "${shortAmount(app.activeContracts.token.decimal(tokenDropdownValue).toString(), length: 6, comma: true)}",
+                                  style: AppTextStyles.span.copyWith(
+                                      fontSize: SizeConfig.labelSizeSmall)),
+                          SizedBox(
+                            height: SizeConfig.safeBlockVertical,
+                          ),
+                          TextFormField(
+                            decoration: InputDecoration(
+                              border: InputBorder.none,
+                              hintText: "0.50",
+                            ),
+                            cursorColor: AppColors.labelDefaultColor,
+                            controller: amount,
+                            keyboardType: TextInputType.number,
+                            textAlign: TextAlign.end,
+                            onChanged: (String value) {
+                              setState(() {
+                                if (double.tryParse(value) != null &&
+                                    double.tryParse(value) > 0) {
+                                  double newValue = 0;
+                                  if (value.length == 0 || value == null)
+                                    return newValue;
+                                  //IS AVAX
+                                  if (tokenDropdownValue == "AVAX")
+                                    newValue = double.tryParse(value) *
+                                        double.tryParse(app.networkToken.value);
+                                  //IS AVME
+                                  else {
+                                    newValue = double.tryParse(value) *
+                                        app.activeContracts.token
+                                            .decimal(tokenDropdownValue)
+                                            .toDouble();
+                                  }
+                                  convertedValue = newValue;
+                                  if (_sendTokenForm.currentState != null)
+                                    _sendTokenForm.currentState.validate();
+                                } else {
+                                  convertedValue = 0;
+                                }
+                              });
+                            },
+                            //TODO: FIX THIS TO USE A SELECTION OF TOKEN
+                            validator: (String value) {
+                              if (double.tryParse(value) != null &&
+                                  double.tryParse(value) > 0) {
+                                weiValue = bigIntFixedPointToWei(
+                                    value.replaceAll(r",", "."));
+                                BigInt balance = tokenDropdownValue == "AVAX"
+                                    ? app.currentAccount.networkTokenBalance
+                                    : app.currentAccount.tokensBalanceList[
+                                        tokenDropdownValue]["wei"];
+                                if (weiValue > balance) return msgNoBalance;
+                              } else if (double.tryParse(value) == null) {
+                                return msgNoBalance;
                               }
-                              convertedValue = newValue;
-                              if (_sendTokenForm.currentState != null)
-                                _sendTokenForm.currentState.validate();
-                            } else {
-                              convertedValue = 0;
-                            }
-                          });
-                        },
-                        //TODO: FIX THIS TO USE A SELECTION OF TOKEN
-                        validator: (String value) {
-                          if (double.tryParse(value) != null &&
-                              double.tryParse(value) > 0) {
-                            weiValue = bigIntFixedPointToWei(
-                                value.replaceAll(r",", "."));
-                            BigInt balance = tokenDropdownValue == "AVAX"
-                                ? app.currentAccount.networkTokenBalance
-                                : app.currentAccount.tokensBalanceList[
-                            tokenDropdownValue]["wei"];
-                            if (weiValue > balance) return msgNoBalance;
-                          } else if (double.tryParse(value) == null) {
-                            return msgNoBalance;
-                          }
-                          return null;
-                        },
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: SizeConfig.titleSize * 2.2),
+                              return null;
+                            },
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: SizeConfig.titleSize * 2.2),
+                          ),
+                          SizedBox(
+                            height: SizeConfig.safeBlockVertical,
+                          ),
+                          Text(
+                            "Balance Preview",
+                            style: AppTextStyles.span
+                                .copyWith(fontSize: SizeConfig.labelSizeSmall),
+                          ),
+                          SizedBox(
+                            height: SizeConfig.safeBlockVertical,
+                          ),
+                          Wrap(
+                            crossAxisAlignment: WrapCrossAlignment.end,
+                            children: [
+                              Text(
+                                "\$${shortAmount(tokenValue.toString(), comma: true, length: 3)} - ",
+                                style: TextStyle(
+                                    fontSize: SizeConfig.titleSize * 0.7),
+                              ),
+                              Text(
+                                "\$${shortAmount(convertedValue.toString(), comma: true, length: 3)} = ",
+                                style: TextStyle(
+                                    fontSize: SizeConfig.titleSize * 0.7),
+                              ),
+                              Text(
+                                "\$${shortAmount(previewAmount(app, tokenDropdownValue, convertedValue).toString(), comma: true, length: 3)}",
+                                style: TextStyle(
+                                    fontSize: SizeConfig.titleSize * 0.7),
+                              ),
+                            ],
+                          ),
+                          SizedBox(
+                            height: SizeConfig.safeBlockVertical,
+                          ),
+                        ],
                       ),
-                      SizedBox(
-                        height: SizeConfig.safeBlockVertical,
+                      /*Gas Limit*/
+                      Divider(),
+                      Padding(
+                        padding: EdgeInsets.only(
+                            top: SizeConfig.safeBlockVertical * 2,
+                            bottom: SizeConfig.safeBlockVertical),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    disableGasLimit = !disableGasLimit;
+                                    if (disableGasLimit) {
+                                      gasLimit.text = env["MAX_GAS"];
+                                    }
+                                  });
+                                },
+                                child: Container(
+                                  color: Colors.transparent,
+                                  child: Row(
+                                    children: [
+                                      SizedBox(
+                                        height: 22,
+                                        width: 22,
+                                        child: Checkbox(
+                                            value: disableGasLimit,
+                                            fillColor: MaterialStateProperty
+                                                .resolveWith(getColor),
+                                            onChanged: (bool value) =>
+                                                setState(() {
+                                                  disableGasLimit = value;
+                                                  if (value) {
+                                                    gasLimit.text =
+                                                        env["MAX_GAS"];
+                                                  }
+                                                })),
+                                      ),
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(left: 8.0),
+                                        child: Text(
+                                          "Automatic gas limit",
+                                          // style: TextStyle(fontSize: 12.0),
+                                          style: TextStyle(
+                                              fontSize: SizeConfig.fontSize),
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                mainAxisSize: MainAxisSize.max,
+                                children: [
+                                  Text(
+                                    "Gas limit in (WEI)",
+                                    style: TextStyle(
+                                        fontSize: SizeConfig.fontSize),
+                                  )
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      Text(
-                        "Balance Preview",
-                        style: AppTextStyles.span
-                            .copyWith(fontSize: SizeConfig.labelSizeSmall),
-                      ),
-                      SizedBox(
-                        height: SizeConfig.safeBlockVertical,
-                      ),
-                      Wrap(
-                        crossAxisAlignment: WrapCrossAlignment.end,
+                      Row(
                         children: [
-                          Text(
-                            "\$${shortAmount(tokenValue.toString(), comma: true, length: 3)} - ",
-                            style: TextStyle(
-                                fontSize: SizeConfig.titleSize * 0.7),
+                          Expanded(
+                            flex: 3,
+                            child: Container(),
                           ),
-                          Text(
-                            "\$${shortAmount(convertedValue.toString(), comma: true, length: 3)} = ",
-                            style: TextStyle(
-                                fontSize: SizeConfig.titleSize * 0.7),
-                          ),
-                          Text(
-                            "\$${shortAmount(previewAmount(app, tokenDropdownValue, convertedValue).toString(), comma: true, length: 3)}",
-                            style: TextStyle(
-                                fontSize: SizeConfig.titleSize * 0.7),
+                          Expanded(
+                            flex: 2,
+                            child: AppTextFormField(
+                              enabled: !disableGasLimit,
+                              controller: gasLimit,
+                              textAlign: TextAlign.end,
+                              keyboardType: TextInputType.number,
+                              contentPadding: EdgeInsets.symmetric(
+                                  vertical: 6, horizontal: 4),
+                              isDense: true,
+                            ),
                           ),
                         ],
                       ),
                       SizedBox(
-                        height: SizeConfig.safeBlockVertical,
+                        height: SizeConfig.safeBlockVertical * 2,
                       ),
-                    ],
-                  ),
-                  /*Gas Limit*/
-                  Divider(),
-                  Padding(
-                    padding: EdgeInsets.only(
-                        top: SizeConfig.safeBlockVertical * 2,
-                        bottom: SizeConfig.safeBlockVertical),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                disableGasLimit = !disableGasLimit;
-                                if (disableGasLimit) {
-                                  gasLimit.text = env["MAX_GAS"];
-                                }
-                              });
-                            },
-                            child: Container(
-                              color: Colors.transparent,
-                              child: Row(
-                                children: [
-                                  SizedBox(
-                                    height: 22,
-                                    width: 22,
-                                    child: Checkbox(
-                                        value: disableGasLimit,
-                                        fillColor: MaterialStateProperty
-                                            .resolveWith(getColor),
-                                        onChanged: (bool value) =>
-                                            setState(() {
-                                              disableGasLimit = value;
-                                              if (value) {
-                                                gasLimit.text =
-                                                env["MAX_GAS"];
-                                              }
-                                            })),
+                      /*Recommended fees*/
+                      Divider(),
+                      Padding(
+                        padding: EdgeInsets.only(
+                            top: SizeConfig.safeBlockVertical * 2,
+                            bottom: SizeConfig.safeBlockVertical),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    disableGasFee = !disableGasFee;
+                                    if (disableGasFee) {
+                                      gasFee.text = env["GAS_PRICE"];
+                                    }
+                                  });
+                                },
+                                child: Container(
+                                  color: Colors.transparent,
+                                  child: Row(
+                                    children: [
+                                      SizedBox(
+                                        height: 22,
+                                        width: 22,
+                                        child: Checkbox(
+                                            value: disableGasFee,
+                                            fillColor: MaterialStateProperty
+                                                .resolveWith(getColor),
+                                            onChanged: (bool value) =>
+                                                setState(() {
+                                                  disableGasFee = value;
+                                                  if (value) {
+                                                    gasFee.text =
+                                                        env["GAS_PRICE"];
+                                                  }
+                                                })),
+                                      ),
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(left: 8.0),
+                                        child: Text(
+                                          "Recommended fees",
+                                          style: TextStyle(
+                                              fontSize: SizeConfig.fontSize),
+                                        ),
+                                      )
+                                    ],
                                   ),
-                                  Padding(
-                                    padding:
-                                    const EdgeInsets.only(left: 8.0),
-                                    child: Text(
-                                      "Automatic gas limit",
-                                      // style: TextStyle(fontSize: 12.0),
-                                      style: TextStyle(fontSize: SizeConfig.fontSize),
-                                    ),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                mainAxisSize: MainAxisSize.max,
+                                children: [
+                                  Text(
+                                    "Gas price (In GWEI)",
+                                    style: TextStyle(
+                                        fontSize: SizeConfig.fontSize),
                                   )
                                 ],
                               ),
                             ),
-                          ),
-                        ),
-                        Expanded(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            mainAxisSize: MainAxisSize.max,
-                            children: [
-                              Text(
-                                "Gas limit in (WEI)",
-                                style: TextStyle(fontSize: SizeConfig.fontSize),
-                              )
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        flex: 3,
-                        child: Container(),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: AppTextFormField(
-                          enabled: !disableGasLimit,
-                          controller: gasLimit,
-                          textAlign: TextAlign.end,
-                          keyboardType: TextInputType.number,
-                          contentPadding: EdgeInsets.symmetric(
-                              vertical: 6, horizontal: 4),
-                          isDense: true,
+                          ],
                         ),
                       ),
-                    ],
-                  ),
-                  SizedBox(
-                    height: SizeConfig.safeBlockVertical * 2,
-                  ),
-                  /*Recommended fees*/
-                  Divider(),
-                  Padding(
-                    padding: EdgeInsets.only(
-                        top: SizeConfig.safeBlockVertical * 2,
-                        bottom: SizeConfig.safeBlockVertical),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                disableGasFee = !disableGasFee;
-                                if (disableGasFee) {
-                                  gasFee.text = env["GAS_PRICE"];
-                                }
-                              });
-                            },
-                            child: Container(
-                              color: Colors.transparent,
-                              child: Row(
-                                children: [
-                                  SizedBox(
-                                    height: 22,
-                                    width: 22,
-                                    child: Checkbox(
-                                        value: disableGasFee,
-                                        fillColor: MaterialStateProperty
-                                            .resolveWith(getColor),
-                                        onChanged: (bool value) =>
-                                            setState(() {
-                                              disableGasFee = value;
-                                              if (value) {
-                                                gasFee.text =
-                                                env["GAS_PRICE"];
-                                              }
-                                            })),
-                                  ),
-                                  Padding(
-                                    padding:
-                                    const EdgeInsets.only(left: 8.0),
-                                    child: Text(
-                                      "Recommended fees",
-                                      style: TextStyle(fontSize: SizeConfig.fontSize),
-                                    ),
-                                  )
-                                ],
-                              ),
+                      Row(
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: Container(),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: AppTextFormField(
+                              enabled: !disableGasFee,
+                              controller: gasFee,
+                              textAlign: TextAlign.end,
+                              keyboardType: TextInputType.number,
+                              contentPadding: EdgeInsets.symmetric(
+                                  vertical: 6, horizontal: 4),
+                              isDense: true,
                             ),
                           ),
-                        ),
-                        Expanded(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            mainAxisSize: MainAxisSize.max,
-                            children: [
-                              Text(
-                                "Gas price (In GWEI)",
-                                style: TextStyle(fontSize: SizeConfig.fontSize),
-                              )
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        flex: 3,
-                        child: Container(),
+                        ],
                       ),
-                      Expanded(
-                        flex: 2,
-                        child: AppTextFormField(
-                          enabled: !disableGasFee,
-                          controller: gasFee,
-                          textAlign: TextAlign.end,
-                          keyboardType: TextInputType.number,
-                          contentPadding: EdgeInsets.symmetric(
-                              vertical: 6, horizontal: 4),
-                          isDense: true,
+                      Padding(
+                        padding: EdgeInsets.only(
+                            top: SizeConfig.safeBlockVertical * 4),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          // crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            AppButton(
+                              expanded: false,
+                              onPressed: () {
+                                // Navigator.of(context).pop();
+                                if (_sendTokenForm.currentState != null &&
+                                    _sendTokenForm.currentState.validate()) {
+                                  startTransaction(
+                                      app, weiValue, tokenDropdownValue);
+                                }
+                              },
+                              text: "CONFIRM",
+                            ),
+                          ],
                         ),
-                      ),
+                      )
                     ],
                   ),
-                  Padding(
-                    padding: EdgeInsets.only(
-                        top: SizeConfig.safeBlockVertical * 4),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      // crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        AppButton(
-                          expanded: false,
-                          onPressed: () {
-                            // Navigator.of(context).pop();
-                            if (_sendTokenForm.currentState != null &&
-                                _sendTokenForm.currentState.validate()) {
-                              startTransaction(
-                                  app, weiValue, tokenDropdownValue);
-                            }
-                          },
-                          text: "CONFIRM",
-                        ),
-                      ],
-                    ),
-                  )
-                ],
-              ),
-            ),
-          );
-        }));
+                ),
+              );
+            }));
   }
 
   void startTransaction(AvmeWallet app, BigInt value, String token) async {
@@ -795,15 +800,15 @@ class _SendState extends State<Send> {
     await showDialog(
         context: context,
         builder: (_) => StatefulBuilder(builder: (builder, setState) {
-          return Consumer<ContactsController>(
-              builder: (BuildContext context, controller, _) {
+              return Consumer<ContactsController>(
+                  builder: (BuildContext context, controller, _) {
                 return ProgressPopup(
                     title: "Warning",
                     listNotifier: loadingNotifier,
                     future: app.walletManager
                         .sendTransaction(
-                        app, addressController.text, value, token,
-                        listNotifier: loadingNotifier)
+                            app, addressController.text, value, token,
+                            listNotifier: loadingNotifier)
                         .then((response) async {
                       if (response["status"] == 200) {
                         int position = -1;
@@ -830,35 +835,35 @@ class _SendState extends State<Send> {
                         Navigator.of(context).pop();
                     }));
               });
-        }));
+            }));
   }
 
   void displayTransactionHash(String message) {
     showDialog(
         context: context,
         builder: (_) => AppPopupWidget(
-            title: "Transaction done",
-            cancelable: false,
-            canClose: true,
-            showIndicator: false,
-            children: [
-              AppButton(
-                  onPressed: () async {
-                    print(message);
-                    NotificationBar()
-                        .show(context, text: "Opening in browser $message");
-                    Navigator.of(context).pop();
-                    await Future.delayed(Duration(seconds: 2));
-                    if (await canLaunch(message))
-                      await launch(message);
-                    else {
-                      NotificationBar()
-                          .show(context, text: "cant launch url $message");
-                      print("cant launch url $message");
-                    }
-                  },
-                  text: "Open on Browser")
-            ]));
+                title: "Transaction done",
+                cancelable: false,
+                canClose: true,
+                showIndicator: false,
+                children: [
+                  AppButton(
+                      onPressed: () async {
+                        print(message);
+                        NotificationBar()
+                            .show(context, text: "Opening in browser $message");
+                        Navigator.of(context).pop();
+                        await Future.delayed(Duration(seconds: 2));
+                        if (await canLaunch(message))
+                          await launch(message);
+                        else {
+                          NotificationBar()
+                              .show(context, text: "cant launch url $message");
+                          print("cant launch url $message");
+                        }
+                      },
+                      text: "Open on Browser")
+                ]));
   }
 
   Color getColor(Set<MaterialState> states) {
@@ -882,7 +887,7 @@ double previewAmount(
     amount = app.currentAccount.networkBalance;
   else
     amount =
-    app.currentAccount.tokensBalanceList[tokenDropdownValue]["balance"];
+        app.currentAccount.tokensBalanceList[tokenDropdownValue]["balance"];
   total = amount - subtract;
   return total;
 }
@@ -893,7 +898,7 @@ double getTokenValue(AvmeWallet app, String tokenDropdownValue) {
     amount = app.currentAccount.networkBalance;
   else
     amount =
-    app.currentAccount.tokensBalanceList[tokenDropdownValue]["balance"];
+        app.currentAccount.tokensBalanceList[tokenDropdownValue]["balance"];
 
   return amount;
 }
