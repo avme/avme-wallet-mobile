@@ -17,15 +17,136 @@ class ImportAccount extends StatefulWidget {
 }
 
 class _ImportAccountState extends State<ImportAccount> {
+  //Code below generates 22 focusNodes, for all AppTextInputFields but the first and last
+  late List<FocusNode> focusNodes;
+  @override
+  void initState() {
+    super.initState();
+    focusNodes = List.generate(23, (index) => FocusNode());
+    FormMnemonic();
+  }
 
-  FormMnemonic formMnemonic = FormMnemonic();
+  @override
+  void dispose() {
+    //dispose all focus nodes
+    for (var focusNode in focusNodes) {
+      focusNode.dispose();
+    }
+    super.dispose();
+  }
+
   int wrongMnemonic = -1;
   bool isAllFilled = true;
   String invalidMnemonic = '';
 
+  List<int> removedKeys = [];
+  Map<int, String> mnemonicDict = {};
+  Map<int, TextEditingController> mnemonicControlDict = {};
+
+  FormMnemonic() {
+    ///We're populating our dictionary of TextInputs and TextController to use later
+    for (int i = 0; i < 24; i++) {
+      removedKeys.add(i);
+      mnemonicDict[i] = '';
+      mnemonicControlDict[i] = new TextEditingController(text: '');
+    }
+  }
+
+  Widget createList() {
+    Map<int, List<Widget>> columnMap = {};
+    int column = 0;
+
+    double paddingHorizontal = SizeConfig.safeBlockHorizontal * 2;
+    EdgeInsets columnPadding = EdgeInsets.all(paddingHorizontal);
+
+    Function(String) onFieldSubmitted;
+    FocusNode? focusNodeInput;
+
+    this.mnemonicDict.forEach((key, value) {
+      if (key.remainder(12) == 0 && key != 0) column++;
+
+      if (key == 0) {
+        focusNodeInput = null;
+        onFieldSubmitted =
+            (_) => FocusScope.of(context).requestFocus(focusNodes[key]);
+      } else if (key == 23) {
+        focusNodeInput = focusNodes[key - 1];
+        onFieldSubmitted = (_) {};
+      } else {
+        focusNodeInput = focusNodes[key - 1];
+        onFieldSubmitted =
+            (_) => FocusScope.of(context).requestFocus(focusNodes[key]);
+      }
+
+      columnMap[column] = columnMap[column] ?? [];
+      columnMap[column]?.add(
+        Padding(
+          padding: column > 0
+              ? columnPadding.copyWith(left: paddingHorizontal)
+              : columnPadding.copyWith(right: paddingHorizontal),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Text(
+                  "${key + 1}.",
+                  style: TextStyle(
+                      color: AppColors.purple,
+                      fontWeight: FontWeight.bold,
+                      fontSize: SizeConfig.labelSizeSmall),
+                ),
+              ),
+              Expanded(
+                flex: 4,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                      right: SizeConfig.safeBlockHorizontal * 4),
+                  child: AppTextFormField(
+                    focusNode: focusNodeInput,
+                    enabled: this.removedKeys.contains(key),
+                    controller: this.mnemonicControlDict[key],
+                    textAlign: TextAlign.end,
+                    // keyboardType: TextInputType.number,
+                    contentPadding:
+                        EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+                    isDense: true,
+                    onFieldSubmitted: onFieldSubmitted,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+      print("row[$column] ${key + 1} - ${this.mnemonicControlDict[key]?.text}");
+    });
+
+    List<Widget> columnWidgets = [];
+    columnMap.forEach((index, value) {
+      columnWidgets.add(Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.max,
+          children: value,
+        ),
+      ));
+    });
+
+    return Row(children: columnWidgets);
+  }
+
+  int validate() {
+    int validated = 0;
+    this.removedKeys.forEach((key) {
+      print("${this.mnemonicControlDict[key]?.text} != (null)");
+      if (this.mnemonicControlDict[key]?.text != '') ++validated;
+      print('validated $validated');
+    });
+    return validated;
+  }
+
   @override
   Widget build(BuildContext context) {
-
     ScrollController write = ScrollController();
 
     SizeConfig().init(context);
@@ -38,11 +159,9 @@ class _ImportAccountState extends State<ImportAccount> {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: <Color>[
-                  AppColors.purpleVariant1,
-                  AppColors.purpleBlue
-                ]
-            )
-        ),
+              AppColors.purpleVariant1,
+              AppColors.purpleBlue
+            ])),
         child: Center(
           child: SingleChildScrollView(
             physics: BouncingScrollPhysics(),
@@ -59,92 +178,106 @@ class _ImportAccountState extends State<ImportAccount> {
                       color: AppColors.cardBlue,
                       child: Container(
                           child: Padding(
-                            padding: EdgeInsets.symmetric(
-                              vertical: SizeConfig.safeBlockVertical * 4,
-                              horizontal: SizeConfig.safeBlockVertical * 4,
+                        padding: EdgeInsets.symmetric(
+                          vertical: SizeConfig.safeBlockVertical * 4,
+                          horizontal: SizeConfig.safeBlockVertical * 4,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            ///Header
+                            Column(
+                              children: header(context),
                             ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
+
+                            ///Fields
+                            Column(
                               children: [
-                                ///Header
-                                Column(children: header(context),),
-                                ///Fields
-                                Column(
-                                  children: [
-                                    Text("Fill in mnemonic phrase",style: AppTextStyles.spanWhite,),
-                                    Text("to import an account",style: AppTextStyles.spanWhite,),
-                                    ConstrainedBox(
-                                      constraints: BoxConstraints(
-                                          maxHeight: SizeConfig.safeBlockVertical * 50
-                                      ),
-                                      child: Padding(
-                                        padding: EdgeInsets.only(bottom: SizeConfig.blockSizeVertical*2),
-                                        child: Scrollbar(
-                                            isAlwaysShown: true,
-                                            thickness: 4,
-                                            controller: write,
-                                            child: SingleChildScrollView(
-                                              controller: write,
-                                              child: Column(
-                                                children: [
-                                                  Padding(
-                                                    padding: const EdgeInsets.only(top: 16),
-                                                    child: formMnemonic.build(),
-                                                  ),
-                                                ],
+                                Text(
+                                  "Fill in mnemonic phrase",
+                                  style: AppTextStyles.spanWhite,
+                                ),
+                                Text(
+                                  "to import an account",
+                                  style: AppTextStyles.spanWhite,
+                                ),
+                                ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                      maxHeight:
+                                          SizeConfig.safeBlockVertical * 50),
+                                  child: Padding(
+                                    padding: EdgeInsets.only(
+                                        bottom:
+                                            SizeConfig.blockSizeVertical * 2),
+                                    child: Scrollbar(
+                                        isAlwaysShown: true,
+                                        thickness: 4,
+                                        controller: write,
+                                        child: SingleChildScrollView(
+                                          controller: write,
+                                          child: Column(
+                                            children: [
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                    top: 16),
+                                                child: createList(),
                                               ),
-                                            )
+                                            ],
+                                          ),
+                                        )),
+                                  ),
+                                ),
+                                isAllFilled
+                                    ? Padding(
+                                        padding: const EdgeInsets.all(0),
+                                      )
+                                    : Padding(
+                                        padding:
+                                            const EdgeInsets.only(bottom: 8.0),
+                                        child: Text(
+                                          invalidMnemonic,
+                                          style: AppTextStyles.span
+                                              .copyWith(color: Colors.red),
                                         ),
                                       ),
-                                    ),
-                                    isAllFilled ? Padding(padding: const EdgeInsets.all(0),)
-                                        : Padding(
-                                            padding: const EdgeInsets.only(bottom: 8.0),
-                                            child: Text(invalidMnemonic,style: AppTextStyles.span.copyWith(color: Colors.red),),
-                                          ),
-                                    AppNeonButton(
-                                        onPressed: () async {
-                                          wrongMnemonic = formMnemonic.validate();
-                                          if(wrongMnemonic != 24)
-                                          {
-                                            setState((){
-                                              invalidMnemonic = 'Oops, looks like you forgot to fill a field';
-                                              isAllFilled = false;
-                                            });
-                                          }
-                                          else
-                                          {
-                                            setState((){
-                                              invalidMnemonic = '';
-                                              isAllFilled = true;
-                                            });
-                                            /*
-                                                        Navigator.of(context).pop();
-                                                        await showDialog(context: context, builder: (_) => StatefulBuilder(builder: (builder, setState){
-                                                          return ProgressPopup(
-                                                              title: "Creating",
-                                                              future: appWalletManager.walletManager.makeAccount(phraseController.text, appWalletManager,mnemonic: this.walletSeed)
-                                                                  .then((result) {
-                                                                // Creates the user account
-                                                                appWalletManager.changeCurrentWalletId = 0;
-                                                                Navigator.pop(context);
-                                                                Navigator.pushReplacementNamed(context, "app/overview");
-                                                                NotificationBar().show(context, text: "Account #0 selected");
-                                                              }));
-                                                        }));
-                                                         */
-                                            return;
-                                          }
-                                        },
-                                        expanded: false,
-                                        text: "IMPORT"
-                                    ),
-                                  ],
-                                )
+                                AppNeonButton(
+                                    onPressed: () async {
+                                      if (validate() != 24) {
+                                        setState(() {
+                                          invalidMnemonic =
+                                              'Oops, looks like you forgot to fill a field';
+                                          isAllFilled = false;
+                                        });
+                                      } else {
+                                        setState(() {
+                                          invalidMnemonic = '';
+                                          isAllFilled = true;
+                                        });
+                                        /*
+                                        Navigator.of(context).pop();
+                                        await showDialog(context: context, builder: (_) => StatefulBuilder(builder: (builder, setState){
+                                          return ProgressPopup(
+                                              title: "Creating",
+                                              future: appWalletManager.walletManager.makeAccount(phraseController.text, appWalletManager,mnemonic: this.walletSeed)
+                                                  .then((result) {
+                                                // Creates the user account
+                                                appWalletManager.changeCurrentWalletId = 0;
+                                                Navigator.pop(context);
+                                                Navigator.pushReplacementNamed(context, "app/overview");
+                                                NotificationBar().show(context, text: "Account #0 selected");
+                                              }));
+                                        }));
+                                          */
+                                        return;
+                                      }
+                                    },
+                                    expanded: false,
+                                    text: "IMPORT"),
                               ],
-                            ),
-                          )
-                      ),
+                            )
+                          ],
+                        ),
+                      )),
                     ),
                   ),
                 ],
@@ -156,8 +289,7 @@ class _ImportAccountState extends State<ImportAccount> {
     );
   }
 
-  List<Widget> header(BuildContext context)
-  {
+  List<Widget> header(BuildContext context) {
     return [
       Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -177,7 +309,7 @@ class _ImportAccountState extends State<ImportAccount> {
                       color: AppColors.labelDefaultColor,
                     ),
                   ),
-                  onTap: (){
+                  onTap: () {
                     Navigator.of(context).pop();
                   },
                 ),
@@ -188,15 +320,15 @@ class _ImportAccountState extends State<ImportAccount> {
             flex: 4,
             child: Column(
               children: [
-                Text(
-                    "Import Wallet",
+                Text("Import Wallet",
                     style: TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: SizeConfig.titleSize)
-                ),
+                        fontWeight: FontWeight.bold,
+                        fontSize: SizeConfig.titleSize)),
               ],
             ),
           ),
-          Expanded(child: Container(
+          Expanded(
+              child: Container(
             color: Colors.pink,
           ))
         ],
@@ -209,116 +341,7 @@ class _ImportAccountState extends State<ImportAccount> {
           height: 20,
           width: MediaQuery.of(context).size.width,
         ),
-      ),];
-  }
-
-
-
-}
-
-class FormMnemonic {
-
-  //final String mnemonic;
-
-  List<int> removedKeys = [];
-  Map<int, String> mnemonicDict = {0:"bazinga",1:"ass",2:"cu",3:"aaaa"};
-  Map<int, TextEditingController> mnemonicControlDict = {};
-
-  FormMnemonic() {
-
-    ///We're populating our dictionary of TextInputs and TextController to use later
-    for(int i=0;i<24;i++)
-    {
-      removedKeys.add(i);
-      mnemonicDict[i] = '';
-      mnemonicControlDict[i] = new TextEditingController(
-          text: ''
-      );
-    }
-  }
-
-  int validate()
-  {
-    int validated = 0;
-    this.removedKeys.forEach((key) {
-      print("${this.mnemonicControlDict[key]?.text} != (null)");
-      if(this.mnemonicControlDict[key]?.text != '')
-        ++validated;
-      print('validated $validated');
-    });
-    return validated;
-  }
-
-  Widget build()
-  {
-    Map<int,List<Widget>> columnMap = {};
-    int column = 0;
-
-    TextInputAction textInputAction = TextInputAction.next;
-
-    double paddingHorizontal = SizeConfig.safeBlockHorizontal * 2;
-    EdgeInsets columnPadding = EdgeInsets.all(paddingHorizontal);
-    this.mnemonicDict.forEach((key, value) {
-
-      if(key.remainder(12) == 0 && key != 0)
-        column++;
-
-      if(key==23) textInputAction = TextInputAction.done;
-
-      columnMap[column] = columnMap[column] ?? [];
-      columnMap[column]?.add(
-        Padding(
-          padding: column > 0 ? columnPadding.copyWith(left:paddingHorizontal) : columnPadding.copyWith(right:paddingHorizontal),
-          child:Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Text("${key+1}.",
-                  style: TextStyle(
-                      color: AppColors.purple,
-                      fontWeight: FontWeight.bold,
-                      fontSize: SizeConfig.labelSizeSmall
-                  ),
-                ),
-              ),
-              Expanded(
-                flex: 4,
-                child: Padding(
-                  padding: EdgeInsets.only(right:SizeConfig.safeBlockHorizontal * 4),
-                  child: AppTextFormField(
-                    textInputAction: textInputAction,
-                    enabled: this.removedKeys.contains(key),
-                    controller: this.mnemonicControlDict[key],
-                    textAlign: TextAlign.end,
-                    // keyboardType: TextInputType.number,
-                    contentPadding: EdgeInsets.symmetric(
-                        vertical: 6,
-                        horizontal: 4
-                    ),
-                    isDense: true,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-      print("row[$column] ${key+1} - ${this.mnemonicControlDict[key]?.text}");
-    });
-
-    List<Widget> columnWidgets = [];
-    columnMap.forEach((index,value) {
-      columnWidgets.add(
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.max,
-              children: value,
-            ),
-          )
-      );
-    });
-
-    return Row(children: columnWidgets);
+      ),
+    ];
   }
 }
