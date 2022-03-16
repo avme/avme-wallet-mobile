@@ -79,6 +79,10 @@ class SizeConfig {
           "display" :
             {
               "deviceGroupCustom": "0"
+            },
+          "options" :
+            {
+              "fingerprintAuth": false
             }
         }
         ));
