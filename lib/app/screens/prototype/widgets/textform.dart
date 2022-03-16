@@ -22,7 +22,10 @@ class AppTextFormField extends StatefulWidget {
   final EdgeInsets contentPadding;
   final bool isDense;
   final TextAlign textAlign;
+  final int minLines;
+  final int maxLines;
   final int maxLength;
+  final List<TextInputFormatter> inputFormatters;
   final TextInputAction textInputAction;
   final Function onFieldSubmitted;
 
@@ -46,9 +49,11 @@ class AppTextFormField extends StatefulWidget {
       this.textAlign = TextAlign.left,
       this.hintText,
       this.onFieldSubmitted,
-      this.contentPadding =
-          const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+      this.contentPadding = const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+      this.minLines,
+      this.maxLines,
       this.maxLength,
+      this.inputFormatters,
       this.textInputAction})
       : super(key: key);
 
@@ -56,8 +61,7 @@ class AppTextFormField extends StatefulWidget {
   _AppTextFormFieldState createState() => _AppTextFormFieldState();
 }
 
-class _AppTextFormFieldState extends State<AppTextFormField>
-    with TickerProviderStateMixin {
+class _AppTextFormFieldState extends State<AppTextFormField> with TickerProviderStateMixin {
   bool hideFloatingIcon = false;
   FocusNode myFocus;
   AnimationController animation;
@@ -95,26 +99,18 @@ class _AppTextFormFieldState extends State<AppTextFormField>
     myFocus = widget.focusNode ?? myFocus;
     Color cLabelStyle = AppColors.labelDefaultColor;
     FontWeight fLabelStyle = FontWeight.w900;
-    OutlineInputBorder fieldBorder = OutlineInputBorder(
-        borderRadius: BorderRadius.circular(6.0),
-        borderSide: BorderSide(width: 2));
+    OutlineInputBorder fieldBorder = OutlineInputBorder(borderRadius: BorderRadius.circular(6.0), borderSide: BorderSide(width: 2));
 
     EdgeInsets contentPadding = widget.contentPadding;
-    contentPadding = EdgeInsets.only(
-        top: 16,
-        bottom: 16,
-        left: 12,
-        right: !hideFloatingIcon && widget.icon != null ? 40 : 12);
+    contentPadding = EdgeInsets.only(top: 16, bottom: 16, left: 12, right: !hideFloatingIcon && widget.icon != null ? 40 : 12);
     // contentPadding = EdgeInsets.only(top:16, bottom: 16, left:12, right: hideFloatingIcon ? 12 : 40);
 
     ///Testing if isDense is true, we set same as the default in
     ///"flutter: material/input_decorator.dart", since the padding ain't
     ///being set by the framework
-    contentPadding =
-        widget.isDense ? EdgeInsets.fromLTRB(8, 8, 0, 8) : contentPadding;
+    contentPadding = widget.isDense ? EdgeInsets.fromLTRB(8, 8, 0, 8) : contentPadding;
 
-    cLabelStyle =
-        myFocus.hasFocus ? AppColors.purple : AppColors.labelDefaultColor;
+    cLabelStyle = myFocus.hasFocus ? AppColors.purple : AppColors.labelDefaultColor;
     fLabelStyle = myFocus.hasFocus ? FontWeight.w900 : FontWeight.w500;
 
     //Function added for adding custom parameters or passing focus
@@ -125,16 +121,20 @@ class _AppTextFormFieldState extends State<AppTextFormField>
       onFieldSubmitted = widget.onFieldSubmitted;
     }
 
+    int maxLines = 1;
+    if (widget.maxLines != null) maxLines = widget.maxLines;
+
     return Stack(
       children: [
         Column(
           children: [
             TextFormField(
+                inputFormatters: widget.inputFormatters,
                 textInputAction: widget.textInputAction,
+                minLines: widget.minLines,
+                maxLines: maxLines,
                 maxLength: widget.maxLength,
-                maxLengthEnforcement: widget.maxLength != null
-                    ? MaxLengthEnforcement.enforced
-                    : MaxLengthEnforcement.none,
+                maxLengthEnforcement: widget.maxLength != null ? MaxLengthEnforcement.enforced : MaxLengthEnforcement.none,
                 enabled: widget.enabled,
                 validator: widget.validator,
                 controller: widget.controller,
@@ -170,28 +170,21 @@ class _AppTextFormFieldState extends State<AppTextFormField>
                         color: cLabelStyle,
                       ),
                     ),
-                    disabledBorder: OutlineInputBorder(
-                        borderRadius: fieldBorder.borderRadius,
-                        borderSide:
-                            BorderSide(width: 0, color: Colors.transparent)),
-                    labelStyle: TextStyle(
-                        color: cLabelStyle,
-                        fontWeight: fLabelStyle,
-                        fontSize: SizeConfig.fontSize),
+                    disabledBorder:
+                        OutlineInputBorder(borderRadius: fieldBorder.borderRadius, borderSide: BorderSide(width: 0, color: Colors.transparent)),
+                    labelStyle: TextStyle(color: cLabelStyle, fontWeight: fLabelStyle, fontSize: SizeConfig.fontSize),
                     focusedBorder: fieldBorder.copyWith(
                       borderSide: BorderSide(width: 2, color: AppColors.purple),
                     ),
                     counter: widget.maxLength != null
                         ? Align(
-                            alignment: Alignment.centerRight.add(Alignment(
-                                SizeConfig.blockSizeHorizontal / 100 * 1.5, 0)),
+                            alignment: Alignment.centerRight.add(Alignment(SizeConfig.blockSizeHorizontal / 100 * 1.5, 0)),
                             child: Container(
                                 // color:Colors.red,
                                 child: Text(
                               "${widget.controller.text.length}/${widget.maxLength}",
                               textDirection: TextDirection.rtl,
-                              style: AppTextStyles.span
-                                  .copyWith(fontSize: SizeConfig.fontSize),
+                              style: AppTextStyles.span.copyWith(fontSize: SizeConfig.fontSize),
                             )),
                           )
                         : null)),
@@ -216,9 +209,7 @@ class _AppTextFormFieldState extends State<AppTextFormField>
                                 // width: 48,
                                 child: Padding(
                                   padding: const EdgeInsets.all(9),
-                                  child: Container(
-                                      color: AppColors.darkBlue,
-                                      child: widget.icon),
+                                  child: Container(color: AppColors.darkBlue, child: widget.icon),
                                 ),
                               ),
                             ],

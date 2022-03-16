@@ -20,19 +20,18 @@ import 'package:web3dart/web3dart.dart';
 import 'package:aes_crypt/aes_crypt.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../packages/services.dart' as services;
+import 'package:bip39/src/wordlists/english.dart';
 
 import 'file_manager.dart';
 
 String url = env["NETWORK_URL"];
 String mnemonicFile = env["MNEMONICFILEPATH"];
 
-class WalletManager
-{
+class WalletManager {
   final FileManager fileManager;
   WalletManager(this.fileManager);
 
-  Future<File> writeWalletJson(String json) async
-  {
+  Future<File> writeWalletJson(String json) async {
     File file = await this.fileManager.accountFile();
     // print("$json");
     await file.writeAsString("$json");
@@ -40,24 +39,19 @@ class WalletManager
     return file;
   }
 
-  Future<String> readWalletJson({position = -1}) async
-  {
+  Future<String> readWalletJson({position = -1}) async {
     String content;
-    try
-    {
+    try {
       final file = await this.fileManager.accountFile();
       List contents = jsonDecode(await file.readAsString());
       content = (position == -1 ? jsonEncode(contents) : jsonEncode(contents[position]["data"]));
-    }
-    catch(e)
-    {
+    } catch (e) {
       print(e.toString());
     }
     return content;
   }
 
-  Future<bool> walletAlreadyExists() async
-  {
+  Future<bool> walletAlreadyExists() async {
     File file = await this.fileManager.accountFile();
     bool e = await file.exists();
     print("File existis? ${e.toString()}");
@@ -65,21 +59,19 @@ class WalletManager
   }
 
   // ONLY FOR TESTING PURPOSES
-  void deletePreviousWallet() async
-  {
+  void deletePreviousWallet() async {
     bool hasFile = await walletAlreadyExists();
-    if(hasFile){
+    if (hasFile) {
       File file = await this.fileManager.accountFile();
       file.delete();
 
       File mnemonic = new File(this.fileManager.documentsFolder + this.fileManager.accountFolder + mnemonicFile);
-      print("MNEMONIC FILE PATH: "+mnemonic.path);
+      print("MNEMONIC FILE PATH: " + mnemonic.path);
       mnemonic.delete();
     }
   }
 
-  Future<String> decryptAes(String password) async
-  {
+  Future<String> decryptAes(String password) async {
     String documentsPath = this.fileManager.documentsFolder;
     AesCrypt crypt = AesCrypt();
 
@@ -88,8 +80,7 @@ class WalletManager
     return crypt.decryptTextFromFileSync(documentsPath + this.fileManager.accountFolder + mnemonicFile, utf16: true);
   }
 
-  String newMnemonic()
-  {
+  String newMnemonic() {
     // String mnemonic =
     //     "blossom skate magnet magic put task famous square because attract clog ketchup";
 
@@ -98,17 +89,26 @@ class WalletManager
     return mnemonic;
   }
 
-  Future<Map<String,dynamic>> makeAccount(String password, AvmeWallet appState,
-    {
-      String mnemonic,
-      String title = "",
-      int slot
-    }) async
-  {
+  Future<bool> checkMnemonic({String phrase, int phraseCount}) async {
+    ///Validating the phrase
+    List<String> phraseWords = phrase.split(' ');
+
+    ///Checking the word count
+
+    if (phraseWords.length != phraseCount) return false;
+
+    ///Checking if the words are in the dictionary
+    for (int i = 0; i < phraseWords.length; i++) {
+      ///WORDLIST imported from bip39/src/wordlists
+      if (!WORDLIST.contains(phraseWords[i])) return false;
+    }
+    return true;
+  }
+
+  Future<Map<String, dynamic>> makeAccount(String password, AvmeWallet appState, {String mnemonic, String title = "", int slot}) async {
     print("Is account list empty? ${appState.accountList.isEmpty}");
 
-    if(appState.accountList.isEmpty)
-    {
+    if (appState.accountList.isEmpty) {
       slot = 0;
       mnemonic = mnemonic ?? newMnemonic();
 
@@ -121,19 +121,16 @@ class WalletManager
       crypt.setPassword(password);
       // Saving file with the method 'encryptTextToFileSync' from the Lib "aes_crypt"
       await this.fileManager.accountFile();
-      crypt.encryptTextToFileSync(mnemonic, documentsPath + this.fileManager.accountFolder + mnemonicFile,utf16: true);
-    }
-    else
-    {
+      crypt.encryptTextToFileSync(mnemonic, documentsPath + this.fileManager.accountFolder + mnemonicFile, utf16: true);
+    } else {
       mnemonic = await decryptAesWallet(password, shouldReturnMnemonicFile: true);
     }
 
     print(mnemonic);
-    BIP32 node = bip32.BIP32.fromSeed(await compute(bip39.mnemonicToSeed,mnemonic));
+    BIP32 node = bip32.BIP32.fromSeed(await compute(bip39.mnemonicToSeed, mnemonic));
     Random _rng = new Random.secure();
 
-    if(appState.accountList.keys.length > 9)
-    {
+    if (appState.accountList.keys.length > 9) {
       throw Exception("Limit of 9 accounts reached!");
     }
 
@@ -141,28 +138,24 @@ class WalletManager
     String privateKey = HEX.encode(child.privateKey);
 
     Credentials credentFromHex = EthPrivateKey.fromHex(privateKey);
-    Wallet _wallet = Wallet.createNew(credentFromHex,password, _rng);
+    Wallet _wallet = Wallet.createNew(credentFromHex, password, _rng);
 
-    if(title.length == 0)
-    {
+    if (title.length == 0) {
       title = "-unnamed $slot-";
     }
 
     Map accountObject = {
-      "slot" : slot,
-      "title" : (appState.accountList.isEmpty ? "Default Account" : title),
-      "derived" : slot,
-      "data" : jsonDecode(_wallet.toJson())
+      "slot": slot,
+      "title": (appState.accountList.isEmpty ? "Default Account" : title),
+      "derived": slot,
+      "data": jsonDecode(_wallet.toJson())
     };
 
     List walletObject;
 
-    if(appState.accountList.isEmpty)
-    {
+    if (appState.accountList.isEmpty) {
       walletObject = [accountObject];
-    }
-    else
-    {
+    } else {
       walletObject = jsonDecode(await readWalletJson());
       walletObject.add(accountObject);
     }
@@ -170,125 +163,100 @@ class WalletManager
     await writeWalletJson(json);
     appState.w3dartWallet = _wallet;
 
-    if(appState.accountList.isEmpty)
-    {
+    if (appState.accountList.isEmpty) {
       appState.changeCurrentWalletId = slot;
       await authenticate(password, appState);
       await restartTokenServices(appState);
     }
-    return {"status":200, "message":""};
-
+    return {"status": 200, "message": ""};
   }
 
-  Future decryptAesWallet(String password, {bool shouldReturnMnemonicFile = false}) async
-  {
-    try
-    {
+  Future decryptAesWallet(String password, {bool shouldReturnMnemonicFile = false}) async {
+    try {
       String documentsPath = this.fileManager.documentsFolder;
       AesCrypt crypt = AesCrypt();
       crypt.setPassword(password);
       String ret = crypt.decryptTextFromFileSync(documentsPath + this.fileManager.accountFolder + mnemonicFile, utf16: true);
       return shouldReturnMnemonicFile ? ret : true;
-    }
-    on AesCryptDataException
-    {
+    } on AesCryptDataException {
       return shouldReturnMnemonicFile ? "" : false;
     }
   }
 
-  Future<Map> authenticate(String password, AvmeWallet appState) async
-  {
-    Map ret = {"status":400,"message":"Wrong password."};
+  Future<Map> authenticate(String password, AvmeWallet appState) async {
+    Map ret = {"status": 400, "message": "Wrong password."};
     bool mnemonicUnlocked = await decryptAesWallet(password);
-    if (!mnemonicUnlocked)
-    {
-      ret["message"] = "[Error: 1] "+ret["message"];
+    if (!mnemonicUnlocked) {
+      ret["message"] = "[Error: 1] " + ret["message"];
       return ret;
     }
-    try
-    {
+    try {
       print("INICIANDO loadWalletAccounts");
       await loadWalletAccounts(password, appState);
-      if(appState.accountList[0].walletObj != null)
-      {
+      if (appState.accountList[0].walletObj != null) {
         appState.w3dartWallet = appState.accountList[0].walletObj;
       }
       ret["status"] = 200;
       ret["message"] = "";
       return ret;
-    }
-    catch(e)
-    {
+    } catch (e) {
       print(e.toString());
-      ret["message"] = "[Error: 2] "+ret["message"];
+      ret["message"] = "[Error: 2] " + ret["message"];
       return ret;
     }
   }
 
   ///Decrypt accounts in a separated thread
-  Future<bool> loadWalletAccounts(String password, AvmeWallet appState) async
-  {
+  Future<bool> loadWalletAccounts(String password, AvmeWallet appState) async {
     List<dynamic> file = jsonDecode(await readWalletJson());
-    return await services.loadWalletAccounts(file,password, appState);
+    return await services.loadWalletAccounts(file, password, appState);
   }
 
-  Future<void> startBalanceSubscription(AvmeWallet appState) async
-  {
-    if(!appState.services.containsKey("balanceSubscription"))
-    {
+  Future<void> startBalanceSubscription(AvmeWallet appState) async {
+    if (!appState.services.containsKey("balanceSubscription")) {
       bool res = await services.balanceSubscription(appState);
       print("services.balanceSubscription returned: $res");
     }
   }
 
-  void stopBalanceSubscription(AvmeWallet appState)
-  {
-    if(appState.services.containsKey("balanceSubscription"))
-      appState.killService("balanceSubscription");
+  void stopBalanceSubscription(AvmeWallet appState) {
+    if (appState.services.containsKey("balanceSubscription")) appState.killService("balanceSubscription");
   }
 
-  Future<void> startValueSubscription(AvmeWallet appState) async
-  {
-    if(!appState.services.containsKey("valueSubscription"))
-      await services.valueSubscription(appState);
+  Future<void> startValueSubscription(AvmeWallet appState) async {
+    if (!appState.services.containsKey("valueSubscription")) await services.valueSubscription(appState);
   }
 
-  void stopValueSubscription(AvmeWallet appState)
-  {
-    if(appState.services.containsKey("valueSubscription"))
-      appState.killService("valueSubscription");
+  void stopValueSubscription(AvmeWallet appState) {
+    if (appState.services.containsKey("valueSubscription")) appState.killService("valueSubscription");
   }
 
-  Future<Map<String,dynamic>> sendTransaction(AvmeWallet wallet, String address, BigInt amount, String token, {List<ValueNotifier> listNotifier}) async
-  {
-    if (!await services.hasEnoughBalanceToPayTaxes(wallet.currentAccount.networkTokenBalance))
-    {
-      return {"title" : "Attention", "status": 500, "message": "Not enough AVAX to complete the transaction."};
+  Future<Map<String, dynamic>> sendTransaction(AvmeWallet wallet, String address, BigInt amount, String token,
+      {List<ValueNotifier> listNotifier}) async {
+    if (!await services.hasEnoughBalanceToPayTaxes(wallet.currentAccount.networkTokenBalance)) {
+      return {"title": "Attention", "status": 500, "message": "Not enough AVAX to complete the transaction."};
     }
     wallet.lastTransactionWasSucessful.retrievingData = true;
     String url = await services.sendTransaction(wallet, address, amount, token, listNotifier: listNotifier);
     return {"title": "", "status": 200, "message": url};
   }
 
-  Future<Map<int,List>> previewAvaxBalance(String password) async
-  {
+  Future<Map<int, List>> previewAvaxBalance(String password) async {
     String mnemonic = await decryptAesWallet(password, shouldReturnMnemonicFile: true);
-    BIP32 node = bip32.BIP32.fromSeed(await compute(bip39.mnemonicToSeed,mnemonic));
+    BIP32 node = bip32.BIP32.fromSeed(await compute(bip39.mnemonicToSeed, mnemonic));
     BIP32 child;
     Credentials credentFromHex;
     Map<int, String> pkeyMap = {};
-    for(int slot = 0; slot <= 9; slot++)
-    {
+    for (int slot = 0; slot <= 9; slot++) {
       child = node.derivePath("m/44'/60'/0'/0/$slot");
       credentFromHex = EthPrivateKey.fromHex(HEX.encode(child.privateKey));
       pkeyMap[slot] = (await credentFromHex.extractAddress()).toString();
     }
-    Map<int,List> data = await services.requestBalanceByAddress(pkeyMap);
+    Map<int, List> data = await services.requestBalanceByAddress(pkeyMap);
     return data;
   }
 
-  ERC20 signer(String contractAddress, int chainId, ContractAbi abi)
-  {
+  ERC20 signer(String contractAddress, int chainId, ContractAbi abi) {
     Client httpClient = Client();
     Web3Client ethClient = Web3Client(url, httpClient);
 
@@ -296,8 +264,7 @@ class WalletManager
     return ERC20(abi, address: _ethereumAddress, client: ethClient, chainId: chainId);
   }
 
-  Future<void> restartTokenServices(AvmeWallet app) async
-  {
+  Future<void> restartTokenServices(AvmeWallet app) async {
     stopValueSubscription(app);
     await startValueSubscription(app);
     stopBalanceSubscription(app);
@@ -305,8 +272,7 @@ class WalletManager
   }
 
   ///Removes token from appState Queue
-  Future<void> removeToken(AvmeWallet app, String tokenName) async
-  {
+  Future<void> removeToken(AvmeWallet app, String tokenName) async {
     print("REMOVE TOKEN $tokenName");
     Token token = app.activeContracts.token;
     token.removeToken(tokenName);
@@ -322,28 +288,22 @@ class WalletManager
 
     await app.activeContracts.removeToken(tokenName);
     await restartTokenServices(app);
-
   }
 
-  Future<void> addNewToken(BuildContext context, String token, {List<ValueNotifier> notifier = const []})
-  async {
-    if(notifier.length > 0)
-    {
+  Future<void> addNewToken(BuildContext context, String token, {List<ValueNotifier> notifier = const []}) async {
+    if (notifier.length > 0) {
       notifier[0].value = 20;
       notifier[1].value = "Requesting data...";
       AvmeWallet app = Provider.of<AvmeWallet>(context, listen: false);
       bool abiMounted = await app.activeContracts.sContracts.enableContract(token);
-      if(!abiMounted)
-        return;
+      if (!abiMounted) return;
       notifier[0].value = 60;
       notifier[1].value = "Saving token data...";
       await app.activeContracts.addToken(token);
       notifier[0].value = 90;
       notifier[1].value = "Restarting services...";
       await restartTokenServices(app);
-    }
-    else
-    {
+    } else {
       AvmeWallet app = Provider.of<AvmeWallet>(context, listen: false);
       app.activeContracts.sContracts.enableContract(token);
       await app.activeContracts.addToken(token);
