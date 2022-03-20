@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 class GradientContainer extends StatefulWidget {
-
   final Widget child;
 
   ///Tween are "state" or states of the transition our explicit transition
@@ -13,9 +12,7 @@ class GradientContainer extends StatefulWidget {
   _GradientContainerState createState() => _GradientContainerState();
 }
 
-class _GradientContainerState extends State<GradientContainer>
-    with TickerProviderStateMixin {
-
+class _GradientContainerState extends State<GradientContainer> with TickerProviderStateMixin {
   // final DecorationTween decorationTween = DecorationTween(
   //   begin: BoxDecoration(
   //       borderRadius: BorderRadius.circular(8),
@@ -44,20 +41,18 @@ class _GradientContainerState extends State<GradientContainer>
   AnimationController _controller;
 
   @override
-  void initState()
-  {
+  void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 30),
-    ///Add uncomment this line to enable the transitions
-    // )..repeat(reverse: true);
-    );
+
+      ///Add uncomment this line to enable the transitions
+    )..repeat(reverse: true);
   }
 
   @override
-  void dispose()
-  {
+  void dispose() {
     _controller.dispose();
     super.dispose();
   }
