@@ -33,9 +33,19 @@ class AvmeWallet extends ChangeNotifier {
   bool fingerprintAuth = false;
   bool debugPanel = false;
   final ActiveContracts activeContracts;
+  String networkUrl = '';
+  int networkPort = 0;
 
   AvmeWallet(this.fileManager, this.activeContracts) {
     this.debugMode = env["DEBUG_MODE"] == "TRUE" ? true : false;
+    this.networkUrl = env["NETWORK_URL"];
+
+    try {
+      this.networkPort = int.parse(env["NETWORK_PORT"]);
+    } catch (e) {
+      this.networkPort = 443;
+    }
+
     this.walletManager = WalletManager(this.fileManager);
   }
 
@@ -59,8 +69,7 @@ class AvmeWallet extends ChangeNotifier {
     notifyListeners();
   }
 
-  TransactionInformation lastTransactionWasSucessful =
-      new TransactionInformation();
+  TransactionInformation lastTransactionWasSucessful = new TransactionInformation();
 
   void wasLastTransactionInformationSuccessful() {
     lastTransactionWasSucessful.addListener(() {
@@ -117,8 +126,7 @@ class AvmeWallet extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> login(String password, BuildContext context,
-      {bool display = false}) async {
+  Future<bool> login(String password, BuildContext context, {bool display = false}) async {
     bool auth = false;
     ValueNotifier<int> percentage = ValueNotifier(0);
     ValueNotifier<String> label = ValueNotifier("Loading...");
@@ -130,9 +138,7 @@ class AvmeWallet extends ChangeNotifier {
                 builder: (builder, setState) {
                   return ProgressPopup(
                     listNotifier: loadingNotifier,
-                    future: _initFirstLogin(
-                            context, password, loadingNotifier, display)
-                        .then((result) {
+                    future: _initFirstLogin(context, password, loadingNotifier, display).then((result) {
                       auth = result[0];
                       return [Text(result[1])];
                     }),
@@ -141,13 +147,11 @@ class AvmeWallet extends ChangeNotifier {
                 },
               ));
     else
-      auth = (await _initFirstLogin(
-          context, password, loadingNotifier, display))[0];
+      auth = (await _initFirstLogin(context, password, loadingNotifier, display))[0];
     return auth;
   }
 
-  Future<List> _initFirstLogin(BuildContext context, String password,
-      List<ValueNotifier> loadingNotifier, bool display) async {
+  Future<List> _initFirstLogin(BuildContext context, String password, List<ValueNotifier> loadingNotifier, bool display) async {
     loadingNotifier[0].value = 10;
     loadingNotifier[1].value = "Authenticating...";
     Map authMap = await walletManager.authenticate(password, this);
@@ -166,8 +170,7 @@ class AvmeWallet extends ChangeNotifier {
 }
 
 class WalletInterface {
-  static BuildContext _currentContext =
-      NavigationService.globalContext.currentContext;
+  static BuildContext _currentContext = NavigationService.globalContext.currentContext;
 
   AvmeWallet _wallet;
 
@@ -181,8 +184,7 @@ class WalletInterface {
   final bool listen;
 
   WalletInterface({this.listen = true}) {
-    this._wallet =
-        Provider.of<AvmeWallet>(_currentContext, listen: this.listen);
+    this._wallet = Provider.of<AvmeWallet>(_currentContext, listen: this.listen);
     _enabledTokens = this.wallet.activeContracts.tokens;
     _networkToken = this.wallet.networkToken;
     _avaxRaw = this._networkToken.decimal;

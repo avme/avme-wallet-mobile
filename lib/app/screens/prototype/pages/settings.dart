@@ -34,6 +34,11 @@ class _SettingsState extends State<Settings> {
     //always starts false
     bool debugMode = Provider.of<AvmeWallet>(context, listen: false).debugMode;
     //bool fingerprintAuth = Provider.of<AvmeWallet>(context, listen: false).fingerprintAuth;
+    // final String walletApi = 'api.avme.io:443/';
+    // final String websocketServer = 'api.avax.network:443/ext/bc/C/rpc';
+    final String walletApi = Provider.of<AvmeWallet>(context, listen: false).networkUrl;
+    final String websocketServer = Provider.of<AvmeWallet>(context, listen: false).networkUrl;
+    final int websocketClient = Provider.of<AvmeWallet>(context, listen: false).networkPort;
     return Theme(
       data: screenTheme,
       child: Scaffold(
@@ -122,17 +127,17 @@ class _SettingsState extends State<Settings> {
                     ListTile(
                       title: Text("Wallet API", style: TextStyle(fontSize: SizeConfig.fontSizeLarge)),
                       leading: Icon(Icons.web),
-                      subtitle: Text("api.avme.io:443/", style: TextStyle(fontSize: SizeConfig.fontSize * 1.2)),
+                      subtitle: Text(websocketServer, style: TextStyle(fontSize: SizeConfig.fontSize * 1.2)),
                     ),
                     ListTile(
                       title: Text("Websocket Server", style: TextStyle(fontSize: SizeConfig.fontSizeLarge)),
                       leading: Icon(Icons.alternate_email),
-                      subtitle: Text("api.avax.network:443/ext/bc/C/rpc", style: TextStyle(fontSize: SizeConfig.fontSize * 1.2)),
+                      subtitle: Text(websocketServer, style: TextStyle(fontSize: SizeConfig.fontSize * 1.2)),
                     ),
                     ListTile(
                       title: Text("Websocket Client", style: TextStyle(fontSize: SizeConfig.fontSizeLarge)),
                       leading: Icon(Icons.tag),
-                      subtitle: Text("Port: 4812", style: TextStyle(fontSize: SizeConfig.fontSize * 1.2)),
+                      subtitle: Text("Port: $websocketClient", style: TextStyle(fontSize: SizeConfig.fontSize * 1.2)),
                     ),
                   ]))),
           ),
