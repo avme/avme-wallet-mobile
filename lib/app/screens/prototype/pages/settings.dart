@@ -36,7 +36,7 @@ class _SettingsState extends State<Settings> {
     //bool fingerprintAuth = Provider.of<AvmeWallet>(context, listen: false).fingerprintAuth;
     // final String walletApi = 'api.avme.io:443/';
     // final String websocketServer = 'api.avax.network:443/ext/bc/C/rpc';
-    final String walletApi = Provider.of<AvmeWallet>(context, listen: false).networkUrl;
+    //final String walletApi = Provider.of<AvmeWallet>(context, listen: false).networkUrl;
     final String websocketServer = Provider.of<AvmeWallet>(context, listen: false).networkUrl;
     final int websocketClient = Provider.of<AvmeWallet>(context, listen: false).networkPort;
     return Theme(

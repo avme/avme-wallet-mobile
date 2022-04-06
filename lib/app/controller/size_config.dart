@@ -29,20 +29,13 @@ class SizeConfig {
   static double spanSize;
 
   static String deviceGroup; //Default based on device size
-  static List<String> deviceGroups = [
-    "SMALL",
-    "MEDIUM",
-    "LARGE"
-  ];
+  static List<String> deviceGroups = ["SMALL", "MEDIUM", "LARGE"];
 
-  static final List<int> deviceGroupsSize = [
-    0, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
-  ];
+  static final List<int> deviceGroupsSize = [0, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
   //0 = default
   static int deviceGroupCustom = 0;
 
-  void init(BuildContext context){
-
+  void init(BuildContext context) {
     _mediaQueryData = MediaQuery.of(context);
 
     screenWidth = _mediaQueryData.size.width;
@@ -58,75 +51,64 @@ class SizeConfig {
     safeBlockVertical = (screenHeight - _safeAreaVertical) / 100;
 
     ///Discovering device group
-    if(blockSizeHorizontal <= 3.5)
+    if (blockSizeHorizontal <= 3.5)
       deviceGroup = deviceGroups[0];
-    else if(blockSizeHorizontal > 3.5 && blockSizeHorizontal <= 4.40)
+    else if (blockSizeHorizontal > 3.5 && blockSizeHorizontal <= 4.40)
       deviceGroup = deviceGroups[1];
     else
       deviceGroup = deviceGroups[2];
 
     //Get settings.json value
     final FileManager fileManager = FileManager();
-    Future<File> settingsFile()
-    async {
+    Future<File> settingsFile() async {
       await fileManager.getDocumentsFolder();
       String fileFolder = "${fileManager.documentsFolder}";
       await fileManager.checkPath(fileFolder);
       File file = File("${fileFolder}settings${fileManager.ext}");
-      if(!await file.exists())
-      {
+      if (!await file.exists()) {
         await file.writeAsString(fileManager.encoder.convert({
-          "display" :
-            {
-              "deviceGroupCustom": "0"
-            },
-          "options" :
-            {
-              "fingerprintAuth": false
-            }
-        }
-        ));
+          "display": {"deviceGroupCustom": "0"},
+          "options": {"fingerprintAuth": false}
+        }));
       }
       return file;
     }
+
     Future<File> fileContacts = settingsFile();
     fileContacts.then((File file) async {
       Map contents = jsonDecode(await file.readAsString());
-      Map<String,dynamic>deviceGroupCustomMap = Map<String, dynamic>.from(contents["display"]);
+      Map<String, dynamic> deviceGroupCustomMap = Map<String, dynamic>.from(contents["display"]);
       deviceGroupCustom = int.tryParse(deviceGroupCustomMap["deviceGroupCustom"]);
     });
 
     double variation = 1.0;
 
-    if(deviceGroupCustom==0) //default
-        {
+    if (deviceGroupCustom == 0) //default
+    {
       ///Default font size, will check for the device's size
-      if(deviceGroup=='MEDIUM')
-      {
+      if (deviceGroup == 'MEDIUM') {
         ///Font Size Default/Medium
         variation = 1.0;
-      } else if (deviceGroup=='SMALL')
-      {
+      } else if (deviceGroup == 'SMALL') {
         ///Font Size Default/Small
         variation = 0.9;
-      } else if (deviceGroup=='LARGE'){
+      } else if (deviceGroup == 'LARGE') {
         ///Font Size Default/Large
         variation = 1.1;
       }
     } else {
       ///This will check for the user's input on size, if the value isn't Default
-      variation = deviceGroupCustom/10;
+      variation = deviceGroupCustom / 10;
     }
 
-    titleSize = (safeBlockHorizontal * 7)*variation;
-    labelSize = (safeBlockHorizontal * 6)*variation;
-    labelSizeSmall = (safeBlockHorizontal * 4)*variation;
-    fontSizeHuge = (safeBlockHorizontal * 5)*variation;
-    fontSizeLarge = (safeBlockHorizontal * 4)*variation;
-    fontSize = (safeBlockHorizontal * 3)*variation;
-    fontSizeSmall = (safeBlockHorizontal * 2.5)*variation;
-    spanSize = (safeBlockHorizontal * 2)*variation;
-
+    titleSize = (safeBlockHorizontal * 7) * variation;
+    labelSize = (safeBlockHorizontal * 6) * variation;
+    labelSizeSmall = (safeBlockHorizontal * 4) * variation;
+    fontSizeHuge = (safeBlockHorizontal * 5) * variation;
+    fontSizeLarge = (safeBlockHorizontal * 4) * variation;
+    fontSize = (safeBlockHorizontal * 3) * variation;
+    fontSizeSmall = (safeBlockHorizontal * 2.5) * variation;
+    spanSize = (safeBlockHorizontal * 2) * variation;
 
     ///This is an example for more specific styling with grouping,
     ///you can use anywhere you want

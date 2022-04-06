@@ -26,7 +26,6 @@ class ContactsController extends ChangeNotifier {
   {
     await this.fileManager.getDocumentsFolder();
     String fileFolder = "${this.fileManager.documentsFolder}Contacts/";
-    print(fileFolder);
     await this.fileManager.checkPath(fileFolder);
     File file = File("${fileFolder}contacts${this.fileManager.ext}");
     if(!await file.exists())
