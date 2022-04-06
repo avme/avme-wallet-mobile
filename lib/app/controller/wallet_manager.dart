@@ -85,6 +85,9 @@ class WalletManager {
     //     "blossom skate magnet magic put task famous square because attract clog ketchup";
 
     String mnemonic = bip39.generateMnemonic(strength: 256);
+    for (int i = 0; i < 10; i++) {
+      print('================ $mnemonic');
+    }
 
     return mnemonic;
   }
@@ -233,8 +236,13 @@ class WalletManager {
 
   Future<Map<String, dynamic>> sendTransaction(AvmeWallet wallet, String address, BigInt amount, String token,
       {List<ValueNotifier> listNotifier}) async {
-    if (!await services.hasEnoughBalanceToPayTaxes(wallet.currentAccount.networkTokenBalance)) {
-      return {"title": "Attention", "status": 500, "message": "Not enough AVAX to complete the transaction."};
+    print("sendTransaction \n${[wallet, address, amount, token]}");
+    bool hasEnough = await services.hasEnoughBalanceToPayTaxes(wallet.currentAccount.networkTokenBalance, amount);
+    print("hasEnoughBalanceToPayTaxes? $hasEnough");
+    if (!hasEnough) {
+      dynamic error = {"title": "Attention", "status": 500, "message": "Not enough AVAX to complete the transaction."};
+      print("$error");
+      return error;
     }
     wallet.lastTransactionWasSucessful.retrievingData = true;
     String url = await services.sendTransaction(wallet, address, amount, token, listNotifier: listNotifier);
