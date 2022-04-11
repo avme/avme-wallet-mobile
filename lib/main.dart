@@ -8,7 +8,6 @@ import 'package:avme_wallet/app/model/app.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'app/controller/file_manager.dart';
 import 'app/model/active_contracts.dart';
 
@@ -19,7 +18,6 @@ main() async{
   appConnection.initialize();
 
   await DotEnv.load();
-  await Hive.initFlutter();
   FileManager fileManager = FileManager();
   ActiveContracts activeContracts = ActiveContracts(fileManager);
   runApp(MultiProvider(

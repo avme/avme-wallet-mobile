@@ -12,9 +12,7 @@ import '../../main.dart';
 import 'active_contracts.dart';
 import 'network_token.dart';
 import 'transaction_information.dart';
-import 'package:hive/hive.dart';
 import 'package:web3dart/credentials.dart';
-
 import 'account_item.dart';
 import 'accounts_state.dart';
 
