@@ -96,7 +96,7 @@ class AvmeWallet extends ChangeNotifier implements AppWallet, AppInfo
     {
       print("killService($key)");
       services[key].kill(priority: Isolate.immediate);
-      services.remove(key);
+      services.remove(services[key]);
     }
   }
 

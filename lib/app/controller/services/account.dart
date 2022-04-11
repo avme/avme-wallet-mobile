@@ -70,7 +70,7 @@ void stopLoadWalletAccountsThreads()
     {
       isolateList[i].kill(priority: Isolate.immediate);
       print("killing thread ${i.toString()}");
-      isolateList[i] = null;
+      isolateList.remove(isolateList[i]);
     }
   }
   isolateList = [];

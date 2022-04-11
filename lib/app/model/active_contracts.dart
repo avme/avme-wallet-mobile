@@ -71,7 +71,7 @@ class ActiveContracts extends ChangeNotifier
     {
       print('ActiveContracts | KILL "$key"');
       services[key].kill(priority: Isolate.immediate);
-      services.remove(key);
+      services.remove(services[key]);
     }
   }
 
