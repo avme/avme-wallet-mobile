@@ -31,24 +31,9 @@ class ContactsController extends ChangeNotifier {
     File file = File("${fileFolder}contacts${this.fileManager.ext}");
     if(!await file.exists())
     {
-      /*
       await file.writeAsString(this.fileManager.encoder.convert({
-        "contacts" : [
-          {
-            "name": "User One",
-            "address": "0x4214496147525148769976fb554a8388117e25b1"
-          },
-          {
-            "name": "User Two",
-            "address": "0x4214496147525148769976fb554a8388117e25b1"
-          },
-          {
-            "name": "User Three",
-            "address": "0x4214496147525148769976fb554a8388117e25b1"
-          }
-        ]
+        "contacts" :[]
       }));
-    */
     }
     return file;
   }
