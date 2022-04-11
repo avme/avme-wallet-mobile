@@ -777,9 +777,7 @@ class _MnemonicsPreAccCreationState extends State<MnemonicsPreAccCreation> {
                                         mnemonic: widget.walletSeed)
                                     .then((result) {
                                   // Creates the user account
-                                  widget.appWalletManager
-                                      .changeCurrentWalletId = 0;
-                                  //Navigator.pop(context);
+                                  widget.appWalletManager.selectedId = 0;
                                   Navigator.pushReplacementNamed(
                                       context, "app/overview");
                                   NotificationBar().show(context,

@@ -172,9 +172,8 @@ class WalletManager
 
     if(appState.accountList.isEmpty)
     {
-      appState.changeCurrentWalletId = slot;
       await authenticate(password, appState);
-      await restartTokenServices(appState);
+      appState.selectedId = slot;
     }
     return {"status":200, "message":""};
 

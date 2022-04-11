@@ -160,7 +160,6 @@ class _LoginState extends State<Login> {
           SimpleWarning(
             title: "Warning",
             text:
-            // "Wrong password, try again."
             data["message"]
           )
       );
@@ -170,7 +169,7 @@ class _LoginState extends State<Login> {
     else
     {
       Navigator.pop(_loadingPopupContext);
-      appState.changeCurrentWalletId = 0;
+      appState.selectedId = 0;
       snack("Account #0 selected", context);
       Navigator.pushReplacementNamed(context, "/home");
     }
@@ -204,5 +203,4 @@ class LoginIndicator extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
     return false;
   }
-
 }

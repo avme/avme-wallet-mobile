@@ -125,9 +125,7 @@ class _AccountsState extends State<Accounts> {
             onTap: (){
               setState(() {
                 snack("Account #$key selected",context);
-                appState.setCurrentWallet(key);
-                // appState.changeCurrentWalletId = key;
-                // appState.walletManager.stopBalanceSubscription(appState);
+                appState.selectedId = key;
               });
             },
           )

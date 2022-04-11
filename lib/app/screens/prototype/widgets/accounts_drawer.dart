@@ -66,7 +66,7 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
             GradientCard(
                 address: accountObject.address,
                 onPressed: (){
-                  widget.app.setCurrentWallet(key);
+                  widget.app.selectedId = key;
                   Navigator.of(context).pop();
                   NotificationBar().show(context, text:"Account \"${widget.app.accountList[key].title}\" selected.");
                 },

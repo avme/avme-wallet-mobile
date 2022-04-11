@@ -2,6 +2,8 @@ import 'dart:isolate';
 
 import 'package:avme_wallet/app/controller/file_manager.dart';
 import 'package:avme_wallet/app/controller/wallet_manager.dart';
+import 'package:avme_wallet/app/interface/info.dart';
+import 'package:avme_wallet/app/interface/wallet.dart';
 import 'package:avme_wallet/app/model/token.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/popup.dart';
 import 'package:decimal/decimal.dart';
@@ -16,14 +18,14 @@ import 'package:web3dart/credentials.dart';
 import 'account_item.dart';
 import 'accounts_state.dart';
 
-class AvmeWallet extends ChangeNotifier
+class AvmeWallet extends ChangeNotifier implements AppWallet, AppInfo
 {
   final FileManager fileManager;
   WalletManager walletManager;
   Wallet _w3dartWallet;
   Map<int,AccountObject> _accountList = {};
   String appTitle = "AVME Wallet";
-  int _currentWalletId;
+  int _selectedId;
   Map<String, Isolate> services = {};
   // Token token = Token();
   NetworkToken networkToken = NetworkToken();
@@ -43,17 +45,24 @@ class AvmeWallet extends ChangeNotifier
 
   AccountObject get currentAccount => _accountList[currentWalletId];
 
-  int get currentWalletId => _currentWalletId;
+  int get currentWalletId => selectedId;
 
-  set w3dartWallet (Wallet value) => _w3dartWallet = value;
+  @override
+  set selectedId(int value){
+    _selectedId = value;
 
-  set setAccountList (Map<int,AccountObject> value) {
-    _accountList = value;
+    walletManager.restartTokenServices(this);
+
     notifyListeners();
   }
 
-  set changeCurrentWalletId (int value){
-    _currentWalletId = value;
+  int get selectedId => _selectedId;
+
+  set w3dartWallet (Wallet value) => _w3dartWallet = value;
+
+  @override
+  set setAccountList (Map<int,AccountObject> value) {
+    _accountList = value;
     notifyListeners();
   }
 
@@ -112,11 +121,11 @@ class AvmeWallet extends ChangeNotifier
     notifyListeners();
   }
 
-  void setCurrentWallet(int id)
-  {
-    changeCurrentWalletId = id;
-    walletManager.restartTokenServices(this);
-  }
+  // void setCurrentWallet(int id)
+  // {
+  //   changeCurrentWalletId = id;
+  //   walletManager.restartTokenServices(this);
+  // }
 
   void toggleDebugPanel()
   {

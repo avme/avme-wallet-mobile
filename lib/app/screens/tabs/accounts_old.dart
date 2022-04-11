@@ -118,7 +118,7 @@ class _AccountsState extends State<AccountsOld>
             onTap: () {
               // insert set state if necessary
               snack("Account #$index selected",context);
-              wallet.changeCurrentWalletId = index;
+              wallet.selectedId = 0;
               wallet.killService("watchBalanceChanges");
               wallet.killService("watchTokenChanges");
               setState(() {

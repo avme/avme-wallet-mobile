@@ -182,7 +182,8 @@ class _LoginState extends State<Login> {
       bool valid = await app.login(this._passphrase.text, context, display:true);
       if(valid)
       {
-        app.changeCurrentWalletId = 0;
+        // app.changeCurrentWalletId = 0;
+        app.selectedId = 0;
         Navigator.pushReplacementNamed(context, "app/overview");
       }
     }
