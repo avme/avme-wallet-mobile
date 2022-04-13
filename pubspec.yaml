@@ -53,7 +53,6 @@ dependencies:
   syncfusion_flutter_charts: ^19.1.69+1
   decimal: ^1.2.0
   graphql_flutter: ^5.0.0
-  hive_flutter: ^1.1.0
   pie_chart: ^5.0.0
   simple_connection_checker: ^0.2.1
   overlay_support: ^1.2.1
