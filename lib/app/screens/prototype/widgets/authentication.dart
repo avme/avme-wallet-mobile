@@ -20,8 +20,7 @@ class Authentication {
   ///maybe not use this
   Future<bool> promptFingerprint() async {
     try {
-      await FlutterLocker.retrieve(RetrieveSecretRequest(key,
-          AndroidPrompt('Authenticate', 'Cancel'), IOsPrompt('Authenticate')));
+      await FlutterLocker.retrieve(RetrieveSecretRequest(key, AndroidPrompt('Authenticate', 'Cancel'), IOsPrompt('Authenticate')));
 
       return true;
     } on Exception catch (exception) {
@@ -29,30 +28,27 @@ class Authentication {
     }
   }
 
-  Future<String> saveSecret(String secret) async {
+  ///Made this future to return a dynamic variable.  It will always return a String if it is a success, and an expection if failure
+  Future<dynamic> saveSecret(String secret) async {
     try {
       await FlutterLocker.save(
         SaveSecretRequest(
             key,
             secret,
             AndroidPrompt('Enable Fingerprint', 'Cancel',
-                description:
-                    'Scan any configured fingerprint in your phone to enable fingerprint authentication on login')),
+                description: 'Scan any configured fingerprint in your phone to enable fingerprint authentication on login')),
       );
 
       return 'Secret saved, secret: $secret';
     } on Exception catch (exception) {
-      return '$exception';
+      return exception;
     }
   }
 
   Future<dynamic> retrieveSecret() async {
     try {
       final retrieved = await FlutterLocker.retrieve(RetrieveSecretRequest(
-          key,
-          AndroidPrompt('Authenticate', 'Cancel',
-              description: 'Scan fingerprint to authenticate'),
-          IOsPrompt('Authenticate')));
+          key, AndroidPrompt('Authenticate', 'Cancel', description: 'Scan fingerprint to authenticate'), IOsPrompt('Authenticate')));
 
       return 'Secret retrieved, secret: $retrieved';
     } on Exception catch (exception) {
@@ -65,9 +61,7 @@ class Authentication {
     try {
       final retrieved = await FlutterLocker.retrieve(RetrieveSecretRequest(
           key,
-          AndroidPrompt('Disable fingerprint', 'Cancel',
-              description:
-                  'Scan fingerprint to disable fingerprint authentication'),
+          AndroidPrompt('Disable fingerprint', 'Cancel', description: 'Scan fingerprint to disable fingerprint authentication'),
           IOsPrompt('Disable fingerprint')));
 
       return 'Secret retrieved, secret: $retrieved';
