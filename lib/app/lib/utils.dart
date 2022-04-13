@@ -277,3 +277,22 @@ Future<Uint8List> captureWidget(GlobalKey key) async
   final pngBytes = byteData.buffer.asUint8List();
   return pngBytes;
 }
+
+void printOk(String text) {
+  print('\x1B[34m$text\x1B[0m');
+}
+
+void printWarning(String text) {
+  print('\x1B[33m$text\x1B[0m');
+}
+
+void printError(String text) {
+  print('\x1B[31m$text\x1B[0m');
+}
+
+int randomRangeInt(int min, int max)
+{
+  Random random = Random();
+  int num = min + random.nextInt(max - min);
+  return num;
+}
