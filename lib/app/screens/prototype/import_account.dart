@@ -1,8 +1,11 @@
 // @dart=2.12
+import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:avme_wallet/app/controller/size_config.dart';
 import 'package:avme_wallet/app/model/app.dart';
+import 'package:avme_wallet/app/screens/prototype/widgets/authentication.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/button.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/card.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/neon_button.dart';
@@ -15,6 +18,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:bip39/bip39.dart' as bip39;
+
+import '../../controller/file_manager.dart';
 
 class ImportAccount extends StatefulWidget {
   const ImportAccount({Key? key}) : super(key: key);
@@ -43,6 +48,8 @@ class _ImportAccountState extends State<ImportAccount> {
   );
 
   bool swap = false;
+
+  Authentication _authApi = Authentication();
 
   @override
   void initState() {
@@ -186,8 +193,7 @@ class _ImportAccountState extends State<ImportAccount> {
     List<String> responseList = responseNew.split(' ');
     print('responseNew $responseNew');
     print('List response $responseList');
-    print(
-        'responseList.length ${responseList.length} -- ${responseList.length < 24}');
+    print('responseList.length ${responseList.length} -- ${responseList.length < 24}');
     if (controllerMnemonic.text == '' || responseList.length < 24) {
       print('test1');
       return [false, responseNew];
@@ -228,10 +234,7 @@ class _ImportAccountState extends State<ImportAccount> {
             flex: 4,
             child: Column(
               children: [
-                Text("Import Wallet",
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: SizeConfig.titleSize)),
+                Text("Import Wallet", style: TextStyle(fontWeight: FontWeight.bold, fontSize: SizeConfig.titleSize)),
               ],
             ),
           ),
@@ -259,12 +262,7 @@ class _ImportAccountState extends State<ImportAccount> {
       body: Container(
         decoration: BoxDecoration(
             gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: <Color>[
-              AppColors.purpleVariant1,
-              AppColors.purpleBlue
-            ])),
+                begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: <Color>[AppColors.purpleVariant1, AppColors.purpleBlue])),
         child: Center(
           child: SingleChildScrollView(
             physics: BouncingScrollPhysics(),
@@ -307,13 +305,9 @@ class _ImportAccountState extends State<ImportAccount> {
                                   textAlign: TextAlign.center,
                                 ),
                                 ConstrainedBox(
-                                  constraints: BoxConstraints(
-                                      maxHeight:
-                                          SizeConfig.safeBlockVertical * 50),
+                                  constraints: BoxConstraints(maxHeight: SizeConfig.safeBlockVertical * 50),
                                   child: Padding(
-                                    padding: EdgeInsets.only(
-                                        bottom:
-                                            SizeConfig.blockSizeVertical * 2),
+                                    padding: EdgeInsets.only(bottom: SizeConfig.blockSizeVertical * 2),
                                     child: Scrollbar(
                                         isAlwaysShown: true,
                                         thickness: 4,
@@ -323,8 +317,7 @@ class _ImportAccountState extends State<ImportAccount> {
                                           child: Column(
                                             children: [
                                               Padding(
-                                                padding: const EdgeInsets.only(
-                                                    top: 16),
+                                                padding: const EdgeInsets.only(top: 16),
                                                 child: createList(),
                                               ),
                                             ],
@@ -337,13 +330,11 @@ class _ImportAccountState extends State<ImportAccount> {
                                         padding: const EdgeInsets.all(0),
                                       )
                                     : Padding(
-                                        padding:
-                                            const EdgeInsets.only(bottom: 8.0),
+                                        padding: const EdgeInsets.only(bottom: 8.0),
                                         child: Text(
                                           invalidMnemonic,
                                           textAlign: TextAlign.center,
-                                          style: AppTextStyles.span
-                                              .copyWith(color: Colors.red),
+                                          style: AppTextStyles.span.copyWith(color: Colors.red),
                                         ),
                                       ),
                                 AppNeonButton(
@@ -351,26 +342,20 @@ class _ImportAccountState extends State<ImportAccount> {
                                       List<dynamic> response = validate();
                                       bool validated = response[0];
                                       mnemonicString = response[1];
-                                      print(
-                                          'response: $validated, $mnemonicString');
+                                      print('response: $validated, $mnemonicString');
                                       if (validated == false) {
                                         setState(() {
-                                          invalidMnemonic =
-                                              'One or more words are missing';
+                                          invalidMnemonic = 'One or more words are missing';
                                           isAllFilled = false;
                                         });
                                       } else {
-                                        if (await appWalletManager.walletManager
-                                            .checkMnemonic(
-                                                phrase: mnemonicString,
-                                                phraseCount: 24)) {
+                                        if (await appWalletManager.walletManager.checkMnemonic(phrase: mnemonicString, phraseCount: 24)) {
                                           swap = !swap;
                                           setState(() {});
                                         } else {
                                           print('what');
                                           setState(() {
-                                            invalidMnemonic =
-                                                'Words do not correspond to mnemonic dictionary';
+                                            invalidMnemonic = 'Words do not correspond to mnemonic dictionary';
                                             isAllFilled = false;
                                           });
                                         }
@@ -408,15 +393,11 @@ class _ImportAccountState extends State<ImportAccount> {
         children: [
           Text(
             " $count. ",
-            style: TextStyle(
-                color: Colors.blue, fontSize: SizeConfig.fontSizeHuge),
+            style: TextStyle(color: Colors.blue, fontSize: SizeConfig.fontSizeHuge),
           ),
           Text(
             element,
-            style: TextStyle(
-                color: Colors.white70,
-                fontWeight: FontWeight.bold,
-                fontSize: SizeConfig.fontSizeHuge),
+            style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: SizeConfig.fontSizeHuge),
           ),
         ],
       ));
@@ -459,23 +440,17 @@ class _ImportAccountState extends State<ImportAccount> {
                     return AppPopupWidget(
                         canClose: true,
                         title: "Review seed",
-                        padding: EdgeInsets.only(
-                            left: 32, right: 32, top: 16, bottom: 8),
+                        padding: EdgeInsets.only(left: 32, right: 32, top: 16, bottom: 8),
                         cancelable: false,
                         children: [
-                          Text('These were the words you typed previously',
-                              style: TextStyle(
-                                  fontSize:
-                                      SizeConfig.fontSizeLarge * 0.5 + 8)),
+                          Text('These were the words you typed previously', style: TextStyle(fontSize: SizeConfig.fontSizeLarge * 0.5 + 8)),
                           Padding(
-                            padding: EdgeInsets.symmetric(
-                                vertical: SizeConfig.blockSizeVertical),
+                            padding: EdgeInsets.symmetric(vertical: SizeConfig.blockSizeVertical),
                             child: Divider(),
                           ),
                           getSeedList(),
                           Padding(
-                            padding: EdgeInsets.symmetric(
-                                vertical: SizeConfig.blockSizeVertical),
+                            padding: EdgeInsets.symmetric(vertical: SizeConfig.blockSizeVertical),
                             child: Divider(),
                           ),
                         ],
@@ -489,27 +464,15 @@ class _ImportAccountState extends State<ImportAccount> {
                   });
             },
             child: TextField(
-                controller: new TextEditingController(
-                    text: mnemonicString
-                            .substring(
-                                0, maxCharacteresInsideTextField(context))
-                            .trim() +
-                        "..."),
+                controller: new TextEditingController(text: mnemonicString.substring(0, maxCharacteresInsideTextField(context)).trim() + "..."),
                 enabled: false,
                 cursorColor: AppColors.labelDefaultColor,
                 decoration: InputDecoration(
-                  disabledBorder: OutlineInputBorder(
-                      borderSide:
-                          BorderSide(width: 2, color: Colors.grey[600]!)),
+                  disabledBorder: OutlineInputBorder(borderSide: BorderSide(width: 2, color: Colors.grey[600]!)),
                   labelText: "Seed",
                   floatingLabelBehavior: FloatingLabelBehavior.always,
-                  border: OutlineInputBorder(
-                      borderSide: BorderSide(
-                          width: 2, color: AppColors.labelDefaultColor)),
-                  labelStyle: TextStyle(
-                      color: Colors.grey[600],
-                      fontWeight: FontWeight.w500,
-                      fontSize: SizeConfig.labelSize),
+                  border: OutlineInputBorder(borderSide: BorderSide(width: 2, color: AppColors.labelDefaultColor)),
+                  labelStyle: TextStyle(color: Colors.grey[600], fontWeight: FontWeight.w500, fontSize: SizeConfig.labelSize),
                   focusedBorder: OutlineInputBorder(
                     borderSide: BorderSide(width: 2, color: Colors.white),
                   ),
@@ -557,11 +520,8 @@ class _ImportAccountState extends State<ImportAccount> {
               },
               textInputAction: TextInputAction.next,
               decoration: InputDecoration(
-                focusedErrorBorder: OutlineInputBorder(
-                    borderSide: BorderSide(width: 2, color: Colors.red)),
-                errorBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                        width: 2, color: AppColors.labelDefaultColor)),
+                focusedErrorBorder: OutlineInputBorder(borderSide: BorderSide(width: 2, color: Colors.red)),
+                errorBorder: OutlineInputBorder(borderSide: BorderSide(width: 2, color: AppColors.labelDefaultColor)),
                 labelText: "Passphrase",
                 floatingLabelBehavior: FloatingLabelBehavior.always,
                 contentPadding: textFieldButtonPadding,
@@ -572,12 +532,8 @@ class _ImportAccountState extends State<ImportAccount> {
                   ),
                 ),
                 labelStyle: TextStyle(
-                    color: phraseFocusNode.hasFocus
-                        ? Colors.white
-                        : AppColors.labelDefaultColor,
-                    fontWeight: phraseFocusNode.hasFocus
-                        ? FontWeight.w900
-                        : FontWeight.w500,
+                    color: phraseFocusNode.hasFocus ? Colors.white : AppColors.labelDefaultColor,
+                    fontWeight: phraseFocusNode.hasFocus ? FontWeight.w900 : FontWeight.w500,
                     fontSize: SizeConfig.labelSize),
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(width: 2, color: Colors.white),
@@ -603,13 +559,8 @@ class _ImportAccountState extends State<ImportAccount> {
                               ),
                             ),
                             SizedBox(
-                              height: (_phraseFormState.currentState != null
-                                  ? (_phraseFormState.currentState!
-                                              .validate() ==
-                                          true
-                                      ? null
-                                      : 20)
-                                  : null),
+                              height:
+                                  (_phraseFormState.currentState != null ? (_phraseFormState.currentState!.validate() == true ? null : 20) : null),
                             )
                           ],
                         ),
@@ -658,23 +609,14 @@ class _ImportAccountState extends State<ImportAccount> {
                 setState(() => null);
               },
               decoration: InputDecoration(
-                focusedErrorBorder: OutlineInputBorder(
-                    borderSide: BorderSide(width: 2, color: Colors.red)),
-                errorBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                        width: 2, color: AppColors.labelDefaultColor)),
+                focusedErrorBorder: OutlineInputBorder(borderSide: BorderSide(width: 2, color: Colors.red)),
+                errorBorder: OutlineInputBorder(borderSide: BorderSide(width: 2, color: AppColors.labelDefaultColor)),
                 labelText: "Confirm passphrase",
                 floatingLabelBehavior: FloatingLabelBehavior.always,
-                enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                        width: 2, color: AppColors.labelDefaultColor)),
+                enabledBorder: OutlineInputBorder(borderSide: BorderSide(width: 2, color: AppColors.labelDefaultColor)),
                 labelStyle: TextStyle(
-                    color: rePhraseFocusNode.hasFocus
-                        ? Colors.white
-                        : AppColors.labelDefaultColor,
-                    fontWeight: rePhraseFocusNode.hasFocus
-                        ? FontWeight.w900
-                        : FontWeight.w500,
+                    color: rePhraseFocusNode.hasFocus ? Colors.white : AppColors.labelDefaultColor,
+                    fontWeight: rePhraseFocusNode.hasFocus ? FontWeight.w900 : FontWeight.w500,
                     fontSize: SizeConfig.labelSize),
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(width: 2, color: Colors.white),
@@ -697,13 +639,8 @@ class _ImportAccountState extends State<ImportAccount> {
                             ),
                           ),
                           SizedBox(
-                            height: (_rephraseFormState.currentState != null
-                                ? (_rephraseFormState.currentState!
-                                            .validate() ==
-                                        true
-                                    ? null
-                                    : 20)
-                                : null),
+                            height:
+                                (_rephraseFormState.currentState != null ? (_rephraseFormState.currentState!.validate() == true ? null : 20) : null),
                           )
                         ],
                       ),
@@ -717,27 +654,121 @@ class _ImportAccountState extends State<ImportAccount> {
   AppButton createAccount() {
     return AppButton(
       onPressed: () async {
-        if (_phraseFormState.currentState!.validate() == true &&
-            _rephraseFormState.currentState!.validate() == true) {
+        if (_phraseFormState.currentState!.validate() == true && _rephraseFormState.currentState!.validate() == true) {
           FocusScopeNode currentFocus = FocusScope.of(this.context);
           currentFocus.unfocus();
-          //create account outright .makeaccount thing
+
+          if (await _authApi.canAuthenticate()) {
+            await showDialog(
+                context: context,
+                builder: (_) {
+                  return AppPopupWidget(title: 'Fingerprint', padding: EdgeInsets.all(20), canClose: false, cancelable: false, children: [
+                    Text(
+                      'Would you like to add\nfingerprint authentication?',
+                      style: TextStyle(
+                        fontSize: SizeConfig.fontSizeHuge,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(
+                      height: SizeConfig.blockSizeVertical * 2,
+                    ),
+                    Row(
+                      children: [
+                        Expanded(flex: 1, child: SizedBox()),
+                        Expanded(
+                            flex: 3,
+                            child: AppNeonButton(
+                              textStyle: TextStyle(fontSize: SizeConfig.fontSizeLarge, color: AppColors.purple),
+                              onPressed: () async {
+                                dynamic _temp;
+                                _temp = await _authApi.saveSecret(controller1.text);
+                                if (_temp is String) {
+                                  NotificationBar().show(context, text: 'Fingerprint enabled', onPressed: () {});
+                                  Provider.of<AvmeWallet>(context, listen: false).fingerprintAuth =
+                                      !(Provider.of<AvmeWallet>(context, listen: false).fingerprintAuth);
+                                  file(true);
+                                  Navigator.of(context).pop();
+                                  await showDialog(
+                                      context: context,
+                                      builder: (_) => StatefulBuilder(builder: (builder, setState) {
+                                            return ProgressPopup(
+                                                title: "Creating",
+                                                future: appWalletManager.walletManager
+                                                    .makeAccount(controller1.text, appWalletManager, mnemonic: mnemonicString)
+                                                    .then((result) {
+                                                  // Creates the user account
+                                                  appWalletManager.changeCurrentWalletId = 0;
+                                                  Navigator.pop(context);
+                                                  Navigator.pushReplacementNamed(context, "app/overview");
+                                                  NotificationBar().show(context, text: "Account #0 selected");
+                                                }));
+                                          }));
+                                } else {
+                                  NotificationBar().show(context, text: 'Fingerprint scanning cancelled', onPressed: () {});
+                                }
+                              },
+                              text: 'YES',
+                            )),
+                        Expanded(flex: 1, child: SizedBox()),
+                        Expanded(
+                            flex: 3,
+                            child: AppNeonButton(
+                              textStyle: TextStyle(fontSize: SizeConfig.fontSizeLarge, color: AppColors.purple),
+                              onPressed: () async {
+                                Navigator.of(context).pop();
+                                await showDialog(
+                                    context: context,
+                                    builder: (_) => StatefulBuilder(builder: (builder, setState) {
+                                          return ProgressPopup(
+                                              title: "Creating",
+                                              future: appWalletManager.walletManager
+                                                  .makeAccount(controller1.text, appWalletManager, mnemonic: mnemonicString)
+                                                  .then((result) {
+                                                // Creates the user account
+                                                appWalletManager.changeCurrentWalletId = 0;
+                                                Navigator.pop(context);
+                                                Navigator.pushReplacementNamed(context, "app/overview");
+                                                NotificationBar().show(context, text: "Account #0 selected");
+                                              }));
+                                        }));
+                              },
+                              text: 'NO',
+                            )),
+                        Expanded(flex: 1, child: SizedBox())
+                      ],
+                    )
+                  ]);
+                });
+          } else {
+            await showDialog(
+                context: context,
+                builder: (_) => StatefulBuilder(builder: (builder, setState) {
+                      return ProgressPopup(
+                          title: "Creating",
+                          future:
+                              appWalletManager.walletManager.makeAccount(controller1.text, appWalletManager, mnemonic: mnemonicString).then((result) {
+                            // Creates the user account
+                            appWalletManager.changeCurrentWalletId = 0;
+                            Navigator.pop(context);
+                            Navigator.pushReplacementNamed(context, "app/overview");
+                            NotificationBar().show(context, text: "Account #0 selected");
+                          }));
+                    }));
+          }
+
           await showDialog(
               context: context,
               builder: (_) => StatefulBuilder(builder: (builder, setState) {
                     return ProgressPopup(
                         title: "Creating",
-                        future: appWalletManager.walletManager
-                            .makeAccount(controller1.text, appWalletManager,
-                                mnemonic: mnemonicString)
-                            .then((result) {
+                        future:
+                            appWalletManager.walletManager.makeAccount(controller1.text, appWalletManager, mnemonic: mnemonicString).then((result) {
                           // Creates the user account
                           appWalletManager.changeCurrentWalletId = 0;
                           Navigator.pop(context);
-                          Navigator.pushReplacementNamed(
-                              context, "app/overview");
-                          NotificationBar()
-                              .show(context, text: "Account #0 selected");
+                          Navigator.pushReplacementNamed(context, "app/overview");
+                          NotificationBar().show(context, text: "Account #0 selected");
                         }));
                   }));
         }
@@ -747,18 +778,50 @@ class _ImportAccountState extends State<ImportAccount> {
     );
   }
 
+  Future<int> file(dynamic input) async {
+    //More info on settings.json
+    final FileManager fileManager = FileManager();
+
+    Future<File> settingsFile() async {
+      await fileManager.getDocumentsFolder();
+      String fileFolder = "${fileManager.documentsFolder}";
+      await fileManager.checkPath(fileFolder);
+
+      File file = File("${fileFolder}settings${fileManager.ext}");
+
+      if (!await file.exists()) {
+        await file.writeAsString(fileManager.encoder.convert({
+          "display": {"deviceGroupCustom": "0"},
+          "options": {"fingerprintAuth": false}
+        }));
+      }
+
+      return file;
+    }
+
+    Future<File> file = settingsFile();
+    Map<String, dynamic> fileRead = {};
+
+    await file.then((value) async {
+      fileRead = json.decode(await value.readAsString());
+    });
+
+    fileRead["options"]["fingerprintAuth"] = input;
+
+    file.then((File file) async {
+      file.writeAsString(fileManager.encoder.convert(fileRead));
+    });
+
+    return 0;
+  }
+
   Widget passwordScreen() {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       body: Container(
         decoration: BoxDecoration(
             gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: <Color>[
-              AppColors.purpleVariant1,
-              AppColors.purpleBlue
-            ])),
+                begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: <Color>[AppColors.purpleVariant1, AppColors.purpleBlue])),
         child: Center(
           child: SingleChildScrollView(
             physics: BouncingScrollPhysics(),
@@ -827,8 +890,7 @@ class _ImportAccountState extends State<ImportAccount> {
 }
 
 class MaxLinesTextInputFormatter extends TextInputFormatter {
-  MaxLinesTextInputFormatter(this._maxLines)
-      : assert(_maxLines == -1 || _maxLines > 0);
+  MaxLinesTextInputFormatter(this._maxLines) : assert(_maxLines == -1 || _maxLines > 0);
 
   final int _maxLines;
 
