@@ -1,5 +1,6 @@
 import 'package:avme_wallet/app/controller/contacts.dart';
 import 'package:avme_wallet/app/controller/services/connection.dart';
+import 'package:avme_wallet/app/controller/threads.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:avme_wallet/app/config/routes.dart';
@@ -17,15 +18,18 @@ main() async{
   AppConnection appConnection = AppConnection.getInstance();
   appConnection.initialize();
 
+  Threads threads = Threads.getInstance();
+  threads.initialize();
+
   await DotEnv.load();
   FileManager fileManager = FileManager();
   ActiveContracts activeContracts = ActiveContracts(fileManager);
   runApp(MultiProvider(
-      providers: [
-        ChangeNotifierProvider<AvmeWallet>(create:(_) => AvmeWallet(fileManager, activeContracts)),
-        ChangeNotifierProvider<ActiveContracts>(create:(_) => activeContracts),
-        ChangeNotifierProvider<ContactsController>(create:(_) => ContactsController(fileManager)),
-      ],
+    providers: [
+      ChangeNotifierProvider<AvmeWallet>(create:(_) => AvmeWallet(fileManager, activeContracts)),
+      ChangeNotifierProvider<ActiveContracts>(create:(_) => activeContracts),
+      ChangeNotifierProvider<ContactsController>(create:(_) => ContactsController(fileManager)),
+    ],
     child: AvmeWalletApp(),
     )
   );
