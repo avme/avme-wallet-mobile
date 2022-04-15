@@ -290,6 +290,17 @@ void printError(String text) {
   print('\x1B[31m$text\x1B[0m');
 }
 
+void printApprove(String text)
+{
+  print('\x1B[32m$text\x1B[0m');
+}
+
+void printMark(String text)
+{
+  print('\x1B[36m$text\x1B[0m');
+}
+
+
 int randomRangeInt(int min, int max)
 {
   Random random = Random();
