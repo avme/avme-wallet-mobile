@@ -274,7 +274,7 @@ class WalletManager {
   //TODO: When restarting recover the id of the process and shut it
   Future<void> restartTokenServices(AvmeWallet app) async {
     stopValueSubscription(app);
-    // await startValueSubscription(app);
+    await startValueSubscription(app);
     stopBalanceSubscription(app);
     await startBalanceSubscription(app);
   }
