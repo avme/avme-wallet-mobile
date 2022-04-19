@@ -227,11 +227,11 @@ class WalletManager {
   }
 
   Future<void> startValueSubscription(AvmeWallet appState) async {
-    if (!appState.services.containsKey("valueSubscription")) await services.valueSubscription(appState);
+    if (!appState.services.containsKey("valueSubscription")) await services.getValues(appState);
   }
 
   void stopValueSubscription(AvmeWallet appState) {
-    if (appState.services.containsKey("valueSubscription")) appState.killService("valueSubscription");
+    if (appState.tProcesses.containsKey("valueSubscription")) appState.killIdProcess("valueSubscription");
   }
 
   Future<Map<String, dynamic>> sendTransaction(AvmeWallet wallet, String address, BigInt amount, String token,
@@ -271,10 +271,10 @@ class WalletManager {
     EthereumAddress _ethereumAddress = EthereumAddress.fromHex(contractAddress);
     return ERC20(abi, address: _ethereumAddress, client: ethClient, chainId: chainId);
   }
-
+  //TODO: When restarting recover the id of the process and shut it
   Future<void> restartTokenServices(AvmeWallet app) async {
     stopValueSubscription(app);
-    await startValueSubscription(app);
+    // await startValueSubscription(app);
     stopBalanceSubscription(app);
     await startBalanceSubscription(app);
   }
