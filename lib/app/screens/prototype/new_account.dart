@@ -720,6 +720,32 @@ class _MnemonicsPreAccCreationState extends State<MnemonicsPreAccCreation> {
                                         child: AppNeonButton(
                                           textStyle: TextStyle(fontSize: SizeConfig.fontSizeLarge, color: AppColors.purple),
                                           onPressed: () async {
+                                            Navigator.of(context).pop();
+                                            await showDialog(
+                                                context: context,
+                                                builder: (_) => StatefulBuilder(builder: (builder, setState) {
+                                                      return ProgressPopup(
+                                                          title: "Creating",
+                                                          future: widget.appWalletManager.walletManager
+                                                              .makeAccount(widget.phraseController.text, widget.appWalletManager,
+                                                                  mnemonic: widget.walletSeed)
+                                                              .then((result) {
+                                                            // Creates the user account
+                                                            widget.appWalletManager.changeCurrentWalletId = 0;
+                                                            //Navigator.pop(context);
+                                                            Navigator.pushReplacementNamed(context, "app/overview");
+                                                            NotificationBar().show(context, text: "Account #0 selected");
+                                                          }));
+                                                    }));
+                                          },
+                                          text: 'NO',
+                                        )),
+                                    Expanded(flex: 1, child: SizedBox()),
+                                    Expanded(
+                                        flex: 3,
+                                        child: AppNeonButton(
+                                          textStyle: TextStyle(fontSize: SizeConfig.fontSizeLarge, color: AppColors.purple),
+                                          onPressed: () async {
                                             dynamic _temp;
                                             _temp = await _authApi.saveSecret(widget.phraseController.text);
 
@@ -750,32 +776,6 @@ class _MnemonicsPreAccCreationState extends State<MnemonicsPreAccCreation> {
                                             }
                                           },
                                           text: 'YES',
-                                        )),
-                                    Expanded(flex: 1, child: SizedBox()),
-                                    Expanded(
-                                        flex: 3,
-                                        child: AppNeonButton(
-                                          textStyle: TextStyle(fontSize: SizeConfig.fontSizeLarge, color: AppColors.purple),
-                                          onPressed: () async {
-                                            Navigator.of(context).pop();
-                                            await showDialog(
-                                                context: context,
-                                                builder: (_) => StatefulBuilder(builder: (builder, setState) {
-                                                      return ProgressPopup(
-                                                          title: "Creating",
-                                                          future: widget.appWalletManager.walletManager
-                                                              .makeAccount(widget.phraseController.text, widget.appWalletManager,
-                                                                  mnemonic: widget.walletSeed)
-                                                              .then((result) {
-                                                            // Creates the user account
-                                                            widget.appWalletManager.changeCurrentWalletId = 0;
-                                                            //Navigator.pop(context);
-                                                            Navigator.pushReplacementNamed(context, "app/overview");
-                                                            NotificationBar().show(context, text: "Account #0 selected");
-                                                          }));
-                                                    }));
-                                          },
-                                          text: 'NO',
                                         )),
                                     Expanded(flex: 1, child: SizedBox())
                                   ],

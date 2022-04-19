@@ -681,6 +681,31 @@ class _ImportAccountState extends State<ImportAccount> {
                             child: AppNeonButton(
                               textStyle: TextStyle(fontSize: SizeConfig.fontSizeLarge, color: AppColors.purple),
                               onPressed: () async {
+                                Navigator.of(context).pop();
+                                await showDialog(
+                                    context: context,
+                                    builder: (_) => StatefulBuilder(builder: (builder, setState) {
+                                          return ProgressPopup(
+                                              title: "Creating",
+                                              future: appWalletManager.walletManager
+                                                  .makeAccount(controller1.text, appWalletManager, mnemonic: mnemonicString)
+                                                  .then((result) {
+                                                // Creates the user account
+                                                appWalletManager.changeCurrentWalletId = 0;
+                                                Navigator.pop(context);
+                                                Navigator.pushReplacementNamed(context, "app/overview");
+                                                NotificationBar().show(context, text: "Account #0 selected");
+                                              }));
+                                        }));
+                              },
+                              text: 'NO',
+                            )),
+                        Expanded(flex: 1, child: SizedBox()),
+                        Expanded(
+                            flex: 3,
+                            child: AppNeonButton(
+                              textStyle: TextStyle(fontSize: SizeConfig.fontSizeLarge, color: AppColors.purple),
+                              onPressed: () async {
                                 dynamic _temp;
                                 _temp = await _authApi.saveSecret(controller1.text);
                                 if (_temp is String) {
@@ -710,31 +735,6 @@ class _ImportAccountState extends State<ImportAccount> {
                               },
                               text: 'YES',
                             )),
-                        Expanded(flex: 1, child: SizedBox()),
-                        Expanded(
-                            flex: 3,
-                            child: AppNeonButton(
-                              textStyle: TextStyle(fontSize: SizeConfig.fontSizeLarge, color: AppColors.purple),
-                              onPressed: () async {
-                                Navigator.of(context).pop();
-                                await showDialog(
-                                    context: context,
-                                    builder: (_) => StatefulBuilder(builder: (builder, setState) {
-                                          return ProgressPopup(
-                                              title: "Creating",
-                                              future: appWalletManager.walletManager
-                                                  .makeAccount(controller1.text, appWalletManager, mnemonic: mnemonicString)
-                                                  .then((result) {
-                                                // Creates the user account
-                                                appWalletManager.changeCurrentWalletId = 0;
-                                                Navigator.pop(context);
-                                                Navigator.pushReplacementNamed(context, "app/overview");
-                                                NotificationBar().show(context, text: "Account #0 selected");
-                                              }));
-                                        }));
-                              },
-                              text: 'NO',
-                            )),
                         Expanded(flex: 1, child: SizedBox())
                       ],
                     )
@@ -756,21 +756,6 @@ class _ImportAccountState extends State<ImportAccount> {
                           }));
                     }));
           }
-
-          await showDialog(
-              context: context,
-              builder: (_) => StatefulBuilder(builder: (builder, setState) {
-                    return ProgressPopup(
-                        title: "Creating",
-                        future:
-                            appWalletManager.walletManager.makeAccount(controller1.text, appWalletManager, mnemonic: mnemonicString).then((result) {
-                          // Creates the user account
-                          appWalletManager.changeCurrentWalletId = 0;
-                          Navigator.pop(context);
-                          Navigator.pushReplacementNamed(context, "app/overview");
-                          NotificationBar().show(context, text: "Account #0 selected");
-                        }));
-                  }));
         }
       },
       text: 'CREATE ACCOUNT',
