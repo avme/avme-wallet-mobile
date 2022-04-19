@@ -8,8 +8,6 @@ import 'dart:isolate';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:flutter/cupertino.dart';
 
-//TODO 1: remove duplicate functions being runned by the threads
-//TODO 2: Fix the login in infinite loop
 class Threads extends ChangeNotifier
 {
   static final Threads _self = Threads._internal();
@@ -23,7 +21,7 @@ class Threads extends ChangeNotifier
   List<Isolate> _threadList = [];
   int _threadCount = 0;
   List<Map<String, dynamic>> threadChannel = [];
-
+  Map<int, StreamController> endChannel = {};
   void initialize() async
   {
     bool spawned = await newThread();
@@ -42,7 +40,7 @@ class Threads extends ChangeNotifier
     _threadList.add(await Isolate.spawn(thread, data));
 
     StreamController<dynamic> streamController = StreamController<dynamic>.broadcast();
-    threadPort.listen((message) {
+    threadPort.listen((message) async {
 
       ///At first we watch for the sendPort of the spawned thread
       ///this object "sendPort" is a must to re-use the thread later
@@ -56,7 +54,32 @@ class Threads extends ChangeNotifier
       else if(message is ThreadMessage)
       {
         streamController.add(message);
-        // printOk("${message.payload}");
+        // printOk("[RECEIVED] ${message.payload}");
+      }
+      else if(message is ThreadReference)
+      {
+        streamController.add(message);
+        printMark("Sending a ThreadReference back to main");
+      }
+      else if (message is ThreadOperation)
+      {
+        switch (message.operation)
+        {
+          case "cancel":
+            if (endChannel.containsKey(message.processId))
+            {
+              await endChannel[message.processId]!.close();
+              endChannel.removeWhere((key, value) => key == message.processId);
+            }
+            else
+            {
+              printError("[T#Main] No StreamController was found with the process ID ${message.processId}");
+            }
+            break;
+          default:
+            throw "[T#Main] Error at Thread.listener, unrecognised ThreadOperation \"${message.operation}\"";
+            break;
+        }
       }
       else
       {
@@ -68,27 +91,45 @@ class Threads extends ChangeNotifier
   }
 
   ///Send function to the thread
-  Stream<dynamic> addToPool({required int id, required ThreadMessage task})
+  Stream<dynamic> addToPool({required int id, required ThreadMessage task, shouldReturnReference = false})
   {
     SendPort port = threadChannel[id]["sendChannel"];
     Stream stream = threadChannel[id]["receiveChannel"].stream;
     StreamSubscription? sub;
-    ///Personal ticket
+
     task.noise = generateId(task.caller!.length + Random().nextInt(9999));
     port.send(task);
-    StreamController<dynamic> finalController = StreamController<dynamic>.broadcast();
-
-    sub = stream.listen((event) {
-      // print("task.noise:${task.noise} == event.noise:${event.noise}");
-      if(event is ThreadMessage) {
-        finalController.add(event.payload);
-      } else
+    // printWarning("Generated noise ${task.noise} for ${task.caller}");
+    StreamController<dynamic> eController = StreamController<dynamic>.broadcast();
+    sub = stream.listen((event) async {
+      if (eController.isClosed)
+        return;
+      if (event is ThreadReference)
       {
-        printError("[T#Main] Error at addToPool");
+        endChannel[event.processId] = eController;
+        if(shouldReturnReference && event.noise == task.noise)
+          eController.add(event);
       }
-      sub!.cancel();
+      else if (event is ThreadMessage) {
+        if(event.noise == task.noise)
+        {
+          // printError("[Sending back P#${task.noise}] ${event.payload}");
+          printOk("[P#${event.id}] ${event.payload}");
+          eController.add(event.payload);
+          ///Checking if the process was finalized
+          if(event.isDone)
+          {
+            sub!.cancel();
+            endChannel[event.id]!.close();
+          }
+        }
+      }
+      else
+      {
+        printError("[T#Main] Error at addToPool, unknown type $event");
+      }
     });
-    return finalController.stream;
+    return eController.stream;
   }
 
   ///Cancel any process
@@ -127,12 +168,13 @@ class ThreadData
 
 class ThreadMessage
 {
-  dynamic function;
-  List <dynamic>? params;
+  Function? function;
+  List <dynamic>? params = [];
   String? caller;
   int id = 0;
   int noise = 0;
   dynamic payload;
+  bool isDone = false;
   ThreadMessage({this.function, this.caller, this.params});
 }
 
@@ -148,6 +190,13 @@ int generateId(int size)
   return randomRangeInt(size, 9999999);
 }
 
+class ThreadReference
+{
+  int thread = -1;
+  int processId = -1;
+  int noise = -1;
+}
+
 ///To any thread start a high level function must be passed!
 void thread(ThreadData _d)
 {
@@ -157,69 +206,94 @@ void thread(ThreadData _d)
   printOk("[T#${_d.id}] Sending my sendPort back to main()...");
   _d.sendPort.send(sender.sendPort);
 
+  ///Starting our Operation cleaner
+  cleaner(_d);
   ///Listening to any data received by Main
   sender.listen((message) async {
-    printWarning("[T#${_d.id}] Process Count: ${_d.processes.length}");
+    // printWarning("[T#${_d.id}] Process Count: ${_d.processes.length}");
     int id = generateId(_d.processes.keys.length);
     if(message is ThreadMessage) {
       ThreadMessage threadMessage = message;
       if (threadMessage.function is Function) {
-        if (threadMessage.params == null) {
-          printWarning("[T#${_d
-              .id}] A function without parameters was called \"${threadMessage
-              .caller}\"");
-          CancelableOperation? operation;
-
-          threadMessage.id = id;
-          threadMessage.params = [_d];
-          operation = CancelableOperation.fromFuture(
-            threadMessage.function(threadData: _d, id: id),
-          );
-          _d.processes[id] = operation;
-        }
-        else {
+        // if (threadMessage.params == null) {
+        //   printWarning("[T#${_d
+        //       .id}] A function without parameters was called \"${threadMessage
+        //       .caller}\"");
+        //
+        //   CancelableOperation? operation;
+        //   threadMessage.id = id;
+        //   // threadMessage.params = [_d];
+        //   ///Sending the thread reference
+        //   ThreadReference threadReference = ThreadReference()
+        //     ..processId = id
+        //     ..thread = _d.id;
+        //
+        //   _d.sendPort.send(threadReference);
+        //   operation = CancelableOperation.fromFuture(
+        //     threadMessage.function!(threadData: _d, id: id),
+        //     // onCancel: () {
+        //     //   if(_d.processes.containsKey(id))
+        //     //   {
+        //     //     printError("[T#${_d.id}] Process $id was cancelled.");
+        //     //     threadMessage.isDone = true;
+        //     //     _d.sendPort.send(threadMessage);
+        //     //   }
+        //     // }
+        //   );
+        //   _d.processes[id] = operation;
+        //   dynamic result = await operation.value;
+        //   threadMessage.payload = {"message": result, "id": id};
+        //   if(result != null)
+        //   {
+        //     printError("[T#${_d.id}] Closing process #$id, finalized with \"$result\"");
+        //     _d.processes.remove(id);
+        //     threadMessage.isDone = true;
+        //     _d.sendPort.send(threadMessage);
+        //   }
+        // }
+        // else {
           ///Executing function with parameters
           printOk("[T#${_d.id}] Executing function \"${message.caller}\" with parameters");
 
           ///Convert it to cancelable please
           threadMessage.id = id;
-          Future? future;
+          // Future? future;
 
           if (_d.processes.containsKey(id)) {
             printError("[T#${_d
               .id}] Thread should not repeat this function \"${threadMessage
               .caller}\" at the same process id#$id");
           }
-          threadMessage.params!.add(_d);
-          if (threadMessage.function is Function) {
-            future = futureWrapper(() {
-              Function _f = threadMessage.function;
-              dynamic result = _f.call(threadMessage.params, threadData: _d, id: id);
-              if (result == null)
-                return;
-              else
-                return result;
-            });
-          }
-          else if (threadMessage.function is Future)
-            future = threadMessage.function!(threadMessage.params, threadData: _d, id: id);
-          else
-            throw Exception('Exception at "Threads.thread"-> [T#${_d
-                .id}] Passed a unknown function type, not "Function" or "Future"');
 
-          CancelableOperation? operation = CancelableOperation.fromFuture(
-              future!
+          ///Sending the thread reference
+          ThreadReference threadReference = ThreadReference()
+            ..processId = id
+            ..thread = _d.id
+            ..noise = threadMessage.noise;
+
+          _d.sendPort.send(threadReference);
+          // threadMessage.params!.add(threadMessage.noise);
+          _d.processes[id] = CancelableOperation.fromFuture(
+            threadMessage.function!(threadMessage.params, threadMessage: threadMessage, threadData: _d, id: id)
+            // onCancel: () {
+            //   if(_d.processes.containsKey(id))
+            //   {
+            //     printError("[T#${_d.id}] Process $id was cancelled.");
+            //     threadMessage.isDone = true;
+            //     _d.sendPort.send(threadMessage);
+            //   }
+            // }
           );
-          _d.processes[id] = operation;
-          dynamic result = await operation.value;
+          dynamic result = await _d.processes[id]!.value;
           threadMessage.payload = {"message": result, "id": id};
           if(result != null)
           {
             printError("[T#${_d.id}] Closing process #$id, finalized with \"$result\"");
             _d.processes.remove(id);
+            threadMessage.isDone = true;
             _d.sendPort.send(threadMessage);
           }
-        }
+        // }
       }
     }
     else if(message is ThreadOperation)
@@ -228,18 +302,33 @@ void thread(ThreadData _d)
         case "cancel":
           if(_d.processes.keys.contains(message.processId))
           {
-            await _d.processes[message.processId]!.cancel();
-            _d.processes.remove(id);
+
+            // _d.processes.remove(_d.processes[message.processId]);
             _d.sendPort.send({"message": '[T#${_d.id}] Process #${message.processId} has been canceled'});
+            ///DO NOT USE LOOPS INSIDE A FUNCTION VOIDED, IT WILL FINISH AND NOT BE ABLE TO BE CANCELABLE
+
+            await _d.processes[message.processId]!.cancel().then((value) {
+              // printError("CANCELED? ${_d.processes[message.processId]!.isCanceled}");
+              // printError("COMPLETED? ${_d.processes[message.processId]!.isCompleted}");
+              // _d.processes.removeWhere((key, value) => key == message.processId);
+            });
+            ///Closing the StreamController used by its caller
+            _d.sendPort.send(ThreadOperation("cancel", message.processId));
           }
           else
           {
             _d.sendPort.send({"message": "[T#${_d.id}] No operation found at (${message.processId}) found."});
           }
-        break;
+          break;
+        case "kill":
+          {
+            printWarning("[T#${_d.id}] Killing process ${message.processId}");
+            _d.processes.removeWhere((key, value) => key == message.processId);
+          }
+          break;
         default:
           _d.sendPort.send({"message": "[T#${_d.id}] Undefined operation ${message.operation}"});
-        break;
+          break;
       }
     }
     else
@@ -253,4 +342,34 @@ void thread(ThreadData _d)
 Future<dynamic> futureWrapper(Function function) async
 {
   return function();
+}
+
+void cleaner(ThreadData threadData)
+async {
+  do {
+    await Future.delayed(Duration(milliseconds: 100), (){
+      List<int> keys = threadData.processes.keys.toList();
+      keys.forEach((processId) {
+        // printError("threadData.processes[$processId]${threadData.processes[processId]}");
+        if(threadData.processes[processId] != null && (threadData.processes[processId]!.isCanceled || threadData.processes[processId]!.isCompleted))
+        {
+          threadData.processes.removeWhere((key, value) => key == processId);
+        }
+      });
+    });
+  }
+  while(true);
+}
+
+Future<void> prepareOperation(int id, ThreadData threadData)
+async {
+  int _m = 2;
+  printMark("[T#${threadData.id}] Preparing process id $id.");
+  while(threadData.processes[id] == null)
+  {
+    if(_m > 2)
+      printWarning("[T#${threadData.id}] $_m ms has been passed since the process $id was called...");
+    await Future.delayed(Duration(milliseconds: _m));
+    _m += 2;
+  }
 }

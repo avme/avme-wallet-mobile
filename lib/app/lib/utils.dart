@@ -307,3 +307,18 @@ int randomRangeInt(int min, int max)
   int num = min + random.nextInt(max - min);
   return num;
 }
+
+///Simple wrapper to identify later
+Future<Map> wrapAsList({String identifier, Future future, String processName}) async {
+  dynamic result = false;
+  print("wrapping $identifier");
+  try {
+    result = await future;
+  } catch (e) {
+    if (e is RangeError) {
+      print("[WARNING -> wrapAsList | $processName] Balance Subscription failed while processing $identifier, \n at $e");
+    }
+    return {identifier: "empty"};
+  }
+  return {identifier: result};
+}

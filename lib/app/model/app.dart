@@ -1,7 +1,9 @@
 import 'dart:isolate';
 
 import 'package:avme_wallet/app/controller/file_manager.dart';
+import 'package:avme_wallet/app/controller/threads.dart';
 import 'package:avme_wallet/app/controller/wallet_manager.dart';
+import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/token.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/popup.dart';
 import 'package:decimal/decimal.dart';
@@ -26,6 +28,8 @@ class AvmeWallet extends ChangeNotifier {
   String appTitle = "AVME Wallet";
   int _currentWalletId;
   Map<String, Isolate> services = {};
+  ///Processes and services in threads
+  Map<String, ThreadReference> tProcesses= {};
   // Token token = Token();
   NetworkToken networkToken = NetworkToken();
   AccountsState accountsState = AccountsState();
@@ -98,6 +102,22 @@ class AvmeWallet extends ChangeNotifier {
     }
   }
 
+  void killIdProcess(String _k)
+  {
+    if(tProcesses.containsKey(_k))
+    {
+      printWarning("[App.State] Killing process \"$_k\" at T#${tProcesses[_k].thread} P#${tProcesses[_k].processId}");
+      Threads th = Threads.getInstance();
+      th.cancelProcess(tProcesses[_k].thread, tProcesses[_k].processId);
+      tProcesses.removeWhere((key, value) => key == _k);
+      // tProcesses.remove(tProcesses[_k]);
+    }
+    else
+    {
+      printError("[App.State] No process found with key \"$_k\"");
+    }
+  }
+
   ///Listeners
   void watchNetworkTokenValueChanges() {
     networkToken.addListener(() {
@@ -133,19 +153,19 @@ class AvmeWallet extends ChangeNotifier {
     List<ValueNotifier> loadingNotifier = [percentage, label];
     if (display)
       await showDialog(
-          context: context,
-          builder: (_) => StatefulBuilder(
-                builder: (builder, setState) {
-                  return ProgressPopup(
-                    listNotifier: loadingNotifier,
-                    future: _initFirstLogin(context, password, loadingNotifier, display).then((result) {
-                      auth = result[0];
-                      return [Text(result[1])];
-                    }),
-                    title: "Warning",
-                  );
-                },
-              ));
+        context: context,
+        builder: (_) => StatefulBuilder(
+          builder: (builder, setState) {
+            return ProgressPopup(
+              listNotifier: loadingNotifier,
+              future: _initFirstLogin(context, password, loadingNotifier, display).then((result) {
+                auth = result[0];
+                return [Text(result[1])];
+              }),
+              title: "Warning",
+            );
+          },
+        ));
     else
       auth = (await _initFirstLogin(context, password, loadingNotifier, display))[0];
     return auth;
