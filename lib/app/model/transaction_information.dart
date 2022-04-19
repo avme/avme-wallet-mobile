@@ -7,36 +7,38 @@ import 'package:intl/intl.dart';
 import 'package:web3dart/web3dart.dart' as web3Dart;
 import 'package:hex/hex.dart';
 
-class TransactionInformation with ChangeNotifier{
+class TransactionInformation with ChangeNotifier {
   bool _retrievingData = false;
   Map<String, dynamic> transaction = {};
   bool get retrievingData => _retrievingData;
   Map<String, dynamic> storedTransaction;
-  set retrievingData (bool value)
-  {
+  set retrievingData(bool value) {
     this._retrievingData = value;
     notifyListeners();
   }
-  void setLastTransactionInformation(web3Dart.TransactionInformation transactionInformation, {
-      web3Dart.EtherAmount tokenValue,
-      String to,
-      String tokenName,
-    }) {
+
+  void setLastTransactionInformation(
+    web3Dart.TransactionInformation transactionInformation, {
+    web3Dart.EtherAmount tokenValue,
+    String to,
+    String tokenName,
+  }) {
     DateTime now = DateTime.now();
     String formattedDate = DateFormat("yyyy-MM-dd HH-mm-ss").format(now);
     transaction["code"] = "";
     transaction["from"] = transactionInformation.from.toString();
     transaction["tokenName"] = tokenName;
     transaction["gas"] = transactionInformation.gas.toString();
-    transaction["gasPrice"] = "${transactionInformation.gasPrice.getValueInUnit(web3Dart.EtherUnit.gwei).toInt()} Gwei (${transactionInformation.gasPrice.getInWei} wei)";
+    transaction["gasPrice"] =
+        "${transactionInformation.gasPrice.getValueInUnit(web3Dart.EtherUnit.gwei).toInt()} Gwei (${transactionInformation.gasPrice.getInWei} wei)";
     transaction["hash"] = transactionInformation.hash;
     transaction["input"] = HEX.encode(transactionInformation.input);
     transaction["nonce"] = transactionInformation.nonce.toString();
     transaction["to"] = to;
     transaction["transactionIndex"] = transactionInformation.transactionIndex.toString();
-    transaction["value"] = tokenValue.getInWei.toDouble() != 0 ?
-      "${tokenValue.getValueInUnit(web3Dart.EtherUnit.gwei).toInt()} Gwei (${tokenValue.getInWei} wei)" :
-      "${transactionInformation.value.getValueInUnit(web3Dart.EtherUnit.gwei).toInt()} Gwei (${transactionInformation.value.getInWei} wei)";
+    transaction["value"] = tokenValue.getInWei.toDouble() != 0
+        ? "${tokenValue.getValueInUnit(web3Dart.EtherUnit.gwei).toInt()} Gwei (${tokenValue.getInWei} wei)"
+        : "${transactionInformation.value.getValueInUnit(web3Dart.EtherUnit.gwei).toInt()} Gwei (${transactionInformation.value.getInWei} wei)";
     transaction["type"] = "message";
     transaction["v"] = transactionInformation.v.toString();
     transaction["r"] = transactionInformation.r.toString();
@@ -54,32 +56,34 @@ class TransactionInformation with ChangeNotifier{
     String documentsFolder = await fileManager.getDocumentsFolder();
     String transactions = documentsFolder + fileManager.transactions;
     await fileManager.checkPath(transactions);
-    transactions = transactions+"${this.transaction["from"]}";
+    transactions = transactions + "${this.transaction["from"]}";
     File stream = File(transactions);
     JsonEncoder encoder = JsonEncoder.withIndent('  ');
     String jsonFile;
-    if(await stream.exists())
-    {
+    if (await stream.exists()) {
       Map<String, dynamic> readJson = jsonDecode(await stream.readAsString());
       print(readJson["transactions"][0]);
-      readJson["transactions"].insert(0,this.transaction);
+      readJson["transactions"].insert(0, this.transaction);
       jsonFile = encoder.convert(readJson);
-    }
-    else jsonFile = encoder.convert({"transactions":[this.transaction]});
+    } else
+      jsonFile = encoder.convert({
+        "transactions": [this.transaction]
+      });
     stream.writeAsString(jsonFile);
   }
 
+  ///If (int) amount is bigger than the transaction list length, it will display all
   Future<List> fileTransactions(String address, {int amount = 0}) async {
     FileManager fileManager = FileManager();
     String file = (await fileManager.getDocumentsFolder()) + fileManager.transactions + "$address";
     File dataFile = File(file);
-    if(!await dataFile.exists())
-    {
+    if (!await dataFile.exists()) {
       return null;
     }
     List ret = jsonDecode(await dataFile.readAsString())["transactions"];
-    if(amount > 0)
-      ret = ret.sublist(ret.length - amount, ret.length);
+    if (amount > 0 && amount < ret.length) {
+      ret = ret.sublist(0, amount);
+    }
     return ret;
   }
 

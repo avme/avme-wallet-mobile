@@ -24,26 +24,24 @@ class _HistorySnippetState extends State<HistorySnippet> {
     return AppCard(
       child: Column(
         children: [
-          Text("History",style: TextStyle(fontSize: SizeConfig.labelSize*0.8),),
+          Text(
+            "History",
+            style: TextStyle(fontSize: SizeConfig.labelSize * 0.8),
+          ),
           SizedBox(
             height: 12,
           ),
           Container(
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  color: AppColors.darkBlue
-              ),
-               child: FutureBuilder(
-                 future: listTransactions(widget.app.currentAccount.address),
-                 builder: (BuildContext context, snapshot)
-                 {
-                   if(snapshot.data == null)
-                   {
-                     return Text("loading");
-                   }
-                   else return snapshot.data;
-                 },
-               ),
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: AppColors.darkBlue),
+            child: FutureBuilder(
+              future: listTransactions(widget.app.currentAccount.address, widget.app),
+              builder: (BuildContext context, snapshot) {
+                if (snapshot.data == null) {
+                  return Text("loading");
+                } else
+                  return snapshot.data;
+              },
+            ),
           ),
           SizedBox(
             height: 12,
@@ -54,78 +52,89 @@ class _HistorySnippetState extends State<HistorySnippet> {
     );
   }
 
-  Future<Widget> listTransactions(String address) async
-  {
-    List transactionsMap = await TransactionInformation().fileTransactions(address, amount: 5);
-    if(transactionsMap == null)
-    {
-      return Center(child:
-      SizedBox(
-          width: MediaQuery.of(context).size.width * 1 / 2,
-          child:  Padding(
-            padding: EdgeInsets.symmetric(vertical: SizeConfig.safeBlockVertical*2.5,horizontal: 0.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Column(
+  Future<Widget> listTransactions(String address, AvmeWallet app) async {
+    List transactionsMap = await TransactionInformation().fileTransactions(address, amount: 4);
+    if (transactionsMap == null) {
+      return Center(
+          child: SizedBox(
+              width: MediaQuery.of(context).size.width * 1 / 2,
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: SizeConfig.safeBlockVertical * 2.5, horizontal: 0.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text("😕",
-                        style: TextStyle(
-                            fontSize: SizeConfig.labelSize,)
+                    Column(
+                      children: [
+                        Text("😕",
+                            style: TextStyle(
+                              fontSize: SizeConfig.labelSize,
+                            )),
+                        SizedBox(
+                          height: 6,
+                        ),
+                        Text("No recent activity to show.",
+                            style: TextStyle(
+                              fontSize: SizeConfig.labelSize * 0.6,
+                            )),
+                      ],
                     ),
-                    SizedBox(height: 6,),
-                    Text("No recent activity to show.",
-                        style: TextStyle(
-                          fontSize: SizeConfig.labelSize*0.6,)),
                   ],
                 ),
-              ],
-            ),
-          )
-      )
-      );
+              )));
     }
 
     RegExp amountValidator = RegExp(r'\((.*?)\)', multiLine: false, caseSensitive: false);
     List<Widget> _widgetsList = [];
 
-    transactionsMap.asMap().forEach((key,card) {
-      DateTime date = DateTime.fromMicrosecondsSinceEpoch(card["unixDate"],isUtc: false);
+    transactionsMap.asMap().forEach((key, card) {
+      DateTime date = DateTime.fromMicrosecondsSinceEpoch(card["unixDate"], isUtc: false);
       DateFormat dateFormat = DateFormat('MM/dd/yyyy');
-      card["formatedAmount"] = shortAmount(weiToFixedPoint(amountValidator.firstMatch(card["value"]).group(1).replaceAll(" wei", ""),),length: 4, comma: true);
-      card["date"] = dateFormat.format(date);
-      _widgetsList.add(
-          HistoryTable(
-            amount: "${shortAmount(card["formatedAmount"])} AVME",
-            sent: true,
-            date: card["date"],
+      card["formatedAmount"] = shortAmount(
+          weiToFixedPoint(
+            amountValidator.firstMatch(card["value"]).group(1).replaceAll(" wei", ""),
           ),
+          length: 4,
+          comma: true);
+      card["date"] = dateFormat.format(date);
+      // double tokenValue;
+      // try {
+      //   if (card["tokenName"] == 'AVAX') {
+      //     tokenValue = double.tryParse(app.networkToken.value) * double.tryParse(card["formatedAmount"]);
+      //   } else {
+      //     tokenValue = double.tryParse(app.activeContracts.token.tokenValue(card["tokenName"])) * double.tryParse(card["formatedAmount"]);
+      //   }
+      // } catch (e) {
+      //   card["tokenName"] = "N/A";
+      //   tokenValue = 0.00;
+      //   print(e);
+      // }
+      String tokenName;
+      try {
+        tokenName = card["tokenName"];
+      } catch (e) {
+        tokenName = 'N/A';
+        print(e);
+      }
+      _widgetsList.add(
+        HistoryTable(
+          amount: "${shortAmount(card["formatedAmount"])} $tokenName",
+          sent: true,
+          date: card["date"],
+        ),
       );
-      if(key != transactionsMap.length - 1)
-        _widgetsList.add(
-            Divider()
-        );
+      if (key != transactionsMap.length - 1) _widgetsList.add(Divider());
     });
     return Column(
       children: _widgetsList,
     );
   }
-
 }
 
-
 class HistoryTable extends StatefulWidget {
-
   final bool sent;
   final String amount;
   final String date;
-  const HistoryTable(
-  {
-    Key key,
-    @required this.sent,
-    @required this.amount,
-    @required this.date
-  }) : super(key: key);
+  const HistoryTable({Key key, @required this.sent, @required this.amount, @required this.date}) : super(key: key);
 
   @override
   _HistoryTableState createState() => _HistoryTableState();
@@ -144,7 +153,7 @@ class _HistoryTableState extends State<HistoryTable> {
           Expanded(
             flex: 3,
             child: Padding(
-              padding: const EdgeInsets.only(left:12.0),
+              padding: const EdgeInsets.only(left: 12.0),
               child: widget.sent == true ? Text("SENT") : Text("RECEIVED"),
             ),
           ),
@@ -157,9 +166,12 @@ class _HistoryTableState extends State<HistoryTable> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                widget.sent == true ?
-                Text("-${widget.amount}", style: TextStyle(color: AppColors.lightBlue),) :
-                Text("+${widget.amount}", style: TextStyle(color: AppColors.purple)),
+                widget.sent == true
+                    ? Text(
+                        "-${widget.amount}",
+                        style: TextStyle(color: AppColors.lightBlue),
+                      )
+                    : Text("+${widget.amount}", style: TextStyle(color: AppColors.purple)),
               ],
             ),
           ),
