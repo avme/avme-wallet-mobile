@@ -20,11 +20,13 @@ class TransactionInformation with ChangeNotifier{
   void setLastTransactionInformation(web3Dart.TransactionInformation transactionInformation, {
       web3Dart.EtherAmount tokenValue,
       String to,
+      String tokenName,
     }) {
     DateTime now = DateTime.now();
     String formattedDate = DateFormat("yyyy-MM-dd HH-mm-ss").format(now);
     transaction["code"] = "";
     transaction["from"] = transactionInformation.from.toString();
+    transaction["tokenName"] = tokenName;
     transaction["gas"] = transactionInformation.gas.toString();
     transaction["gasPrice"] = "${transactionInformation.gasPrice.getValueInUnit(web3Dart.EtherUnit.gwei).toInt()} Gwei (${transactionInformation.gasPrice.getInWei} wei)";
     transaction["hash"] = transactionInformation.hash;

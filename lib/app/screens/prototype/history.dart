@@ -17,6 +17,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../controller/database/value_history.dart';
 import '../send.dart';
 
 //TODO: Refactor this class!
@@ -30,7 +31,6 @@ class History extends StatefulWidget {
 }
 
 class _HistoryState extends State<History> {
-
   //DropdownButton
   String selectedDate = 'LAST WEEK';
 
@@ -40,79 +40,51 @@ class _HistoryState extends State<History> {
     SizeConfig().init(context);
 
     return Consumer<AvmeWallet>(
-      builder: (context, app, _){
+      builder: (context, app, _) {
         return ListView(
           children: [
             BalanceAndButtons(
               balanceTween: DecorationTween(
                   begin: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
-                      gradient: LinearGradient(
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
-                          colors: <Color>[
-                            appColors.preColorList[app.currentWalletId][0],
-                            appColors.preColorList[app.currentWalletId][1],
-                          ]
-                      )
-                  ),
+                      gradient: LinearGradient(begin: Alignment.centerLeft, end: Alignment.centerRight, colors: <Color>[
+                        appColors.preColorList[app.currentWalletId][0],
+                        appColors.preColorList[app.currentWalletId][1],
+                      ])),
                   end: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
-                      gradient: LinearGradient(
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
-                          colors: <Color>[
-                            appColors.preColorList[app.currentWalletId][2],
-                            appColors.preColorList[app.currentWalletId][3],
-                          ]
-                      )
-                  )
-              ),
-              totalBalance:
-              app.currentAccount.networkBalance == null || app.currentAccount.currencyTokenBalance == null ? "0,0000000" :
-              "${shortAmount((app.currentAccount.networkBalance +
-                  app.currentAccount.currencyTokenBalance).toString(),comma: true, length: 7)}",
+                      gradient: LinearGradient(begin: Alignment.centerLeft, end: Alignment.centerRight, colors: <Color>[
+                        appColors.preColorList[app.currentWalletId][2],
+                        appColors.preColorList[app.currentWalletId][3],
+                      ]))),
+              totalBalance: _totalBalance(app),
               onPressed: () async {
                 await Clipboard.setData(ClipboardData(text: app.currentAccount.address));
-                NotificationBar().show(
-                    context,
-                    text: "Address copied to clipboard",
-                    onPressed: ()  {
-                    }
-                );
+                NotificationBar().show(context, text: "Address copied to clipboard", onPressed: () {});
               },
               onReceivePressed: () async {
                 await showDialog(
                     context: context,
                     builder: (context) {
-                      return StatefulBuilder(builder: (builder, setState){
+                      return StatefulBuilder(builder: (builder, setState) {
                         return ReceivePopup(
                           title: "Share QR Address",
                           accountTitle: app.currentAccount.address,
                           address: app.currentAccount.address,
                           onQrPressed: () {
-                            NotificationBar().show(
-                                context,
-                                text: "Address copied to clipboard",
-                                onPressed: () async {
-                                  await Clipboard.setData(
-                                      ClipboardData(text: app.currentAccount.address));
-                                }
-                            );
+                            NotificationBar().show(context, text: "Address copied to clipboard", onPressed: () async {
+                              await Clipboard.setData(ClipboardData(text: app.currentAccount.address));
+                            });
                           },
                         );
                       });
-                    }
-                );
+                    });
               },
               onSendPressed: () {
                 widget.appScaffoldTabController.index = 3;
               },
               onBuyPressed: () {
-                NotificationBar().show(
-                    context,
-                    text: "Not implemented"
-                );
+                NotificationBar().show(context, text: "Not implemented");
               },
             ),
             // Padding(
@@ -190,109 +162,117 @@ class _HistoryState extends State<History> {
             //Working as intended!
             */
             AppCard(
-              child:
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        top: 12.0,
-                        bottom: 20,
-                        left: 16.0
-                      ),
-                      child: Text("Transactions", style: AppTextStyles.label,),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12.0, bottom: 20, left: 16.0),
+                    child: Text(
+                      "Transactions",
+                      style: AppTextStyles.label,
                     ),
-                    Container(
-                      decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      color: AppColors.darkBlue
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: FutureBuilder(
-                          future: listTransactions(app.currentAccount.address),
-                          builder: (BuildContext context, snapshot)
-                          {
-                            if(snapshot.data == null)
-                            {
-                              return Text("loading");
-                            }
-                            else return snapshot.data;
-                          },
-                        ),
+                  ),
+                  Container(
+                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: AppColors.darkBlue),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: FutureBuilder(
+                        future: listTransactions(app.currentAccount.address, app),
+                        builder: (BuildContext context, snapshot) {
+                          if (snapshot.data == null) {
+                            return Text("loading");
+                          } else
+                            return snapshot.data;
+                        },
                       ),
                     ),
-                  ],
-                ),
-              )
-            ],
+                  ),
+                ],
+              ),
+            )
+          ],
         );
       },
     );
   }
 
-  Future<Widget> listTransactions(String address) async
-  {
+  String _totalBalance(AvmeWallet app) {
+    List tokensValue = app.currentAccount.tokensBalanceList.entries.map((e) => e.value["balance"]).toList();
+
+    double totalValue = app.currentAccount.networkBalance;
+
+    tokensValue.forEach((value) => totalValue += value);
+
+    print(tokensValue);
+    return "${shortAmount(totalValue.toString(), comma: true, length: 7)}";
+  }
+
+  Future<Widget> listTransactions(String address, AvmeWallet app) async {
     SizeConfig().init(context);
     List transactionsMap = await TransactionInformation().fileTransactions(address);
-    if(transactionsMap == null)
-    {
-      return Center(child:
-      SizedBox(
-          width: MediaQuery.of(context).size.width * 1 / 2,
-          child:  Padding(
-            padding: EdgeInsets.symmetric(vertical: SizeConfig.safeBlockVertical*2.5,horizontal: 0.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Column(
+    if (transactionsMap == null) {
+      return Center(
+          child: SizedBox(
+              width: MediaQuery.of(context).size.width * 1 / 2,
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: SizeConfig.safeBlockVertical * 2.5, horizontal: 0.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text("😕",
-                        style: TextStyle(
-                          fontSize: SizeConfig.labelSize,)
+                    Column(
+                      children: [
+                        Text("😕",
+                            style: TextStyle(
+                              fontSize: SizeConfig.labelSize,
+                            )),
+                        SizedBox(
+                          height: 6,
+                        ),
+                        Text("No recent activity to show.",
+                            style: TextStyle(
+                              fontSize: SizeConfig.labelSize * 0.6,
+                            )),
+                      ],
                     ),
-                    SizedBox(height: 6,),
-                    Text("No recent activity to show.",
-                        style: TextStyle(
-                          fontSize: SizeConfig.labelSize*0.6,)),
                   ],
                 ),
-              ],
-            ),
-          )
-      )
-      );
+              )));
     }
 
     RegExp amountValidator = RegExp(r'\((.*?)\)', multiLine: false, caseSensitive: false);
     List<Widget> _widgetsList = [];
 
-    transactionsMap.asMap().forEach((key,card) {
-      DateTime date = DateTime.fromMicrosecondsSinceEpoch(card["unixDate"],isUtc: false);
+    transactionsMap.asMap().forEach((key, card) {
+      DateTime date = DateTime.fromMicrosecondsSinceEpoch(card["unixDate"], isUtc: false);
       DateFormat dateFormat = DateFormat('MM/dd/yyyy hh:mm:ss');
       card["formatedAmount"] = weiToFixedPoint(amountValidator.firstMatch(card["value"]).group(1).replaceAll(" wei", ""));
       card["date"] = dateFormat.format(date);
+      double tokenValue;
+      try {
+        if (card["tokenName"] == 'AVAX') {
+          tokenValue = double.tryParse(app.networkToken.value) * double.tryParse(card["formatedAmount"]);
+        } else {
+          tokenValue = double.tryParse(app.activeContracts.token.tokenValue(card["tokenName"])) * double.tryParse(card["formatedAmount"]);
+        }
+      } catch (e) {
+        card["tokenName"] = "N/A";
+        tokenValue = 0.00;
+        print(e);
+      }
       _widgetsList.add(
         HistoryTable(
           sent: true,
-          tokenAmount: "${shortAmount(card["formatedAmount"])} AVME",
+          tokenAmount: "${shortAmount(card["formatedAmount"])} ${card["tokenName"]}",
           //TODO: Save the amount in money and retrieve to show how much was sent in dollars
-          value: "\$50",
+          value: '\$${tokenValue.toStringAsFixed(2)}',
           date: card["date"],
-          onTap: () => {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => TransactionDetails(card)))
-          },
+          onTap: () => {Navigator.push(context, MaterialPageRoute(builder: (context) => TransactionDetails(card)))},
         ),
       );
-      if(key != transactionsMap.length - 1)
-        _widgetsList.add(
-          Divider()
-        );
+      if (key != transactionsMap.length - 1) _widgetsList.add(Divider());
     });
     return ConstrainedBox(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height / 3
-      ),
+      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height / 3),
       child: ListView(
         shrinkWrap: true,
         children: _widgetsList,
@@ -302,21 +282,14 @@ class _HistoryState extends State<History> {
 }
 
 class HistoryTable extends StatefulWidget {
-
   final bool sent;
   final String tokenAmount;
   final String date;
   final String value;
   final Function onTap;
 
-  const HistoryTable({
-    Key key,
-    @required this.sent,
-    @required this.tokenAmount,
-    @required this.date,
-    @required this.value,
-    @required this.onTap
-  }) : super(key: key);
+  const HistoryTable({Key key, @required this.sent, @required this.tokenAmount, @required this.date, @required this.value, @required this.onTap})
+      : super(key: key);
 
   @override
   _HistoryTableState createState() => _HistoryTableState();
@@ -336,20 +309,23 @@ class _HistoryTableState extends State<HistoryTable> {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    widget.sent == true ? Icon(Icons.arrow_upward) : Icon(Icons.arrow_downward)
-                  ],
+                  children: [widget.sent == true ? Icon(Icons.arrow_upward) : Icon(Icons.arrow_downward)],
                 ),
               ),
               Expanded(
-                flex:6,
+                flex: 6,
                 child: Column(
                   // mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     widget.sent == true ? LabelText("SENT") : LabelText("RECEIVED"),
-                    SizedBox(height: 2,),
-                    Text(widget.date, style: TextStyle(fontSize: 12),)
+                    SizedBox(
+                      height: 2,
+                    ),
+                    Text(
+                      widget.date,
+                      style: TextStyle(fontSize: 12),
+                    )
                   ],
                 ),
               ),
@@ -358,7 +334,10 @@ class _HistoryTableState extends State<HistoryTable> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(widget.value, style: TextStyle(color: AppColors.lightBlue),),
+                    Text(
+                      widget.value,
+                      style: TextStyle(color: AppColors.lightBlue),
+                    ),
                     Text(widget.tokenAmount),
                   ],
                 ),
@@ -370,7 +349,6 @@ class _HistoryTableState extends State<HistoryTable> {
     );
   }
 }
-
 
 class BalanceAndButtons extends StatefulWidget {
   final String totalBalance;
@@ -389,7 +367,8 @@ class BalanceAndButtons extends StatefulWidget {
     @required this.onSendPressed,
     @required this.onReceivePressed,
     @required this.onBuyPressed,
-    this.difference = "+18,69% (\$0.00) today", this.balanceTween,
+    this.difference = "+18,69% (\$0.00) today",
+    this.balanceTween,
   }) : super(key: key);
 
   @override
@@ -399,12 +378,13 @@ class BalanceAndButtons extends StatefulWidget {
 class _BalanceAndButtonsState extends State<BalanceAndButtons> {
   @override
   Widget build(BuildContext context) {
+    AvmeWallet app = Provider.of<AvmeWallet>(context, listen: false);
     return AppCard(
       child: Column(
         children: [
           GradientContainer(
               decorationTween: widget.balanceTween,
-              onPressed: (){},
+              onPressed: () {},
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Row(
@@ -415,25 +395,45 @@ class _BalanceAndButtonsState extends State<BalanceAndButtons> {
                       child: GestureDetector(
                         onTap: widget.onPressed,
                         child: Container(
-                          color:Colors.transparent,
+                          color: Colors.transparent,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              SizedBox(height: 8,),
-                              Text("Current Balance",style: TextStyle(fontSize: SizeConfig.labelSize*0.6)),
-                              SizedBox(height: 8,),
-                              Text("\$${widget.totalBalance}",
+                              SizedBox(
+                                height: 8,
+                              ),
+                              Text("Current Balance", style: TextStyle(fontSize: SizeConfig.labelSize * 0.6)),
+                              SizedBox(
+                                height: 8,
+                              ),
+                              Text(
+                                "\$${widget.totalBalance}",
                                 style: TextStyle(
                                   fontSize: SizeConfig.labelSize,
-                                ),),
-                              SizedBox(height: 8,),
-                              Text("${widget.difference}",
-                                style: TextStyle(
-                                  //fontSize: 12,
-                                  fontSize: SizeConfig.fontSize,
-                                )
+                                ),
                               ),
-                              SizedBox(height: 8,),
+                              SizedBox(
+                                height: 8,
+                              ),
+                              FutureBuilder(
+                                future: difference(app),
+                                builder: (BuildContext context, snapshot) {
+                                  if (!snapshot.hasData) {
+                                    return Text("+0% today",
+                                        style: TextStyle(
+                                          fontSize: SizeConfig.fontSize,
+                                        ));
+                                  } else {
+                                    return Text("${snapshot.data} today",
+                                        style: TextStyle(
+                                          fontSize: SizeConfig.fontSize,
+                                        ));
+                                  }
+                                },
+                              ),
+                              SizedBox(
+                                height: 8,
+                              ),
                             ],
                           ),
                         ),
@@ -441,8 +441,7 @@ class _BalanceAndButtonsState extends State<BalanceAndButtons> {
                     ),
                   ],
                 ),
-              )
-          ),
+              )),
           SizedBox(
             height: 16,
           ),
@@ -484,3 +483,37 @@ class _BalanceAndButtonsState extends State<BalanceAndButtons> {
   }
 }
 
+Future<String> difference(AvmeWallet appState) async {
+  int counter = 0;
+  double difference = 0, sum = 0, tokenValueToday, tempCalc = 0;
+  List<double> tokenValuesYesterday = [], percentages = [];
+  List<String> tokenNames = appState.activeContracts.tokens;
+  //AVAX
+  if (appState.accountList[0].balance != '0') {
+    tokenValueToday = double.tryParse(appState.networkToken.value);
+    await ValueHistoryTable.instance.readAmount('AVAX', 1).then((value) {
+      percentages.add((tokenValueToday / value.first.value.toDouble()) - 1);
+      sum += (value.first.value.toDouble());
+      tokenValuesYesterday.add(value.first.value.toDouble());
+    });
+  }
+  //Other
+  //tokenNames.forEach((element) async { //Doesn't work, since it will work and wait for the .forEach but won't wait for the await inside
+  for (String element in tokenNames) {
+    tokenValueToday = double.tryParse(appState.activeContracts.token.tokenValue(element));
+    await ValueHistoryTable.instance.readAmount(element, 1).then((value) {
+      percentages.add((tokenValueToday / value.first.value.toDouble()) - 1);
+      sum += (value.first.value.toDouble());
+      tokenValuesYesterday.add(value.first.value.toDouble());
+    });
+  }
+  //Processing
+  for (double value in percentages) {
+    tempCalc += value * tokenValuesYesterday.elementAt(counter);
+    ++counter;
+  }
+
+  difference = (tempCalc / sum) * 100;
+
+  return '${difference.toStringAsFixed(2)}%';
+}
