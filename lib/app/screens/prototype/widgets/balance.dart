@@ -197,7 +197,6 @@ class _OverviewAndButtonsState extends State<OverviewAndButtons> {
 }
 
 Future<String> difference(AvmeWallet appState) async {
-  print('--------------');
   int counter = 0;
   double difference = 0, sum = 0, tokenValueToday, tempCalc = 0;
   List<double> tokenValuesYesterday = [], percentages = [];
@@ -206,7 +205,6 @@ Future<String> difference(AvmeWallet appState) async {
   if (appState.accountList[0].balance != '0') {
     tokenValueToday = double.tryParse(appState.networkToken.value);
     await ValueHistoryTable.instance.readAmount('AVAX', 1).then((value) {
-      print((tokenValueToday / value.first.value.toDouble()) - 1);
       percentages.add((tokenValueToday / value.first.value.toDouble()) - 1);
       sum += (value.first.value.toDouble());
       tokenValuesYesterday.add(value.first.value.toDouble());
