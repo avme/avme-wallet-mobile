@@ -42,13 +42,13 @@ Future<bool> getValues(AvmeWallet app) async
 
   Map<String, Map<String, String>> tokenValueParam = {};
 
-  Future.forEach(data["activeTokens"], (String token) async {
+  // await Future.forEach(data["activeTokens"], (String token) async {
+  data["activeTokens"].forEach((token) {
     String tokenValue = "";
     String watchToken = "";
 
     ///Não é Testnet, do contrario atribuir a consulta como AVME
     if (!token.contains('testnet')) {
-      print("USING $token");
       tokenValue = listenBody.replaceFirst('CONTRACT_ADDRESS', contractsRaw[token]['address']);
       if (missingDates[token].length > 0)
         watchToken = watchPriceBody
@@ -92,11 +92,6 @@ Future<bool> getValues(AvmeWallet app) async
     {
       app.addProcess("valueSubscription", message);
       return;
-      // if(app.tProcesses.containsKey("valueSubscription"))
-      //   app.tProcesses["valueSubscription"].add(message);
-      // else
-      //   app.tProcesses["valueSubscription"] = [message];
-      // return;
     }
     if (message.containsKey("listenValue")) {
       List response = message["listenValue"];
@@ -121,9 +116,8 @@ Future<bool> getValues(AvmeWallet app) async
 
   ///Mounting AVAX dates filter
   List<int> avax = data["avaxDates"];
-
   if (avax.length > 0) {
-    data["networkTokenRequest"] = {
+    priceData["networkTokenRequest"] = {
       "query":
       "{tokenDayDatas(first: 30,orderBy: date,orderDirection: desc,where:{token: \"0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7\", date_in:[FILTERED_DAYS]}) { date priceUSD }}"
           .replaceFirst("FILTERED_DAYS", avax.join(', '))
@@ -150,8 +144,6 @@ Future<bool> getValues(AvmeWallet app) async
 
     ///Processing Tokens days
     if (message.containsKey("tokensHistory")) {
-      print("SOMETHING RETURNED");
-      print(message["tokensHistory"]);
       List<Map> tokens = message["tokensHistory"];
       await Future.forEach(tokens, (Map tokenData) async {
         String tokenName = tokenData.entries.first.key;
@@ -167,7 +159,6 @@ Future<bool> getValues(AvmeWallet app) async
 
 void watchValue(List<dynamic> params, {ThreadData threadData, int id, ThreadMessage threadMessage}) async
 {
-  printWarning("[T#${threadData.id} P#$id] Starting \"watchValue\"");
   int seconds = 0;
   Map param = params.first;
   String url = param["url"];
@@ -190,7 +181,6 @@ void watchValue(List<dynamic> params, {ThreadData threadData, int id, ThreadMess
         if (map.entries.first.value == Decimal.zero && !blackList.contains(map.entries.first.key)) blackList.add(map.entries.first.key);
       });
       threadMessage.payload = {"listenValue": tokenValue};
-      // printWarning("sending $tokenValue");
       threadData.sendPort.send(threadMessage);
     });
     if (seconds == 0) seconds = 5;
@@ -198,7 +188,6 @@ void watchValue(List<dynamic> params, {ThreadData threadData, int id, ThreadMess
 }
 
 Future<int> priceHistory(List<dynamic> params, {ThreadData threadData, int id, ThreadMessage threadMessage}) async {
-  printWarning("[T#${threadData.id} P#$id] Starting \"priceHistory\"");
   Map param = params.first;
   String url = param["url"];
   Map<String, Map<String, dynamic>> tokensRequest = param["tokensRequest"];
@@ -210,11 +199,9 @@ Future<int> priceHistory(List<dynamic> params, {ThreadData threadData, int id, T
      * another Isolate, so we sent the data back to the mainThread and wait...
      **/
     ReceivePort socket = ReceivePort();
-
     socket.listen((pending) {
       if (pending is bool && pending == true) pendingAvaxHistory = !pending;
     });
-
     String networkTokenHistory = await httpGetRequest(url, body: networkTokenRequest);
 
     threadMessage.payload = {"networkTokenHistory": jsonDecode(networkTokenHistory), 'waitAvaxPort': socket.sendPort};
