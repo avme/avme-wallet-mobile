@@ -37,7 +37,7 @@ class Threads extends ChangeNotifier
     _threadCount = _threadCount > 0 ? _threadCount + 1 : 0;
     ///This is our "global" receivePort, used to redirect data to is caller and store the thread information
     ReceivePort threadPort = ReceivePort();
-    ThreadData data = ThreadData(id: _threadCount, data: {"data": ["exemple", "data"]}, sendPort: threadPort.sendPort);
+    ThreadData data = ThreadData(id: _threadCount, data: {"data": ["example", "data"]}, sendPort: threadPort.sendPort);
     _threadList.add(await Isolate.spawn(thread, data));
 
     StreamController<dynamic> streamController = StreamController<dynamic>.broadcast();
