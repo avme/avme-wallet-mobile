@@ -1,6 +1,7 @@
 # Testing
 *.g.dart
 *.abi.json
+lib/app/test/*
 # Miscellaneous
 *.class
 *.lock

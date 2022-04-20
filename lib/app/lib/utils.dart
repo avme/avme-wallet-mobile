@@ -277,3 +277,48 @@ Future<Uint8List> captureWidget(GlobalKey key) async
   final pngBytes = byteData.buffer.asUint8List();
   return pngBytes;
 }
+
+void printOk(String text) {
+  print('\x1B[34m$text\x1B[0m');
+}
+
+void printWarning(String text) {
+  print('\x1B[33m$text\x1B[0m');
+}
+
+void printError(String text) {
+  print('\x1B[31m$text\x1B[0m');
+}
+
+void printApprove(String text)
+{
+  print('\x1B[32m$text\x1B[0m');
+}
+
+void printMark(String text)
+{
+  print('\x1B[36m$text\x1B[0m');
+}
+
+
+int randomRangeInt(int min, int max)
+{
+  Random random = Random();
+  int num = min + random.nextInt(max - min);
+  return num;
+}
+
+///Simple wrapper to identify later
+Future<Map> wrapAsList({String identifier, Future future, String processName}) async {
+  dynamic result = false;
+  print("wrapping $identifier");
+  try {
+    result = await future;
+  } catch (e) {
+    if (e is RangeError) {
+      print("[WARNING -> wrapAsList | $processName] Balance Subscription failed while processing $identifier, \n at $e");
+    }
+    return {identifier: "empty"};
+  }
+  return {identifier: result};
+}

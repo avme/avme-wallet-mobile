@@ -27,8 +27,7 @@ import '../qrcode_reader.dart';
 class Send extends StatefulWidget {
   final TabController appScaffoldTabController;
 
-  const Send({Key key, @required this.appScaffoldTabController})
-      : super(key: key);
+  const Send({Key key, @required this.appScaffoldTabController}) : super(key: key);
 
   @override
   _SendState createState() => _SendState();
@@ -62,23 +61,18 @@ class _SendState extends State<Send> {
     SizeConfig().init(context);
 
     Color cLabelStyle = AppColors.labelDefaultColor;
-    OutlineInputBorder fieldBorder = OutlineInputBorder(
-        borderRadius: BorderRadius.circular(6.0),
-        borderSide: BorderSide(width: 2));
+    OutlineInputBorder fieldBorder = OutlineInputBorder(borderRadius: BorderRadius.circular(6.0), borderSide: BorderSide(width: 2));
     return Form(
       key: _preTokenForm,
       child: ListView(children: [
         AppCard(
           child: Padding(
-            padding: EdgeInsets.symmetric(
-                vertical: SizeConfig.safeBlockVertical,
-                horizontal: SizeConfig.safeBlockHorizontal * 2), //all 18
+            padding: EdgeInsets.symmetric(vertical: SizeConfig.safeBlockVertical, horizontal: SizeConfig.safeBlockHorizontal * 2), //all 18
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding:
-                      EdgeInsets.only(bottom: SizeConfig.safeBlockVertical),
+                  padding: EdgeInsets.only(bottom: SizeConfig.safeBlockVertical),
                   child: AppLabelText(
                     "Address",
                     textStyle: TextStyle(color: AppColors.labelDefaultColor),
@@ -96,8 +90,7 @@ class _SendState extends State<Send> {
                   },
                   onChanged: (value) {
                     // String value = addressController.text;
-                    if (_preTokenForm.currentState != null)
-                      _preTokenForm.currentState.validate();
+                    if (_preTokenForm.currentState != null) _preTokenForm.currentState.validate();
                   },
                   icon: new Icon(
                     Icons.qr_code_scanner,
@@ -106,10 +99,8 @@ class _SendState extends State<Send> {
                   ),
                   // iconOnTap: () => NotificationBar().show(context, text:"Opening the camera"),
                   iconOnTap: () async {
-                    String response = await Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => QRScanner()));
-                    NotificationBar()
-                        .show(context, text: "Scanned: \"$response\"");
+                    String response = await Navigator.push(context, MaterialPageRoute(builder: (context) => QRScanner()));
+                    NotificationBar().show(context, text: "Scanned: \"$response\"");
                     setState(() {
                       addressController.text = response;
                     });
@@ -121,9 +112,7 @@ class _SendState extends State<Send> {
         ),
         AppCard(
             child: Padding(
-          padding: EdgeInsets.symmetric(
-              vertical: SizeConfig.safeBlockVertical,
-              horizontal: SizeConfig.safeBlockHorizontal * 2),
+          padding: EdgeInsets.symmetric(vertical: SizeConfig.safeBlockVertical, horizontal: SizeConfig.safeBlockHorizontal * 2),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -152,16 +141,13 @@ class _SendState extends State<Send> {
                   },
                   onChanged: (String selectedValue) {
                     tokenDropdownValue = selectedValue;
-                    if (_preTokenForm.currentState != null)
-                      _preTokenForm.currentState.validate();
+                    if (_preTokenForm.currentState != null) _preTokenForm.currentState.validate();
                   },
-                  style: TextStyle(
-                      color: Colors.white, fontSize: SizeConfig.fontSize),
+                  style: TextStyle(color: Colors.white, fontSize: SizeConfig.fontSize),
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: AppColors.darkBlue,
-                    contentPadding: const EdgeInsets.symmetric(
-                        vertical: 14, horizontal: 12),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
                     enabledBorder: fieldBorder.copyWith(
                       borderSide: BorderSide(
                         width: 2,
@@ -181,10 +167,8 @@ class _SendState extends State<Send> {
                         child: Row(
                           children: [
                             Padding(
-                              padding: EdgeInsets.only(
-                                  right: SizeConfig.safeBlockVertical * 1.5),
-                              child: resolveImage('assets/avax_logo.png',
-                                  width: SizeConfig.safeBlockVertical * 3.5),
+                              padding: EdgeInsets.only(right: SizeConfig.safeBlockVertical * 1.5),
+                              child: resolveImage('assets/avax_logo.png', width: SizeConfig.safeBlockVertical * 3.5),
                             ),
                             Text(
                               value,
@@ -199,12 +183,9 @@ class _SendState extends State<Send> {
                         child: Row(
                           children: [
                             Padding(
-                              padding: EdgeInsets.only(
-                                  right: SizeConfig.safeBlockVertical * 1.5),
-                              child: resolveImage(
-                                  app.activeContracts.sContracts
-                                      .contractsRaw[value]["logo"],
-                                  width: SizeConfig.safeBlockVertical * 3.5),
+                              padding: EdgeInsets.only(right: SizeConfig.safeBlockVertical * 1.5),
+                              child:
+                                  resolveImage(app.activeContracts.sContracts.contractsRaw[value]["logo"], width: SizeConfig.safeBlockVertical * 3.5),
                             ),
                             Text(
                               "$value (${app.activeContracts.sContracts.contractsRaw[value]["symbol"]})",
@@ -229,9 +210,7 @@ class _SendState extends State<Send> {
                 if (snapshot.hasError) {
                   return Container(
                     height: SizeConfig.safeBlockVertical * 32,
-                    child: const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text('Something went wrong')),
+                    child: const Padding(padding: EdgeInsets.all(8.0), child: Text('Something went wrong')),
                   );
                 }
                 return snapshot.data;
@@ -259,8 +238,7 @@ class _SendState extends State<Send> {
                 child: AppButton(
                   text: 'CONTINUE',
                   onPressed: () {
-                    if (_preTokenForm.currentState != null &&
-                        _preTokenForm.currentState.validate()) {
+                    if (_preTokenForm.currentState != null && _preTokenForm.currentState.validate()) {
                       displaySendTokens(context);
                     }
                   },
@@ -280,14 +258,11 @@ class _SendState extends State<Send> {
   Future<Widget> contactList() async {
     List<Widget> list = [];
     List<RecentlySent> recentlySent = [];
-    await RecentlySentTable.instance
-        .readAll()
-        .then((value) => recentlySent = value);
+    await RecentlySentTable.instance.readAll().then((value) => recentlySent = value);
 
     if (recentlySent.length != 0) {
       for (int i = 0; i < recentlySent.length; i++) {
-        list.add(contactWidget(Contact(recentlySent.elementAt(i).name,
-            recentlySent.elementAt(i).address)));
+        list.add(contactWidget(Contact(recentlySent.elementAt(i).name, recentlySent.elementAt(i).address)));
         if (i >= 0 && i < recentlySent.length - 1) list.add(Divider());
       }
     }
@@ -297,31 +272,23 @@ class _SendState extends State<Send> {
         child: Column(
           children: [
             Theme(
-              data:
-                  Theme.of(context).copyWith(dividerColor: Colors.transparent),
+              data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
               child: Container(
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8.0),
-                    color: AppColors.darkBlue),
+                decoration: BoxDecoration(borderRadius: BorderRadius.circular(8.0), color: AppColors.darkBlue),
                 child: ExpansionTile(
                   title: AppLabelText(
                     "Frequent contacts",
                     textStyle: TextStyle(color: AppColors.labelDefaultColor),
                     fontSize: SizeConfig.fontSizeLarge,
                   ),
-                  subtitle: Text('Tap to expand',
-                      style: AppTextStyles.span
-                          .copyWith(fontSize: SizeConfig.fontSize * 1.2)),
+                  subtitle: Text('Tap to expand', style: AppTextStyles.span.copyWith(fontSize: SizeConfig.fontSize * 1.2)),
                   collapsedIconColor: AppColors.labelDefaultColor,
                   iconColor: AppColors.purpleVariant2,
                   children: [
                     Container(
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          color: AppColors.darkBlue),
+                      decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: AppColors.darkBlue),
                       child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 18, horizontal: 14),
+                          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 14),
                           //Todo: Implement "address/contact list" with updated contact storage
                           child: Row(
                             children: [
@@ -358,8 +325,7 @@ class _SendState extends State<Send> {
           );
         */
         addressController.text = contact.address;
-        NotificationBar().show(context,
-            text: "Contact ${contact.name} filled in Address Field");
+        NotificationBar().show(context, text: "Contact ${contact.name} filled in Address Field");
       },
       child: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -387,16 +353,11 @@ class _SendState extends State<Send> {
                           children: [
                             Text(
                               contact.name,
-                              style: TextStyle(
-                                  fontSize: SizeConfig.fontSizeLarge,
-                                  fontWeight: FontWeight.bold),
+                              style: TextStyle(fontSize: SizeConfig.fontSizeLarge, fontWeight: FontWeight.bold),
                             ),
                             Text(
                               contact.address,
-                              style: TextStyle(
-                                  fontSize: SizeConfig.fontSize,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.grey),
+                              style: TextStyle(fontSize: SizeConfig.fontSize, fontWeight: FontWeight.bold, color: Colors.grey),
                             ),
                           ],
                         ),
@@ -431,10 +392,8 @@ class _SendState extends State<Send> {
     double tokenValue = getTokenValue(app, tokenDropdownValue);
     String msgNoBalance = "Not enough balance.";
     BigInt weiValue = BigInt.zero;
-    TextEditingController gasLimit =
-        TextEditingController(text: env["MAX_GAS"]);
-    TextEditingController gasFee =
-        TextEditingController(text: env["GAS_PRICE"]);
+    TextEditingController gasLimit = TextEditingController(text: env["MAX_GAS"]);
+    TextEditingController gasFee = TextEditingController(text: env["GAS_PRICE"]);
     TextEditingController amount = TextEditingController();
     showDialog(
         context: context,
@@ -462,16 +421,12 @@ class _SendState extends State<Send> {
                                 child: resolveImage(
                                     tokenDropdownValue == "AVAX"
                                         ? 'assets/avax_logo.png'
-                                        : app.activeContracts.sContracts
-                                                .contractsRaw[
-                                            tokenDropdownValue]["logo"],
+                                        : app.activeContracts.sContracts.contractsRaw[tokenDropdownValue]["logo"],
                                     width: SizeConfig.safeBlockVertical * 3.5),
                               ),
                               Text(
-                                availableTokens.firstWhere(
-                                    (element) => element == tokenDropdownValue),
-                                style: TextStyle(
-                                    fontSize: SizeConfig.labelSize * 0.7 + 6),
+                                availableTokens.firstWhere((element) => element == tokenDropdownValue),
+                                style: TextStyle(fontSize: SizeConfig.labelSize * 0.7 + 6),
                               ),
                             ],
                           ),
@@ -479,15 +434,12 @@ class _SendState extends State<Send> {
                             height: SizeConfig.safeBlockVertical,
                           ),
                           tokenDropdownValue == "AVAX"
-                              ? Text(
-                                  "1 AVAX = ${shortAmount(app.networkToken.decimal.toString(), length: 6, comma: true)}",
-                                  style: AppTextStyles.span.copyWith(
-                                      fontSize: SizeConfig.labelSizeSmall))
+                              ? Text("1 AVAX = ${shortAmount(app.networkToken.decimal.toString(), length: 6, comma: true)}",
+                                  style: AppTextStyles.span.copyWith(fontSize: SizeConfig.labelSizeSmall))
                               : Text(
                                   "1 ${app.activeContracts.sContracts.contractsRaw[tokenDropdownValue]["symbol"]} = "
                                   "${shortAmount(app.activeContracts.token.decimal(tokenDropdownValue).toString(), length: 6, comma: true)}",
-                                  style: AppTextStyles.span.copyWith(
-                                      fontSize: SizeConfig.labelSizeSmall)),
+                                  style: AppTextStyles.span.copyWith(fontSize: SizeConfig.labelSizeSmall)),
                           SizedBox(
                             height: SizeConfig.safeBlockVertical,
                           ),
@@ -502,25 +454,18 @@ class _SendState extends State<Send> {
                             textAlign: TextAlign.end,
                             onChanged: (String value) {
                               setState(() {
-                                if (double.tryParse(value) != null &&
-                                    double.tryParse(value) > 0) {
+                                if (double.tryParse(value) != null && double.tryParse(value) > 0) {
                                   double newValue = 0;
-                                  if (value.length == 0 || value == null)
-                                    return newValue;
+                                  if (value.length == 0 || value == null) return newValue;
                                   //IS AVAX
                                   if (tokenDropdownValue == "AVAX")
-                                    newValue = double.tryParse(value) *
-                                        double.tryParse(app.networkToken.value);
+                                    newValue = double.tryParse(value) * double.tryParse(app.networkToken.value);
                                   //IS AVME
                                   else {
-                                    newValue = double.tryParse(value) *
-                                        app.activeContracts.token
-                                            .decimal(tokenDropdownValue)
-                                            .toDouble();
+                                    newValue = double.tryParse(value) * app.activeContracts.token.decimal(tokenDropdownValue).toDouble();
                                   }
                                   convertedValue = newValue;
-                                  if (_sendTokenForm.currentState != null)
-                                    _sendTokenForm.currentState.validate();
+                                  if (_sendTokenForm.currentState != null) _sendTokenForm.currentState.validate();
                                 } else {
                                   convertedValue = 0;
                                 }
@@ -528,31 +473,25 @@ class _SendState extends State<Send> {
                             },
                             //TODO: FIX THIS TO USE A SELECTION OF TOKEN
                             validator: (String value) {
-                              if (double.tryParse(value) != null &&
-                                  double.tryParse(value) > 0) {
-                                weiValue = bigIntFixedPointToWei(
-                                    value.replaceAll(r",", "."));
+                              if (double.tryParse(value) != null && double.tryParse(value) > 0) {
+                                weiValue = bigIntFixedPointToWei(value.replaceAll(r",", "."));
                                 BigInt balance = tokenDropdownValue == "AVAX"
                                     ? app.currentAccount.networkTokenBalance
-                                    : app.currentAccount.tokensBalanceList[
-                                        tokenDropdownValue]["wei"];
+                                    : app.currentAccount.tokensBalanceList[tokenDropdownValue]["wei"];
                                 if (weiValue > balance) return msgNoBalance;
                               } else if (double.tryParse(value) == null) {
                                 return msgNoBalance;
                               }
                               return null;
                             },
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: SizeConfig.titleSize * 2.2),
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: SizeConfig.titleSize * 2.2),
                           ),
                           SizedBox(
                             height: SizeConfig.safeBlockVertical,
                           ),
                           Text(
                             "Balance Preview",
-                            style: AppTextStyles.span
-                                .copyWith(fontSize: SizeConfig.labelSizeSmall),
+                            style: AppTextStyles.span.copyWith(fontSize: SizeConfig.labelSizeSmall),
                           ),
                           SizedBox(
                             height: SizeConfig.safeBlockVertical,
@@ -562,18 +501,15 @@ class _SendState extends State<Send> {
                             children: [
                               Text(
                                 "\$${shortAmount(tokenValue.toString(), comma: true, length: 3)} - ",
-                                style: TextStyle(
-                                    fontSize: SizeConfig.titleSize * 0.7),
+                                style: TextStyle(fontSize: SizeConfig.titleSize * 0.7),
                               ),
                               Text(
                                 "\$${shortAmount(convertedValue.toString(), comma: true, length: 3)} = ",
-                                style: TextStyle(
-                                    fontSize: SizeConfig.titleSize * 0.7),
+                                style: TextStyle(fontSize: SizeConfig.titleSize * 0.7),
                               ),
                               Text(
                                 "\$${shortAmount(previewAmount(app, tokenDropdownValue, convertedValue).toString(), comma: true, length: 3)}",
-                                style: TextStyle(
-                                    fontSize: SizeConfig.titleSize * 0.7),
+                                style: TextStyle(fontSize: SizeConfig.titleSize * 0.7),
                               ),
                             ],
                           ),
@@ -585,9 +521,7 @@ class _SendState extends State<Send> {
                       /*Gas Limit*/
                       Divider(),
                       Padding(
-                        padding: EdgeInsets.only(
-                            top: SizeConfig.safeBlockVertical * 2,
-                            bottom: SizeConfig.safeBlockVertical),
+                        padding: EdgeInsets.only(top: SizeConfig.safeBlockVertical * 2, bottom: SizeConfig.safeBlockVertical),
                         child: Row(
                           children: [
                             Expanded(
@@ -609,25 +543,20 @@ class _SendState extends State<Send> {
                                         width: 22,
                                         child: Checkbox(
                                             value: disableGasLimit,
-                                            fillColor: MaterialStateProperty
-                                                .resolveWith(getColor),
-                                            onChanged: (bool value) =>
-                                                setState(() {
+                                            fillColor: MaterialStateProperty.resolveWith(getColor),
+                                            onChanged: (bool value) => setState(() {
                                                   disableGasLimit = value;
                                                   if (value) {
-                                                    gasLimit.text =
-                                                        env["MAX_GAS"];
+                                                    gasLimit.text = env["MAX_GAS"];
                                                   }
                                                 })),
                                       ),
                                       Padding(
-                                        padding:
-                                            const EdgeInsets.only(left: 8.0),
+                                        padding: const EdgeInsets.only(left: 8.0),
                                         child: Text(
                                           "Automatic gas limit",
                                           // style: TextStyle(fontSize: 12.0),
-                                          style: TextStyle(
-                                              fontSize: SizeConfig.fontSize),
+                                          style: TextStyle(fontSize: SizeConfig.fontSize),
                                         ),
                                       )
                                     ],
@@ -643,8 +572,7 @@ class _SendState extends State<Send> {
                                 children: [
                                   Text(
                                     "Gas limit in (WEI)",
-                                    style: TextStyle(
-                                        fontSize: SizeConfig.fontSize),
+                                    style: TextStyle(fontSize: SizeConfig.fontSize),
                                   )
                                 ],
                               ),
@@ -665,8 +593,7 @@ class _SendState extends State<Send> {
                               controller: gasLimit,
                               textAlign: TextAlign.end,
                               keyboardType: TextInputType.number,
-                              contentPadding: EdgeInsets.symmetric(
-                                  vertical: 6, horizontal: 4),
+                              contentPadding: EdgeInsets.symmetric(vertical: 6, horizontal: 4),
                               isDense: true,
                             ),
                           ),
@@ -678,9 +605,7 @@ class _SendState extends State<Send> {
                       /*Recommended fees*/
                       Divider(),
                       Padding(
-                        padding: EdgeInsets.only(
-                            top: SizeConfig.safeBlockVertical * 2,
-                            bottom: SizeConfig.safeBlockVertical),
+                        padding: EdgeInsets.only(top: SizeConfig.safeBlockVertical * 2, bottom: SizeConfig.safeBlockVertical),
                         child: Row(
                           children: [
                             Expanded(
@@ -702,24 +627,19 @@ class _SendState extends State<Send> {
                                         width: 22,
                                         child: Checkbox(
                                             value: disableGasFee,
-                                            fillColor: MaterialStateProperty
-                                                .resolveWith(getColor),
-                                            onChanged: (bool value) =>
-                                                setState(() {
+                                            fillColor: MaterialStateProperty.resolveWith(getColor),
+                                            onChanged: (bool value) => setState(() {
                                                   disableGasFee = value;
                                                   if (value) {
-                                                    gasFee.text =
-                                                        env["GAS_PRICE"];
+                                                    gasFee.text = env["GAS_PRICE"];
                                                   }
                                                 })),
                                       ),
                                       Padding(
-                                        padding:
-                                            const EdgeInsets.only(left: 8.0),
+                                        padding: const EdgeInsets.only(left: 8.0),
                                         child: Text(
                                           "Recommended fees",
-                                          style: TextStyle(
-                                              fontSize: SizeConfig.fontSize),
+                                          style: TextStyle(fontSize: SizeConfig.fontSize),
                                         ),
                                       )
                                     ],
@@ -735,8 +655,7 @@ class _SendState extends State<Send> {
                                 children: [
                                   Text(
                                     "Gas price (In GWEI)",
-                                    style: TextStyle(
-                                        fontSize: SizeConfig.fontSize),
+                                    style: TextStyle(fontSize: SizeConfig.fontSize),
                                   )
                                 ],
                               ),
@@ -757,16 +676,14 @@ class _SendState extends State<Send> {
                               controller: gasFee,
                               textAlign: TextAlign.end,
                               keyboardType: TextInputType.number,
-                              contentPadding: EdgeInsets.symmetric(
-                                  vertical: 6, horizontal: 4),
+                              contentPadding: EdgeInsets.symmetric(vertical: 6, horizontal: 4),
                               isDense: true,
                             ),
                           ),
                         ],
                       ),
                       Padding(
-                        padding: EdgeInsets.only(
-                            top: SizeConfig.safeBlockVertical * 4),
+                        padding: EdgeInsets.only(top: SizeConfig.safeBlockVertical * 4),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           // crossAxisAlignment: CrossAxisAlignment.end,
@@ -775,10 +692,8 @@ class _SendState extends State<Send> {
                               expanded: false,
                               onPressed: () {
                                 // Navigator.of(context).pop();
-                                if (_sendTokenForm.currentState != null &&
-                                    _sendTokenForm.currentState.validate()) {
-                                  startTransaction(
-                                      app, weiValue, tokenDropdownValue);
+                                if (_sendTokenForm.currentState != null && _sendTokenForm.currentState.validate()) {
+                                  startTransaction(app, weiValue, tokenDropdownValue);
                                 }
                               },
                               text: "CONFIRM",
@@ -794,27 +709,24 @@ class _SendState extends State<Send> {
   }
 
   void startTransaction(AvmeWallet app, BigInt value, String token) async {
+    NotificationBar().show(context, text: "sendTransaction");
     ValueNotifier<int> percentage = ValueNotifier(10);
     ValueNotifier<String> label = ValueNotifier("Starting Transaction");
     List<ValueNotifier> loadingNotifier = [percentage, label];
     await showDialog(
         context: context,
         builder: (_) => StatefulBuilder(builder: (builder, setState) {
-              return Consumer<ContactsController>(
-                  builder: (BuildContext context, controller, _) {
+              return Consumer<ContactsController>(builder: (BuildContext context, controller, _) {
                 return ProgressPopup(
                     title: "Warning",
                     listNotifier: loadingNotifier,
                     future: app.walletManager
-                        .sendTransaction(
-                            app, addressController.text, value, token,
-                            listNotifier: loadingNotifier)
+                        .sendTransaction(app, addressController.text, value, token, listNotifier: loadingNotifier)
                         .then((response) async {
                       if (response["status"] == 200) {
                         int position = -1;
                         controller.contacts.forEach((key, value) {
-                          if (value.address == addressController.text)
-                            position = key;
+                          if (value.address == addressController.text) position = key;
                         });
 
                         if (position != -1) {
@@ -823,16 +735,35 @@ class _SendState extends State<Send> {
 
                           //Se não existir na lista de contatos, não deve ser colocado na database, pois não é um contato
 
-                          await RecentlySentTable.instance.insert(RecentlySent(
-                              name: controller.contacts[position].name,
-                              address: controller.contacts[position].address));
+                          await RecentlySentTable.instance
+                              .insert(RecentlySent(name: controller.contacts[position].name, address: controller.contacts[position].address));
                         }
 
                         Navigator.of(context).pop();
                         await Future.delayed(Duration(milliseconds: 250));
                         displayTransactionHash(response["message"]);
-                      } else
+                      } else if (response["status"] == 500) {
                         Navigator.of(context).pop();
+                        await Future.delayed(Duration(seconds: 1));
+                        showDialog(
+                            context: context,
+                            builder: (_) => AppPopupWidget(
+                                title: "Transaction failed",
+                                cancelable: true,
+                                canClose: true,
+                                showIndicator: false,
+                                children: [Text("[Error 1] ${response['message']}")]));
+                      } else {
+                        Navigator.of(context).pop();
+                        showDialog(
+                            context: context,
+                            builder: (_) => AppPopupWidget(
+                                title: "Transaction failed",
+                                cancelable: true,
+                                canClose: true,
+                                showIndicator: false,
+                                children: [Text("[Error 2] Transaction failed")]));
+                      }
                     }));
               });
             }));
@@ -841,29 +772,22 @@ class _SendState extends State<Send> {
   void displayTransactionHash(String message) {
     showDialog(
         context: context,
-        builder: (_) => AppPopupWidget(
-                title: "Transaction done",
-                cancelable: false,
-                canClose: true,
-                showIndicator: false,
-                children: [
-                  AppButton(
-                      onPressed: () async {
-                        print(message);
-                        NotificationBar()
-                            .show(context, text: "Opening in browser $message");
-                        Navigator.of(context).pop();
-                        await Future.delayed(Duration(seconds: 2));
-                        if (await canLaunch(message))
-                          await launch(message);
-                        else {
-                          NotificationBar()
-                              .show(context, text: "cant launch url $message");
-                          print("cant launch url $message");
-                        }
-                      },
-                      text: "Open on Browser")
-                ]));
+        builder: (_) => AppPopupWidget(title: "Transaction done", cancelable: false, canClose: true, showIndicator: false, children: [
+              AppButton(
+                  onPressed: () async {
+                    print(message);
+                    NotificationBar().show(context, text: "Opening in browser $message");
+                    Navigator.of(context).pop();
+                    await Future.delayed(Duration(seconds: 2));
+                    if (await canLaunch(message))
+                      await launch(message);
+                    else {
+                      NotificationBar().show(context, text: "cant launch url $message");
+                      print("cant launch url $message");
+                    }
+                  },
+                  text: "Open on Browser")
+            ]));
   }
 
   Color getColor(Set<MaterialState> states) {
@@ -879,15 +803,13 @@ class _SendState extends State<Send> {
   }
 }
 
-double previewAmount(
-    AvmeWallet app, String tokenDropdownValue, double subtract) {
+double previewAmount(AvmeWallet app, String tokenDropdownValue, double subtract) {
   double total = 0;
   double amount = 0;
   if (tokenDropdownValue == "AVAX")
     amount = app.currentAccount.networkBalance;
   else
-    amount =
-        app.currentAccount.tokensBalanceList[tokenDropdownValue]["balance"];
+    amount = app.currentAccount.tokensBalanceList[tokenDropdownValue]["balance"];
   total = amount - subtract;
   return total;
 }
@@ -897,8 +819,7 @@ double getTokenValue(AvmeWallet app, String tokenDropdownValue) {
   if (tokenDropdownValue == "AVAX")
     amount = app.currentAccount.networkBalance;
   else
-    amount =
-        app.currentAccount.tokensBalanceList[tokenDropdownValue]["balance"];
+    amount = app.currentAccount.tokensBalanceList[tokenDropdownValue]["balance"];
 
   return amount;
 }
