@@ -223,7 +223,7 @@ class WalletManager {
   }
 
   void stopBalanceSubscription(AvmeWallet appState) {
-    if (appState.services.containsKey("balanceSubscription")) appState.killService("balanceSubscription");
+    if (appState.services.containsKey("balanceSubscription")) appState.killIdProcess("balanceSubscription");
   }
 
   Future<void> startValueSubscription(AvmeWallet appState) async {
