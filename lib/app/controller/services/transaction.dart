@@ -133,7 +133,7 @@ Future<String> sendTransaction(AvmeWallet appState, String receiverAddress, BigI
         print("[Info] seconds passed: $secondsPassed, and returned $transactionInformation");
         if (transactionInformation != null) {
           appState.lastTransactionWasSucessful
-              .setLastTransactionInformation(transactionInformation, tokenValue: EtherAmount.inWei(amount), to: receiverAddress);
+              .setLastTransactionInformation(transactionInformation, tokenValue: EtherAmount.inWei(amount), to: receiverAddress, tokenName: token);
           appState.lastTransactionWasSucessful.writeTransaction();
           break;
         }
