@@ -29,7 +29,7 @@ class AvmeWallet extends ChangeNotifier {
   int _currentWalletId;
   Map<String, Isolate> services = {};
   ///Processes and services in threads
-  Map<String, ThreadReference> tProcesses= {};
+  Map<String, List<ThreadReference>> tProcesses= {};
   // Token token = Token();
   NetworkToken networkToken = NetworkToken();
   AccountsState accountsState = AccountsState();
@@ -106,16 +106,30 @@ class AvmeWallet extends ChangeNotifier {
   {
     if(tProcesses.containsKey(_k))
     {
-      printWarning("[App.State] Killing process \"$_k\" at T#${tProcesses[_k].thread} P#${tProcesses[_k].processId}");
       Threads th = Threads.getInstance();
-      th.cancelProcess(tProcesses[_k].thread, tProcesses[_k].processId);
+      for(int i = 0; i < tProcesses[_k].length; i++)
+      {
+        printWarning("[App.State] Killing process \"$_k\" at T#${tProcesses[_k][i].thread} P#${tProcesses[_k][i].processId}");
+
+        th.cancelProcess(tProcesses[_k][i].thread, tProcesses[_k][i].processId);
+        // tProcesses.removeWhere((key, value) => key == _k);
+        // printError("lazy body");
+      }
       tProcesses.removeWhere((key, value) => key == _k);
-      // tProcesses.remove(tProcesses[_k]);
     }
     else
     {
       printError("[App.State] No process found with key \"$_k\"");
     }
+    printError("killIdProcess");
+  }
+
+  void addProcess(String key, ThreadReference reference)
+  {
+    if(tProcesses.containsKey(key))
+      tProcesses[key].add(reference);
+    else
+      tProcesses[key] = [reference];
   }
 
   ///Listeners

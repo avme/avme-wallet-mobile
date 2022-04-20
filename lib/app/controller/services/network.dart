@@ -90,8 +90,13 @@ Future<bool> getValues(AvmeWallet app) async
   ).listen((message) async {
     if(message is ThreadReference)
     {
-      app.tProcesses["valueSubscription"] = message;
+      app.addProcess("valueSubscription", message);
       return;
+      // if(app.tProcesses.containsKey("valueSubscription"))
+      //   app.tProcesses["valueSubscription"].add(message);
+      // else
+      //   app.tProcesses["valueSubscription"] = [message];
+      // return;
     }
     if (message.containsKey("listenValue")) {
       List response = message["listenValue"];
@@ -107,10 +112,6 @@ Future<bool> getValues(AvmeWallet app) async
         didValueUpdated = true;
       });
     }
-  });
-
-  sub1.onDone(() {
-    printApprove('${task1.caller} onDone');
   });
 
   Map<String, dynamic> priceData = {
