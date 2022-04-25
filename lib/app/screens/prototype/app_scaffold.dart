@@ -12,8 +12,10 @@ import 'package:avme_wallet/app/screens/prototype/tokens.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/accounts_drawer.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/debug.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
+import 'package:avme_wallet/app/test/webview.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:provider/provider.dart';
 import 'package:avme_wallet/app/screens/prototype/send.dart';
@@ -269,6 +271,19 @@ class _State extends State<AppScaffold>
             tabController: appScaffoldTabController,
           )
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+
+        onPressed: (){
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AppWebView()
+            )
+          );
+        },
+        tooltip: 'WebView',
+        child: const FaIcon(FontAwesomeIcons.globe,),
       ),
     );
   }

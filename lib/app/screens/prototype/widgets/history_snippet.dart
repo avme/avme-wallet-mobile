@@ -7,7 +7,7 @@ import 'package:avme_wallet/app/screens/prototype/widgets/neon_button.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:avme_wallet/app/screens/widgets/transaction_details.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart' as intl;
 
 class HistorySnippet extends StatefulWidget {
   final TabController appScaffoldTabController;
@@ -88,7 +88,7 @@ class _HistorySnippetState extends State<HistorySnippet> {
 
     transactionsMap.asMap().forEach((key, card) {
       DateTime date = DateTime.fromMicrosecondsSinceEpoch(card["unixDate"], isUtc: false);
-      DateFormat dateFormat = DateFormat('MM/dd/yyyy');
+      intl.DateFormat dateFormat = intl.DateFormat('MM/dd/yyyy');
       card["formatedAmount"] = shortAmount(
           weiToFixedPoint(
             amountValidator.firstMatch(card["value"]).group(1).replaceAll(" wei", ""),
@@ -164,13 +164,14 @@ class _HistoryTableState extends State<HistoryTable> {
           Expanded(
             flex: 4,
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 widget.sent == true
-                    ? Text(
-                        "-${widget.amount}",
-                        style: TextStyle(color: AppColors.lightBlue),
-                      )
+                  ? Text(
+                    "-${widget.amount}",
+                    style: TextStyle(color: AppColors.lightBlue),
+                    textAlign: TextAlign.right,
+                )
                     : Text("+${widget.amount}", style: TextStyle(color: AppColors.purple)),
               ],
             ),

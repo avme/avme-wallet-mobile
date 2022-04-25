@@ -14,7 +14,7 @@ import 'package:avme_wallet/app/screens/widgets/transaction_details.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart' as intl;
 import 'package:provider/provider.dart';
 
 import '../../controller/database/value_history.dart';
@@ -244,7 +244,7 @@ class _HistoryState extends State<History> {
 
     transactionsMap.asMap().forEach((key, card) {
       DateTime date = DateTime.fromMicrosecondsSinceEpoch(card["unixDate"], isUtc: false);
-      DateFormat dateFormat = DateFormat('MM/dd/yyyy hh:mm:ss');
+      intl.DateFormat dateFormat = intl.DateFormat('MM/dd/yyyy hh:mm:ss');
       card["formatedAmount"] = weiToFixedPoint(amountValidator.firstMatch(card["value"]).group(1).replaceAll(" wei", ""));
       card["date"] = dateFormat.format(date);
       double tokenValue;
@@ -338,7 +338,7 @@ class _HistoryTableState extends State<HistoryTable> {
                       widget.value,
                       style: TextStyle(color: AppColors.lightBlue),
                     ),
-                    Text(widget.tokenAmount),
+                    Text("${widget.tokenAmount}", textAlign: TextAlign.right,),
                   ],
                 ),
               ),
