@@ -12,8 +12,6 @@ import 'package:async/async.dart';
 import '../threads.dart';
 
 Future<bool> balanceSubscription(AvmeWallet appState) async {
-  bool didBalanceUpdate = false;
-
   Map<int, AccountObject> accounts = appState.accountList;
   int currentWalletId = appState.currentWalletId;
 
@@ -58,18 +56,23 @@ Future<bool> balanceSubscription(AvmeWallet appState) async {
       )
     );
   }
-
+  printWarning("process pool size: ${processPool.length}");
   StreamGroup.merge(processPool).listen((event) {
     if(event is ThreadReference)
     {
-      printMark("Received ThreadReference ID: ${event.processId}");
+      // printMark("Received ThreadReference ID: ${event.processId}");
       appState.addProcess("balanceSubscription", event);
       return;
     }
     else
     {
-      List<Map> balanceData = event["_balanceSubscription"]["balance"];
-      int accId = event["_balanceSubscription"]["id"];
+      // for(ThreadReference processo in appState.tProcesses["balanceSubscription"])
+      // {
+      //   printMark("ID:${processo.processId} Caller: ${processo.caller} Noise: ${processo.noise}");
+      // }
+
+      List<Map> balanceData = event["balanceSubscription"]["balance"];
+      int accId = event["balanceSubscription"]["id"];
 
       ///Recovering the account to apply the requested data
       AccountObject accountObject = appState.accountList[accId];
@@ -89,52 +92,44 @@ Future<bool> balanceSubscription(AvmeWallet appState) async {
 
         if (key == "AVAX") {
           oldBalance = accountObject.networkBalance;
-
+          // printError("Old Balance $oldBalance, Balance: $balance");
           ///Double
           updatedBalance = oldBalance;
 
           ///Checking the difference in BigInt/Wei
-          if (accountObject.networkTokenBalance != balance) accountObject.updateAccountBalance = balance;
+          if (accountObject.networkTokenBalance != balance) {
 
-          ///Recovering the USD price of "Network Token" that we retrieved in
-          ///the valueSubscription routine...
-          Decimal networkTokenValue = appState.networkToken.decimal;
+            ///Recovering the USD price of "Network Token" that we retrieved in
+            ///the valueSubscription routine...
+            Decimal networkTokenValue = appState.networkToken.decimal;
+            ///Calculating the balance
+            updatedBalance = balanceUSD * networkTokenValue.toDouble();
 
-          ///Stored as String
-
-          ///Calculating the balance
-          updatedBalance = balanceUSD * networkTokenValue.toDouble();
-
-          ///Checking if the balance has been incremented
-          //TODO: Fix da sheet
-          // if(accountObject.networkBalance != null
-          //     && accountObject.networkBalance < updatedBalance
-          //     && didBalanceUpdate)
-          // {
-          //   double difference = updatedBalance - accountObject.networkBalance;
-          //   print("[[[DIFFERENCE]]]");
-          //   print(difference);
-          //   if(difference > 0)
-          //     PushNotification.showNotification(
-          //         id: 9,
-          //         title: "Transfer received ($key)",
-          //         body: "Account Update: "
-          //             "You received \$${difference.toStringAsFixed(2)}\n ($key) in the account ${accountObject.title}.",
-          //         payload: "app/history"
-          //     );
-          // }
-
-          ///Finally we update the balance in the account
-          accountObject.networkBalance = updatedBalance;
-          appState.updateAccountObject(accId, accountObject);
+            ///Checking if the balance has been incremented
+            if(accountObject.networkTokenBalance < balance && accountObject.networkTokenBalance != BigInt.zero)
+            {
+              double difference = updatedBalance - accountObject.networkBalance;
+              if(difference > 0)
+                PushNotification.showNotification(
+                  id: 9,
+                  title: "Transfer received ($key)",
+                  body: "Account Update: "
+                      "You received \$${difference.toStringAsFixed(2)}\b ($key) in the Account#$accId ${accountObject.title}.",
+                  payload: "app/history"
+                );
+            }
+            printError("Updating avax ${accountObject.networkTokenBalance} <= $balance");
+            accountObject.updateAccountBalance = balance;
+            ///Finally we update the balance in the account
+            accountObject.networkBalance = updatedBalance;
+            appState.updateAccountObject(accId, accountObject);
+          }
         } else {
           ///When consulting a Smart Contract that does not exist on
           ///api.thegraph.com the default value will be 1 USD
           double tokenValue = 1;
           if (accountObject.tokensBalanceList.containsKey(key)) {
             oldBalance = accountObject.tokensBalanceList[key]["balance"];
-
-            ///Double
           }
 
           ///Recovering the USD price of "Token" that we retrieved in
@@ -146,14 +141,13 @@ Future<bool> balanceSubscription(AvmeWallet appState) async {
 
           updatedBalance = oldBalance;
 
-          Map<String, dynamic> preparedData = {};
-
-          preparedData["wei"] = balance;
-
           ///Calculating the balance
           updatedBalance = balanceUSD * tokenValue;
 
-          preparedData["balance"] = updatedBalance;
+          Map<String, dynamic> preparedData = {
+            "wei" : balance,
+            "balance" : updatedBalance
+          };
 
           ///Checking the prepared data and inserting it
           // print("NOSSO MAP $key");
@@ -161,32 +155,46 @@ Future<bool> balanceSubscription(AvmeWallet appState) async {
 
           String mainName = key.replaceAll(" testnet", "");
 
-          ///Checking if the balance has been incremented
-          if (accountObject.tokensBalanceList[key] != null && accountObject.tokensBalanceList[key]["balance"] < updatedBalance && didBalanceUpdate) {
-            double difference = updatedBalance - accountObject.tokensBalanceList[key]["balance"];
-            if (difference > 0)
-              PushNotification.showNotification(
-                id: 9,
-                title: "Transfer received ($key)",
-                body: "Account Update: "
-                    "You received \$${difference.toStringAsFixed(2)}\n ($key) in the account ${accountObject.title}.",
-                payload: "app/history");
+          if(accountObject.tokensBalanceList[key] != null)
+          {
+            BigInt tWei = accountObject.tokensBalanceList[key]["wei"];
+
+            ///Checking if the balance has been incremented
+            if (tWei != balance) {
+              ///Houve um incremento
+              if(balance > tWei)
+              {
+                double difference = updatedBalance - accountObject.tokensBalanceList[key]["balance"];
+                if (difference > 0)
+                  PushNotification.showNotification(
+                    id: 9,
+                    title: "Transfer received ($key)",
+                    body: "Account Update: "
+                        "You received \$${difference.toStringAsFixed(2)}\b ($key) in the Account#$accId ${accountObject.title}.",
+                    payload: "app/history"
+                  );
+              }
+
+              accountObject.updateTokens(key, preparedData);
+              if (appState.activeContracts.tokens.contains(mainName)) {
+                accountObject.updateTokens(mainName, preparedData);
+              }
+              appState.updateAccountObject(accId, accountObject);
+            }
+          } else
+          {
+            accountObject.updateTokens(key, preparedData);
+            if (appState.activeContracts.tokens.contains(mainName)) {
+              accountObject.updateTokens(mainName, preparedData);
+            }
+            appState.updateAccountObject(accId, accountObject);
           }
-
-          accountObject.tokensBalanceList[key] = preparedData;
-
-          print(appState.activeContracts.tokens.contains(mainName));
-
-          if (appState.activeContracts.tokens.contains(mainName)) {
-            accountObject.tokensBalanceList[mainName] = preparedData;
-          }
-          didBalanceUpdate = true;
         }
       });
     }
   });
 
-  return didBalanceUpdate;
+  return true;
 }
 
 Future<void> trackBalance(List<dynamic> params, {ThreadData threadData, int id, ThreadMessage threadMessage}) async {
@@ -244,7 +252,7 @@ Future<void> trackBalance(List<dynamic> params, {ThreadData threadData, int id, 
           });
         return wrapAsList(identifier: contractItem.key,
             future: contractItem.value.balanceOf(address),
-            processName: "_balanceSubscription");
+            processName: "balanceSubscription");
       }));
 
       tokenBalance.insert(0, {"AVAX": balance.getInWei});
@@ -257,7 +265,7 @@ Future<void> trackBalance(List<dynamic> params, {ThreadData threadData, int id, 
           tokenBalance.removeWhere((element) =>
               element.containsKey(blacklisted)));
       threadMessage.payload = {
-        "_balanceSubscription": {"balance": tokenBalance, "id": account["id"]}
+        "balanceSubscription": {"balance": tokenBalance, "id": account["id"]}
       };
       threadData.sendPort.send(threadMessage);
       print(blackList);

@@ -709,7 +709,6 @@ class _SendState extends State<Send> {
   }
 
   void startTransaction(AvmeWallet app, BigInt value, String token) async {
-    NotificationBar().show(context, text: "sendTransaction");
     ValueNotifier<int> percentage = ValueNotifier(10);
     ValueNotifier<String> label = ValueNotifier("Starting Transaction");
     List<ValueNotifier> loadingNotifier = [percentage, label];
