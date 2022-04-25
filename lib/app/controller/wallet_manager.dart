@@ -216,18 +216,17 @@ class WalletManager {
   }
 
   Future<void> startBalanceSubscription(AvmeWallet appState) async {
-    if (!appState.services.containsKey("balanceSubscription")) {
+    if (!appState.tProcesses.containsKey("balanceSubscription")) {
       bool res = await services.balanceSubscription(appState);
-      print("services.balanceSubscription returned: $res");
     }
   }
 
   void stopBalanceSubscription(AvmeWallet appState) {
-    if (appState.services.containsKey("balanceSubscription")) appState.killIdProcess("balanceSubscription");
+    if (appState.tProcesses.containsKey("balanceSubscription")) appState.killIdProcess("balanceSubscription");
   }
 
   Future<void> startValueSubscription(AvmeWallet appState) async {
-    if (!appState.services.containsKey("valueSubscription")) await services.getValues(appState);
+    if (!appState.tProcesses.containsKey("valueSubscription")) await services.getValues(appState);
   }
 
   void stopValueSubscription(AvmeWallet appState) {

@@ -20,7 +20,7 @@ class _BalanceState extends State<Balance> {
 
     appState = Provider.of<AvmeWallet>(context);
     // appState.walletManager.startBalanceSubscription(appState);
-    appState.services.keys.forEach((key) {
+    appState.tProcesses.keys.forEach((key) {
       print("KEYS:$key");
     });
     print("ACCOUNT LIST:");

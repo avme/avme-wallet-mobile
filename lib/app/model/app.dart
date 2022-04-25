@@ -197,7 +197,6 @@ class AvmeWallet extends ChangeNotifier {
     if (authMap["status"] == 200) {
       loadingNotifier[0].value = 90;
       loadingNotifier[1].value = "Retrieving data from Web...";
-      await walletManager.restartTokenServices(this);
       await Future.delayed(Duration(milliseconds: 250));
       if (display) Navigator.of(context).pop();
       return [true];
