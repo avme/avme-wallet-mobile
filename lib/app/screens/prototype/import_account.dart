@@ -714,8 +714,9 @@ class _ImportAccountState extends State<ImportAccount> {
                                                   .then((result) {
                                                 // Creates the user account
                                                 appWalletManager.selectedId = 0;
-                                                Navigator.pop(context);
-                                                Navigator.pushReplacementNamed(context, "app/overview");
+                                                // Navigator.pop(context);
+                                                // Navigator.pushReplacementNamed(context, "app/overview");
+                                                Navigator.of(context).pushNamedAndRemoveUntil('app/overview', (Route<dynamic> route) => false);
                                                 NotificationBar().show(context, text: "Account #0 selected");
                                               }));
                                         }));
@@ -746,8 +747,9 @@ class _ImportAccountState extends State<ImportAccount> {
                                                     .then((result) {
                                                   // Creates the user account
                                                   appWalletManager.selectedId = 0;
-                                                  Navigator.pop(context);
-                                                  Navigator.pushReplacementNamed(context, "app/overview");
+                                                  // Navigator.pop(context);
+                                                  // Navigator.pushReplacementNamed(context, "app/overview");
+                                                  Navigator.of(context).pushNamedAndRemoveUntil('app/overview', (Route<dynamic> route) => false);
                                                   NotificationBar().show(context, text: "Account #0 selected");
                                                 }));
                                           }));
@@ -772,8 +774,9 @@ class _ImportAccountState extends State<ImportAccount> {
                               appWalletManager.walletManager.makeAccount(controller1.text, appWalletManager, mnemonic: mnemonicString).then((result) {
                             // Creates the user account
                             appWalletManager.selectedId = 0;
-                            Navigator.pop(context);
-                            Navigator.pushReplacementNamed(context, "app/overview");
+                            // Navigator.pop(context);
+                            // Navigator.pushReplacementNamed(context, "app/overview");
+                            Navigator.of(context).pushNamedAndRemoveUntil('app/overview', (Route<dynamic> route) => false);
                             NotificationBar().show(context, text: "Account #0 selected");
                           }));
                     }));
