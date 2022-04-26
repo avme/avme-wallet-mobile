@@ -191,15 +191,10 @@ class _ImportAccountState extends State<ImportAccount> {
     final regex = RegExp(r'\ +');
     String responseNew = response.replaceAll(regex, ' ');
     List<String> responseList = responseNew.split(' ');
-    print('responseNew $responseNew');
-    print('List response $responseList');
-    print('responseList.length ${responseList.length} -- ${responseList.length < 24}');
-    if (controllerMnemonic.text == '' || responseList.length < 24) {
-      print('test1');
-      return [false, responseNew];
+    if (controllerMnemonic.text != '' || responseList.length == 12 || responseList.length == 24) {
+      return [true, responseNew, responseList.length];
     } else {
-      print('test2');
-      return [true, responseNew];
+      return [false, responseNew];
     }
   }
 
@@ -295,12 +290,17 @@ class _ImportAccountState extends State<ImportAccount> {
                             Column(
                               children: [
                                 Text(
-                                  "Fill in mnemonic phrase to import an account.",
+                                  "Fill in mnemonic phrase to import an account",
                                   style: AppTextStyles.spanWhite,
                                   textAlign: TextAlign.center,
                                 ),
                                 Text(
                                   "Separate words with space or new line",
+                                  style: AppTextStyles.spanWhite,
+                                  textAlign: TextAlign.center,
+                                ),
+                                Text(
+                                  "Supports both 12 and 24 word mnemonic length",
                                   style: AppTextStyles.spanWhite,
                                   textAlign: TextAlign.center,
                                 ),
@@ -342,18 +342,17 @@ class _ImportAccountState extends State<ImportAccount> {
                                       List<dynamic> response = validate();
                                       bool validated = response[0];
                                       mnemonicString = response[1];
-                                      print('response: $validated, $mnemonicString');
+                                      int _phraseCount = response[2];
                                       if (validated == false) {
                                         setState(() {
                                           invalidMnemonic = 'One or more words are missing';
                                           isAllFilled = false;
                                         });
                                       } else {
-                                        if (await appWalletManager.walletManager.checkMnemonic(phrase: mnemonicString, phraseCount: 24)) {
+                                        if (await appWalletManager.walletManager.checkMnemonic(phrase: mnemonicString, phraseCount: _phraseCount)) {
                                           swap = !swap;
                                           setState(() {});
                                         } else {
-                                          print('what');
                                           setState(() {
                                             invalidMnemonic = 'Words do not correspond to mnemonic dictionary';
                                             isAllFilled = false;
@@ -384,26 +383,49 @@ class _ImportAccountState extends State<ImportAccount> {
     List<String> mnemonicDict = mnemonicString.split(' ');
     int row = 0, count = 1;
 
-    mnemonicDict.forEach((element) {
-      if (count == 13) row++;
-      print('row $row');
+    if (mnemonicDict.length == 12) {
+      mnemonicDict.forEach((element) {
+        if (count == 7) row++;
+        print('row $row');
 
-      columnMap[row] = columnMap[row] ?? [];
-      columnMap[row]!.add(Row(
-        children: [
-          Text(
-            " $count. ",
-            style: TextStyle(color: Colors.blue, fontSize: SizeConfig.fontSizeHuge),
-          ),
-          Text(
-            element,
-            style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: SizeConfig.fontSizeHuge),
-          ),
-        ],
-      ));
-      print("row[$row] $count - $element");
-      count++;
-    });
+        columnMap[row] = columnMap[row] ?? [];
+        columnMap[row]!.add(Row(
+          children: [
+            Text(
+              " $count. ",
+              style: TextStyle(color: Colors.blue, fontSize: SizeConfig.fontSizeHuge),
+            ),
+            Text(
+              element,
+              style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: SizeConfig.fontSizeHuge),
+            ),
+          ],
+        ));
+        print("row[$row] $count - $element");
+        count++;
+      });
+    } else {
+      mnemonicDict.forEach((element) {
+        if (count == 13) row++;
+        print('row $row');
+
+        columnMap[row] = columnMap[row] ?? [];
+        columnMap[row]!.add(Row(
+          children: [
+            Text(
+              " $count. ",
+              style: TextStyle(color: Colors.blue, fontSize: SizeConfig.fontSizeHuge),
+            ),
+            Text(
+              element,
+              style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: SizeConfig.fontSizeHuge),
+            ),
+          ],
+        ));
+        print("row[$row] $count - $element");
+        count++;
+      });
+    }
 
     List<Widget> columnWidgets = [];
     columnMap.values.forEach((value) {
