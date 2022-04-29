@@ -60,17 +60,19 @@ class _NewAccountState extends State<NewAccount> {
   String warning1 = " Use these words in sequential order to recover your AVME Wallet";
   String warningMnemonic = " Oops, looks like you forgot to fill number ";
   String warning2 =
-      " STORE THIS KEY PHRASE IN A SECURE LOCATION. ANYONE WITH THIS KEY PHRASE CAN ACCESS YOUR AVALANCHE WALLET. THERE IS NO WAY TO RECOVER LOST KEY PHRASES.";
+      " STORE THIS KEY PHRASE IN A SECURE LOCATION.\nANYONE WITH THIS KEY PHRASE CAN ACCESS YOUR AVALANCHE WALLET.\nTHERE IS NO WAY TO RECOVER LOST KEY PHRASES.";
 
   int wrongMnemonic = -1;
 
   FormMnemonic formMnemonic;
 
+  int _dropValue = 12;
+
+  bool _buttonStrength = true;
+
   @override
   initState() {
     appWalletManager = Provider.of<AvmeWallet>(context, listen: false);
-    this.walletSeed = this.walletSeed ?? appWalletManager.walletManager.newMnemonic();
-    this.walletSeedMap = this.walletSeed.split(' ').asMap();
     phraseFocusNode.addListener(() {
       setState(() => null);
     });
@@ -86,6 +88,9 @@ class _NewAccountState extends State<NewAccount> {
   Widget build(BuildContext context) {
     SizeConfig().init(context);
     double fieldSpacing = SizeConfig.safeBlockVertical * 4;
+
+    this.walletSeed = this.walletSeed ?? appWalletManager.walletManager.newMnemonic(_dropValue);
+    this.walletSeedMap = this.walletSeed.split(' ').asMap();
 
     // this.labelSize = SizeConfig.safeBlockVertical * 6;
 
@@ -127,7 +132,59 @@ class _NewAccountState extends State<NewAccount> {
                             Column(
                               children: [
                                 ///Seed Phrase
-                                seedField(context),
+                                Row(
+                                  children: [
+                                    Expanded(flex: 18, child: seedField(context)),
+                                    Expanded(flex: 1, child: SizedBox()),
+                                    Expanded(
+                                      flex: 8,
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(top: 8.0),
+                                        child: Container(
+                                          padding: EdgeInsets.symmetric(vertical: SizeConfig.blockSizeVertical * 0.8),
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.all(Radius.circular(4)),
+                                            color: AppColors.purple,
+                                          ),
+                                          // height: SizeConfig.blockSizeVertical * 8,
+                                          // height: (SizeConfig.blockSizeVertical * 12) - 8,
+                                          child: ButtonTheme(
+                                            alignedDropdown: true,
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
+                                            child: DropdownButton(
+                                              dropdownColor: AppColors.purple,
+                                              autofocus: false,
+                                              // elevation: 20,
+                                              onChanged: dropChange,
+                                              style: AppTextStyles.spanWhiteMedium,
+                                              value: _dropValue,
+                                              // isDense: true,
+                                              underline: SizedBox(),
+                                              isExpanded: true,
+                                              // selectedItemBuilder: (BuildContext context) {
+                                              //   return <String>['12', '24'].map<Widget>((String item) {
+                                              //     return Container(
+                                              //         alignment: Alignment.center, width: double.maxFinite, child: Text(item, textAlign: TextAlign.end));
+                                              //   }).toList();
+                                              // },
+                                              items: <int>[12, 24].map<DropdownMenuItem<int>>((int value) {
+                                                return DropdownMenuItem<int>(
+                                                  child: Center(
+                                                    child: Text(
+                                                      value.toString(),
+                                                      textAlign: TextAlign.center,
+                                                    ),
+                                                  ),
+                                                  value: value,
+                                                );
+                                              }).toList(),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
 
                                 ///Passphrase
                                 passPhrase(context),
@@ -137,9 +194,76 @@ class _NewAccountState extends State<NewAccount> {
                                 SizedBox(
                                   height: fieldSpacing,
                                 ),
-                                createAccount(),
+                                // Row(
+                                //   mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                //   children: [
+                                //     Expanded(
+                                //       flex: 4,
+                                //       child: AppButton(
+                                //         onPressed: () {
+                                //           setState(() {
+                                //             _buttonStrength = !_buttonStrength;
+                                //           });
+                                //         },
+                                //         text: _buttonStrength ? '12' : '24',
+                                //         textStyle: TextStyle(color: Colors.white, fontSize: SizeConfig.fontSizeLarge),
+                                //       ),
+                                //     ),
+                                //     Expanded(flex: 1, child: SizedBox()),
+                                //     Expanded(flex: 12, child: createAccount()),
+                                //   ],
+                                // ),
                               ],
-                            )
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                // Container(
+                                //   decoration: BoxDecoration(
+                                //     borderRadius: BorderRadius.all(Radius.circular(4)),
+                                //     color: AppColors.purple,
+                                //   ),
+                                //   height: SizeConfig.blockSizeVertical * 6,
+                                //   width: SizeConfig.blockSizeHorizontal * 20,
+                                //   child: ButtonTheme(
+                                //     alignedDropdown: true,
+                                //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
+                                //     child: DropdownButton(
+                                //       dropdownColor: AppColors.purple,
+                                //       autofocus: false,
+                                //       elevation: 4,
+                                //       onChanged: dropChange,
+                                //       style: AppTextStyles.spanWhiteMedium,
+                                //       value: _dropValue,
+                                //       // isDense: true,
+                                //       underline: SizedBox(),
+                                //       isExpanded: true,
+                                //       // selectedItemBuilder: (BuildContext context) {
+                                //       //   return <String>['12', '24'].map<Widget>((String item) {
+                                //       //     return Container(
+                                //       //         alignment: Alignment.center, width: double.maxFinite, child: Text(item, textAlign: TextAlign.end));
+                                //       //   }).toList();
+                                //       // },
+                                //       items: <int>[12, 24].map<DropdownMenuItem<int>>((int value) {
+                                //         return DropdownMenuItem<int>(
+                                //           child: Center(
+                                //             child: Text(
+                                //               value.toString(),
+                                //               textAlign: TextAlign.center,
+                                //             ),
+                                //           ),
+                                //           value: value,
+                                //         );
+                                //       }).toList(),
+                                //     ),
+                                //   ),
+                                // ),
+                                Container(
+                                  height: SizeConfig.blockSizeVertical * 6,
+                                  child: createAccount(),
+                                ),
+                              ],
+                            ),
                           ],
                         ),
                       )),
@@ -209,7 +333,7 @@ class _NewAccountState extends State<NewAccount> {
 
   int maxCharacteresInsideTextField(BuildContext context) {
     // int size = (MediaQuery.of(context).size.width / 17).round();
-    int size = (SizeConfig.safeBlockHorizontal * 7).round();
+    int size = (SizeConfig.safeBlockHorizontal * 4).round();
     return size;
   }
 
@@ -288,24 +412,45 @@ class _NewAccountState extends State<NewAccount> {
     Map<int, List<Widget>> columnMap = {};
     int row = 0;
 
-    seed.forEach((key, value) {
-      if (key.remainder(12) == 0 && key != 0) row++;
+    if (_dropValue == 24) {
+      seed.forEach((key, value) {
+        if (key.remainder(12) == 0 && key != 0) row++;
 
-      columnMap[row] = columnMap[row] ?? [];
-      columnMap[row].add(Row(
-        children: [
-          Text(
-            " ${key + 1}. ",
-            style: TextStyle(color: Colors.blue, fontSize: SizeConfig.fontSizeHuge),
-          ),
-          Text(
-            value,
-            style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: SizeConfig.fontSizeHuge),
-          ),
-        ],
-      ));
-      // print("row[$row] ${key+1} - $value");
-    });
+        columnMap[row] = columnMap[row] ?? [];
+        columnMap[row].add(Row(
+          children: [
+            Text(
+              " ${key + 1}. ",
+              style: TextStyle(color: Colors.blue, fontSize: SizeConfig.fontSizeHuge),
+            ),
+            Text(
+              value,
+              style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: SizeConfig.fontSizeHuge),
+            ),
+          ],
+        ));
+        // print("row[$row] ${key+1} - $value");
+      });
+    } else {
+      seed.forEach((key, value) {
+        if (key.remainder(6) == 0 && key != 0) row++;
+
+        columnMap[row] = columnMap[row] ?? [];
+        columnMap[row].add(Row(
+          children: [
+            Text(
+              " ${key + 1}. ",
+              style: TextStyle(color: Colors.blue, fontSize: SizeConfig.fontSizeHuge),
+            ),
+            Text(
+              value,
+              style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: SizeConfig.fontSizeHuge),
+            ),
+          ],
+        ));
+        // print("row[$row] ${key+1} - $value");
+      });
+    }
 
     List<Widget> columnWidgets = [];
     columnMap.values.forEach((value) {
@@ -339,7 +484,7 @@ class _NewAccountState extends State<NewAccount> {
                         padding: EdgeInsets.only(left: 32, right: 32, top: 16, bottom: 8),
                         cancelable: false,
                         children: [
-                          Text(this.warning1, style: TextStyle(fontSize: SizeConfig.fontSizeLarge * 0.5 + 8)),
+                          Text(this.warning1, textAlign: TextAlign.center, style: TextStyle(fontSize: SizeConfig.fontSizeLarge * 0.5 + 8)),
                           Padding(
                             padding: EdgeInsets.symmetric(vertical: SizeConfig.blockSizeVertical),
                             child: Divider(),
@@ -357,7 +502,7 @@ class _NewAccountState extends State<NewAccount> {
                         ],
                         actions: [
                           AppNeonButton(
-                            text: "COPY PHRASE KEY",
+                            text: "COPY SEED",
                             expanded: false,
                             onPressed: () async {
                               await Clipboard.setData(ClipboardData(text: this.walletSeed));
@@ -397,7 +542,7 @@ class _NewAccountState extends State<NewAccount> {
                       onPressed: () {
                         NotificationBar().show(context, text: "A new key phrase was generated");
                         setState(() {
-                          this.walletSeed = appWalletManager.walletManager.newMnemonic();
+                          this.walletSeed = appWalletManager.walletManager.newMnemonic(_dropValue);
                           this.walletSeedMap = this.walletSeed.split(' ').asMap();
                         });
                       },
@@ -588,13 +733,27 @@ class _NewAccountState extends State<NewAccount> {
                     walletSeedMap: walletSeedMap,
                     appWalletManager: appWalletManager,
                     walletSeed: walletSeed,
-                    phraseController: phraseController));
+                    phraseController: phraseController,
+                    strength: _dropValue));
           });
         }
       },
       text: 'CREATE ACCOUNT',
       expanded: false,
     );
+  }
+
+  void dropChange(int value) {
+    if (value != _dropValue) {
+      setState(() {
+        _dropValue = value;
+        NotificationBar().show(context, text: "A new key phrase was generated with strength of $_dropValue words");
+        setState(() {
+          this.walletSeed = appWalletManager.walletManager.newMnemonic(_dropValue);
+          this.walletSeedMap = this.walletSeed.split(' ').asMap();
+        });
+      });
+    }
   }
 }
 
@@ -603,9 +762,10 @@ class MnemonicsPreAccCreation extends StatefulWidget {
   final Map<dynamic, dynamic> walletSeedMap;
   final AvmeWallet appWalletManager;
   final TextEditingController phraseController;
+  final int strength;
 
   const MnemonicsPreAccCreation(
-      {Key key, this.warning1, this.warning2, this.walletSeed, this.walletSeedMap, this.appWalletManager, this.phraseController})
+      {Key key, this.warning1, this.warning2, this.walletSeed, this.walletSeedMap, this.appWalletManager, this.phraseController, this.strength})
       : super(key: key);
 
   @override
@@ -667,7 +827,8 @@ class _MnemonicsPreAccCreationState extends State<MnemonicsPreAccCreation> {
                           padding: EdgeInsets.only(
                             top: SizeConfig.safeBlockVertical * 2,
                           ),
-                          child: Text(widget.warning1, style: TextStyle(fontSize: SizeConfig.fontSizeLarge * 0.5 + 10)),
+                          child:
+                              Text('${widget.warning1}\n(scroll down to continue)', style: TextStyle(fontSize: SizeConfig.fontSizeLarge * 0.5 + 10)),
                         ),
                         Padding(
                           padding: const EdgeInsets.all(12),
@@ -693,110 +854,113 @@ class _MnemonicsPreAccCreationState extends State<MnemonicsPreAccCreation> {
                   });
                   if (await _authApi.canAuthenticate()) {
                     await showDialog(
-                      context: context,
-                      builder: (_) {
-                        return AppPopupWidget(
-                          title: 'Fingerprint Authentication',
-                          padding: EdgeInsets.all(20),
-                          canClose: false,
-                          cancelable: false,
-                          children: [
-                            Text(
-                              'Would you like to enable\nfingerprint authentication?',
-                              style: TextStyle(
-                                fontSize: SizeConfig.fontSizeHuge,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            SizedBox(
-                              height: SizeConfig.blockSizeVertical * 2,
-                            ),
-                            Row(
+                        context: context,
+                        builder: (_) {
+                          return AppPopupWidget(
+                              title: 'Fingerprint Authentication',
+                              padding: EdgeInsets.all(20),
+                              canClose: false,
+                              cancelable: false,
                               children: [
-                                Expanded(flex: 1, child: SizedBox()),
-                                Expanded(
-                                    flex: 3,
-                                    child: AppNeonButton(
-                                      textStyle: TextStyle(fontSize: SizeConfig.fontSizeLarge, color: AppColors.purple),
-                                      onPressed: () async {
-                                        Navigator.of(context).pop();
-                                        await showDialog(
-                                            context: context,
-                                            builder: (_) => StatefulBuilder(builder: (builder, setState) {
-                                                  return ProgressPopup(
-                                                      title: "Creating",
-                                                      future: widget.appWalletManager.walletManager
-                                                          .makeAccount(widget.phraseController.text, widget.appWalletManager,
-                                                              mnemonic: widget.walletSeed)
-                                                          .then((result) {
-                                                        // Creates the user account
-                                                        widget.appWalletManager.selectedId = 0;
-                                                        //Navigator.pop(context);
-                                                        Navigator.pushReplacementNamed(context, "app/overview");
-                                                        NotificationBar().show(context, text: "Account #0 selected");
-                                                      }));
-                                                }));
-                                      },
-                                      text: 'NO',
-                                    )),
-                                Expanded(flex: 1, child: SizedBox()),
-                                Expanded(
-                                    flex: 3,
-                                    child: AppNeonButton(
-                                      textStyle: TextStyle(fontSize: SizeConfig.fontSizeLarge, color: AppColors.purple),
-                                      onPressed: () async {
-                                        dynamic _temp;
-                                        _temp = await _authApi.saveSecret(widget.phraseController.text);
+                                Text(
+                                  'Would you like to enable\nfingerprint authentication?',
+                                  style: TextStyle(
+                                    fontSize: SizeConfig.fontSizeHuge,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                SizedBox(
+                                  height: SizeConfig.blockSizeVertical * 2,
+                                ),
+                                Row(
+                                  children: [
+                                    Expanded(flex: 1, child: SizedBox()),
+                                    Expanded(
+                                        flex: 3,
+                                        child: AppNeonButton(
+                                          textStyle: TextStyle(fontSize: SizeConfig.fontSizeLarge, color: AppColors.purple),
+                                          onPressed: () async {
+                                            Navigator.of(context).pop();
+                                            await showDialog(
+                                                context: context,
+                                                builder: (_) => StatefulBuilder(builder: (builder, setState) {
+                                                      return ProgressPopup(
+                                                          title: "Creating",
+                                                          future: widget.appWalletManager.walletManager
+                                                              .makeAccount(widget.phraseController.text, widget.appWalletManager,
+                                                                  mnemonic: widget.walletSeed, stregth: widget.strength)
+                                                              .then((result) {
+                                                            // Creates the user account
+                                                            widget.appWalletManager.selectedId = 0;
+                                                            // Navigator.pop(context);
+                                                            // Navigator.pushReplacementNamed(context, "app/overview");
+                                                            Navigator.of(context).pushNamedAndRemoveUntil('app/overview', (Route<dynamic> route) => false);
+                                                            NotificationBar().show(context, text: "Account #0 selected");
+                                                          }));
+                                                    }));
+                                          },
+                                          text: 'NO',
+                                        )),
+                                    Expanded(flex: 1, child: SizedBox()),
+                                    Expanded(
+                                        flex: 3,
+                                        child: AppNeonButton(
+                                          textStyle: TextStyle(fontSize: SizeConfig.fontSizeLarge, color: AppColors.purple),
+                                          onPressed: () async {
+                                            dynamic _temp;
+                                            _temp = await _authApi.saveSecret(widget.phraseController.text);
 
-                                        if (_temp is String) {
-                                          NotificationBar().show(context, text: 'Fingerprint enabled', onPressed: () {});
-                                          Provider.of<AvmeWallet>(context, listen: false).fingerprintAuth =
-                                              !(Provider.of<AvmeWallet>(context, listen: false).fingerprintAuth);
-                                          file(true);
-                                          Navigator.of(context).pop();
-                                          await showDialog(
-                                              context: context,
-                                              builder: (_) => StatefulBuilder(builder: (builder, setState) {
-                                                return ProgressPopup(
-                                                  title: "Creating",
-                                                  future: widget.appWalletManager.walletManager
-                                                      .makeAccount(widget.phraseController.text, widget.appWalletManager,
-                                                          mnemonic: widget.walletSeed)
-                                                      .then((result) {
-                                                    // Creates the user account
-                                                    widget.appWalletManager.selectedId = 0;
-                                                    //Navigator.pop(context);
-                                                    Navigator.pushReplacementNamed(context, "app/overview");
-                                                    NotificationBar().show(context, text: "Account #0 selected");
-                                                  }));
-                                              }));
-                                        } else {
-                                          NotificationBar().show(context, text: 'Fingerprint scanning cancelled', onPressed: () {});
-                                        }
-                                      },
-                                      text: 'YES',
-                                    )),
-                                Expanded(flex: 1, child: SizedBox())
-                              ],
-                            )
-                          ]);
+                                            if (_temp is String) {
+                                              NotificationBar().show(context, text: 'Fingerprint enabled', onPressed: () {});
+                                              Provider.of<AvmeWallet>(context, listen: false).fingerprintAuth =
+                                                  !(Provider.of<AvmeWallet>(context, listen: false).fingerprintAuth);
+                                              file(true);
+                                              Navigator.of(context).pop();
+                                              await showDialog(
+                                                  context: context,
+                                                  builder: (_) => StatefulBuilder(builder: (builder, setState) {
+                                                        return ProgressPopup(
+                                                            title: "Creating",
+                                                            future: widget.appWalletManager.walletManager
+                                                                .makeAccount(widget.phraseController.text, widget.appWalletManager,
+                                                                    mnemonic: widget.walletSeed)
+                                                                .then((result) {
+                                                              // Creates the user account
+                                                              widget.appWalletManager.selectedId = 0;
+                                                              // Navigator.pop(context);
+                                                              // Navigator.pushReplacementNamed(context, "app/overview");
+                                                              Navigator.of(context).pushNamedAndRemoveUntil('app/overview', (Route<dynamic> route) => false);
+                                                              NotificationBar().show(context, text: "Account #0 selected");
+                                                            }));
+                                                      }));
+                                            } else {
+                                              NotificationBar().show(context, text: 'Fingerprint scanning cancelled', onPressed: () {});
+                                            }
+                                          },
+                                          text: 'YES',
+                                        )),
+                                    Expanded(flex: 1, child: SizedBox())
+                                  ],
+                                )
+                              ]);
                         });
                   } else {
                     await showDialog(
-                      context: context,
-                      builder: (_) => StatefulBuilder(builder: (builder, setState) {
-                        return ProgressPopup(
-                          title: "Creating",
-                          future: widget.appWalletManager.walletManager
-                              .makeAccount(widget.phraseController.text, widget.appWalletManager, mnemonic: widget.walletSeed)
-                              .then((result) {
-                            // Creates the user account
-                            widget.appWalletManager.selectedId = 0;
-                            //Navigator.pop(context);
-                            Navigator.pushReplacementNamed(context, "app/overview");
-                            NotificationBar().show(context, text: "Account #0 selected");
-                          }));
-                      }));
+                        context: context,
+                        builder: (_) => StatefulBuilder(builder: (builder, setState) {
+                              return ProgressPopup(
+                                  title: "Creating",
+                                  future: widget.appWalletManager.walletManager
+                                      .makeAccount(widget.phraseController.text, widget.appWalletManager, mnemonic: widget.walletSeed)
+                                      .then((result) {
+                                    // Creates the user account
+                                    widget.appWalletManager.selectedId = 0;
+                                    // Navigator.pop(context);
+                                    // Navigator.pushReplacementNamed(context, "app/overview");
+                                    Navigator.of(context).pushNamedAndRemoveUntil('app/overview', (Route<dynamic> route) => false);
+                                    NotificationBar().show(context, text: "Account #0 selected");
+                                  }));
+                            }));
                   }
                 },
                 text: "CONTINUE",
@@ -850,24 +1014,45 @@ class _MnemonicsPreAccCreationState extends State<MnemonicsPreAccCreation> {
     Map<int, List<Widget>> columnMap = {};
     int row = 0;
 
-    seed.forEach((key, value) {
-      if (key.remainder(12) == 0 && key != 0) row++;
+    if (widget.strength == 24) {
+      seed.forEach((key, value) {
+        if (key.remainder(12) == 0 && key != 0) row++;
 
-      columnMap[row] = columnMap[row] ?? [];
-      columnMap[row].add(Row(
-        children: [
-          Text(
-            " ${key + 1}. ",
-            style: TextStyle(color: Colors.blue, fontSize: SizeConfig.fontSizeHuge),
-          ),
-          Text(
-            value,
-            style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: SizeConfig.fontSizeHuge),
-          ),
-        ],
-      ));
-      // print("row[$row] ${key+1} - $value");
-    });
+        columnMap[row] = columnMap[row] ?? [];
+        columnMap[row].add(Row(
+          children: [
+            Text(
+              " ${key + 1}. ",
+              style: TextStyle(color: Colors.blue, fontSize: SizeConfig.fontSizeHuge),
+            ),
+            Text(
+              value,
+              style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: SizeConfig.fontSizeHuge),
+            ),
+          ],
+        ));
+        // print("row[$row] ${key+1} - $value");
+      });
+    } else {
+      seed.forEach((key, value) {
+        if (key.remainder(6) == 0 && key != 0) row++;
+
+        columnMap[row] = columnMap[row] ?? [];
+        columnMap[row].add(Row(
+          children: [
+            Text(
+              " ${key + 1}. ",
+              style: TextStyle(color: Colors.blue, fontSize: SizeConfig.fontSizeHuge),
+            ),
+            Text(
+              value,
+              style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: SizeConfig.fontSizeHuge),
+            ),
+          ],
+        ));
+        // print("row[$row] ${key+1} - $value");
+      });
+    }
 
     List<Widget> columnWidgets = [];
     columnMap.values.forEach((value) {
@@ -917,7 +1102,7 @@ class FormMnemonic {
   int validate() {
     int validated = -1;
     this.removedKeys.forEach((key) {
-      print("${this.mnemonicControlDict[key].text} != ${this.mnemonicDict[key]}");
+      //print("${this.mnemonicControlDict[key].text} != ${this.mnemonicDict[key]}");
       if (this.mnemonicControlDict[key].text != this.mnemonicDict[key] && validated == -1) validated = key;
     });
     return validated;
@@ -1014,7 +1199,7 @@ class FormMnemonic {
           ),
         ),
       );
-      print("row[$column] ${key + 1} - $value");
+      //╚print("row[$column] ${key + 1} - $value");
     });
 
     List<Widget> columnWidgets = [];

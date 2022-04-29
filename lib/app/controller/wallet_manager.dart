@@ -80,14 +80,12 @@ class WalletManager {
     return crypt.decryptTextFromFileSync(documentsPath + this.fileManager.accountFolder + mnemonicFile, utf16: true);
   }
 
-  String newMnemonic() {
-    // String mnemonic =
-    //     "blossom skate magnet magic put task famous square because attract clog ketchup";
+  ///Strength: 12 words = 128 strength, 24 words = 256 strength
+  String newMnemonic(int strength) {
+    int _strength = strength == 12 ? 128 : 256;
 
-    String mnemonic = bip39.generateMnemonic(strength: 256);
-    for (int i = 0; i < 10; i++) {
-      print('================ $mnemonic');
-    }
+    String mnemonic = bip39.generateMnemonic(strength: _strength);
+    for (int i = 0; i < 10; i++) {}
 
     return mnemonic;
   }
@@ -108,12 +106,12 @@ class WalletManager {
     return true;
   }
 
-  Future<Map<String, dynamic>> makeAccount(String password, AvmeWallet appState, {String mnemonic, String title = "", int slot}) async {
+  Future<Map<String, dynamic>> makeAccount(String password, AvmeWallet appState, {String mnemonic, String title = "", int slot, int stregth}) async {
     print("Is account list empty? ${appState.accountList.isEmpty}");
 
     if (appState.accountList.isEmpty) {
       slot = 0;
-      mnemonic = mnemonic ?? newMnemonic();
+      mnemonic = mnemonic ?? newMnemonic(stregth);
 
       String documentsPath = this.fileManager.documentsFolder;
 
@@ -167,7 +165,6 @@ class WalletManager {
     appState.w3dartWallet = _wallet;
 
     if (appState.accountList.isEmpty) {
-
       await authenticate(password, appState);
       appState.selectedId = slot;
     }
@@ -270,6 +267,7 @@ class WalletManager {
     EthereumAddress _ethereumAddress = EthereumAddress.fromHex(contractAddress);
     return ERC20(abi, address: _ethereumAddress, client: ethClient, chainId: chainId);
   }
+
   //TODO: When restarting recover the id of the process and shut it
   Future<void> restartTokenServices(AvmeWallet app) async {
     stopValueSubscription(app);
