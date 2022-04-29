@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Page</title>
+</head>
+<body>
+    <h1>Test Page</h1>
+    <b>Address: </b><abbr id="address">?</abbr>
+    <b>Network Version:</b><abbr id="networkId">?</abbr>
+    <script>
+        const dom = document
+        let eAddr = dom.getElementById("address")
+        let eNet = dom.getElementById("networkId")
+        setTimeout(function() {
+            eNet.innerHTML = window.ethereum.networkVersion
+            window.ethereum.request({method:"eth_accounts"}).then(value => {
+                eAddr.innerHTML = value[0]
+            })
+        }, 200);
+    </script>
+</body>
+</html>
