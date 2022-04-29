@@ -38,7 +38,7 @@ class _LoginState extends State<Login> {
   @override
   Widget build(BuildContext context)
   {
-    _passphrase.text = env["DEFAULT_PASSWORD"] ?? "";
+    _passphrase.text = dotenv.get("DEFAULT_PASSWORD") ?? "";
     return Scaffold(
       body: SafeArea(child:
       Container(

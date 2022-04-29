@@ -98,7 +98,7 @@ class _NFTManagementState extends State<NFTManagement> {
       String tokenName = contracts.entries.elementAt(i).key;
       print("\x1B[32m${"Processing: \"$tokenName\" token"}\x1B[0m");
       http.Client httpClient = http.Client();
-      Web3Client web3client = Web3Client(env['NETWORK_URL'], httpClient);
+      Web3Client web3client = Web3Client(dotenv.get('NETWORK_URL'), httpClient);
 
       ERC721 erc721 = ERC721(
         nftContracts.contracts[tokenName][0],
@@ -114,44 +114,7 @@ class _NFTManagementState extends State<NFTManagement> {
       if(ownedQtd == 0)
         continue;
 
-      // int totalSupply = (await erc721.totalSupply()).toInt();
-      // print("\x1B[34m${"Total Supply [$tokenName]: $totalSupply"}\x1B[0m");
-      // if(totalSupply == 0) {
-      //   print("\x1B[33m${"[Warning]: The NFT contract $tokenName returned 0 at Total Supply."}\x1B[0m");
-      //   continue;
-      // }
-
-      //Requesting the NFT catalog
       List _tokenNfts = [];
-
-      //Generating placeholders
-      // int generate = 5;
-      // for(var i = 0; i < generate; i++)
-      // {
-      //   String dim = "";
-      //   if(i < 10)
-      //     dim = "30$i";
-      //   else if (i < 99)
-      //     dim = "3$i";
-      //   else
-      //     dim = i.toString();
-      //   int rndToken = (Random().nextInt(100000) + i);
-      //   _tokenNfts.add(
-      //     {
-      //       "name" : "Generic Image from API #$i",
-      //       "title" : "Generic Image from API #$i",
-      //       "tokenId" : "$rndToken",
-      //       "tokenName" : tokenName,
-      //       "imageUrl" : 'https://picsum.photos/$dim/$dim',
-      //       "properties" : {
-      //         "description" : {
-      //           "type" : "string",
-      //           "description" : "lorem ipsum quia da la si ad met, lorem ipsum quia daaaa la si ad met, looooooorem ipsuuuum quia DAAAAAAAAAAAAAAAAAAAAA... album [USA] from anamanaguchi song's name 'lorem ipsum'... I don't know, i just want to be happy or have a beautiful girlfriend or something to be proud of, but i guess life is cock and ball torture, but without cock and ball... all i do is try to speak to you, but time moves me forward separating me fr-, all i do is try to speak to-..."
-      //         }
-      //       }
-      //     }
-      //   );
-      // }
 
       for(int l = 0; l < ownedQtd; l++)
       {
@@ -195,7 +158,7 @@ class _NFTManagementState extends State<NFTManagement> {
     EthereumAddress _sender = EthereumAddress.fromHex(wi.wallet.currentAccount.address);
     EthereumAddress _receiver = EthereumAddress.fromHex(receiver);
 
-    String url = env["NETWORK_URL"];
+    String url = dotenv.get("NETWORK_URL");
     http.Client httpClient = http.Client();
     Web3Client web3client = Web3Client(url, httpClient);
 

@@ -15,7 +15,7 @@ Future<bool> getValues(AvmeWallet app) async
   bool didValueUpdated = false;
   Map<String, List<int>> missingDates = {};
   Map<String, dynamic> data = {
-    "url": "${env["MAINNET_URL"]}:${env["MAINNET_PORT"]}${env["MAINNET_VALUEPATH"]}",
+    "url": "${dotenv.get("MAINNET_URL")}:${dotenv.get("MAINNET_PORT")}${dotenv.get("MAINNET_VALUEPATH")}",
     "activeTokens": app.activeContracts.tokens,
     "contractRaw": app.activeContracts.sContracts.contractsRaw
   };

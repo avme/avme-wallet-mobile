@@ -596,7 +596,7 @@ class _ProgressPopupState extends State<ProgressPopup> with SingleTickerProvider
     }
     SizeConfig().init(context);
     return GestureDetector(
-      onTap: () => env["DEBUG_MODE"] == "TRUE" ? Navigator.of(context).pop() : null,
+      onTap: () => dotenv.get("DEBUG_MODE") == "TRUE" ? Navigator.of(context).pop() : null,
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: Builder(

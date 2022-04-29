@@ -392,8 +392,8 @@ class _SendState extends State<Send> {
     double tokenValue = getTokenValue(app, tokenDropdownValue);
     String msgNoBalance = "Not enough balance.";
     BigInt weiValue = BigInt.zero;
-    TextEditingController gasLimit = TextEditingController(text: env["MAX_GAS"]);
-    TextEditingController gasFee = TextEditingController(text: env["GAS_PRICE"]);
+    TextEditingController gasLimit = TextEditingController(text: dotenv.get("MAX_GAS"));
+    TextEditingController gasFee = TextEditingController(text: dotenv.get("GAS_PRICE"));
     TextEditingController amount = TextEditingController();
     showDialog(
         context: context,
@@ -530,7 +530,7 @@ class _SendState extends State<Send> {
                                   setState(() {
                                     disableGasLimit = !disableGasLimit;
                                     if (disableGasLimit) {
-                                      gasLimit.text = env["MAX_GAS"];
+                                      gasLimit.text = dotenv.get("MAX_GAS");
                                     }
                                   });
                                 },
@@ -547,7 +547,7 @@ class _SendState extends State<Send> {
                                             onChanged: (bool value) => setState(() {
                                                   disableGasLimit = value;
                                                   if (value) {
-                                                    gasLimit.text = env["MAX_GAS"];
+                                                    gasLimit.text = dotenv.get("MAX_GAS");
                                                   }
                                                 })),
                                       ),
@@ -614,7 +614,7 @@ class _SendState extends State<Send> {
                                   setState(() {
                                     disableGasFee = !disableGasFee;
                                     if (disableGasFee) {
-                                      gasFee.text = env["GAS_PRICE"];
+                                      gasFee.text = dotenv.get("GAS_PRICE");
                                     }
                                   });
                                 },
@@ -631,7 +631,7 @@ class _SendState extends State<Send> {
                                             onChanged: (bool value) => setState(() {
                                                   disableGasFee = value;
                                                   if (value) {
-                                                    gasFee.text = env["GAS_PRICE"];
+                                                    gasFee.text = dotenv.get("GAS_PRICE");
                                                   }
                                                 })),
                                       ),

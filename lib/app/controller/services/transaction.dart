@@ -13,7 +13,7 @@ import 'package:web3dart/web3dart.dart';
 
 import 'contract.dart';
 
-String url = env["NETWORK_URL"];
+String url = dotenv.get("NETWORK_URL");
 ServiceData requestTransactionData;
 
 Future<bool> hasEnoughBalanceToPayTaxes(BigInt balance, BigInt amount) async {
@@ -59,7 +59,7 @@ Future<String> sendTransaction(AvmeWallet appState, String receiverAddress, BigI
 
     ///Get the chainId
     // int chainId = (await ethClient.getChainId()).toInt();
-    int chainId = int.tryParse(env["CHAIN_ID"]) ?? 43114;
+    int chainId = int.tryParse(dotenv.get("CHAIN_ID")) ?? 43114;
     print("MEU CHAIN ID $chainId");
     Credentials accountCredentials = appState.currentAccount.walletObj.privateKey;
     Uint8List signedTransaction = await ethClient.signTransaction(

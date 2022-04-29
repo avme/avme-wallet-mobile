@@ -24,8 +24,8 @@ import 'package:bip39/src/wordlists/english.dart';
 
 import 'file_manager.dart';
 
-String url = env["NETWORK_URL"];
-String mnemonicFile = env["MNEMONICFILEPATH"];
+String url = dotenv.get("NETWORK_URL");
+String mnemonicFile = dotenv.get("MNEMONICFILEPATH");
 
 class WalletManager {
   final FileManager fileManager;

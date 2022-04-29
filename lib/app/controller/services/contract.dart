@@ -167,7 +167,7 @@ class Contracts {
     EthereumAddress selectedAccount = await sanitizeAddress(accountAddress);
     http.Client httpClient = http.Client();
 
-    Web3Client web3client = Web3Client(env['NETWORK_URL'], httpClient);
+    Web3Client web3client = Web3Client(dotenv.get('NETWORK_URL'), httpClient);
 
     ERC20 erc20Contract = ERC20(mountAbi(erc20Abi, name), address: await sanitizeAddress(contractAddress), client: web3client, chainId: chainId);
 

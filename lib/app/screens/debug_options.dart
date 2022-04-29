@@ -95,7 +95,7 @@ class Options extends StatelessWidget
                     EthereumAddress address = await appState.currentAccount.walletObj.privateKey.extractAddress();
                     // print(env['NETWORK_URL']);
                     Client httpClient = Client();
-                    Web3Client ethClient = Web3Client(env['NETWORK_URL'], httpClient);
+                    Web3Client ethClient = Web3Client(dotenv.get('NETWORK_URL'), httpClient);
                     // EthereumAddress contractAddress = EthereumAddress.fromHex(env["CONTRACT_ADDRESS"]);
                     // Avme contract = new Avme(address, ethClient);
                     // AvmeContract contract = new AvmeContract(address: contractAddress,client: ethClient, chainId: 43113);

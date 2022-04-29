@@ -4,7 +4,7 @@ import 'package:avme_wallet/app/controller/threads.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:avme_wallet/app/config/routes.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart' as DotEnv;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:provider/provider.dart';
@@ -21,7 +21,7 @@ main() async{
   Threads threads = Threads.getInstance();
   threads.initialize();
 
-  await DotEnv.load();
+  await dotenv.load(fileName: ".env");
   FileManager fileManager = FileManager();
   ActiveContracts activeContracts = ActiveContracts(fileManager);
   runApp(MultiProvider(

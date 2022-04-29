@@ -29,7 +29,7 @@ class NFTContracts {
 
   TableNFT _tableNFT;
 
-  String chainId = env['CHAIN_ID'];
+  String chainId = dotenv.get('CHAIN_ID');
   
   Future<Map> initialize() async
   {
@@ -96,7 +96,7 @@ class NFTContracts {
     EthereumAddress selectedAccount = await sanitizeAddress(accountAddress);
     http.Client httpClient = http.Client();
 
-    Web3Client web3client = Web3Client(env['NETWORK_URL'], httpClient);
+    Web3Client web3client = Web3Client(dotenv.get('NETWORK_URL'), httpClient);
     EthereumAddress eAddress = await sanitizeAddress(contractAddress);
     ERC721 nftContract = ERC721(
         mountAbi(erc721abi, name),

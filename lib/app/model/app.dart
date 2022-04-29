@@ -39,11 +39,11 @@ class AvmeWallet extends ChangeNotifier {
   int networkPort = 0;
 
   AvmeWallet(this.fileManager, this.activeContracts) {
-    this.debugMode = env["DEBUG_MODE"] == "TRUE" ? true : false;
-    this.networkUrl = env["NETWORK_URL"];
+    this.debugMode = dotenv.get("DEBUG_MODE") == "TRUE" ? true : false;
+    this.networkUrl = dotenv.get("NETWORK_URL");
 
     try {
-      this.networkPort = int.parse(env["NETWORK_PORT"]);
+      this.networkPort = int.parse(dotenv.get("NETWORK_PORT"));
     } catch (e) {
       this.networkPort = 443;
     }

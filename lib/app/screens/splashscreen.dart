@@ -94,7 +94,7 @@ class _SplashScreenState extends State<SplashScreen>{
     await Future.delayed(Duration(milliseconds: 500),() async{
       if(!wallet.services.containsKey("valueSubscription"))
         wallet.walletManager.startValueSubscription(wallet);
-      if(env["ALWAYS_RESET"].toString().toUpperCase() == "TRUE")
+      if(dotenv.get("ALWAYS_RESET").toString().toUpperCase() == "TRUE")
         wallet.walletManager.deletePreviousWallet();
 
       bool walletExists = await wallet.walletManager.walletAlreadyExists();

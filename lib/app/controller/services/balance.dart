@@ -25,7 +25,7 @@ Future<bool> balanceSubscription(AvmeWallet appState) async {
       data = {
         "id": currentWalletId,
         "updateIn": 10,
-        "url": env['NETWORK_URL'],
+        "url": dotenv.get('NETWORK_URL'),
         "activeTokens": appState.activeContracts.tokens,
         "contracts": appState.activeContracts.sContracts.contracts,
         "address": EthereumAddress.fromHex(appState.currentAccount.address),
@@ -35,7 +35,7 @@ Future<bool> balanceSubscription(AvmeWallet appState) async {
       data = {
         "id": pos,
         "updateIn": 15,
-        "url": env['NETWORK_URL'],
+        "url": dotenv.get('NETWORK_URL'),
         "activeTokens": appState.activeContracts.tokens,
         "contracts": appState.activeContracts.sContracts.contracts,
         "address": EthereumAddress.fromHex(appState.accountList[pos].address),
@@ -278,7 +278,7 @@ Future<Map<int, List>> requestBalanceByAddress(Map<int, String> addresses) async
   Map<int, List> data = {};
   await Future.forEach(addresses.entries, (entry) async {
     EthereumAddress ethereumAddress = EthereumAddress.fromHex(entry.value);
-    String url = env['NETWORK_URL'];
+    String url = dotenv.get('NETWORK_URL');
 
     http.Client httpClient = http.Client();
     Web3Client ethClient = Web3Client(url, httpClient);
