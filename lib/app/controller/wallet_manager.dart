@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:avme_wallet/app/controller/services/contract.dart';
+import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/account_item.dart';
 import 'package:avme_wallet/app/model/active_contracts.dart';
 import 'package:avme_wallet/app/model/app.dart';
@@ -9,6 +10,7 @@ import 'package:avme_wallet/external/contracts/erc20_contract.dart';
 import 'package:bip32/bip32.dart';
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:bip32/bip32.dart' as bip32;
+import 'package:decimal/decimal.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:io';
@@ -16,6 +18,7 @@ import 'package:hex/hex.dart';
 import 'package:http/http.dart';
 import 'package:provider/provider.dart';
 import 'package:web3dart/credentials.dart';
+import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:aes_crypt/aes_crypt.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -183,7 +186,7 @@ class WalletManager {
     }
   }
 
-  Future<Map> authenticate(String password, AvmeWallet appState) async {
+  Future<Map> authenticate(String password, AvmeWallet appState, {restart = true}) async {
     Map ret = {"status": 400, "message": "Wrong password."};
     bool mnemonicUnlocked = await decryptAesWallet(password);
     if (!mnemonicUnlocked) {
@@ -191,11 +194,16 @@ class WalletManager {
       return ret;
     }
     try {
-      print("INICIANDO loadWalletAccounts");
-      await loadWalletAccounts(password, appState);
-      if (appState.accountList[0].walletObj != null) {
-        appState.w3dartWallet = appState.accountList[0].walletObj;
+      if(restart)
+      {
+        printMark("[Wallet Manager] Starting loadWalletAccounts");
+        await loadWalletAccounts(password, appState);
+        if (appState.accountList[0].walletObj != null) {
+          appState.w3dartWallet = appState.accountList[0].walletObj;
+        }
       }
+      else
+        printMark("[Wallet Manager] Ignored loadWalletAccounts");
       ret["status"] = 200;
       ret["message"] = "";
       return ret;
@@ -250,13 +258,45 @@ class WalletManager {
     BIP32 node = bip32.BIP32.fromSeed(await compute(bip39.mnemonicToSeed, mnemonic));
     BIP32 child;
     Credentials credentFromHex;
-    Map<int, String> pkeyMap = {};
+    // Map<int, String> pkeyMap = {};
+    List<Map> body = [];
     for (int slot = 0; slot <= 9; slot++) {
       child = node.derivePath("m/44'/60'/0'/0/$slot");
       credentFromHex = EthPrivateKey.fromHex(HEX.encode(child.privateKey));
-      pkeyMap[slot] = (await credentFromHex.extractAddress()).toString();
+      // pkeyMap[slot] = (await credentFromHex.extractAddress()).toString();
+      String address = (await credentFromHex.extractAddress()).toString();
+      body.add(
+        {
+          "id" : slot,
+          "jsonrpc" : "2.0",
+          "method" : "eth_getBalance",
+          "params" : [
+            address, "latest"
+          ]
+        }
+      );
     }
-    Map<int, List> data = await services.requestBalanceByAddress(pkeyMap);
+
+    List result = jsonDecode(await services.executeInNetwork(body));
+    Map<int, List> data = {};
+    for(dynamic item in result)
+    {
+      if(item is Map)
+      {
+        if(item.containsKey("result"))
+        {
+          BigInt balance = EtherAmount.fromUnitAndValue(EtherUnit.wei, hexToInt("0xd71097b002ddb800")).getInWei;
+          String convertedBalance = balance.toDouble() != 0 ? weiToFixedPoint(balance.toString()) : "0";
+          data[item["id"]] = [
+            body[item["id"]]["params"][0],
+            shortAmount(convertedBalance, length: 6),
+          ];
+        }
+      }
+    }
+
+    // printApprove("$result");
+    // printOk("$data");
     return data;
   }
 

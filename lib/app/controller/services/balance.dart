@@ -82,7 +82,7 @@ Future<bool> balanceSubscription(AvmeWallet appState) async {
       balanceData.forEach((Map requestedBalance) {
         String key = requestedBalance.entries.first.key;
         if (key == "empty") return;
-        print("processing $key");
+        // print("processing $key");
 
         ///Recovering the requested value as bigInt/Wei
         BigInt balance = requestedBalance.entries.first.value;
@@ -268,28 +268,8 @@ Future<void> trackBalance(List<dynamic> params, {ThreadData threadData, int id, 
         "balanceSubscription": {"balance": tokenBalance, "id": account["id"]}
       };
       threadData.sendPort.send(threadMessage);
-      print(blackList);
+      // print(blackList);
       if (seconds == 0) seconds = account["updateIn"];
     });
   }
-}
-
-Future<Map<int, List>> requestBalanceByAddress(Map<int, String> addresses) async {
-  Map<int, List> data = {};
-  await Future.forEach(addresses.entries, (entry) async {
-    EthereumAddress ethereumAddress = EthereumAddress.fromHex(entry.value);
-    String url = dotenv.get('NETWORK_URL');
-
-    http.Client httpClient = http.Client();
-    Web3Client ethClient = Web3Client(url, httpClient);
-
-    BigInt balance = (await ethClient.getBalance(ethereumAddress)).getInWei;
-    String convertedBalance = balance.toDouble() != 0 ? weiToFixedPoint(balance.toString()) : "0";
-
-    data[entry.key] = [
-      entry.value,
-      shortAmount(convertedBalance, length: 6),
-    ];
-  });
-  return data;
 }

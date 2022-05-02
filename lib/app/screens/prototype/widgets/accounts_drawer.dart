@@ -211,7 +211,7 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                           hintText: "**********",
                           onFieldSubmitted: (_) {
                             Navigator.of(context).pop();
-                            authenticate(app, passwordInput.text);
+                            auth(app, passwordInput.text);
                             passwordInput.clear();
                           },
                         ),
@@ -221,7 +221,7 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                         ElevatedButton(
                           onPressed: () async {
                             Navigator.of(context).pop();
-                            authenticate(app, passwordInput.text);
+                            auth(app, passwordInput.text);
                             passwordInput.clear();
                           },
                           child: Text("VERIFY PASSWORD"),
@@ -235,55 +235,65 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                 )));
   }
 
-  void authenticate(AvmeWallet app, String passwordInput) async {
+  void auth(AvmeWallet app, String passwordInput) async {
     bool empty = (passwordInput == null || passwordInput.length == 0) ? true : false;
     if (empty)
       showDialog(
           context: context,
           builder: (BuildContext context) => AppPopupWidget(
-                title: 'Warning',
-                cancelable: false,
-                showIndicator: false,
-                children: [
-                  Padding(
-                    padding: EdgeInsets.only(top: SizeConfig.safeBlockVertical / 2, bottom: SizeConfig.safeBlockVertical * 3),
-                    child: Text('The password field cannot be empty'),
-                  ),
-                  AppButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    expanded: false,
-                    text: "OK",
-                  )
-                ],
-              ));
+            title: 'Warning',
+            cancelable: false,
+            showIndicator: false,
+            children: [
+              Padding(
+                padding: EdgeInsets.only(top: SizeConfig.safeBlockVertical / 2, bottom: SizeConfig.safeBlockVertical * 3),
+                child: Text('The password field cannot be empty'),
+              ),
+              AppButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                expanded: false,
+                text: "OK",
+              )
+            ],
+          ));
     else {
       AvmeWallet app = Provider.of<AvmeWallet>(context, listen: false);
-      bool valid = await app.login(passwordInput, context, display: true);
+      bool valid = (await app.walletManager.authenticate(passwordInput, app, restart: false))["status"] == 200
+        ? true : false;
+      // bool valid = await app.login(passwordInput, context, display: true);
+      FocusScope.of(context).unfocus();
       if (valid) {
-        FocusScope.of(context).unfocus();
         newAccountPopup(app, passwordInput);
       }
+      else
+      {
+        Navigator.pop(context);
+        passwordScreen(app);
+      }
+
     }
   }
 
   void newAccountPopup(AvmeWallet app, String passwordInput) {
     showDialog(
-        context: context,
-        builder: (_) => StatefulBuilder(
-            builder: (builder, setState) => FuturePopupWidget(
-                  title: "CREATE NEW ACCOUNT",
-                  textStyle: TextStyle(fontSize: SizeConfig.titleSize * 0.8, fontWeight: FontWeight.bold),
-                  margin: EdgeInsets.all(8),
-                  cancelable: false,
-                  padding: EdgeInsets.only(
-                    left: SizeConfig.safeBlockHorizontal * 8,
-                    right: SizeConfig.safeBlockHorizontal * 8,
-                    top: SizeConfig.safeBlockVertical * 4,
-                  ),
-                  future: previewAccounts(setState, app, passwordInput),
-                )));
+      context: context,
+      builder: (_) => StatefulBuilder(
+        builder: (builder, setState) => FuturePopupWidget(
+          title: "CREATE NEW ACCOUNT",
+          textStyle: TextStyle(fontSize: SizeConfig.titleSize * 0.8, fontWeight: FontWeight.bold),
+          margin: EdgeInsets.all(8),
+          cancelable: false,
+          padding: EdgeInsets.only(
+            left: SizeConfig.safeBlockHorizontal * 8,
+            right: SizeConfig.safeBlockHorizontal * 8,
+            top: SizeConfig.safeBlockVertical * 4,
+          ),
+          future: previewAccounts(setState, app, passwordInput),
+        )
+      )
+    );
   }
 
   Future<List<Widget>> previewAccounts(StateSetter setter, AvmeWallet app, String passwordInput) async {
@@ -294,7 +304,8 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
 
     String password = passwordInput;
 
-    this.generatedKeys = this.generatedKeys.length > 0 ? this.generatedKeys : await app.walletManager.previewAvaxBalance(password);
+    // this.generatedKeys = this.generatedKeys.length > 0 ? this.generatedKeys : await app.walletManager.previewAvaxBalance(password);
+    this.generatedKeys = await app.walletManager.previewAvaxBalance(password);
 
     return [
       Text(
@@ -353,13 +364,13 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                 Column(
                   children: this.generatedKeys.entries.map((publicKeyEntry) {
                     return accountRow(
-                        flexIndex: flexIndex,
-                        flexAddress: flexAddress,
-                        flexBalance: flexBalance,
-                        index: publicKeyEntry.key,
-                        address: "${publicKeyEntry.value[0]}",
-                        balance: "${publicKeyEntry.value[1]}",
-                        setter: setter);
+                      flexIndex: flexIndex,
+                      flexAddress: flexAddress,
+                      flexBalance: flexBalance,
+                      index: publicKeyEntry.key,
+                      address: "${publicKeyEntry.value[0]}",
+                      balance: "${publicKeyEntry.value[1]}",
+                      setter: setter);
                   }).toList(),
                 ),
               ],

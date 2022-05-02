@@ -276,3 +276,9 @@ Future<Decimal> getAVAXPriceUSD(Map body, url) async {
 
   return token0Label == "WAVAX" ? token1Price : token0Price;
 }
+
+Future<String> executeInNetwork(dynamic body)
+async {
+  String url = dotenv.get("NETWORK_URL");
+  return await httpGetRequest(url, body: body);
+}
