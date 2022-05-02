@@ -237,7 +237,7 @@ CachedNetworkImage cachedImage(String res, {
 Future<String> httpGetRequest(
   String urlString,
   {
-    Map body,
+    dynamic body,
     Map<String,String> headers = const {"Content-Type": "application/json"},
     String method = "POST"
   }) async
@@ -246,8 +246,8 @@ Future<String> httpGetRequest(
   http.Response response;
   if(method.toUpperCase() == "POST")
     response = await http.post(url,
-        body: json.encode(body),
-        headers: headers);
+    body: json.encode(body),
+    headers: headers);
   else if(method.toUpperCase() == "GET")
     response = await http.get(url,
         headers: headers);
@@ -311,7 +311,7 @@ int randomRangeInt(int min, int max)
 ///Simple wrapper to identify later
 Future<Map> wrapAsList({String identifier, Future future, String processName}) async {
   dynamic result = false;
-  print("wrapping $identifier");
+  // print("wrapping $identifier");
   try {
     result = await future;
   } catch (e) {
