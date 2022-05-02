@@ -285,7 +285,7 @@ class WalletManager {
       {
         if(item.containsKey("result"))
         {
-          BigInt balance = EtherAmount.fromUnitAndValue(EtherUnit.wei, hexToInt("0xd71097b002ddb800")).getInWei;
+          BigInt balance = EtherAmount.fromUnitAndValue(EtherUnit.wei, hexToInt(item["result"])).getInWei;
           String convertedBalance = balance.toDouble() != 0 ? weiToFixedPoint(balance.toString()) : "0";
           data[item["id"]] = [
             body[item["id"]]["params"][0],
@@ -294,9 +294,6 @@ class WalletManager {
         }
       }
     }
-
-    // printApprove("$result");
-    // printOk("$data");
     return data;
   }
 

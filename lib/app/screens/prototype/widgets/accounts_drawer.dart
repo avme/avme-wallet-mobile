@@ -210,7 +210,6 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                           obscureText: true,
                           hintText: "**********",
                           onFieldSubmitted: (_) {
-                            Navigator.of(context).pop();
                             auth(app, passwordInput.text);
                             passwordInput.clear();
                           },
@@ -220,7 +219,6 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                         ),
                         ElevatedButton(
                           onPressed: () async {
-                            Navigator.of(context).pop();
                             auth(app, passwordInput.text);
                             passwordInput.clear();
                           },
@@ -262,50 +260,76 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
       AvmeWallet app = Provider.of<AvmeWallet>(context, listen: false);
       bool valid = (await app.walletManager.authenticate(passwordInput, app, restart: false))["status"] == 200
         ? true : false;
-      // bool valid = await app.login(passwordInput, context, display: true);
-      FocusScope.of(context).unfocus();
       if (valid) {
+        Navigator.pop(context);
         newAccountPopup(app, passwordInput);
       }
       else
       {
-        Navigator.pop(context);
-        passwordScreen(app);
+        NotificationBar().show(context, text: "Failed to Authenticate");
       }
 
     }
   }
 
-  void newAccountPopup(AvmeWallet app, String passwordInput) {
-    showDialog(
-      context: context,
-      builder: (_) => StatefulBuilder(
-        builder: (builder, setState) => FuturePopupWidget(
-          title: "CREATE NEW ACCOUNT",
-          textStyle: TextStyle(fontSize: SizeConfig.titleSize * 0.8, fontWeight: FontWeight.bold),
-          margin: EdgeInsets.all(8),
-          cancelable: false,
-          padding: EdgeInsets.only(
-            left: SizeConfig.safeBlockHorizontal * 8,
-            right: SizeConfig.safeBlockHorizontal * 8,
-            top: SizeConfig.safeBlockVertical * 4,
-          ),
-          future: previewAccounts(setState, app, passwordInput),
-        )
-      )
-    );
+  void newAccountPopup(AvmeWallet app, String password) async{
+    await showDialog(
+        context: context,
+        builder: (_) => StatefulBuilder(
+          builder: (builder, setState) {
+            return ProgressPopup(
+              title: "Loading",
+              future: app.walletManager.previewAvaxBalance(password).then((Map data) {
+                printWarning("$data");
+                Navigator.pop(context);
+                showDialog(
+                  context: context,
+                  builder: (_) => StatefulBuilder(
+                    builder: (builder, setState) =>
+                      AppPopupWidget(
+                        title: "CREATE NEW ACCOUNT",
+                        textStyle: TextStyle(fontSize: SizeConfig.titleSize * 0.8, fontWeight: FontWeight.bold),
+                        margin: EdgeInsets.all(8),
+                        cancelable: false,
+                        padding: EdgeInsets.only(
+                          left: SizeConfig.safeBlockHorizontal * 8,
+                          right: SizeConfig.safeBlockHorizontal * 8,
+                          top: SizeConfig.safeBlockVertical * 4,
+                        ),
+                        children: previewAccounts(setState, app, password, data),
+                      )
+                  )
+                );
+              }),
+            );
+          },
+        ));
+    // showDialog(
+    //   context: context,
+    //   builder: (_) => StatefulBuilder(
+    //     builder: (builder, setState) => FuturePopupWidget(
+    //       title: "CREATE NEW ACCOUNT",
+    //       textStyle: TextStyle(fontSize: SizeConfig.titleSize * 0.8, fontWeight: FontWeight.bold),
+    //       margin: EdgeInsets.all(8),
+    //       cancelable: false,
+    //       padding: EdgeInsets.only(
+    //         left: SizeConfig.safeBlockHorizontal * 8,
+    //         right: SizeConfig.safeBlockHorizontal * 8,
+    //         top: SizeConfig.safeBlockVertical * 4,
+    //       ),
+    //       future: previewAccounts(setState, app, password, data),
+    //     )
+    //   )
+    // );
   }
 
-  Future<List<Widget>> previewAccounts(StateSetter setter, AvmeWallet app, String passwordInput) async {
+  List<Widget> previewAccounts(StateSetter setter, AvmeWallet app, String passwordInput, Map generatedKeys) {
     final int flexIndex = 1;
     final int flexAddress = 4;
     final int flexBalance = 2;
     final double darkBorderPadding = 8.0;
-
+    printWarning("previewAccounts");
     String password = passwordInput;
-
-    // this.generatedKeys = this.generatedKeys.length > 0 ? this.generatedKeys : await app.walletManager.previewAvaxBalance(password);
-    this.generatedKeys = await app.walletManager.previewAvaxBalance(password);
 
     return [
       Text(
@@ -362,7 +386,7 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
               children: [
                 ///Account Row
                 Column(
-                  children: this.generatedKeys.entries.map((publicKeyEntry) {
+                  children: generatedKeys.entries.map((publicKeyEntry) {
                     return accountRow(
                       flexIndex: flexIndex,
                       flexAddress: flexAddress,
@@ -387,7 +411,7 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
           ? AppButton(
               text: "CHOOSE THIS ACCOUNT",
               onPressed: () {
-                TextEditingController addressController = TextEditingController(text: this.generatedKeys[this.selectedIndex][0]);
+                TextEditingController addressController = TextEditingController(text: generatedKeys[this.selectedIndex][0]);
                 TextEditingController nameController = TextEditingController();
                 Navigator.pop(context);
                 showDialog(
@@ -590,5 +614,19 @@ class _AppDrawerState extends State<CustomAppDrawer> {
         ),
       ),
     );
+  }
+}
+
+class PreviewAccounts extends StatefulWidget {
+  const PreviewAccounts({Key key}) : super(key: key);
+
+  @override
+  _PreviewAccountsState createState() => _PreviewAccountsState();
+}
+
+class _PreviewAccountsState extends State<PreviewAccounts> {
+  @override
+  Widget build(BuildContext context) {
+    return Container();
   }
 }
