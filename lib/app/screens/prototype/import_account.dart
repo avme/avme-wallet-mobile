@@ -697,7 +697,7 @@ class _ImportAccountState extends State<ImportAccount> {
                       textAlign: TextAlign.center,
                     ),
                     SizedBox(
-                      height: SizeConfig.blockSizeVertical * 2,
+                      height: SizeConfig.blockSizeVertical * 3,
                     ),
                     Row(
                       children: [
@@ -730,8 +730,8 @@ class _ImportAccountState extends State<ImportAccount> {
                         Expanded(flex: 1, child: SizedBox()),
                         Expanded(
                             flex: 3,
-                            child: AppNeonButton(
-                              textStyle: TextStyle(fontSize: SizeConfig.fontSizeLarge, color: AppColors.purple),
+                            child: AppButton(
+                              textStyle: TextStyle(fontSize: SizeConfig.fontSizeLarge, color: Colors.white),
                               onPressed: () async {
                                 dynamic _temp;
                                 _temp = await _authApi.saveSecret(controller1.text);

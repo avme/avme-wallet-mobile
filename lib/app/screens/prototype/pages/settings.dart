@@ -12,6 +12,7 @@ import 'package:avme_wallet/app/screens/prototype/widgets/neon_button.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/popup.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/textform.dart';
 import 'package:avme_wallet/app/screens/widgets/custom_widgets.dart';
+import 'package:avme_wallet/app/screens/widgets/screen_indicator.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_restart/flutter_restart.dart';
@@ -170,6 +171,13 @@ class _SettingsState extends State<Settings> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    ScreenIndicator(
+                      height: SizeConfig.safeBlockVertical * 2,
+                      width: MediaQuery.of(context).size.width,
+                    ),
+                    SizedBox(
+                      height: SizeConfig.safeBlockVertical * 3,
+                    ),
                     Text("Select text size", style: AppTextStyles.label.copyWith(fontSize: SizeConfig.fontSizeHuge)),
                     Text("Default will check for the device's size and change to the appropriate value",
                         style: AppTextStyles.span.copyWith(fontSize: SizeConfig.fontSizeLarge)),
@@ -178,21 +186,14 @@ class _SettingsState extends State<Settings> {
                       height: 16,
                     ),
                     DropdownButtonFormField<int>(
+                      // menuMaxHeight: 300,
                       isExpanded: true,
                       value: value,
                       icon: new Icon(
                         Icons.keyboard_arrow_down,
-                        color: AppColors.labelDefaultColor,
+                        color: AppColors.purple,
                         size: SizeConfig.safeBlockVertical * 4,
                       ),
-                      /*
-                  validator: (int selected) {
-                    if (selected == "Select a Token") {
-                      return "Please select a token";
-                    }
-                    return null;
-                  },
-                   */
                       onChanged: (int selectedValue) {
                         textInput.text = selectedValue.toString();
                         if (_size.currentState != null) _size.currentState.validate();
@@ -202,28 +203,15 @@ class _SettingsState extends State<Settings> {
                         filled: true,
                         fillColor: AppColors.darkBlue,
                         contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
-                        enabledBorder: fieldBorder.copyWith(
+                        border: fieldBorder.copyWith(
                           borderSide: BorderSide(
-                            width: 2,
-                            color: AppColors.labelDefaultColor,
+                            width: 4,
+                            color: AppColors.purple,
                           ),
                         ),
-                        errorBorder: fieldBorder.copyWith(
-                            borderSide: BorderSide(
-                          width: 2,
-                          color: AppColors.labelDefaultColor,
-                        )),
                       ),
                       items: getSizes(),
                     ),
-                    /*
-                AppTextFormField(
-                  cursorColor: AppColors.labelDefaultColor,
-                  focusNode: focus,
-                  controller: this.textInput,
-                  hintText: "Type anything to update the controller",
-                )
-                 */
                   ],
                 ),
               ),
@@ -299,72 +287,75 @@ class _SettingsState extends State<Settings> {
             await showDialog(
                 context: context,
                 builder: (_) {
-                  return AppPopupWidget(
-                      title: "Fingerprint Auth",
-                      cancelable: false,
-                      //showIndicator: false,
-                      padding: EdgeInsets.all(20),
-                      children: [
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Padding(
-                              padding: EdgeInsets.symmetric(horizontal: SizeConfig.blockSizeHorizontal * 6),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                children: [
-                                  StatefulBuilder(
-                                    builder: (BuildContext context, setState) {
-                                      return Expanded(
-                                        child: ListTile(
-                                          title: Text("Fingerprint Authentication", style: TextStyle(fontSize: SizeConfig.fontSizeLarge)),
-                                          leading: Icon(Icons.fingerprint),
-                                          onTap: () => setState(() => canAuthenticate = !canAuthenticate),
-                                          subtitle: Text(canAuthenticate ? "Enabled" : "Disabled"),
-                                          trailing: Switch(
-                                            value: canAuthenticate,
-                                            onChanged: (bool value) async {
-                                              dynamic _temp;
-                                              if (await _authApi.isHardwareAllowed()) {
-                                                if (canAuthenticate) {
-                                                  _temp = await _authApi.deleteSecret();
-                                                  if (_temp is String) {
-                                                    NotificationBar().show(context, text: 'Fingerprint disabled', onPressed: () {});
-                                                    app.fingerprintAuth = !(app.fingerprintAuth);
-                                                    file(2, false);
-                                                    setState(() => canAuthenticate = !canAuthenticate);
+                  return Theme(
+                    data: screenTheme,
+                    child: AppPopupWidget(
+                        title: "Fingerprint Authentication",
+                        cancelable: false,
+                        //showIndicator: false,
+                        padding: EdgeInsets.all(20),
+                        children: [
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: SizeConfig.blockSizeHorizontal * 6),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: [
+                                    StatefulBuilder(
+                                      builder: (BuildContext context, setState) {
+                                        return Expanded(
+                                          child: ListTile(
+                                            title: Text("Fingerprint Authentication", style: TextStyle(fontSize: SizeConfig.fontSizeLarge)),
+                                            leading: Icon(Icons.fingerprint),
+                                            onTap: () => setState(() => canAuthenticate = !canAuthenticate),
+                                            subtitle: Text(canAuthenticate ? "Enabled" : "Disabled"),
+                                            trailing: Switch(
+                                              value: canAuthenticate,
+                                              onChanged: (bool value) async {
+                                                dynamic _temp;
+                                                if (_authApi.isHardwareAllowed()) {
+                                                  if (canAuthenticate) {
+                                                    _temp = await _authApi.deleteSecret();
+                                                    if (_temp is String) {
+                                                      NotificationBar().show(context, text: 'Fingerprint disabled', onPressed: () {});
+                                                      app.fingerprintAuth = !(app.fingerprintAuth);
+                                                      file(2, false);
+                                                      setState(() => canAuthenticate = !canAuthenticate);
+                                                    } else {
+                                                      NotificationBar().show(context, text: 'Fingerprint scanning cancelled', onPressed: () {});
+                                                    }
                                                   } else {
-                                                    NotificationBar().show(context, text: 'Fingerprint scanning cancelled', onPressed: () {});
+                                                    _temp = await _authApi.saveSecret(_controller.text);
+                                                    if (_temp is String) {
+                                                      NotificationBar().show(context, text: 'Fingerprint enabled', onPressed: () {});
+                                                      app.fingerprintAuth = !(app.fingerprintAuth);
+                                                      file(2, true);
+                                                      setState(() => canAuthenticate = !canAuthenticate);
+                                                    } else {
+                                                      NotificationBar().show(context, text: 'Fingerprint scanning cancelled', onPressed: () {});
+                                                    }
                                                   }
                                                 } else {
-                                                  _temp = await _authApi.saveSecret(_controller.text);
-                                                  if (_temp is String) {
-                                                    NotificationBar().show(context, text: 'Fingerprint enabled', onPressed: () {});
-                                                    app.fingerprintAuth = !(app.fingerprintAuth);
-                                                    file(2, true);
-                                                    setState(() => canAuthenticate = !canAuthenticate);
-                                                  } else {
-                                                    NotificationBar().show(context, text: 'Fingerprint scanning cancelled', onPressed: () {});
-                                                  }
+                                                  NotificationBar().show(context,
+                                                      text: 'Fingerprint not enabled in device settings.  Please setup fingerprint before enabling.',
+                                                      onPressed: () {});
                                                 }
-                                              } else {
-                                                NotificationBar().show(context,
-                                                    text: 'Fingerprint not enabled in device settings.  Please setup fingerprint before enabling.',
-                                                    onPressed: () {});
-                                              }
-                                            },
+                                              },
+                                            ),
                                           ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ],
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
-                        )
-                      ]);
+                            ],
+                          )
+                        ]),
+                  );
                 });
           }
 
@@ -420,8 +411,12 @@ class _SettingsState extends State<Settings> {
               children: [
                 Column(
                   children: [
+                    ScreenIndicator(
+                      height: SizeConfig.safeBlockVertical * 2,
+                      width: MediaQuery.of(context).size.width,
+                    ),
                     SizedBox(
-                      height: fieldSpacing,
+                      height: SizeConfig.safeBlockVertical * 3,
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
@@ -494,7 +489,7 @@ class _SettingsState extends State<Settings> {
       value: 0,
       child: Text(
         //long stuff just to display text with first letter as uppercase
-        '0 (Default)',
+        '0 (System Default)',
         style: AppTextStyles.label.copyWith(fontSize: SizeConfig.fontSizeLarge * 1.2),
       ),
     ));
