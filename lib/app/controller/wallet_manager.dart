@@ -127,7 +127,7 @@ class WalletManager {
       await this.fileManager.accountFile();
       crypt.encryptTextToFileSync(mnemonic, documentsPath + this.fileManager.accountFolder + mnemonicFile, utf16: true);
     } else {
-      mnemonic = await decryptAesWallet(password, shouldReturnMnemonicFile: true);
+      mnemonic = mnemonic ?? await decryptAesWallet(password, shouldReturnMnemonicFile: true);
     }
 
     print(mnemonic);
@@ -138,11 +138,15 @@ class WalletManager {
       throw Exception("Limit of 9 accounts reached!");
     }
 
+    print('test1');
+
     BIP32 child = node.derivePath("m/44'/60'/0'/0/$slot");
     String privateKey = HEX.encode(child.privateKey);
 
     Credentials credentFromHex = EthPrivateKey.fromHex(privateKey);
     Wallet _wallet = Wallet.createNew(credentFromHex, password, _rng);
+
+    print('test2');
 
     if (title.length == 0) {
       title = "-unnamed $slot-";
@@ -156,6 +160,8 @@ class WalletManager {
     };
 
     List walletObject;
+
+    print('test3');
 
     if (appState.accountList.isEmpty) {
       walletObject = [accountObject];
@@ -194,15 +200,13 @@ class WalletManager {
       return ret;
     }
     try {
-      if(restart)
-      {
+      if (restart) {
         printMark("[Wallet Manager] Starting loadWalletAccounts");
         await loadWalletAccounts(password, appState);
         if (appState.accountList[0].walletObj != null) {
           appState.w3dartWallet = appState.accountList[0].walletObj;
         }
-      }
-      else
+      } else
         printMark("[Wallet Manager] Ignored loadWalletAccounts");
       ret["status"] = 200;
       ret["message"] = "";
@@ -253,9 +257,18 @@ class WalletManager {
     return {"title": "", "status": 200, "message": url};
   }
 
-  Future<Map<int, List>> previewAvaxBalance(String password) async {
-    String mnemonic = await decryptAesWallet(password, shouldReturnMnemonicFile: true);
-    BIP32 node = bip32.BIP32.fromSeed(await compute(bip39.mnemonicToSeed, mnemonic));
+  /// If previewing from the current account, string = password
+  ///
+  /// If previewing from another seed, string = mnemonic separated by spaces,
+  /// bool mnemonic = true
+  Future<Map<int, List>> previewAvaxBalance(String string, {bool mnemonic = false}) async {
+    BIP32 node;
+    if (mnemonic) {
+      node = bip32.BIP32.fromSeed(await compute(bip39.mnemonicToSeed, string));
+    } else {
+      String mnemonics = await decryptAesWallet(string, shouldReturnMnemonicFile: true);
+      node = bip32.BIP32.fromSeed(await compute(bip39.mnemonicToSeed, mnemonics));
+    }
     BIP32 child;
     Credentials credentFromHex;
     // Map<int, String> pkeyMap = {};
@@ -265,26 +278,19 @@ class WalletManager {
       credentFromHex = EthPrivateKey.fromHex(HEX.encode(child.privateKey));
       // pkeyMap[slot] = (await credentFromHex.extractAddress()).toString();
       String address = (await credentFromHex.extractAddress()).toString();
-      body.add(
-        {
-          "id" : slot,
-          "jsonrpc" : "2.0",
-          "method" : "eth_getBalance",
-          "params" : [
-            address, "latest"
-          ]
-        }
-      );
+      body.add({
+        "id": slot,
+        "jsonrpc": "2.0",
+        "method": "eth_getBalance",
+        "params": [address, "latest"]
+      });
     }
 
     List result = jsonDecode(await services.executeInNetwork(body));
     Map<int, List> data = {};
-    for(dynamic item in result)
-    {
-      if(item is Map)
-      {
-        if(item.containsKey("result"))
-        {
+    for (dynamic item in result) {
+      if (item is Map) {
+        if (item.containsKey("result")) {
           BigInt balance = EtherAmount.fromUnitAndValue(EtherUnit.wei, hexToInt(item["result"])).getInWei;
           String convertedBalance = balance.toDouble() != 0 ? weiToFixedPoint(balance.toString()) : "0";
           data[item["id"]] = [
