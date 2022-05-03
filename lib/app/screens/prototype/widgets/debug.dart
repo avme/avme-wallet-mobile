@@ -4,7 +4,6 @@ import 'package:avme_wallet/app/controller/services/contract.dart';
 import 'package:avme_wallet/app/controller/services/push_notification.dart';
 import 'package:avme_wallet/app/model/active_contracts.dart';
 import 'package:avme_wallet/app/model/app.dart';
-import 'package:avme_wallet/app/screens/prototype/widgets/auth_setup.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/neon_button.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/notification_bar.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/popup.dart';
