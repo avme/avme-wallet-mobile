@@ -684,7 +684,7 @@ class _ImportAccountState extends State<ImportAccount> {
           FocusScopeNode currentFocus = FocusScope.of(this.context);
           currentFocus.unfocus();
 
-          if (await _authApi.isHardwareAllowed()) {
+          if (_authApi.isHardwareAllowed()) {
             await showDialog(
                 context: context,
                 builder: (_) {
