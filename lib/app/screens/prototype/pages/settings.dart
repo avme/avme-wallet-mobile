@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:avme_wallet/app/controller/authapi.dart';
 import 'package:avme_wallet/app/controller/file_manager.dart';
 import 'package:avme_wallet/app/controller/size_config.dart';
 import 'package:avme_wallet/app/model/app.dart';
-import 'package:avme_wallet/app/screens/prototype/widgets/authentication.dart';
+import 'package:avme_wallet/app/model/authentication.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/button.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/card.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/neon_button.dart';
@@ -291,8 +292,10 @@ class _SettingsState extends State<Settings> {
 
           void setup() async {
             Navigator.pop(context);
-            Authentication _authApi = Authentication();
-            bool canAuthenticate = Provider.of<AvmeWallet>(context, listen: false).fingerprintAuth;
+            // Authentication _authApi = Authentication();
+            AuthApi _authApi = await AuthApi.init();
+            AvmeWallet app = Provider.of<AvmeWallet>(context, listen: false);
+            bool canAuthenticate = app.fingerprintAuth;
             await showDialog(
                 context: context,
                 builder: (_) {
@@ -323,14 +326,12 @@ class _SettingsState extends State<Settings> {
                                             value: canAuthenticate,
                                             onChanged: (bool value) async {
                                               dynamic _temp;
-                                              if (await _authApi.canAuthenticate()) {
+                                              if (await _authApi.isHardwareAllowed()) {
                                                 if (canAuthenticate) {
-                                                  _temp = await _authApi.deleteSecretPrompt();
+                                                  _temp = await _authApi.deleteSecret();
                                                   if (_temp is String) {
-                                                    await _authApi.deleteSecret();
                                                     NotificationBar().show(context, text: 'Fingerprint disabled', onPressed: () {});
-                                                    Provider.of<AvmeWallet>(context, listen: false).fingerprintAuth =
-                                                        !(Provider.of<AvmeWallet>(context, listen: false).fingerprintAuth);
+                                                    app.fingerprintAuth = !(app.fingerprintAuth);
                                                     file(2, false);
                                                     setState(() => canAuthenticate = !canAuthenticate);
                                                   } else {
@@ -340,8 +341,7 @@ class _SettingsState extends State<Settings> {
                                                   _temp = await _authApi.saveSecret(_controller.text);
                                                   if (_temp is String) {
                                                     NotificationBar().show(context, text: 'Fingerprint enabled', onPressed: () {});
-                                                    Provider.of<AvmeWallet>(context, listen: false).fingerprintAuth =
-                                                        !(Provider.of<AvmeWallet>(context, listen: false).fingerprintAuth);
+                                                    app.fingerprintAuth = !(app.fingerprintAuth);
                                                     file(2, true);
                                                     setState(() => canAuthenticate = !canAuthenticate);
                                                   } else {
