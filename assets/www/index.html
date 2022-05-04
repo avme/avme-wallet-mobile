@@ -4,18 +4,29 @@
     <meta charset="UTF-8">
     <title>Test Page</title>
 </head>
-<body>
+<body style="width:480px;">
     <h1>Test Page</h1>
     <b>Address: </b><abbr id="address">?</abbr>
     <b>Network Version:</b><abbr id="networkId">?</abbr>
+    <b>Balance:</b><abbr id="balance">?</abbr>
     <script>
         const dom = document
         let eAddr = dom.getElementById("address")
         let eNet = dom.getElementById("networkId")
+        let eBalance = dom.getElementById("balance")
+
+        let address = '';
         setTimeout(function() {
             eNet.innerHTML = window.ethereum.networkVersion
             window.ethereum.request({method:"eth_accounts"}).then(value => {
                 eAddr.innerHTML = value[0]
+                address = value[0]
+
+                window.ethereum.request({
+                    method:"eth_getBalance",
+                    params: [address, "latest"]
+                })
+                .then(value => console.info(value))
             })
         }, 200);
     </script>

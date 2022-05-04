@@ -549,7 +549,7 @@ class EventConnection extends EventEmitter {
 		//Listening for any window.postMessage
 		window.addEventListener('message', messageEvent =>
 		{
-			console.log(`[Unfiltered]`, messageEvent);
+			console.log(`[Unfiltered] ${JSON.stringify(messageEvent)}`);
 
 			// console.log(messageEvent);
 			if(messageEvent ///Checking if the event is not empty
@@ -557,10 +557,10 @@ class EventConnection extends EventEmitter {
                 && messageEvent.data
                 && messageEvent.data.type === 'eth:payload' ///Checking if the event is a payload
 			){
-				console.log(`[Window.addEventListener]:`, messageEvent);
+				console.log(`[Window.addEventListener] ${JSON.stringify(messageEvent)}`,);
 				///Emiting for any listeners the request payload of the page
 				///Remember: the payload format must be identical to the METAMASK implementation
-				// this.emit('payload', messageEvent.data.payload);
+				this.emit('payload', messageEvent.data.payload);
 			}
 		});
 		if(typeof window.Mobile !== "undefined")
@@ -573,10 +573,10 @@ class EventConnection extends EventEmitter {
 	offline(payload)
 	{
 		///Manually adding the origin
-		payload.origin = location.origin;
 		const body = {
 			type: 'eth:send',
-			payload
+			payload,
+			origin: location.origin
 		};
 		///Passar esse codigo inteiro para o backend
 		const response =
@@ -630,7 +630,8 @@ class EventConnection extends EventEmitter {
 	{
 		const body = {
 			type: 'eth:send',
-			payload
+			payload,
+			origin: location.origin
 		};
 		window.Mobile.postMessage(JSON.stringify(body));
 		// this.offline(payload);

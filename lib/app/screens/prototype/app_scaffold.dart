@@ -12,11 +12,14 @@ import 'package:avme_wallet/app/screens/prototype/tokens.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/accounts_drawer.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/debug.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
+// import 'package:avme_wallet/app/test/webview.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:provider/provider.dart';
 import 'package:avme_wallet/app/screens/prototype/send.dart';
+import '../webview.dart';
 import 'app_drawer.dart';
 import 'overview.dart';
 
@@ -67,9 +70,9 @@ class _State extends State<AppScaffold>
   void initState() {
 
     appScaffoldTabController = TabController(
-        length: this.routeLabels.length,
-        vsync: this,
-        initialIndex: 1
+      length: this.routeLabels.length,
+      vsync: this,
+      initialIndex: 1
     );
 
     routeWidgets.addAll([
@@ -122,8 +125,8 @@ class _State extends State<AppScaffold>
       final color = connectionData[0] ? Colors.green : Colors.red;
       final message = connectionData[0] ? "Internet Connection restored" : "Lost internet connection";
       showSimpleNotification(
-          Text(message),
-          background: color
+        Text(message),
+        background: color
       );
     });
   }
@@ -135,13 +138,13 @@ class _State extends State<AppScaffold>
       connectionType = connectionData[1];
       if(connectionData[1] == ConnectivityResult.wifi)
         showSimpleNotification(
-            Text("Using a wifi connection"),
-            background: Colors.green
+          Text("Using a wifi connection"),
+          background: Colors.green
         );
       else if(connectionData[1] == ConnectivityResult.mobile)
         showSimpleNotification(
-            Text("Using a Mobile connection"),
-            background: Colors.orange
+          Text("Using a Mobile connection"),
+          background: Colors.orange
         );
       else if(connectionData[1] == ConnectivityResult.none)
         showSimpleNotification(
@@ -167,7 +170,7 @@ class _State extends State<AppScaffold>
       appBar: AppBar(
         automaticallyImplyLeading: false,
         iconTheme: IconThemeData(
-            color: AppColors.labelDefaultColor
+          color: AppColors.labelDefaultColor
         ),
         titleSpacing: appBarWidth,
 
@@ -190,10 +193,10 @@ class _State extends State<AppScaffold>
               },
             ),
             Center(
-                child: Image.asset(
-                  'assets/avme_logo.png',
-                  width: MediaQuery.of(context).padding.top + kToolbarHeight * 1 / 8,
-                  fit: BoxFit.fitHeight,)
+              child: Image.asset(
+                'assets/avme_logo.png',
+                width: MediaQuery.of(context).padding.top + kToolbarHeight * 1 / 8,
+                fit: BoxFit.fitHeight,)
             ),
             ///Changing Icon in the second drawer
             Builder(
@@ -232,14 +235,14 @@ class _State extends State<AppScaffold>
                 Flexible(
                   child: Padding(
                     padding: EdgeInsets.symmetric(
-                        horizontal: SizeConfig.safeBlockHorizontal * 6
+                      horizontal: SizeConfig.safeBlockHorizontal * 6
                     ),
                     child: Image.asset('assets/logo_font.png', fit: BoxFit.scaleDown),
                   ),
                 ),
                 Padding(
                   padding: EdgeInsets.only(top:SizeConfig.safeBlockVertical * 2),
-                  child: Text("{App Version}"),
+                 child: Text("{App Version}"),
                 )
               ],
             ),
@@ -270,6 +273,11 @@ class _State extends State<AppScaffold>
           )
         ],
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => initWebView(context),
+        tooltip: 'WebView',
+        child: const FaIcon(FontAwesomeIcons.globe,),
+      ),
     );
   }
 }
@@ -289,12 +297,12 @@ class AppBarButton extends StatelessWidget {
         width: MediaQuery.of(context).padding.top + kToolbarHeight * 1 / 1.5,
         height: MediaQuery.of(context).padding.top + kToolbarHeight * 1 / 2,
         child: Container(
-            child: Row(
-              mainAxisAlignment: this.mainAxisAlignment,
-              children: [
-                this.icon
-              ],
-            )
+          child: Row(
+            mainAxisAlignment: this.mainAxisAlignment,
+            children: [
+              this.icon
+            ],
+          )
         ),
       ),
     );
@@ -324,49 +332,49 @@ class _AppTabBarState extends State<AppTabBar> {
   @override
   Widget build(BuildContext context) {
     return Column(
-        children: [
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: widget.padding),
-            child: Container(
-              decoration: BoxDecoration(
-                  border: Border(
-                      top: BorderSide(
-                          color: AppColors.purple,
-                          width: 2
-                      )
-                  )
-              ),
-              child: Theme(
-                data: avmeTheme.copyWith(
-                  splashColor: Colors.transparent,
-                  highlightColor: Colors.transparent,
-                ),
-                child: TabBar(
-                    labelPadding: EdgeInsets.only(top:8),
-                    controller: widget.appScaffoldTabController,
-                    isScrollable: true,
-                    indicator: BoxDecoration(
-                        border: Border(
-                            top: BorderSide(
-                                color: AppColors.purple,
-                                width: 2
-                            )
-                        )
-                    ),
-                    labelColor: Colors.white,
-                    unselectedLabelColor: AppColors.labelDisabledColor,
-                    tabs: getTabLabels(context, widget.appScaffoldTabController)
-                ),
-              ),
+      children: [
+        Padding(
+          padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: widget.padding),
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border(
+                top: BorderSide(
+                    color: AppColors.purple,
+                    width: 2
+                )
+              )
             ),
-          ),
-          Expanded(
-            child: TabBarView(
+            child: Theme(
+              data: avmeTheme.copyWith(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+              ),
+              child: TabBar(
+                labelPadding: EdgeInsets.only(top:8),
                 controller: widget.appScaffoldTabController,
-                children: widget.routeWidgets
+                isScrollable: true,
+                indicator: BoxDecoration(
+                  border: Border(
+                    top: BorderSide(
+                      color: AppColors.purple,
+                      width: 2
+                    )
+                  )
+                ),
+                labelColor: Colors.white,
+                unselectedLabelColor: AppColors.labelDisabledColor,
+                tabs: getTabLabels(context, widget.appScaffoldTabController)
+              ),
             ),
           ),
-        ]
+        ),
+        Expanded(
+          child: TabBarView(
+            controller: widget.appScaffoldTabController,
+            children: widget.routeWidgets
+          ),
+        ),
+      ]
     );
   }
   List<Widget> getTabLabels(BuildContext context, TabController tabController)
@@ -408,35 +416,35 @@ class _AppTabBarState extends State<AppTabBar> {
       _labels.add(
         Tab(
           child:
-          Container(
-            width: (MediaQuery.of(context).size.width / 10 * 8.633) / 3,
-            child: Row(
-              // mainAxisAlignment: pos == 0 ? MainAxisAlignment.start : pos != widget.routeLabels.length - 1 ? MainAxisAlignment.center : MainAxisAlignment.end,
-              mainAxisAlignment: alignment,
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(
-                      6.0,
+            Container(
+              width: (MediaQuery.of(context).size.width / 10 * 8.633) / 3,
+              child: Row(
+                // mainAxisAlignment: pos == 0 ? MainAxisAlignment.start : pos != widget.routeLabels.length - 1 ? MainAxisAlignment.center : MainAxisAlignment.end,
+                mainAxisAlignment: alignment,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(
+                        6.0,
+                      ),
+                      color: pos == tabController.index ? AppColors.cardDefaultColor : null,
                     ),
-                    color: pos == tabController.index ? AppColors.cardDefaultColor : null,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
                         horizontal: 8,
                         vertical: 4
+                      ),
+                      child: Text(
+                        "$key",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: SizeConfig.labelSize*0.5+6),),
                     ),
-                    child: Text(
-                      "$key",
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: SizeConfig.labelSize*0.5+6),),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
-      );
+        );
       pos++;
     });
     return _labels;

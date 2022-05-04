@@ -87,6 +87,8 @@ flutter:
   assets:
      - assets/
      - .env
+     - assets/www/
+     - assets/www/js/
   #   - images/a_dot_burr.jpeg
 #     - images/a_dot_ham.jpeg
 
