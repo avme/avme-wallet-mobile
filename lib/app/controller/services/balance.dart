@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:avme_wallet/app/controller/services/connection.dart';
 import 'package:avme_wallet/app/controller/services/push_notification.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/account_item.dart';
@@ -238,38 +239,46 @@ Future<void> trackBalance(List<dynamic> params, {ThreadData threadData, int id, 
   });
   int seconds = 0;
   List<String> blackList = [];
-  while (!threadData.processes[id].isCanceled) {
-    await Future.delayed(Duration(seconds: seconds), () async {
-      /// AVAX/Network balance
-      EtherAmount balance = await ethClient.getBalance(address);
-      List<Map> tokenBalance = [];
-      /// Tokens balance as List<Map<String TokenName, BigInt balance>>
-      tokenBalance =
-      await Future.wait(contractsERC20.entries.map((contractItem) {
-        if (blackList.contains(contractItem.key))
-          return Future.value({
-            contractItem.key: {"empty"}
-          });
-        return wrapAsList(identifier: contractItem.key,
-            future: contractItem.value.balanceOf(address),
-            processName: "balanceSubscription");
-      }));
 
-      tokenBalance.insert(0, {"AVAX": balance.getInWei});
-      tokenBalance.forEach((Map map) {
-        if (map.entries.first.value == "empty" &&
-            !blackList.contains(map.entries.first.key)) blackList.add(
-            map.keys.first);
-      });
-      blackList.forEach((blacklisted) =>
-          tokenBalance.removeWhere((element) =>
-              element.containsKey(blacklisted)));
-      threadMessage.payload = {
-        "balanceSubscription": {"balance": tokenBalance, "id": account["id"]}
-      };
-      threadData.sendPort.send(threadMessage);
-      // print(blackList);
-      if (seconds == 0) seconds = account["updateIn"];
+  /// Recovering the internet status to avoid calls when no internet
+  ///connection was found
+  while (!threadData.processes[id].isCanceled) {
+    await Future.delayed(Duration(seconds: seconds));
+    if (seconds == 0) seconds = account["updateIn"];
+    bool hasConnection = await threadData.hasConnection(id);
+    if(!hasConnection)
+    {
+      printWarning("[T#${threadData.id} P#$id] \"trackBalance\"-> Device is not connected to the internet");
+      continue;
+    }
+    /// AVAX/Network balance
+    EtherAmount balance = await ethClient.getBalance(address);
+    List<Map> tokenBalance = [];
+    /// Tokens balance as List<Map<String TokenName, BigInt balance>>
+    tokenBalance =
+    await Future.wait(contractsERC20.entries.map((contractItem) {
+      if (blackList.contains(contractItem.key))
+        return Future.value({
+          contractItem.key: {"empty"}
+        });
+      return wrapAsList(identifier: contractItem.key,
+          future: contractItem.value.balanceOf(address),
+          processName: "balanceSubscription");
+    }));
+
+    tokenBalance.insert(0, {"AVAX": balance.getInWei});
+    tokenBalance.forEach((Map map) {
+      if (map.entries.first.value == "empty" &&
+          !blackList.contains(map.entries.first.key)) blackList.add(
+          map.keys.first);
     });
+    blackList.forEach((blacklisted) =>
+        tokenBalance.removeWhere((element) =>
+            element.containsKey(blacklisted)));
+    threadMessage.payload = {
+      "balanceSubscription": {"balance": tokenBalance, "id": account["id"]}
+    };
+    threadData.sendPort.send(threadMessage);
+    // print(blackList);
   }
 }

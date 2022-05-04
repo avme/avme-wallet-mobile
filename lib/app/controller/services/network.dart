@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:isolate';
 
 import 'package:avme_wallet/app/controller/database/value_history.dart';
+import 'package:avme_wallet/app/controller/services/connection.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/model/value_history.dart';
@@ -170,20 +171,28 @@ void watchValue(List<dynamic> params, {ThreadData threadData, int id, ThreadMess
   ///CancellableOperation[self] = null
   await prepareOperation(id, threadData);
   while(!threadData.processes[id].isCanceled) {
-    await Future.delayed(Duration(seconds: seconds), () async {
-      Decimal avaxPrice = await getAVAXPriceUSD(avaxBodyRequest, url);
-      List<Map> tokenValue = await Future.wait(tokensRequest.entries.map((entry) {
-        if (blackList.contains(entry.key)) return Future.value({entry.key: Decimal.zero});
-        return getTokenPriceUSD(avaxPrice, url, entry.value, entry.key);
-      }));
-      tokenValue.add({"AVAX": avaxPrice});
-      tokenValue.forEach((Map map) {
-        if (map.entries.first.value == Decimal.zero && !blackList.contains(map.entries.first.key)) blackList.add(map.entries.first.key);
-      });
-      threadMessage.payload = {"listenValue": tokenValue};
-      threadData.sendPort.send(threadMessage);
-    });
+    await Future.delayed(Duration(seconds: seconds));
     if (seconds == 0) seconds = 5;
+    bool hasConnection = await threadData.hasConnection(id);
+    if(!hasConnection)
+    {
+      printWarning("[T#${threadData.id} P#$id] \"watchValue\"-> Device is not connected to the internet");
+      continue;
+    }
+
+    Decimal avaxPrice = await getAVAXPriceUSD(avaxBodyRequest, url);
+    List<Map> tokenValue = await Future.wait(tokensRequest.entries.map((entry) {
+      if (blackList.contains(entry.key)) return Future.value({entry.key: Decimal.zero});
+      return getTokenPriceUSD(avaxPrice, url, entry.value, entry.key);
+    }));
+    tokenValue.add({"AVAX": avaxPrice});
+    tokenValue.forEach((Map map) {
+      if (map.entries.first.value == Decimal.zero && !blackList.contains(map.entries.first.key)) blackList.add(map.entries.first.key);
+    });
+    threadMessage.payload = {"listenValue": tokenValue};
+    threadData.sendPort.send(threadMessage);
+
+
   }
 }
 

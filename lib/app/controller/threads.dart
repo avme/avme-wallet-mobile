@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:isolate';
 import 'dart:math';
 import 'package:async/async.dart';
+import 'package:avme_wallet/app/controller/services/connection.dart';
 import 'dart:isolate';
 
 import 'package:avme_wallet/app/lib/utils.dart';
@@ -66,7 +67,7 @@ class Threads extends ChangeNotifier
       {
         switch (message.operation)
         {
-          case "cancel":
+          case OperationTypes.cancel:
             if (endChannel.containsKey(message.processId))
             {
               await endChannel[message.processId]!.close();
@@ -76,6 +77,14 @@ class Threads extends ChangeNotifier
             {
               printError("[T#Main] No StreamController was found with the process ID ${message.processId}");
             }
+            break;
+          case OperationTypes.hasConnection:
+            AppConnection appConnection = AppConnection.getInstance();
+            SendPort _s = threadChannel[_threadCount]["sendChannel"];
+            _s.send([
+              message,
+              appConnection.hasConnection
+            ]);
             break;
           default:
             throw "[T#Main] Error at Thread.listener, unrecognised ThreadOperation \"${message.operation}\"";
@@ -117,7 +126,7 @@ class Threads extends ChangeNotifier
       else if (event is ThreadMessage) {
         if(event.noise == noise)
         {
-          printOk("[P#${event.id}] ${event.payload}");
+          // printOk("[P#${event.id}] ${event.payload}");
           eController.add(event.payload);
           ///Checking if the process was finalized
           if(event.isDone)
@@ -139,7 +148,7 @@ class Threads extends ChangeNotifier
   void cancelProcess(int thread, int processId)
   {
     SendPort port = threadChannel[thread]["sendChannel"];
-    ThreadOperation tOperation = ThreadOperation("cancel", processId);
+    ThreadOperation tOperation = ThreadOperation(OperationTypes.cancel, processId);
     port.send(tOperation);
   }
 
@@ -161,12 +170,36 @@ class ThreadData
 {
   final Map<String, dynamic> data;
   final SendPort sendPort;
+  Stream? stream;
   // List<List<dynamic>> processes = [];
   Map<int, CancelableOperation> processes = {};
   final int id;
   ThreadData({
     required this.id, required this.data, required this.sendPort
   });
+
+  Future<bool> hasConnection(int processId) async {
+    bool hasValue = false;
+    bool value = false;
+    ThreadOperation threadOperation = ThreadOperation(OperationTypes.hasConnection, processId);
+    sendPort.send(threadOperation);
+    /*
+      [ThreadOperation, value]
+    */
+    stream!.listen((message) {
+      if (message is List && message[0] is ThreadOperation) {
+        if(message[0].operation == OperationTypes.hasConnection && message[0].processId == processId)
+        {
+          value = message[1];
+          hasValue = !hasValue;
+        }
+      }
+    });
+
+    do await Future.delayed(Duration(milliseconds: 50));
+    while(!hasValue);
+    return value;
+  }
 }
 
 class ThreadMessage
@@ -181,9 +214,15 @@ class ThreadMessage
   ThreadMessage({this.function, this.caller, this.params});
 }
 
+enum OperationTypes {
+  cancel,
+  kill,
+  hasConnection
+}
+
 class ThreadOperation
 {
-  final String operation;
+  final OperationTypes operation;
   final int processId;
   ThreadOperation(this.operation, this.processId);
 }
@@ -208,12 +247,16 @@ void thread(ThreadData _d)
 
   ReceivePort sender = ReceivePort();
   printOk("[T#${_d.id}] Sending my sendPort back to main()...");
+  Stream stream = sender.asBroadcastStream();
+  _d.stream = stream;
   _d.sendPort.send(sender.sendPort);
-
+  // AppConnection appConnection = AppConnection.getInstance();
+  // appConnection.initialize();
+  // printError("tem conexao? ${appConnection.hasConnection}");
   ///Starting our Operation cleaner
   cleaner(_d);
   ///Listening to any data received by Main
-  sender.listen((message) async {
+  stream.listen((message) async {
     int id = generateId(_d.processes.keys.length);
     if(message is ThreadMessage) {
       ThreadMessage threadMessage = message;
@@ -276,6 +319,8 @@ void thread(ThreadData _d)
             ..caller = threadMessage.caller!;
 
           _d.sendPort.send(threadReference);
+          ///New reference of connection to the thread;
+          // _d.connection = appConnection;
           _d.processes[id] = CancelableOperation.fromFuture(
             threadMessage.function!(threadMessage.params, threadMessage: threadMessage, threadData: _d, id: id)
           );
@@ -294,7 +339,7 @@ void thread(ThreadData _d)
     else if(message is ThreadOperation)
     {
       switch (message.operation){
-        case "cancel":
+        case OperationTypes.cancel:
           if(_d.processes.keys.contains(message.processId))
           {
 
@@ -308,14 +353,14 @@ void thread(ThreadData _d)
               // _d.processes.removeWhere((key, value) => key == message.processId);
             });
             ///Closing the StreamController used by its caller
-            _d.sendPort.send(ThreadOperation("cancel", message.processId));
+            _d.sendPort.send(ThreadOperation(OperationTypes.cancel, message.processId));
           }
           else
           {
             _d.sendPort.send({"message": "[T#${_d.id}] No operation found at (${message.processId}) found."});
           }
           break;
-        case "kill":
+        case OperationTypes.kill:
           {
             printWarning("[T#${_d.id}] Killing process ${message.processId}");
             _d.processes.removeWhere((key, value) => key == message.processId);
@@ -325,6 +370,11 @@ void thread(ThreadData _d)
           _d.sendPort.send({"message": "[T#${_d.id}] Undefined operation ${message.operation}"});
           break;
       }
+    }
+    else if(message is List)
+    {
+      if(message[0] is ThreadOperation)
+      {}
     }
     else
     {
