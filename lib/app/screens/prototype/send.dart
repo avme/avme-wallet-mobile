@@ -22,6 +22,7 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../controller/authapi.dart';
 import '../qrcode_reader.dart';
 
 class Send extends StatefulWidget {
@@ -48,12 +49,19 @@ class _SendState extends State<Send> {
 
   AvmeWallet app;
 
+  AuthApi _authApi;
+
   @override
   void initState() {
     app = Provider.of<AvmeWallet>(context, listen: false);
     availableTokens.addAll(app.currentAccount.tokensBalanceList.keys);
     print(availableTokens);
+    authSetup();
     super.initState();
+  }
+
+  void authSetup() async {
+    _authApi = await AuthApi.init();
   }
 
   @override
@@ -690,10 +698,17 @@ class _SendState extends State<Send> {
                           children: [
                             AppButton(
                               expanded: false,
-                              onPressed: () {
-                                // Navigator.of(context).pop();
+                              onPressed: () async {
                                 if (_sendTokenForm.currentState != null && _sendTokenForm.currentState.validate()) {
-                                  startTransaction(app, weiValue, tokenDropdownValue);
+                                  if (_authApi.canAuthenticate()) {
+                                    if (await _authApi.promptFingerprint()) {
+                                      startTransaction(app, weiValue, tokenDropdownValue);
+                                    } else {
+                                      NotificationBar().show(context, text: "Fingerprint not authorized");
+                                    }
+                                  } else {
+                                    startTransaction(app, weiValue, tokenDropdownValue);
+                                  }
                                 }
                               },
                               text: "CONFIRM",
