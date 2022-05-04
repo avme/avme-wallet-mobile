@@ -394,7 +394,7 @@ class _SettingsState extends State<Settings> {
                       ));
             else {
               AvmeWallet app = Provider.of<AvmeWallet>(context, listen: false);
-              bool valid = await app.login(password, context, display: true);
+              bool valid = (await app.walletManager.authenticate(password, app, restart: false))["status"] == 200 ? true : false;
               if (valid) {
                 FocusScope.of(context).unfocus();
                 setup();
