@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:avme_wallet/app/controller/size_config.dart';
 import 'package:avme_wallet/app/controller/wallet_manager.dart';
 import 'package:avme_wallet/app/model/app.dart';
-import 'package:avme_wallet/app/screens/prototype/widgets/authentication.dart';
+import 'package:avme_wallet/app/model/authentication.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/button.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/neon_button.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/notification_bar.dart';
@@ -19,6 +19,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'dart:math';
 
+import '../../controller/authapi.dart';
 import '../../controller/file_manager.dart';
 
 class NewAccount extends StatefulWidget {
@@ -776,8 +777,7 @@ class _MnemonicsPreAccCreationState extends State<MnemonicsPreAccCreation> {
   ScrollController read = ScrollController();
   bool endOfScroll = false;
   bool showMnemonics = true;
-
-  Authentication _authApi = Authentication();
+  AuthApi authApi;
 
   _listener() {
     final maxScroll = read.position.maxScrollExtent;
@@ -798,6 +798,7 @@ class _MnemonicsPreAccCreationState extends State<MnemonicsPreAccCreation> {
   @override
   void initState() {
     read.addListener(_listener);
+    authSetup();
     super.initState();
   }
 
@@ -852,7 +853,7 @@ class _MnemonicsPreAccCreationState extends State<MnemonicsPreAccCreation> {
                   setState(() {
                     showMnemonics = false;
                   });
-                  if (await _authApi.canAuthenticate()) {
+                  if (authApi.isHardwareAllowed()) {
                     await showDialog(
                         context: context,
                         builder: (_) {
@@ -870,7 +871,7 @@ class _MnemonicsPreAccCreationState extends State<MnemonicsPreAccCreation> {
                                   textAlign: TextAlign.center,
                                 ),
                                 SizedBox(
-                                  height: SizeConfig.blockSizeVertical * 2,
+                                  height: SizeConfig.blockSizeVertical * 3,
                                 ),
                                 Row(
                                   children: [
@@ -894,7 +895,8 @@ class _MnemonicsPreAccCreationState extends State<MnemonicsPreAccCreation> {
                                                             widget.appWalletManager.selectedId = 0;
                                                             // Navigator.pop(context);
                                                             // Navigator.pushReplacementNamed(context, "app/overview");
-                                                            Navigator.of(context).pushNamedAndRemoveUntil('app/overview', (Route<dynamic> route) => false);
+                                                            Navigator.of(context)
+                                                                .pushNamedAndRemoveUntil('app/overview', (Route<dynamic> route) => false);
                                                             NotificationBar().show(context, text: "Account #0 selected");
                                                           }));
                                                     }));
@@ -904,12 +906,10 @@ class _MnemonicsPreAccCreationState extends State<MnemonicsPreAccCreation> {
                                     Expanded(flex: 1, child: SizedBox()),
                                     Expanded(
                                         flex: 3,
-                                        child: AppNeonButton(
-                                          textStyle: TextStyle(fontSize: SizeConfig.fontSizeLarge, color: AppColors.purple),
+                                        child: AppButton(
+                                          textStyle: TextStyle(fontSize: SizeConfig.fontSizeLarge, color: Colors.white),
                                           onPressed: () async {
-                                            dynamic _temp;
-                                            _temp = await _authApi.saveSecret(widget.phraseController.text);
-
+                                            dynamic _temp = await authApi.saveSecret(widget.phraseController.text);
                                             if (_temp is String) {
                                               NotificationBar().show(context, text: 'Fingerprint enabled', onPressed: () {});
                                               Provider.of<AvmeWallet>(context, listen: false).fingerprintAuth =
@@ -929,7 +929,8 @@ class _MnemonicsPreAccCreationState extends State<MnemonicsPreAccCreation> {
                                                               widget.appWalletManager.selectedId = 0;
                                                               // Navigator.pop(context);
                                                               // Navigator.pushReplacementNamed(context, "app/overview");
-                                                              Navigator.of(context).pushNamedAndRemoveUntil('app/overview', (Route<dynamic> route) => false);
+                                                              Navigator.of(context)
+                                                                  .pushNamedAndRemoveUntil('app/overview', (Route<dynamic> route) => false);
                                                               NotificationBar().show(context, text: "Account #0 selected");
                                                             }));
                                                       }));
@@ -972,6 +973,8 @@ class _MnemonicsPreAccCreationState extends State<MnemonicsPreAccCreation> {
             ),
     );
   }
+
+  Future<void> authSetup() async => authApi = await AuthApi.init();
 
   Future<int> file(dynamic input) async {
     //More info on settings.json

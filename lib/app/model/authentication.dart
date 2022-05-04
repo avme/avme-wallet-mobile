@@ -1,5 +1,8 @@
 // @dart=2.12
 
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_locker/flutter_locker.dart';
 
@@ -17,7 +20,7 @@ class Authentication {
     }
   }
 
-  ///maybe not use this
+  ///Returns true if user was verified with fingerprint
   Future<bool> promptFingerprint() async {
     try {
       await FlutterLocker.retrieve(RetrieveSecretRequest(key, AndroidPrompt('Authenticate', 'Cancel'), IOsPrompt('Authenticate')));
@@ -33,45 +36,46 @@ class Authentication {
     try {
       await FlutterLocker.save(
         SaveSecretRequest(
-            key,
-            secret,
-            AndroidPrompt('Enable Fingerprint', 'Cancel',
-                description: 'Scan any configured fingerprint in your phone to enable fingerprint authentication on login')),
+            key, secret, AndroidPrompt('Enable Fingerprint', 'Cancel', description: 'Scan fingerprint to enable fingerprint authentication')),
       );
 
-      return 'Secret saved, secret: $secret';
+      return 'Secret saved';
     } on Exception catch (exception) {
       return exception;
     }
   }
 
+  /// Dynamic allows return of string if true, exception if false
   Future<dynamic> retrieveSecret() async {
     try {
       final retrieved = await FlutterLocker.retrieve(RetrieveSecretRequest(
           key, AndroidPrompt('Authenticate', 'Cancel', description: 'Scan fingerprint to authenticate'), IOsPrompt('Authenticate')));
 
-      return 'Secret retrieved, secret: $retrieved';
+      return retrieved;
     } on Exception catch (exception) {
       print(exception);
       return exception;
     }
   }
 
-  Future<dynamic> deleteSecretPrompt() async {
+  Future<dynamic> deleteSecret() async {
+    dynamic retrieved;
     try {
-      final retrieved = await FlutterLocker.retrieve(RetrieveSecretRequest(
+      retrieved = await FlutterLocker.retrieve(RetrieveSecretRequest(
           key,
           AndroidPrompt('Disable fingerprint', 'Cancel', description: 'Scan fingerprint to disable fingerprint authentication'),
           IOsPrompt('Disable fingerprint')));
 
-      return 'Secret retrieved, secret: $retrieved';
+      if (retrieved is String) {
+        return await _deleteSecret();
+      }
     } on Exception catch (exception) {
       print(exception);
       return exception;
     }
   }
 
-  Future<String> deleteSecret() async {
+  Future<String> _deleteSecret() async {
     try {
       await FlutterLocker.delete(key);
 

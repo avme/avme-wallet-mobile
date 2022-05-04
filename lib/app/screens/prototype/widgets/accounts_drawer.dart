@@ -1,4 +1,10 @@
+import 'dart:convert';
+import 'dart:io';
+import 'dart:math';
+
+import 'package:avme_wallet/app/controller/authapi.dart';
 import 'package:avme_wallet/app/controller/size_config.dart';
+import 'package:avme_wallet/app/controller/wallet_manager.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/account_item.dart';
 import 'package:avme_wallet/app/model/app.dart';
@@ -13,8 +19,11 @@ import 'package:avme_wallet/app/screens/widgets/custom_widgets.dart';
 import 'package:avme_wallet/app/screens/widgets/screen_indicator.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
+
+import '../../../controller/file_manager.dart';
 
 class AccountsDrawer extends StatefulWidget {
   final AvmeWallet app;
@@ -30,6 +39,22 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
   int selectedIndex = -1;
   Map<int, List> generatedKeys = {};
   TextEditingController passwordInput = TextEditingController(text: "");
+  TextEditingController controllerMnemonic = TextEditingController(text: "");
+  ScrollController write = ScrollController();
+  bool canAuthenticate = false, isAllFilled = true;
+  String invalidMnemonic = '';
+  AuthApi authApi;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    startFingerprint();
+    super.initState();
+  }
+
+  void startFingerprint() async {
+    authApi = await AuthApi.init();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -159,7 +184,13 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         AppNeonButton(
-          onPressed: () => NotificationBar().show(context, text: "Import was taped"),
+          onPressed: () async {
+            passwordScreen(app, true);
+            NotificationBar().show(
+              context,
+              text: 'NOT FINALIZED, FIX '
+            );
+          },
           text: "IMPORT",
           expanded: false,
           paddingText: EdgeInsets.symmetric(horizontal: 16),
@@ -167,7 +198,7 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
         ),
         AppButton(
           onPressed: () async {
-            passwordScreen(app);
+            passwordScreen(app, false);
           },
           text: "NEW",
           expanded: false,
@@ -178,152 +209,331 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
     );
   }
 
-  void passwordScreen(AvmeWallet app) {
+  void importScreen(AvmeWallet app, String password) {
+    String invalidMnemonic = '';
     showDialog(
         context: context,
-        builder: (_) => StatefulBuilder(
-            builder: (builder, setState) => AppPopupWidget(
-                  title: "Verify Password",
-                  cancelable: false,
-                  showIndicator: false,
-                  padding: EdgeInsets.all(20),
-                  children: [
-                    Column(
-                      children: [
-                        SizedBox(
-                          height: SizeConfig.safeBlockVertical * 2,
+        builder: (_) => StatefulBuilder(builder: (builder, setState) {
+              void verifyMnemonic(AvmeWallet app, String mnemonics) async {
+                List<dynamic> validate() {
+                  String response = mnemonics.trim().replaceAll('\n', ' ');
+                  final regex = RegExp(r'\ +');
+                  String responseNew = response.replaceAll(regex, ' ');
+                  List<String> responseList = responseNew.split(' ');
+                  if (responseList.length == 12 || responseList.length == 24) {
+                    return [true, responseNew, responseList.length];
+                  } else {
+                    return [false, responseNew, responseList.length];
+                  }
+                }
+
+                List<dynamic> response = validate();
+                bool validated = response[0];
+                String mnemonicString = response[1];
+                int _phraseCount = response[2];
+                print('validating... $response');
+                if (validated == false) {
+                  setState(() {
+                    invalidMnemonic = 'One or more words are missing';
+                    isAllFilled = false;
+                  });
+                } else {
+                  if (await app.walletManager.checkMnemonic(phrase: mnemonicString, phraseCount: _phraseCount)) {
+                    controllerMnemonic.clear();
+                    Navigator.of(context).pop();
+                    newAccountPopup(app, true, passwordInput.text, mnemonics: mnemonicString);
+                  } else {
+                    setState(() {
+                      invalidMnemonic = 'Words do not correspond to mnemonic dictionary';
+                      isAllFilled = false;
+                    });
+                  }
+                }
+                print('invalidMnemonic: $invalidMnemonic');
+                print('isAllFilled: $isAllFilled');
+              }
+
+              return AppPopupWidget(
+                title: "Import seed",
+                cancelable: false,
+                showIndicator: false,
+                padding: EdgeInsets.all(20),
+                children: [
+                  Column(
+                    children: [
+                      ScreenIndicator(
+                        height: SizeConfig.safeBlockVertical * 2,
+                        width: MediaQuery.of(context).size.width,
+                      ),
+                      SizedBox(
+                        height: SizeConfig.safeBlockVertical * 3,
+                      ),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Fill in mnemonic phrase to import an account",
+                            style: AppTextStyles.spanWhite,
+                            textAlign: TextAlign.center,
+                          ),
+                          Text(
+                            "Separate words with space or new line",
+                            style: AppTextStyles.spanWhite,
+                            textAlign: TextAlign.center,
+                          ),
+                          Text(
+                            "Supports both 12 and 24 word mnemonic length",
+                            style: AppTextStyles.spanWhite,
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: SizeConfig.safeBlockVertical * 3,
+                      ),
+                      ConstrainedBox(
+                        constraints: BoxConstraints(maxHeight: SizeConfig.safeBlockVertical * 50),
+                        child: Padding(
+                          padding: EdgeInsets.only(bottom: SizeConfig.blockSizeVertical * 2),
+                          child: Scrollbar(
+                              isAlwaysShown: true,
+                              thickness: 4,
+                              controller: write,
+                              child: SingleChildScrollView(
+                                controller: write,
+                                child: Column(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 16),
+                                      child: Container(
+                                        width: SizeConfig.screenWidth / 1.5,
+                                        child: AppTextFormField(
+                                          controller: controllerMnemonic,
+                                          minLines: 1,
+                                          maxLines: 24,
+                                          inputFormatters: [MaxLinesTextInputFormatter(24)],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )),
                         ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Please type your passphrase.',
-                              style: AppTextStyles.span.copyWith(fontSize: SizeConfig.fontSize * 1.5),
+                      ),
+                      SizedBox(
+                        height: SizeConfig.safeBlockVertical * 4,
+                      ),
+                      isAllFilled
+                          ? Padding(
+                              padding: const EdgeInsets.all(0),
+                            )
+                          : Padding(
+                              padding: const EdgeInsets.only(bottom: 8.0),
+                              child: Text(
+                                invalidMnemonic,
+                                textAlign: TextAlign.center,
+                                style: AppTextStyles.span.copyWith(color: Colors.red),
+                              ),
                             ),
-                          ],
-                        ),
-                        SizedBox(
-                          height: SizeConfig.safeBlockVertical * 2,
-                        ),
-                        AppTextFormField(
-                          controller: passwordInput,
-                          obscureText: true,
-                          hintText: "**********",
-                          onFieldSubmitted: (_) {
-                            auth(app, passwordInput.text);
-                            passwordInput.clear();
-                          },
-                        ),
-                        SizedBox(
-                          height: SizeConfig.safeBlockVertical * 4,
-                        ),
-                        ElevatedButton(
-                          onPressed: () async {
-                            auth(app, passwordInput.text);
-                            passwordInput.clear();
-                          },
-                          child: Text("VERIFY PASSWORD"),
-                          // style: ElevatedButton.styleFrom(
-                          //   padding: EdgeInsets.symmetric(vertical: 21, horizontal: 0),
-                          // style: _btnStyleLogin,
-                        ),
-                      ],
-                    ),
-                  ],
-                )));
+                      SizedBox(
+                        height: SizeConfig.safeBlockVertical * 4,
+                      ),
+                      ElevatedButton(
+                        onPressed: () async {
+                          // Navigator.of(context).pop();
+                          verifyMnemonic(app, controllerMnemonic.text);
+                        },
+                        child: Text("IMPORT SEED"),
+                        // style: ElevatedButton.styleFrom(
+                        //   padding: EdgeInsets.symmetric(vertical: 21, horizontal: 0),
+                        // style: _btnStyleLogin,
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            }));
   }
 
-  void auth(AvmeWallet app, String passwordInput) async {
+  void passwordScreen(AvmeWallet app, bool import) async {
+    showDialog(
+        context: context,
+        builder: (_) => StatefulBuilder(builder: (builder, setState) {
+              return AppPopupWidget(
+                title: "Verify Password",
+                cancelable: false,
+                showIndicator: false,
+                padding: EdgeInsets.all(20),
+                children: [
+                  Column(
+                    children: [
+                      ScreenIndicator(
+                        height: SizeConfig.safeBlockVertical * 2,
+                        width: MediaQuery.of(context).size.width,
+                      ),
+                      SizedBox(
+                        height: SizeConfig.safeBlockVertical * 3,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Please type your passphrase.',
+                            style: AppTextStyles.span.copyWith(fontSize: SizeConfig.fontSize * 1.5),
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: SizeConfig.safeBlockVertical * 2,
+                      ),
+                      AppTextFormField(
+                        controller: passwordInput,
+                        obscureText: true,
+                        hintText: "**********",
+                        onFieldSubmitted: (_) {
+                          Navigator.of(context).pop();
+                          authenticate(app, passwordInput.text, import);
+                          passwordInput.clear();
+                        },
+                        icon: canAuthenticate
+                            ? Icon(
+                                Icons.fingerprint,
+                                color: AppColors.labelDefaultColor,
+                                size: 32,
+                              )
+                            : Container(),
+                        iconOnTap: () async {
+                          if (canAuthenticate) {
+                            dynamic _temp = await authApi.retrieveSecret();
+                            if (_temp is String) {
+                              Navigator.of(context).pop();
+                              authenticate(app, _temp, import);
+                            }
+                          }
+                        },
+                      ),
+                      SizedBox(
+                        height: SizeConfig.safeBlockVertical * 4,
+                      ),
+                      ElevatedButton(
+                        onPressed: () async {
+                          Navigator.of(context).pop();
+                          authenticate(app, passwordInput.text, import);
+                          passwordInput.clear();
+                        },
+                        child: Text("VERIFY PASSWORD"),
+                        // style: ElevatedButton.styleFrom(
+                        //   padding: EdgeInsets.symmetric(vertical: 21, horizontal: 0),
+                        // style: _btnStyleLogin,
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            }));
+    canAuthenticate = authApi.canAuthenticate();
+    if (canAuthenticate) {
+      dynamic _temp = await authApi.retrieveSecret();
+      if (_temp is String) {
+        Navigator.of(context).pop();
+        authenticate(app, _temp, import);
+      }
+    }
+  }
+
+  void authenticate(AvmeWallet app, String passwordInput, bool import) async {
     bool empty = (passwordInput == null || passwordInput.length == 0) ? true : false;
     if (empty)
       showDialog(
           context: context,
           builder: (BuildContext context) => AppPopupWidget(
-            title: 'Warning',
-            cancelable: false,
-            showIndicator: false,
-            children: [
-              Padding(
-                padding: EdgeInsets.only(top: SizeConfig.safeBlockVertical / 2, bottom: SizeConfig.safeBlockVertical * 3),
-                child: Text('The password field cannot be empty'),
-              ),
-              AppButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                expanded: false,
-                text: "OK",
-              )
-            ],
-          ));
+                title: 'Warning',
+                cancelable: false,
+                showIndicator: false,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(top: SizeConfig.safeBlockVertical / 2, bottom: SizeConfig.safeBlockVertical * 3),
+                    child: Text('The password field cannot be empty'),
+                  ),
+                  AppButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    expanded: false,
+                    text: "OK",
+                  )
+                ],
+              ));
     else {
       AvmeWallet app = Provider.of<AvmeWallet>(context, listen: false);
-      bool valid = (await app.walletManager.authenticate(passwordInput, app, restart: false))["status"] == 200
-        ? true : false;
+      bool valid = (await app.walletManager.authenticate(passwordInput, app, restart: false))["status"] == 200 ? true : false;
       if (valid) {
-        Navigator.pop(context);
-        newAccountPopup(app, passwordInput);
-      }
-      else
-      {
+        // Navigator.of(context).pop();
+        FocusScope.of(context).unfocus();
+        import ? importScreen(app, passwordInput) : newAccountPopup(app, false, passwordInput);
+      } else {
         NotificationBar().show(context, text: "Failed to Authenticate");
       }
-
     }
   }
 
-  void newAccountPopup(AvmeWallet app, String password) async{
+  void newAccountPopup(AvmeWallet app, bool import, String password, {String mnemonics}) async {
     await showDialog(
         context: context,
         builder: (_) => StatefulBuilder(
-          builder: (builder, setState) {
-            return ProgressPopup(
-              title: "Loading",
-              future: app.walletManager.previewAvaxBalance(password).then((Map data) {
-                printWarning("$data");
-                Navigator.pop(context);
-                showDialog(
-                  context: context,
-                  builder: (_) => StatefulBuilder(
-                    builder: (builder, setState) =>
-                      AppPopupWidget(
-                        title: "CREATE NEW ACCOUNT",
-                        textStyle: TextStyle(fontSize: SizeConfig.titleSize * 0.8, fontWeight: FontWeight.bold),
-                        margin: EdgeInsets.all(8),
-                        cancelable: false,
-                        padding: EdgeInsets.only(
-                          left: SizeConfig.safeBlockHorizontal * 8,
-                          right: SizeConfig.safeBlockHorizontal * 8,
-                          top: SizeConfig.safeBlockVertical * 4,
-                        ),
-                        children: previewAccounts(setState, app, password, data),
-                      )
-                  )
-                );
-              }),
-            );
-          },
-        ));
-    // showDialog(
-    //   context: context,
-    //   builder: (_) => StatefulBuilder(
-    //     builder: (builder, setState) => FuturePopupWidget(
-    //       title: "CREATE NEW ACCOUNT",
-    //       textStyle: TextStyle(fontSize: SizeConfig.titleSize * 0.8, fontWeight: FontWeight.bold),
-    //       margin: EdgeInsets.all(8),
-    //       cancelable: false,
-    //       padding: EdgeInsets.only(
-    //         left: SizeConfig.safeBlockHorizontal * 8,
-    //         right: SizeConfig.safeBlockHorizontal * 8,
-    //         top: SizeConfig.safeBlockVertical * 4,
-    //       ),
-    //       future: previewAccounts(setState, app, password, data),
-    //     )
-    //   )
-    // );
+              builder: (builder, setState) {
+                if (import) {
+                  return ProgressPopup(
+                    title: "Loading",
+                    future: app.walletManager.previewAvaxBalance(mnemonics, mnemonic: true).then((Map data) {
+                      printWarning("$data");
+                      Navigator.pop(context);
+                      showDialog(
+                          context: context,
+                          builder: (_) => StatefulBuilder(
+                              builder: (builder, setState) => AppPopupWidget(
+                                    title: "CREATE NEW ACCOUNT",
+                                    textStyle: TextStyle(fontSize: SizeConfig.titleSize * 0.8, fontWeight: FontWeight.bold),
+                                    margin: EdgeInsets.all(8),
+                                    cancelable: false,
+                                    padding: EdgeInsets.only(
+                                      left: SizeConfig.safeBlockHorizontal * 8,
+                                      right: SizeConfig.safeBlockHorizontal * 8,
+                                      top: SizeConfig.safeBlockVertical * 4,
+                                    ),
+                                    children: previewAccounts(setState, app, import, password, data, mnemonics: mnemonics),
+                                  )));
+                    }),
+                  );
+                } else {
+                  return ProgressPopup(
+                    title: "Loading",
+                    future: app.walletManager.previewAvaxBalance(password).then((Map data) {
+                      printWarning("$data");
+                      Navigator.pop(context);
+                      showDialog(
+                          context: context,
+                          builder: (_) => StatefulBuilder(
+                              builder: (builder, setState) => AppPopupWidget(
+                                    title: "CREATE NEW ACCOUNT",
+                                    textStyle: TextStyle(fontSize: SizeConfig.titleSize * 0.8, fontWeight: FontWeight.bold),
+                                    margin: EdgeInsets.all(8),
+                                    cancelable: false,
+                                    padding: EdgeInsets.only(
+                                      left: SizeConfig.safeBlockHorizontal * 8,
+                                      right: SizeConfig.safeBlockHorizontal * 8,
+                                      top: SizeConfig.safeBlockVertical * 4,
+                                    ),
+                                    children: previewAccounts(setState, app, import, password, data),
+                                  )));
+                    }),
+                  );
+                }
+              },
+            ));
   }
 
-  List<Widget> previewAccounts(StateSetter setter, AvmeWallet app, String passwordInput, Map generatedKeys) {
+  List<Widget> previewAccounts(StateSetter setter, AvmeWallet app, bool import, String passwordInput, Map generatedKeys, {String mnemonics}) {
     final int flexIndex = 1;
     final int flexAddress = 4;
     final int flexBalance = 2;
@@ -331,11 +541,30 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
     printWarning("previewAccounts");
     String password = passwordInput;
 
+    //Checking to make sure user chose a different option
+
+    // this.generatedKeys = this.generatedKeys.length > 0 ? this.generatedKeys : await app.walletManager.previewAvaxBalance(password);
+    // this.generatedKeys = this.generatedKeys.length > 0 ? this.generatedKeys : await app.walletManager.previewAvaxBalanceImport(mnemonics);
+    // Now accounts can be generated either from the same or a different seed, so we always have to generate new
+
+    // import
+    //     ? generatedKeys = await app.walletManager.previewAvaxBalanceImport(mnemonics)
+    //     : generatedKeys = await app.walletManager.previewAvaxBalance(password);
+
     return [
       Text(
         "Choose an Account from the List",
         style: TextStyle(fontSize: SizeConfig.fontSize * 1.5),
       ),
+      import
+          ? Padding(
+              padding: EdgeInsets.only(top: SizeConfig.blockSizeVertical * 2),
+              child: Text(
+                "generated from the seed you provided",
+                style: TextStyle(fontSize: SizeConfig.fontSize * 1.5),
+              ),
+            )
+          : SizedBox(),
       SizedBox(
         height: 24,
       ),
@@ -388,13 +617,13 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                 Column(
                   children: generatedKeys.entries.map((publicKeyEntry) {
                     return accountRow(
-                      flexIndex: flexIndex,
-                      flexAddress: flexAddress,
-                      flexBalance: flexBalance,
-                      index: publicKeyEntry.key,
-                      address: "${publicKeyEntry.value[0]}",
-                      balance: "${publicKeyEntry.value[1]}",
-                      setter: setter);
+                        flexIndex: flexIndex,
+                        flexAddress: flexAddress,
+                        flexBalance: flexBalance,
+                        index: publicKeyEntry.key,
+                        address: "${publicKeyEntry.value[0]}",
+                        balance: "${publicKeyEntry.value[1]}",
+                        setter: setter);
                   }).toList(),
                 ),
               ],
@@ -428,7 +657,7 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                                     expanded: false,
                                     onPressed: () async {
                                       Navigator.pop(context);
-                                      await createAccount(name: nameController.text, app: app, password: password);
+                                      await createAccount(name: nameController.text, app: app, password: password, mnemonics: mnemonics);
                                     },
                                     text: "CONFIRM")
                               ],
@@ -455,7 +684,7 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                                   onTap: () {
                                     print('tapped');
                                     Navigator.pop(context);
-                                    newAccountPopup(app, passwordInput);
+                                    newAccountPopup(app, false, password);
                                   },
                                   child: AppTextFormField(
                                     controller: addressController,
@@ -495,12 +724,12 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
     ];
   }
 
-  Future<void> createAccount({AvmeWallet app, String password, String name}) async {
+  Future<void> createAccount({AvmeWallet app, String password, String name, String mnemonics}) async {
     showDialog(
         context: context,
         builder: (_) => ProgressPopup(
             title: "Finished",
-            future: app.walletManager.makeAccount(password, app, title: name, slot: this.selectedIndex).then((value) async {
+            future: app.walletManager.makeAccount(password, app, title: name, slot: this.selectedIndex, mnemonic: mnemonics).then((value) async {
               // Navigator.pop(context);
               if (name.length == 0) {
                 name = "-unnamed ${this.selectedIndex}-";
@@ -628,5 +857,43 @@ class _PreviewAccountsState extends State<PreviewAccounts> {
   @override
   Widget build(BuildContext context) {
     return Container();
+  }
+}
+
+class MaxLinesTextInputFormatter extends TextInputFormatter {
+  MaxLinesTextInputFormatter(this._maxLines) : assert(_maxLines == -1 || _maxLines > 0);
+
+  final int _maxLines;
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue, // unused.
+    TextEditingValue newValue,
+  ) {
+    if (_maxLines > 0) {
+      final regEx = RegExp("^.*((\n?.*){0,${_maxLines - 1}})");
+      final newString = regEx.stringMatch(newValue.text) ?? "";
+      final maxLength = newString.length;
+      if (newValue.text.runes.length > maxLength) {
+        final newSelection = newValue.selection.copyWith(
+          baseOffset: min(newValue.selection.start, maxLength),
+          extentOffset: min(newValue.selection.end, maxLength),
+        );
+        final iterator = RuneIterator(newValue.text);
+        if (iterator.moveNext()) {
+          for (var count = 0; count < maxLength; ++count) {
+            if (!iterator.moveNext()) break;
+          }
+        }
+        final truncated = newValue.text.substring(0, iterator.rawIndex);
+        return TextEditingValue(
+          text: truncated,
+          selection: newSelection,
+          composing: TextRange.empty,
+        );
+      }
+      return newValue;
+    }
+    return newValue;
   }
 }

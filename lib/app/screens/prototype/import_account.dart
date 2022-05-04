@@ -5,7 +5,7 @@ import 'dart:math';
 
 import 'package:avme_wallet/app/controller/size_config.dart';
 import 'package:avme_wallet/app/model/app.dart';
-import 'package:avme_wallet/app/screens/prototype/widgets/authentication.dart';
+import 'package:avme_wallet/app/model/authentication.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/button.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/card.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/neon_button.dart';
@@ -19,6 +19,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:bip39/bip39.dart' as bip39;
 
+import '../../controller/authapi.dart';
 import '../../controller/file_manager.dart';
 
 class ImportAccount extends StatefulWidget {
@@ -49,11 +50,12 @@ class _ImportAccountState extends State<ImportAccount> {
 
   bool swap = false;
 
-  Authentication _authApi = Authentication();
+  late AuthApi _authApi;
 
   @override
   void initState() {
     super.initState();
+    authSetup();
     appWalletManager = Provider.of<AvmeWallet>(context, listen: false);
     controller1 = TextEditingController();
     controller2 = TextEditingController();
@@ -84,6 +86,8 @@ class _ImportAccountState extends State<ImportAccount> {
   bool isAllFilled = true;
   String invalidMnemonic = '';
   List<String> mnemonicDict = List.filled(24, '', growable: false);
+
+  Future<void> authSetup() async => _authApi = await AuthApi.init();
 
   Widget createList() {
     Widget textBox;
@@ -680,7 +684,7 @@ class _ImportAccountState extends State<ImportAccount> {
           FocusScopeNode currentFocus = FocusScope.of(this.context);
           currentFocus.unfocus();
 
-          if (await _authApi.canAuthenticate()) {
+          if (_authApi.isHardwareAllowed()) {
             await showDialog(
                 context: context,
                 builder: (_) {
@@ -693,7 +697,7 @@ class _ImportAccountState extends State<ImportAccount> {
                       textAlign: TextAlign.center,
                     ),
                     SizedBox(
-                      height: SizeConfig.blockSizeVertical * 2,
+                      height: SizeConfig.blockSizeVertical * 3,
                     ),
                     Row(
                       children: [
@@ -726,8 +730,8 @@ class _ImportAccountState extends State<ImportAccount> {
                         Expanded(flex: 1, child: SizedBox()),
                         Expanded(
                             flex: 3,
-                            child: AppNeonButton(
-                              textStyle: TextStyle(fontSize: SizeConfig.fontSizeLarge, color: AppColors.purple),
+                            child: AppButton(
+                              textStyle: TextStyle(fontSize: SizeConfig.fontSizeLarge, color: Colors.white),
                               onPressed: () async {
                                 dynamic _temp;
                                 _temp = await _authApi.saveSecret(controller1.text);
@@ -805,7 +809,6 @@ class _ImportAccountState extends State<ImportAccount> {
           "options": {"fingerprintAuth": false}
         }));
       }
-
       return file;
     }
 
