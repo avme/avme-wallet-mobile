@@ -21,27 +21,55 @@ import 'package:bip39/bip39.dart' as bip39;
 
 import '../../controller/authapi.dart';
 import '../../controller/file_manager.dart';
+import 'import_account.dart';
 import 'import_account_tile.dart';
 
-class ImportAccount extends StatefulWidget {
-  const ImportAccount({Key? key}) : super(key: key);
+class ImportAccountTile extends StatefulWidget {
+  const ImportAccountTile({Key? key}) : super(key: key);
 
   @override
-  _ImportAccountState createState() => _ImportAccountState();
+  _ImportAccountTileState createState() => _ImportAccountTileState();
 }
 
-class _ImportAccountState extends State<ImportAccount> {
+class _ImportAccountTileState extends State<ImportAccountTile> {
   //Code below generates 22 focusNodes, for all AppTextInputFields but the first and last
-  late TextEditingController controller1;
-  late TextEditingController controller2;
-  late TextEditingController controllerMnemonic;
+  late List<FocusNode> focusNodes;
+  late TextEditingController controller1, controller2;
   late AvmeWallet appWalletManager;
-  late FocusNode phraseFocusNode;
-  late FocusNode rePhraseFocusNode;
+  late FocusNode phraseFocusNode, rePhraseFocusNode;
   late ScrollController write;
   final _phraseFormState = GlobalKey<FormState>();
   final _rephraseFormState = GlobalKey<FormState>();
-  String mnemonicString = '';
+  late AuthApi _authApi;
+  bool swap = false;
+
+  @override
+  void initState() {
+    super.initState();
+    focusNodes = List.generate(23, (index) => FocusNode());
+    appWalletManager = Provider.of<AvmeWallet>(context, listen: false);
+    controller1 = TextEditingController();
+    controller2 = TextEditingController();
+    phraseFocusNode = FocusNode();
+    rePhraseFocusNode = FocusNode();
+    write = ScrollController();
+    authSetup();
+    formMnemonic();
+  }
+
+  @override
+  void dispose() {
+    //dispose all focus nodes
+    for (var focusNode in focusNodes) {
+      focusNode.dispose();
+    }
+    super.dispose();
+  }
+
+  int wrongMnemonic = -1, _dropValue = 12;
+  bool isAllFilled = true;
+  String invalidMnemonic = '', mnemonicString = '';
+
   EdgeInsets textFieldButtonPadding = new EdgeInsets.only(
     left: 12,
     top: 20,
@@ -49,278 +77,163 @@ class _ImportAccountState extends State<ImportAccount> {
     bottom: 20,
   );
 
-  bool swap = false;
+  List<DropdownMenuItem<int>> _dropList = <int>[12, 24].map<DropdownMenuItem<int>>((int value) {
+    return DropdownMenuItem<int>(
+      child: Center(
+        child: Text(
+          value.toString(),
+          textAlign: TextAlign.center,
+        ),
+      ),
+      value: value,
+    );
+  }).toList();
 
-  late AuthApi _authApi;
-
-  @override
-  void initState() {
-    super.initState();
-    authSetup();
-    appWalletManager = Provider.of<AvmeWallet>(context, listen: false);
-    controller1 = TextEditingController();
-    controller2 = TextEditingController();
-    controllerMnemonic = TextEditingController();
-    phraseFocusNode = FocusNode();
-    rePhraseFocusNode = FocusNode();
-    write = ScrollController();
-    phraseFocusNode.addListener(() {
-      setState(() => null);
-    });
-    rePhraseFocusNode.addListener(() {
-      setState(() => null);
-    });
-  }
-
-  @override
-  void dispose() {
-    //dispose all focus nodes
-    controller1.dispose();
-    controller2.dispose();
-    controllerMnemonic.dispose();
-    phraseFocusNode.dispose();
-    rePhraseFocusNode.dispose();
-    super.dispose();
-  }
-
-  int wrongMnemonic = -1;
-  bool isAllFilled = true;
-  String invalidMnemonic = '';
-  List<String> mnemonicDict = List.filled(24, '', growable: false);
+  List<int> removedKeys = [];
+  Map<int, String> mnemonicDict = {};
+  Map<int, TextEditingController> mnemonicControlDict = {};
 
   Future<void> authSetup() async => _authApi = await AuthApi.init();
 
-  Widget createList() {
-    Widget textBox;
-
-    textBox = Container(
-      width: SizeConfig.screenWidth / 2,
-      child: AppTextFormField(
-        controller: controllerMnemonic,
-        minLines: 1,
-        maxLines: 24,
-        inputFormatters: [MaxLinesTextInputFormatter(24)],
-      ),
-    );
-
-    return textBox;
-  }
-
-  List<dynamic> validate() {
-    String response = controllerMnemonic.text.trim().replaceAll('\n', ' ');
-    final regex = RegExp(r'\ +');
-    String responseNew = response.replaceAll(regex, ' ');
-    List<String> responseList = responseNew.split(' ');
-    if (controllerMnemonic.text != '' || responseList.length == 12 || responseList.length == 24) {
-      return [true, responseNew, responseList.length];
-    } else {
-      return [false, responseNew, responseList.length];
+  void formMnemonic() {
+    ///We're populating our dictionary of TextInputs and TextController to use later
+    for (int i = 0; i < 24; i++) {
+      removedKeys.add(i);
+      mnemonicDict[i] = '';
+      mnemonicControlDict[i] = new TextEditingController(text: '');
     }
   }
 
-  List<Widget> header(BuildContext context) {
-    return [
-      Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+  Widget createList(int length) {
+    Map<int, List<Widget>> columnMap = {};
+    int column = 0;
+
+    double paddingHorizontal = SizeConfig.safeBlockHorizontal * 2;
+    EdgeInsets columnPadding = EdgeInsets.all(paddingHorizontal);
+
+    Function(String) onFieldSubmitted;
+    FocusNode? focusNodeInput;
+    bool doColumn = false;
+
+    this.mnemonicDict.forEach((key, value) {
+      if (length == 24) {
+        if (key.remainder(12) == 0 && key != 0) column++;
+
+        if (key == 0) {
+          focusNodeInput = null;
+          onFieldSubmitted = (_) => FocusScope.of(context).requestFocus(focusNodes[key]);
+        } else if (key == 23) {
+          focusNodeInput = focusNodes[key - 1];
+          onFieldSubmitted = (_) {};
+        } else {
+          focusNodeInput = focusNodes[key - 1];
+          onFieldSubmitted = (_) => FocusScope.of(context).requestFocus(focusNodes[key]);
+        }
+        doColumn = true;
+      } else {
+        if (key.remainder(6) == 0 && key != 0) column++;
+
+        if (key == 0) {
+          focusNodeInput = null;
+          onFieldSubmitted = (_) => FocusScope.of(context).requestFocus(focusNodes[key]);
+        } else if (key == 11) {
+          focusNodeInput = focusNodes[key - 1];
+          onFieldSubmitted = (_) {};
+        } else {
+          focusNodeInput = focusNodes[key - 1];
+          onFieldSubmitted = (_) => FocusScope.of(context).requestFocus(focusNodes[key]);
+        }
+        if (key < 12)
+          doColumn = true;
+        else
+          doColumn = false;
+      }
+      if (doColumn) {
+        columnMap[column] = columnMap[column] ?? [];
+        columnMap[column]?.add(
+          Padding(
+            padding: column > 0 ? columnPadding.copyWith(left: paddingHorizontal) : columnPadding.copyWith(right: paddingHorizontal),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                ///Close button
-                GestureDetector(
-                  child: Container(
-                    color: Colors.transparent,
-                    // color: Colors.red,
-                    child: Icon(
-                      Icons.arrow_back,
-                      size: 32,
-                      color: AppColors.labelDefaultColor,
+                Expanded(
+                  child: Text(
+                    "${key + 1}.",
+                    style: TextStyle(color: AppColors.purple, fontWeight: FontWeight.bold, fontSize: SizeConfig.labelSizeSmall),
+                  ),
+                ),
+                Expanded(
+                  flex: 4,
+                  child: Padding(
+                    padding: EdgeInsets.only(right: SizeConfig.safeBlockHorizontal * 4),
+                    child: AppTextFormField(
+                      focusNode: focusNodeInput,
+                      enabled: this.removedKeys.contains(key),
+                      controller: this.mnemonicControlDict[key],
+                      textAlign: TextAlign.end,
+                      // keyboardType: TextInputType.number,
+                      contentPadding: EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+                      isDense: true,
+                      onFieldSubmitted: onFieldSubmitted,
                     ),
                   ),
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
                 ),
               ],
             ),
           ),
-          Expanded(
-            flex: 4,
-            child: Column(
-              children: [
-                Text("Import Wallet", style: TextStyle(fontWeight: FontWeight.bold, fontSize: SizeConfig.titleSize)),
-              ],
-            ),
-          ),
-          Expanded(
-              child: Container(
-            color: Colors.pink,
-          ))
-        ],
-      ),
-      Padding(
-        padding: EdgeInsets.symmetric(
-          vertical: SizeConfig.safeBlockVertical * 3,
+        );
+      }
+      // print("row[$column] ${key + 1} - ${this.mnemonicControlDict[key]?.text}");
+    });
+
+    List<Widget> columnWidgets = [];
+    columnMap.forEach((index, value) {
+      columnWidgets.add(Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.max,
+          children: value,
         ),
-        child: ScreenIndicator(
-          height: 20,
-          width: MediaQuery.of(context).size.width,
-        ),
-      ),
-    ];
+      ));
+    });
+
+    return Row(children: columnWidgets);
   }
 
-  Widget mnemonicScreen() {
-    return Scaffold(
-      resizeToAvoidBottomInset: true,
-      body: Container(
-        decoration: BoxDecoration(
-            gradient: LinearGradient(
-                begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: <Color>[AppColors.purpleVariant1, AppColors.purpleBlue])),
-        child: Center(
-          child: SingleChildScrollView(
-            physics: BouncingScrollPhysics(),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: SizeConfig.safeBlockHorizontal * 4,
-                    ),
-                    child: Card(
-                      color: AppColors.cardBlue,
-                      child: Container(
-                          child: Padding(
-                        padding: EdgeInsets.symmetric(
-                          vertical: SizeConfig.safeBlockVertical * 4,
-                          horizontal: SizeConfig.safeBlockVertical * 4,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            ///Header
-                            Column(
-                              children: header(context),
-                            ),
-
-                            ///Fields
-                            Column(
-                              children: [
-                                Text(
-                                  "Fill in mnemonic phrase to import an account",
-                                  style: AppTextStyles.spanWhite,
-                                  textAlign: TextAlign.center,
-                                ),
-                                Text(
-                                  "Separate words with space or new line",
-                                  style: AppTextStyles.spanWhite,
-                                  textAlign: TextAlign.center,
-                                ),
-                                Text(
-                                  "Supports both 12 and 24 word mnemonic length",
-                                  style: AppTextStyles.spanWhite,
-                                  textAlign: TextAlign.center,
-                                ),
-                                Text(
-                                  "Layout button switches to a different layout",
-                                  style: AppTextStyles.spanWhite,
-                                  textAlign: TextAlign.center,
-                                ),
-                                ConstrainedBox(
-                                  constraints: BoxConstraints(maxHeight: SizeConfig.safeBlockVertical * 50),
-                                  child: Padding(
-                                    padding: EdgeInsets.only(bottom: SizeConfig.blockSizeVertical * 2),
-                                    child: Scrollbar(
-                                        isAlwaysShown: true,
-                                        thickness: 4,
-                                        controller: write,
-                                        child: SingleChildScrollView(
-                                          controller: write,
-                                          child: Column(
-                                            children: [
-                                              Padding(
-                                                padding: const EdgeInsets.only(top: 16),
-                                                child: createList(),
-                                              ),
-                                            ],
-                                          ),
-                                        )),
-                                  ),
-                                ),
-                                isAllFilled
-                                    ? Padding(
-                                        padding: const EdgeInsets.all(0),
-                                      )
-                                    : Padding(
-                                        padding: const EdgeInsets.only(bottom: 8.0),
-                                        child: Text(
-                                          invalidMnemonic,
-                                          textAlign: TextAlign.center,
-                                          style: AppTextStyles.span.copyWith(color: Colors.red),
-                                        ),
-                                      ),
-                                Container(
-                                  // width: SizeConfig.screenWidth * 0.3,
-                                  child: AppNeonButton(
-                                    onPressed: () {
-                                      Navigator.pushReplacement(
-                                        context,
-                                        MaterialPageRoute(builder: (context) => ImportAccountTile()),
-                                      );
-                                    },
-                                    // expanded: false,
-                                    text: 'LAYOUT',
-                                  ),
-                                ),
-                                SizedBox(
-                                  height: SizeConfig.blockSizeVertical * 2,
-                                ),
-                                Container(
-                                  // width: SizeConfig.screenWidth * 0.3,
-                                  child: AppButton(
-                                      onPressed: () async {
-                                        List<dynamic> response = validate();
-                                        bool validated = response[0];
-                                        mnemonicString = response[1];
-                                        int _phraseCount = response[2];
-                                        if (validated == false) {
-                                          setState(() {
-                                            invalidMnemonic = 'One or more words are missing';
-                                            isAllFilled = false;
-                                          });
-                                        } else {
-                                          if (await appWalletManager.walletManager.checkMnemonic(phrase: mnemonicString, phraseCount: _phraseCount)) {
-                                            swap = !swap;
-                                            setState(() {});
-                                          } else {
-                                            setState(() {
-                                              invalidMnemonic = 'Words do not correspond to mnemonic dictionary';
-                                              isAllFilled = false;
-                                            });
-                                          }
-                                        }
-                                      },
-                                      // expanded: false,
-                                      text: "IMPORT"),
-                                ),
-                              ],
-                            )
-                          ],
-                        ),
-                      )),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
+  int validate() {
+    mnemonicString = '';
+    int validated = 0;
+    if (_dropValue == 12) {
+      for (int i = 0; i < 12; i++) {
+        print("${this.mnemonicControlDict[i]?.text} != (null)");
+        if (this.mnemonicControlDict[i]?.text != '') ++validated;
+        mnemonicString += '${this.mnemonicControlDict[i]!.text} ';
+        print('validated $validated');
+      }
+    } else {
+      this.removedKeys.forEach((key) {
+        print("${this.mnemonicControlDict[key]?.text} != (null)");
+        if (this.mnemonicControlDict[key]?.text != '') ++validated;
+        mnemonicString += '${this.mnemonicControlDict[key]!.text} ';
+        print('validated $validated');
+      });
+    }
+    mnemonicString = mnemonicString.trim().replaceAll('\n', ' ');
+    final regex = RegExp(r'\ +');
+    mnemonicString = mnemonicString.replaceAll(regex, ' ');
+    return validated;
   }
+
+  void dropChange(dynamic value) {
+    if (value != _dropValue) {
+      setState(() {
+        _dropValue = value;
+        NotificationBar().show(context, text: "Changed to $_dropValue mnemonic length");
+      });
+    }
+  }
+
+  //--
 
   Widget getSeedList() {
     Map<int, List<Widget>> columnMap = {};
@@ -834,48 +747,235 @@ class _ImportAccountState extends State<ImportAccount> {
     );
   }
 
+  List<Widget> header(BuildContext context) {
+    return [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ///Close button
+                GestureDetector(
+                  child: Container(
+                    color: Colors.transparent,
+                    // color: Colors.red,
+                    child: Icon(
+                      Icons.arrow_back,
+                      size: 32,
+                      color: AppColors.labelDefaultColor,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            flex: 4,
+            child: Column(
+              children: [
+                Text("Import Wallet", style: TextStyle(fontWeight: FontWeight.bold, fontSize: SizeConfig.titleSize)),
+              ],
+            ),
+          ),
+          Expanded(
+              child: Container(
+            color: Colors.pink,
+          ))
+        ],
+      ),
+      Padding(
+        padding: EdgeInsets.symmetric(
+          vertical: SizeConfig.safeBlockVertical * 3,
+        ),
+        child: ScreenIndicator(
+          height: 20,
+          width: MediaQuery.of(context).size.width,
+        ),
+      ),
+    ];
+  }
+
+  Widget mnemonicScreen() {
+    return Scaffold(
+      resizeToAvoidBottomInset: true,
+      body: Container(
+        decoration: BoxDecoration(
+            gradient: LinearGradient(
+                begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: <Color>[AppColors.purpleVariant1, AppColors.purpleBlue])),
+        child: Center(
+          child: SingleChildScrollView(
+            physics: BouncingScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: SizeConfig.safeBlockHorizontal * 4,
+                    ),
+                    child: Card(
+                      color: AppColors.cardBlue,
+                      child: Container(
+                          child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          vertical: SizeConfig.safeBlockVertical * 4,
+                          horizontal: SizeConfig.safeBlockVertical * 4,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            ///Header
+                            Column(
+                              children: header(context),
+                            ),
+
+                            ///Fields
+                            Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      flex: 2,
+                                      child: Text(
+                                        "Fill in mnemonic phrase to import an account",
+                                        style: AppTextStyles.spanWhite,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 1,
+                                      child: Container(
+                                        padding: EdgeInsets.symmetric(vertical: SizeConfig.blockSizeVertical * 0.8),
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.all(Radius.circular(4)),
+                                          color: AppColors.purple,
+                                        ),
+                                        height: SizeConfig.blockSizeVertical * 6,
+                                        // height: (SizeConfig.blockSizeVertical * 12) - 8,
+                                        child: ButtonTheme(
+                                          alignedDropdown: true,
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
+                                          child: DropdownButton(
+                                              dropdownColor: AppColors.purple,
+                                              autofocus: false,
+                                              onChanged: (v) => dropChange(v),
+                                              style: AppTextStyles.spanWhiteMedium,
+                                              value: _dropValue,
+                                              underline: SizedBox(),
+                                              isExpanded: true,
+                                              // selectedItemBuilder: (BuildContext context) {
+                                              //   return <String>['12', '24'].map<Widget>((String item) {
+                                              //     return Container(
+                                              //         alignment: Alignment.center, width: double.maxFinite, child: Text(item, textAlign: TextAlign.end));
+                                              //   }).toList();
+                                              // },
+                                              items: _dropList),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                ConstrainedBox(
+                                  constraints: BoxConstraints(maxHeight: SizeConfig.safeBlockVertical * 50),
+                                  child: Padding(
+                                    padding: EdgeInsets.only(bottom: SizeConfig.blockSizeVertical * 2),
+                                    child: Scrollbar(
+                                        isAlwaysShown: true,
+                                        thickness: 4,
+                                        controller: write,
+                                        child: SingleChildScrollView(
+                                          controller: write,
+                                          child: Column(
+                                            children: [
+                                              Padding(
+                                                padding: EdgeInsets.only(top: SizeConfig.blockSizeVertical * 2),
+                                                child: createList(_dropValue),
+                                              ),
+                                            ],
+                                          ),
+                                        )),
+                                  ),
+                                ),
+                                isAllFilled
+                                    ? Padding(
+                                        padding: const EdgeInsets.all(0),
+                                      )
+                                    : Padding(
+                                        padding: const EdgeInsets.only(bottom: 8.0),
+                                        child: Text(
+                                          invalidMnemonic,
+                                          style: AppTextStyles.span.copyWith(color: Colors.red),
+                                        ),
+                                      ),
+                                Container(
+                                  child: AppNeonButton(
+                                    onPressed: () {
+                                      Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(builder: (context) => ImportAccount()),
+                                      );
+                                    },
+                                    text: 'LAYOUT',
+                                  ),
+                                ),
+                                SizedBox(
+                                  height: SizeConfig.blockSizeVertical * 2,
+                                ),
+                                Container(
+                                  child: AppButton(
+                                      onPressed: () async {
+                                        if (validate() != _dropValue) {
+                                          print('test1');
+                                          setState(() {
+                                            invalidMnemonic = 'Oops, looks like you forgot to fill a field';
+                                            isAllFilled = false;
+                                          });
+                                        } else {
+                                          print('mnemonicString $mnemonicString @ _dropValue $_dropValue');
+                                          if (await appWalletManager.walletManager.checkMnemonic(phrase: mnemonicString, phraseCount: _dropValue)) {
+                                            setState(() {
+                                              invalidMnemonic = '';
+                                              isAllFilled = true;
+                                              swap = !swap;
+                                            });
+                                          } else {
+                                            setState(() {
+                                              invalidMnemonic = 'Words do not correspond to mnemonic dictionary';
+                                              isAllFilled = false;
+                                            });
+                                          }
+                                        }
+                                      },
+                                      // expanded: false,
+                                      text: "IMPORT"),
+                                ),
+                              ],
+                            )
+                          ],
+                        ),
+                      )),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
 
+    print(swap);
+
     return swap ? passwordScreen() : mnemonicScreen();
-  }
-}
-
-class MaxLinesTextInputFormatter extends TextInputFormatter {
-  MaxLinesTextInputFormatter(this._maxLines) : assert(_maxLines == -1 || _maxLines > 0);
-
-  final int _maxLines;
-
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue, // unused.
-    TextEditingValue newValue,
-  ) {
-    if (_maxLines > 0) {
-      final regEx = RegExp("^.*((\n?.*){0,${_maxLines - 1}})");
-      final newString = regEx.stringMatch(newValue.text) ?? "";
-      final maxLength = newString.length;
-      if (newValue.text.runes.length > maxLength) {
-        final newSelection = newValue.selection.copyWith(
-          baseOffset: min(newValue.selection.start, maxLength),
-          extentOffset: min(newValue.selection.end, maxLength),
-        );
-        final iterator = RuneIterator(newValue.text);
-        if (iterator.moveNext()) {
-          for (var count = 0; count < maxLength; ++count) {
-            if (!iterator.moveNext()) break;
-          }
-        }
-        final truncated = newValue.text.substring(0, iterator.rawIndex);
-        return TextEditingValue(
-          text: truncated,
-          selection: newSelection,
-          composing: TextRange.empty,
-        );
-      }
-      return newValue;
-    }
-    return newValue;
   }
 }
