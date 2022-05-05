@@ -555,12 +555,18 @@ class EventConnection extends EventEmitter {
 			if(messageEvent ///Checking if the event is not empty
                 && messageEvent.source === window ///Checking if the origin is correct
                 && messageEvent.data
-                && messageEvent.data.type === 'eth:payload' ///Checking if the event is a payload
 			){
-				console.log(`[Window.addEventListener] ${JSON.stringify(messageEvent)}`,);
-				///Emiting for any listeners the request payload of the page
-				///Remember: the payload format must be identical to the METAMASK implementation
-				this.emit('payload', messageEvent.data.payload);
+				if(messageEvent.data.type === 'eth:payload')
+				{
+					console.log(`[Window.addEventListener] ${JSON.stringify(messageEvent)}`,);
+					this.emit('payload', messageEvent.data.payload);
+				}
+				if(messageEvent.data.type === 'eth:emit')
+				{
+					console.log(`[Window.addEventListener] ${JSON.stringify(messageEvent)}`,);
+					console.log(`EMITINDO ${messageEvent.data.emit}, ${messageEvent.data.payload}`)
+					this.emit(messageEvent.data.emit, messageEvent.data.payload);
+				}
 			}
 		});
 		if(typeof window.Mobile !== "undefined")
@@ -576,7 +582,8 @@ class EventConnection extends EventEmitter {
 		const body = {
 			type: 'eth:send',
 			payload,
-			origin: location.origin
+			origin: location.origin,
+			href: location.href,
 		};
 		///Passar esse codigo inteiro para o backend
 		const response =
@@ -631,7 +638,8 @@ class EventConnection extends EventEmitter {
 		const body = {
 			type: 'eth:send',
 			payload,
-			origin: location.origin
+			origin: location.origin,
+			href: location.href,
 		};
 		window.Mobile.postMessage(JSON.stringify(body));
 		// this.offline(payload);
@@ -1120,12 +1128,13 @@ __webpack_require__.r(__webpack_exports__);
 
 
 const eventConnection = new _content_scripts_event_connection__WEBPACK_IMPORTED_MODULE_0__.EventConnection();
-const provider = new _content_scripts_custom_provider__WEBPACK_IMPORTED_MODULE_1__.CustomProvider(eventConnection);
 
-window.ethereum = provider;
+window.ethereum = new _content_scripts_custom_provider__WEBPACK_IMPORTED_MODULE_1__.CustomProvider(eventConnection);
 window.ethereum.isMetaMask = true;
 window.ethereum.isAVME = true;
 window.ethereum.setMaxListeners(0);
+console.log(`[Script loaded] from page ${window.location.href}`);
+
 })();
 
 /******/ })()

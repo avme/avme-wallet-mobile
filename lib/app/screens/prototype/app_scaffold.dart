@@ -19,7 +19,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:provider/provider.dart';
 import 'package:avme_wallet/app/screens/prototype/send.dart';
-import '../webview.dart';
+import 'webview.dart';
 import 'app_drawer.dart';
 import 'overview.dart';
 
