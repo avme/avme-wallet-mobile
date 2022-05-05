@@ -503,6 +503,7 @@ class _NewAccountState extends State<NewAccount> {
                         ],
                         actions: [
                           AppNeonButton(
+                            textStyle: TextStyle(color: Colors.white, fontSize: SizeConfig.spanSize * 1.6),
                             text: "COPY SEED",
                             expanded: false,
                             onPressed: () async {
@@ -511,6 +512,7 @@ class _NewAccountState extends State<NewAccount> {
                             },
                           ),
                           AppNeonButton(
+                            textStyle: TextStyle(color: Colors.white, fontSize: SizeConfig.spanSize * 1.6),
                             text: "OK",
                             expanded: false,
                             onPressed: () => Navigator.of(context).pop(),
@@ -847,6 +849,7 @@ class _MnemonicsPreAccCreationState extends State<MnemonicsPreAccCreation> {
               )
             ], actions: [
               AppNeonButton(
+                textStyle: TextStyle(color: Colors.white, fontSize: SizeConfig.spanSize * 1.6),
                 enabled: endOfScroll,
                 expanded: false,
                 onPressed: () async {
@@ -879,7 +882,7 @@ class _MnemonicsPreAccCreationState extends State<MnemonicsPreAccCreation> {
                                     Expanded(
                                         flex: 3,
                                         child: AppNeonButton(
-                                          textStyle: TextStyle(fontSize: SizeConfig.fontSizeLarge, color: AppColors.purple),
+                                          textStyle: TextStyle(fontSize: SizeConfig.fontSizeLarge, color: Colors.white),
                                           onPressed: () async {
                                             Navigator.of(context).pop();
                                             await showDialog(

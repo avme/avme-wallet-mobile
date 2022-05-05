@@ -71,6 +71,7 @@ class _AppPopupWidgetState extends State<AppPopupWidget> {
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: AppNeonButton(
+                textStyle: TextStyle(color: Colors.white, fontSize: SizeConfig.spanSize * 1.6),
                 onPressed: () => Navigator.of(this.context).pop(),
                 expanded: false,
                 text: "CANCEL"

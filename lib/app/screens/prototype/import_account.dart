@@ -265,6 +265,7 @@ class _ImportAccountState extends State<ImportAccount> {
                                 Container(
                                   // width: SizeConfig.screenWidth * 0.3,
                                   child: AppNeonButton(
+                                    textStyle: TextStyle(color: Colors.white, fontSize: SizeConfig.spanSize * 1.6),
                                     onPressed: () {
                                       Navigator.pushReplacement(
                                         context,
@@ -422,7 +423,8 @@ class _ImportAccountState extends State<ImportAccount> {
                         ],
                         actions: [
                           AppNeonButton(
-                            text: "Ok",
+                            textStyle: TextStyle(color: Colors.white, fontSize: SizeConfig.spanSize * 1.6),
+                            text: "OK",
                             expanded: false,
                             onPressed: () => Navigator.of(context).pop(),
                           )
@@ -645,7 +647,7 @@ class _ImportAccountState extends State<ImportAccount> {
                         Expanded(
                             flex: 3,
                             child: AppNeonButton(
-                              textStyle: TextStyle(fontSize: SizeConfig.fontSizeLarge, color: AppColors.purple),
+                              textStyle: TextStyle(fontSize: SizeConfig.fontSizeLarge, color: Colors.white),
                               onPressed: () async {
                                 Navigator.of(context).pop();
                                 await showDialog(

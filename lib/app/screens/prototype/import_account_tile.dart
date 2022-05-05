@@ -335,7 +335,8 @@ class _ImportAccountTileState extends State<ImportAccountTile> {
                         ],
                         actions: [
                           AppNeonButton(
-                            text: "Ok",
+                            textStyle: TextStyle(color: Colors.white, fontSize: SizeConfig.spanSize * 1.6),
+                            text: "OK",
                             expanded: false,
                             onPressed: () => Navigator.of(context).pop(),
                           )
@@ -558,7 +559,7 @@ class _ImportAccountTileState extends State<ImportAccountTile> {
                         Expanded(
                             flex: 3,
                             child: AppNeonButton(
-                              textStyle: TextStyle(fontSize: SizeConfig.fontSizeLarge, color: AppColors.purple),
+                              textStyle: TextStyle(fontSize: SizeConfig.fontSizeLarge, color: Colors.white),
                               onPressed: () async {
                                 Navigator.of(context).pop();
                                 await showDialog(
@@ -645,6 +646,7 @@ class _ImportAccountTileState extends State<ImportAccountTile> {
     );
   }
 
+  ///TODO: Might wanna find a way to change this later, so the authApi can automatically change to true
   Future<int> file(dynamic input) async {
     //More info on settings.json
     final FileManager fileManager = FileManager();
@@ -914,6 +916,7 @@ class _ImportAccountTileState extends State<ImportAccountTile> {
                                       ),
                                 Container(
                                   child: AppNeonButton(
+                                    textStyle: TextStyle(color: Colors.white, fontSize: SizeConfig.spanSize * 1.6),
                                     onPressed: () {
                                       Navigator.pushReplacement(
                                         context,
