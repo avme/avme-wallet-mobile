@@ -306,6 +306,26 @@ class _ImportAccountTileState extends State<ImportAccountTile> {
     return size;
   }
 
+  void handlePaste() async {
+    final ClipboardData? _data = await Clipboard.getData('text/plain');
+    if (_data != null || _data!.text != '') {
+      //
+      String _mnemonicTemp = _data.text!;
+      _mnemonicTemp = _mnemonicTemp.trim().replaceAll('\n', ' ');
+      final regex = RegExp(r'\ +');
+      _mnemonicTemp = _mnemonicTemp.replaceAll(regex, ' ');
+      if (await appWalletManager.walletManager.checkMnemonic(phrase: _mnemonicTemp, phraseCount: _dropValue)) {
+        print('good');
+        List<String> _mnemonicList = _mnemonicTemp.split(' ');
+        for (int i = 0; i < _dropValue; i++) {
+          this.mnemonicControlDict[i]!.text = _mnemonicList[i];
+        }
+      } else {
+        NotificationBar().show(context, text: "Invalid Mnemonic");
+      }
+    }
+  }
+
   Widget seedField(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(top: SizeConfig.safeBlockVertical * 1),
@@ -843,7 +863,7 @@ class _ImportAccountTileState extends State<ImportAccountTile> {
                                 Row(
                                   children: [
                                     Expanded(
-                                      flex: 2,
+                                      flex: 10,
                                       child: Text(
                                         "Fill in mnemonic phrase to import an account",
                                         style: AppTextStyles.spanWhite,
@@ -851,17 +871,21 @@ class _ImportAccountTileState extends State<ImportAccountTile> {
                                     ),
                                     Expanded(
                                       flex: 1,
+                                      child: SizedBox(),
+                                    ),
+                                    Expanded(
+                                      flex: 5,
                                       child: Container(
                                         padding: EdgeInsets.symmetric(vertical: SizeConfig.blockSizeVertical * 0.8),
                                         decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.all(Radius.circular(4)),
+                                          borderRadius: BorderRadius.all(Radius.circular(6)),
                                           color: AppColors.purple,
                                         ),
                                         height: SizeConfig.blockSizeVertical * 6,
                                         // height: (SizeConfig.blockSizeVertical * 12) - 8,
                                         child: ButtonTheme(
                                           alignedDropdown: true,
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(4))),
                                           child: DropdownButton(
                                               dropdownColor: AppColors.purple,
                                               autofocus: false,
@@ -879,6 +903,21 @@ class _ImportAccountTileState extends State<ImportAccountTile> {
                                               items: _dropList),
                                         ),
                                       ),
+                                    ),
+                                    Expanded(
+                                      flex: 1,
+                                      child: SizedBox(),
+                                    ),
+                                    Expanded(
+                                      flex: 5,
+                                      child: Container(
+                                          padding: EdgeInsets.symmetric(vertical: SizeConfig.blockSizeVertical * 0.8),
+                                          child: AppButton(
+                                            onPressed: () => handlePaste(),
+                                            text: '',
+                                            paddingBetweenIcons: SizeConfig.blockSizeHorizontal * 5,
+                                            iconData: Icons.content_paste,
+                                          )),
                                     ),
                                   ],
                                 ),
@@ -976,8 +1015,6 @@ class _ImportAccountTileState extends State<ImportAccountTile> {
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
-
-    print(swap);
 
     return swap ? passwordScreen() : mnemonicScreen();
   }
