@@ -314,9 +314,15 @@ class _ImportAccountTileState extends State<ImportAccountTile> {
       _mnemonicTemp = _mnemonicTemp.trim().replaceAll('\n', ' ');
       final regex = RegExp(r'\ +');
       _mnemonicTemp = _mnemonicTemp.replaceAll(regex, ' ');
+      List<String> _mnemonicList = _mnemonicTemp.split(' ');
+      if (_mnemonicList.length != _dropValue) {
+        if (_mnemonicList.length == 12 || _mnemonicList.length == 24) {
+          setState(() {
+            _dropValue = _mnemonicList.length;
+          });
+        }
+      }
       if (await appWalletManager.walletManager.checkMnemonic(phrase: _mnemonicTemp, phraseCount: _dropValue)) {
-        print('good');
-        List<String> _mnemonicList = _mnemonicTemp.split(' ');
         for (int i = 0; i < _dropValue; i++) {
           this.mnemonicControlDict[i]!.text = _mnemonicList[i];
         }
