@@ -10,15 +10,12 @@ import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'package:vector_math/vector_math.dart' as math;
 
 // import 'exemple.dart';
 
 void initWebView(BuildContext context)
 {
-  printMark("starting webview gay");
   Navigator.push(context, MaterialPageRoute(builder: (context) => AppWebView()));
   // // showDialog(context: context, builder:(_) =>
   // // StatefulBuilder(builder: (builder, setState) => AppWebView()));
@@ -45,35 +42,6 @@ void initWebView(BuildContext context)
   //   transitionDuration: Duration(milliseconds: 200)
   // );
 
-}
-
-void initWebViewPopup(BuildContext context)
-{
-  printMark("starting webview");
-  // showDialog(context: context, builder:(_) =>
-  // StatefulBuilder(builder: (builder, setState) => AppWebView()));
-
-  showGeneralDialog(
-      context: context,
-      pageBuilder: (context, anim1, anim2) {
-        return StatefulBuilder(builder: (builder, setState) => AppWebView());
-      },
-      barrierDismissible: true,
-      barrierLabel: '',
-      barrierColor: Colors.black.withOpacity(0.4),
-      transitionBuilder: (context, anim1, anim2, widget) {
-
-        const begin = Offset(0.0, 1.0);
-        const end = Offset.zero;
-        const curve = Curves.ease;
-        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-        return SlideTransition(
-          position: anim1.drive(tween),
-          child: widget,
-        );
-      },
-      transitionDuration: Duration(milliseconds: 200)
-  );
 }
 
 class AppWebView extends StatefulWidget {
@@ -113,7 +81,19 @@ class _AppWebViewState extends State<AppWebView> {
   }
 
   Future assignJsContent() async {
-    jsContent = await rootBundle.loadString("assets/www/js/index.js");
+    String content =  await rootBundle.loadString("assets/www/js/index.js");
+    jsContent = '''
+      try
+      {
+        var avme = $content;
+        let script = document.createElement('script');
+        script.setAttribute('type', 'text/javascript');
+        script.innerText = avme;
+        script.onload = function (){ this.remove() };
+        document.head ? document.head.prepend(script) : document.documentElement.prepend(script);      
+      }
+      catch (e) {console.error('[AVME Extension] Error: ', e)}
+    ''';
   }
 
   @override
@@ -196,53 +176,51 @@ class _AppWebViewState extends State<AppWebView> {
     );
   }
 
-  Widget appWebView()
+  WebView appWebView()
   {
 
-    return Container(
-      color: Colors.white,
-      child: WebView(
-        initialUrl: _urlController.text,
-        javascriptMode: JavascriptMode.unrestricted,
-        onWebViewCreated: (WebViewController webViewController)
-        {
-          _controller.complete(webViewController);
-          // setState(() async {
-          //   canGoBack = await webViewController.canGoBack();
-          //   canGoFoward = await webViewController.canGoForward();
-          // });
-        },
-        onProgress: (int progress) {
-          print('WebView is loading (progress : $progress%)');
-        },
-        javascriptChannels: <JavascriptChannel>{
-          ethereumProvider,
-        },
-        navigationDelegate: (NavigationRequest request) {
-          if (request.url.startsWith('https://www.youtube.com/')) {
-            print('blocking navigation to $request}');
-            return NavigationDecision.prevent;
-          }
-          print('allowing navigation to $request');
-          return NavigationDecision.navigate;
-        },
-        onPageStarted: (String url) async {
-          print('Page started loading: $url');
-          _urlController.text = url;
-          WebViewController controller = await _controller.future;
-          canGoBack = await controller.canGoBack();
-          canGoFoward = await controller.canGoForward();
-          setState(() {});
-        },
-        onPageFinished: (String url) async {
-          print('Page finished loading: $url');
-          // printMark(jsContent);
-          WebViewController webViewController = await _controller.future;
-          webViewController.runJavascript(jsContent);
-        },
-        gestureNavigationEnabled: true,
-        backgroundColor: const Color(0x00000000),
-      ),
+    return WebView(
+      initialUrl: _urlController.text,
+      javascriptMode: JavascriptMode.unrestricted,
+      onWebViewCreated: (WebViewController webViewController)
+      {
+        _controller.complete(webViewController);
+        // setState(() async {
+        //   canGoBack = await webViewController.canGoBack();
+        //   canGoFoward = await webViewController.canGoForward();
+        // });
+      },
+      onProgress: (int progress) {
+        print('WebView is loading (progress : $progress%)');
+      },
+      javascriptChannels: <JavascriptChannel>{
+        ethereumProvider,
+      },
+      navigationDelegate: (NavigationRequest request) {
+        if (request.url.startsWith('https://www.youtube.com/')) {
+          print('blocking navigation to $request}');
+          return NavigationDecision.prevent;
+        }
+        print('allowing navigation to $request');
+        return NavigationDecision.navigate;
+      },
+      onPageStarted: (String url) async {
+        print('Page started loading: $url');
+        _urlController.text = url;
+        WebViewController controller = await _controller.future;
+        canGoBack = await controller.canGoBack();
+        canGoFoward = await controller.canGoForward();
+        setState(() {});
+        controller.runJavascript(jsContent);
+      },
+      onPageFinished: (String url) async {
+        print('Page finished loading: $url');
+        // printMark(jsContent);
+        // WebViewController webViewController = await _controller.future;
+        // webViewController.runJavascript(jsContent);
+      },
+      gestureNavigationEnabled: true,
+      backgroundColor: Colors.white,
     );
   }
 
@@ -333,7 +311,9 @@ class ReloadPage extends StatelessWidget {
         return GestureDetector(
           onTap: !webViewReady ? null : () {
             controller!.reload();
+            // controller!.runJavascript('window.postMessage({"type":"eth:emit", "emit":"eth_accounts", "payload":{"jsonrpc":"2.0","result":[]}})');
           },
+
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Container(
@@ -528,6 +508,15 @@ class WebMenu extends StatelessWidget {
               //   break;
               case MenuOptions.setCookie:
                 _onSetCookie(controller.data!, context);
+                break;
+              case MenuOptions.navigationDelegate:
+                // TODO: Handle this case.
+                break;
+              case MenuOptions.loadHtmlString:
+                // TODO: Handle this case.
+                break;
+              case MenuOptions.transparentBackground:
+                // TODO: Handle this case.
                 break;
             }
           },
