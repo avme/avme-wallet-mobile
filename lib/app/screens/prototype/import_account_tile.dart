@@ -320,6 +320,7 @@ class _ImportAccountTileState extends State<ImportAccountTile> {
           setState(() {
             _dropValue = _mnemonicList.length;
           });
+          NotificationBar().show(context, text: "Changed to $_dropValue mnemonics");
         }
       }
       if (await appWalletManager.walletManager.checkMnemonic(phrase: _mnemonicTemp, phraseCount: _dropValue)) {
