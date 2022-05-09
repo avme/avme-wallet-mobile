@@ -65,6 +65,7 @@ dependencies:
   cached_network_image: ^3.2.0
   flutter_cache_manager: ^3.3.0
   webview_flutter: ^3.0.2
+  palette_generator: ^0.3.3
 
 dev_dependencies:
   build_runner: ^2.0.0
