@@ -242,10 +242,17 @@ class WalletManager {
     if (appState.tProcesses.containsKey("valueSubscription")) appState.killIdProcess("valueSubscription");
   }
 
-  Future<Map<String, dynamic>> sendTransaction(AvmeWallet wallet, String address, BigInt amount, String token,
-      {List<ValueNotifier> listNotifier}) async {
+  Future<Map<String, dynamic>> sendTransaction(
+    AvmeWallet wallet,
+    String address,
+    BigInt amount,
+    int maxGas,
+    BigInt gasPrice,
+    String token, {
+    List<ValueNotifier> listNotifier,
+  }) async {
     print("sendTransaction \n${[wallet, address, amount, token]}");
-    bool hasEnough = await services.hasEnoughBalanceToPayTaxes(wallet.currentAccount.networkTokenBalance, amount);
+    bool hasEnough = await services.hasEnoughBalanceToPayTaxes(wallet.currentAccount.networkTokenBalance, amount, gasPrice);
     print("hasEnoughBalanceToPayTaxes? $hasEnough");
     if (!hasEnough) {
       dynamic error = {"title": "Attention", "status": 500, "message": "Not enough AVAX to complete the transaction."};
@@ -253,7 +260,7 @@ class WalletManager {
       return error;
     }
     wallet.lastTransactionWasSucessful.retrievingData = true;
-    String url = await services.sendTransaction(wallet, address, amount, token, listNotifier: listNotifier);
+    String url = await services.sendTransaction(wallet, address, amount, maxGas, gasPrice, token, listNotifier: listNotifier);
     return {"title": "", "status": 200, "message": url};
   }
 

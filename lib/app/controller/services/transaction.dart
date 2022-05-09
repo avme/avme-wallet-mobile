@@ -16,39 +16,40 @@ import 'contract.dart';
 String url = dotenv.get("NETWORK_URL");
 ServiceData requestTransactionData;
 
-Future<bool> hasEnoughBalanceToPayTaxes(BigInt balance, BigInt amount) async {
+Future<bool> hasEnoughBalanceToPayTaxes(BigInt balance, BigInt amount, BigInt gasPrice) async {
   //TODO: Fix this, calculate taxes as in (gax * price + value)
   //RPCError: got code -32000 with msg
   //"insufficient funds for gas * price + value: address 0x39C095e526fEDbb3152bB506a5c03Dd79E7E64C9 have (5146044911057280) want (5660838001700000)".
 
-  Client httpClient = Client();
-  Web3Client ethClient = Web3Client(url, httpClient);
+  // Client httpClient = Client();
+  // Web3Client ethClient = Web3Client(url, httpClient);
   // BigInt tax = (await ethClient.getGasPrice()).getInWei;
-  BigInt addToFee = BigInt.from((5 * pow(10, 9)));
-  print('addToFee: $addToFee');
-  print('tax before addToFee: ${(await ethClient.getGasPrice()).getInWei}');
-  BigInt tax = (await ethClient.getGasPrice()).getInWei + addToFee;
-  print('tax after addToFee: $tax');
+  // BigInt addToFee = BigInt.from((5 * pow(10, 9)));
+  // print('addToFee: $addToFee');
+  // print('tax before addToFee: ${(await ethClient.getGasPrice()).getInWei}');
+  BigInt tax = gasPrice;
   print('tax > balance = ${tax > balance}');
   return tax > balance ? false : true;
 }
 
-Future<String> sendTransaction(AvmeWallet appState, String receiverAddress, BigInt amount, String token, {List<ValueNotifier> listNotifier}) async {
-  // print(amount.toString());
-  // print(token);
-  // return "a";
+Future<String> sendTransaction(
+  AvmeWallet appState,
+  String receiverAddress,
+  BigInt amount,
+  int maxGas,
+  BigInt gasPriceBigInt,
+  String token, {
+  List<ValueNotifier> listNotifier,
+}) async {
   Client httpClient = Client();
   Web3Client ethClient = Web3Client(url, httpClient);
-  BigInt addToFee = BigInt.from((5 * pow(10, 9)));
-  EtherAmount gasPrice = EtherAmount.inWei((await ethClient.getGasPrice()).getInWei + addToFee);
-  // EtherAmount gasPrice = await ethClient.getGasPrice();
+  // BigInt addToFee = BigInt.from((5 * pow(10, 9)));
+  // EtherAmount gasPrice = EtherAmount.inWei((await ethClient.getGasPrice()).getInWei + addToFee);
+  EtherAmount gasPrice = EtherAmount.inWei(gasPriceBigInt);
+
+  print('maxGas $maxGas, gasPriceBitInt $gasPriceBigInt');
+
   Map<String, List> contracts = Contracts.getInstance().contracts;
-  Transaction transaction = Transaction(
-    to: EthereumAddress.fromHex(receiverAddress),
-    maxGas: 70000,
-    gasPrice: gasPrice,
-    value: EtherAmount.inWei(amount),
-  );
 
   listNotifier[0].value = 40;
   listNotifier[1].value = "Signing Transaction";
@@ -56,6 +57,12 @@ Future<String> sendTransaction(AvmeWallet appState, String receiverAddress, BigI
   Web3Client transactionClient;
   if (token == "AVAX") {
     print("AVAX - MAINNET");
+    Transaction transaction = Transaction(
+      to: EthereumAddress.fromHex(receiverAddress),
+      maxGas: maxGas,
+      gasPrice: gasPrice,
+      value: EtherAmount.inWei(amount),
+    );
 
     ///Get the chainId
     // int chainId = (await ethClient.getChainId()).toInt();
@@ -91,11 +98,12 @@ Future<String> sendTransaction(AvmeWallet appState, String receiverAddress, BigI
     listNotifier[1].value = "Sending Transaction";
     transactionClient = ethClient;
   } else {
-    transaction = Transaction(maxGas: 70000, gasPrice: gasPrice);
+    // if going to uncomment this, fix maxGas to be widget's parameter
+    Transaction transaction = Transaction(maxGas: 70000, gasPrice: gasPrice);
     EthereumAddress contractAddress = EthereumAddress.fromHex(contracts[token][1]);
     ContractAbi abi = contracts[token][0];
     int chainId = int.tryParse(contracts[token][2]);
-    print("${token} - ERC20s ${[abi, contractAddress, ethClient, chainId]}");
+    print("$token - ERC20s ${[abi, contractAddress, ethClient, chainId]}");
     ERC20 contract = ERC20(abi, address: contractAddress, client: ethClient, chainId: chainId);
     Credentials accountCredentials = appState.currentAccount.walletObj.privateKey;
     listNotifier[0].value = 60;
