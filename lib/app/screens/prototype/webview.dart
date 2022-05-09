@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:avme_wallet/app/controller/web/web_utils.dart';
 import 'package:avme_wallet/app/controller/web_requests.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/widgets.dart';
@@ -419,6 +420,7 @@ class NavigationControls extends StatelessWidget {
 enum MenuOptions {
   devPage,
   injectJS,
+  favoritePage,
   showUserAgent,
   listCookies,
   clearCookies,
@@ -446,6 +448,16 @@ class WebMenu extends StatelessWidget {
     return FutureBuilder(
       future: controller,
       builder: (BuildContext context, AsyncSnapshot<WebViewController> controller) {
+        bool favorited = false;
+        if(controller.hasData)
+        {
+          Favorites _f = Favorites();
+          _f.getSites().then((Map sites) async{
+            String site = await controller.data!.currentUrl() ?? "";
+            favorited = sites.containsKey(site);
+            printOk("ESTA FAVORITADO? $favorited");
+          });
+        }
         return PopupMenuButton<MenuOptions>(
           key: const ValueKey<String>("ShowPopupMenu"),
           icon: Icon(
@@ -455,7 +467,9 @@ class WebMenu extends StatelessWidget {
           ),
           onSelected: (MenuOptions value) {
             switch (value) {
-              //TODO: implement this sh!t
+              case MenuOptions.favoritePage:
+                _favoritePage(controller.data!, context);
+                break;
               case MenuOptions.devPage:
                 _onLoadLocalFileExample(controller.data!, context);
                 break;
@@ -521,6 +535,11 @@ class WebMenu extends StatelessWidget {
             }
           },
           itemBuilder: (BuildContext context) => <PopupMenuItem<MenuOptions>>[
+            PopupMenuItem<MenuOptions>(
+              value: MenuOptions.favoritePage,
+              child: const Text('Favorite Page'),
+              enabled: !favorited,
+            ),
             PopupMenuItem<MenuOptions>(
               value: MenuOptions.devPage,
               child: const Text('Dev Page'),
@@ -721,6 +740,23 @@ class WebMenu extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: cookieWidgets.toList(),
     );
+  }
+
+  Future<void> _favoritePage(
+      WebViewController webViewController,
+      BuildContext context
+    ) async {
+
+    String title = await webViewController.getTitle() ?? "Default Title";
+    String url = await webViewController.currentUrl() ?? "www.google.com";
+
+    Favorites _f = Favorites();
+    _f.add(title, url);
+    // Map favoritesList = await _f.getSites();
+    // if(favoritesList.containsKey(title)) {
+    //   NotificationBar().show(context, text: );
+    //   return;
+    // }
   }
 
   // static Future<String> _prepareLocalFile() async {

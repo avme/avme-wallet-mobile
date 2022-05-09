@@ -1,9 +1,8 @@
 // @dart=2.12
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
-import 'package:avme_wallet/app/controller/file_manager.dart';
+import 'package:avme_wallet/app/controller/web/web_utils.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/packages/services.dart';
@@ -216,85 +215,4 @@ async {
 
   printApprove("window.postMessage($res)");
   controller.runJavascript("window.postMessage($res)");
-}
-
-class AllowedUrls
-{
-  FileManager fileManager = FileManager();
-  List _hosts = [];
-  AllowedUrls()
-  {
-    Future<File> _f = this.getFile();
-    _f.then((File file) async {
-      _hosts = jsonDecode(file.readAsStringSync());
-    });
-  }
-
-  Future<File> getFile() async
-  {
-    await this.fileManager.getDocumentsFolder();
-    File file = File("${this.fileManager.documentsFolder}/sites.json");
-    if(!await file.exists())
-    {
-      await file.writeAsString(this.fileManager.encoder.convert([]));
-    }
-    return file;
-  }
-
-  Future<List> getSites() async{
-    if(_hosts.length > 0)
-      return _hosts;
-    return jsonDecode(await (await this.getFile()).readAsString()) as List;
-  }
-
-  Future<int> isAllowed(String origin) async
-  {
-    int allowed = 0;
-    for (List site in await getSites())
-    {
-      printMark("${site[1]}: ${site[0]} == $origin;");
-      if(site[0] == origin && site[1])
-      {
-        allowed = 1;
-      }
-      else if(site[0] == origin && !site[1])
-      {
-        allowed = 2;
-      }
-    }
-    return allowed;
-  }
-
-  List allowSite(String origin) {
-    List _s = [];
-    this.getFile().then((File value) {
-      _s = jsonDecode(value.readAsStringSync())
-        ?? [];
-      printMark("$_s");
-      _s.add([origin, true]);
-      try
-      {
-        value.writeAsString(jsonEncode(_s));
-      }
-      catch(e) {printError("$e");}
-    });
-    return _s;
-  }
-
-  List blockSite(String origin) {
-    List _s = [];
-    this.getFile().then((File value) {
-      _s = jsonDecode(value.readAsStringSync())
-        ?? [];
-      printMark("$_s");
-      _s.remove([origin, true]);
-      _s.add([origin, false]);
-      try
-      {
-        value.writeAsString(jsonEncode(_s));
-      }
-      catch(e) {printError("$e");}
-    });
-    return _s;
-  }
 }
