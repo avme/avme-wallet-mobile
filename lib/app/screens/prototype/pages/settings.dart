@@ -269,7 +269,6 @@ class _SettingsState extends State<Settings> {
   }
 
   void fingerprintPopup(context) async {
-    //TODO: add check whether use can use biometrics or not
     SizeConfig().init(context);
     await showDialog(
         context: context,

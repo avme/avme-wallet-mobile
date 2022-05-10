@@ -263,7 +263,6 @@ class _HistoryState extends State<History> {
         HistoryTable(
           sent: true,
           tokenAmount: "${shortAmount(card["formatedAmount"])} ${card["tokenName"]}",
-          //TODO: Save the amount in money and retrieve to show how much was sent in dollars
           value: '\$${tokenValue.toStringAsFixed(2)}',
           date: card["date"],
           onTap: () => {Navigator.push(context, MaterialPageRoute(builder: (context) => TransactionDetails(card)))},

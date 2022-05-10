@@ -450,7 +450,6 @@ class _ContactsState extends State<Contacts> {
                     ),
                   ],
                 ),
-                //TODO: Remove this SizedBox?
                 SizedBox(
                   height: 0,
                 ),

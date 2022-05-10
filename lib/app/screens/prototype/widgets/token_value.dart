@@ -192,7 +192,6 @@ class _TokenTrackerState extends State<TokenTracker> {
                           ]
                         : [])),
               ),
-              //TODO: Recover values in a 30 days period
               Expanded(
                   flex: 3,
                   child: FutureBuilder(

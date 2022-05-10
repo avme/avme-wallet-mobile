@@ -300,7 +300,6 @@ class _SendState extends State<Send> {
                       decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: AppColors.darkBlue),
                       child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 14),
-                          //Todo: Implement "address/contact list" with updated contact storage
                           child: Row(
                             children: [
                               Expanded(

@@ -5,7 +5,6 @@ import 'package:sqflite/sqflite.dart';
 import 'package:avme_wallet/app/model/token_data.dart';
 
 class DatabaseInterface {
-  //TODO: deletar comentários desnecessários
   //Criar instância da interface, ao chamar a interface, use DatabaseInterface.instance.metodo
   static final DatabaseInterface instance = DatabaseInterface._init();
 
@@ -25,7 +24,7 @@ class DatabaseInterface {
   Future<Database> _initDB(String filePath) async {
     final dbPath = await getDatabasesPath();
 
-    final path = join(dbPath,filePath);
+    final path = join(dbPath, filePath);
     //Path deve ser data/data/com.avme.avme_wallet/databases
 
     /*
@@ -59,14 +58,14 @@ class DatabaseInterface {
   ///duplicada, não será adicionado
   Future<TokenValue> create(TokenValue values) async {
     final database = await instance.database;
-    List<Map>? check = await database.query(tokenValueTable,where: '${TokenValueFields.dateTime} = ${values.dateTime}');
-    if (check.isNotEmpty){
+    List<Map>? check = await database.query(tokenValueTable, where: '${TokenValueFields.dateTime} = ${values.dateTime}');
+    if (check.isNotEmpty) {
       print('Já existe na tabela');
       return values.copy();
       //throw Exception('Data já existente na tabela');
     } else {
       values = values.copy(tokenName: values.tokenName.toUpperCase());
-      final id = await database.insert(tokenValueTable,values.toMap());
+      final id = await database.insert(tokenValueTable, values.toMap());
       return values.copy(id: id);
     }
     //Returning a copy of the tokenValue, since ID wasn't set in the parameters,
@@ -76,7 +75,6 @@ class DatabaseInterface {
   }
 
   Future<TokenValue> read(int date) async {
-    //TODO:modificar baseado em o que o usuário quer ler com outras entradas fora data
     final database = await instance.database;
     final maps = await database.query(
       tokenValueTable,
@@ -101,7 +99,7 @@ class DatabaseInterface {
   }
 
   ///Deleta na data epoch passada como argumento
-  Future<int> delete(int date) async{
+  Future<int> delete(int date) async {
     final database = await instance.database;
 
     return await database.delete(
@@ -112,16 +110,13 @@ class DatabaseInterface {
   }
 
   ///Deletar todas as linhas da tabela
-  Future<int> deleteAll() async{
+  Future<int> deleteAll() async {
     final database = await instance.database;
 
-    return await database.delete(
-        tokenValueTable,
-        where: null
-    );
+    return await database.delete(tokenValueTable, where: null);
   }
 
-  Future close() async{
+  Future close() async {
     //Acessar o database e deletar em baixo
     final database = await instance.database;
 

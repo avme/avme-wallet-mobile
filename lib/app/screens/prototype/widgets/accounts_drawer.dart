@@ -47,7 +47,6 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
 
   @override
   void initState() {
-    // TODO: implement initState
     startFingerprint();
     super.initState();
   }

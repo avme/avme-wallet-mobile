@@ -17,10 +17,6 @@ String url = dotenv.get("NETWORK_URL");
 ServiceData requestTransactionData;
 
 Future<bool> hasEnoughBalanceToPayTaxes(BigInt balance, BigInt amount, BigInt gasPrice) async {
-  //TODO: Fix this, calculate taxes as in (gax * price + value)
-  //RPCError: got code -32000 with msg
-  //"insufficient funds for gas * price + value: address 0x39C095e526fEDbb3152bB506a5c03Dd79E7E64C9 have (5146044911057280) want (5660838001700000)".
-
   // Client httpClient = Client();
   // Web3Client ethClient = Web3Client(url, httpClient);
   // BigInt tax = (await ethClient.getGasPrice()).getInWei;
