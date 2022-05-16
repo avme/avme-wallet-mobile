@@ -43,9 +43,14 @@ Future<String> sendTransaction(
   // EtherAmount gasPrice = EtherAmount.inWei((await ethClient.getGasPrice()).getInWei + addToFee);
   EtherAmount gasPrice = EtherAmount.inWei(gasPriceBigInt);
 
-  print('maxGas $maxGas, gasPriceBitInt $gasPriceBigInt');
-
   Map<String, List> contracts = Contracts.getInstance().contracts;
+
+  Transaction transaction = Transaction(
+    to: EthereumAddress.fromHex(receiverAddress),
+    maxGas: maxGas,
+    gasPrice: gasPrice,
+    value: EtherAmount.inWei(amount),
+  );
 
   listNotifier[0].value = 40;
   listNotifier[1].value = "Signing Transaction";
@@ -53,12 +58,6 @@ Future<String> sendTransaction(
   Web3Client transactionClient;
   if (token == "AVAX") {
     print("AVAX - MAINNET");
-    Transaction transaction = Transaction(
-      to: EthereumAddress.fromHex(receiverAddress),
-      maxGas: maxGas,
-      gasPrice: gasPrice,
-      value: EtherAmount.inWei(amount),
-    );
 
     ///Get the chainId
     // int chainId = (await ethClient.getChainId()).toInt();
@@ -68,7 +67,6 @@ Future<String> sendTransaction(
     Uint8List signedTransaction = await ethClient.signTransaction(
       accountCredentials,
       transaction,
-      // chainId: int.tryParse(env["CHAIN_ID"]) ?? 43114,
       chainId: chainId,
     );
     // chainId: 43144);
