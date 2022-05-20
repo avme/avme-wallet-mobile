@@ -1,6 +1,7 @@
 import 'package:avme_wallet/app/controller/contacts.dart';
 import 'package:avme_wallet/app/controller/services/connection.dart';
 import 'package:avme_wallet/app/controller/threads.dart';
+import 'package:avme_wallet/app/controller/web/webview.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:avme_wallet/app/config/routes.dart';
@@ -20,6 +21,8 @@ main() async{
 
   Threads threads = Threads.getInstance();
   threads.initialize();
+
+  AppWebViewController controller = AppWebViewController.getInstance();
 
   await dotenv.load(fileName: ".env");
   FileManager fileManager = FileManager();
