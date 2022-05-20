@@ -248,8 +248,22 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                 print('isAllFilled: $isAllFilled');
               }
 
+              void handlePaste() async {
+                final ClipboardData _data = await Clipboard.getData('text/plain');
+                if (_data != null || _data.text != '') {
+                  //
+                  String _mnemonicTemp = _data.text;
+                  _mnemonicTemp = _mnemonicTemp.trim().replaceAll('\n', ' ');
+                  final regex = RegExp(r'\ +');
+                  _mnemonicTemp = _mnemonicTemp.replaceAll(regex, ' ');
+                  setState(() {
+                    controllerMnemonic.text = _mnemonicTemp;
+                  });
+                }
+              }
+
               return AppPopupWidget(
-                title: "Import seed",
+                title: "Import Seed",
                 cancelable: false,
                 showIndicator: false,
                 padding: EdgeInsets.all(20),
@@ -264,7 +278,7 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                         height: SizeConfig.safeBlockVertical * 3,
                       ),
                       Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
+                        // mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           Text(
                             "Fill in mnemonic phrase to import an account",
@@ -316,7 +330,7 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                         ),
                       ),
                       SizedBox(
-                        height: SizeConfig.safeBlockVertical * 4,
+                        height: SizeConfig.safeBlockVertical * 1,
                       ),
                       isAllFilled
                           ? Padding(
@@ -331,7 +345,17 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                               ),
                             ),
                       SizedBox(
-                        height: SizeConfig.safeBlockVertical * 4,
+                        height: SizeConfig.safeBlockVertical * 1,
+                      ),
+                      ElevatedButton(
+                        onPressed: () async {
+                          // Navigator.of(context).pop();
+                          handlePaste();
+                        },
+                        child: Text("PASTE"),
+                        // style: ElevatedButton.styleFrom(
+                        //   padding: EdgeInsets.symmetric(vertical: 21, horizontal: 0),
+                        // style: _btnStyleLogin,
                       ),
                       ElevatedButton(
                         onPressed: () async {
