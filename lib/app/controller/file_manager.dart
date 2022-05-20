@@ -67,6 +67,15 @@ class FileManager {
     File file;
     List<File> list = [];
     List<dynamic> listReturn = [];
+
+    Future<void> finish() async {
+      if (list.isNotEmpty) {
+        for (int i = 0; i < list.length; i++) {
+          listReturn.add(jsonDecode(await list[i].readAsString()));
+        }
+      }
+    }
+
     await Directory(path).create(recursive: true);
     while (!done) {
       exists = await File("$path$filenameImport$i$ext").exists();
@@ -75,11 +84,7 @@ class FileManager {
         list.add(file);
         ++i;
       } else {
-        if (list.isNotEmpty) {
-          for (int i = 0; i < list.length; i++) {
-            listReturn.add(jsonDecode(await list[i].readAsString()));
-          }
-        }
+        await finish();
         done = true;
       }
     }
