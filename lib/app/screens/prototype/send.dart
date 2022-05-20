@@ -318,7 +318,7 @@ class _SendState extends State<Send> {
         ),
       );
     } else {
-      return Center(child: AppCard(child: Text("No contacts found.")));
+      return Center(child: AppCard(child: Text("No contacts found")));
     }
   }
 
