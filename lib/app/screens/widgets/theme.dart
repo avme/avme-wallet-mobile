@@ -47,6 +47,7 @@ class AppColors {
     static const labelDisabledTransparent = Color(0xCCFFFFFF);
     // static const cardDefaultColor = Color(0xFF201E2C);
     static const cardDefaultColor = Color(0xFF201E2B);
+    static const purpleDark3 = Color(0xFF201e2c);
 
     List preColorList = [
         [availableColors[0],availableColors[1], availableColors[1], availableColors[0]],

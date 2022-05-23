@@ -452,10 +452,13 @@ class WebMenu extends StatelessWidget {
         if(controller.hasData)
         {
           Favorites _f = Favorites();
-          _f.getSites().then((Map sites) async{
-            String site = await controller.data!.currentUrl() ?? "";
-            favorited = sites.containsKey(site);
-            printOk("ESTA FAVORITADO? $favorited");
+          _f.getSites().then((List sites) async{
+            String title = await controller.data!.getTitle() ?? "";
+            if(title.length == 0)
+              return;
+            sites.forEach((mapItem) {
+              favorited = mapItem.containsKey(title);
+            });
           });
         }
         return PopupMenuButton<MenuOptions>(
