@@ -263,7 +263,6 @@ class _HistoryState extends State<History> {
         HistoryTable(
           sent: true,
           tokenAmount: "${shortAmount(card["formatedAmount"])} ${card["tokenName"]}",
-          //TODO: Save the amount in money and retrieve to show how much was sent in dollars
           value: '\$${tokenValue.toStringAsFixed(2)}',
           date: card["date"],
           onTap: () => {Navigator.push(context, MaterialPageRoute(builder: (context) => TransactionDetails(card)))},
@@ -338,7 +337,10 @@ class _HistoryTableState extends State<HistoryTable> {
                       widget.value,
                       style: TextStyle(color: AppColors.lightBlue),
                     ),
-                    Text("${widget.tokenAmount}", textAlign: TextAlign.right,),
+                    Text(
+                      "${widget.tokenAmount}",
+                      textAlign: TextAlign.right,
+                    ),
                   ],
                 ),
               ),
@@ -483,14 +485,16 @@ class _BalanceAndButtonsState extends State<BalanceAndButtons> {
   }
 }
 
-Future<String> difference(AvmeWallet appState) async {
+Future<String> difference(AvmeWallet app) async {
   int counter = 0;
   double difference = 0, sum = 0, tokenValueToday, tempCalc = 0;
   List<double> tokenValuesYesterday = [], percentages = [];
-  List<String> tokenNames = appState.activeContracts.tokens;
+  List<String> tokenNames = app.activeContracts.tokens;
+  bool isThereBalance = false;
   //AVAX
-  if (appState.accountList[0].balance != '0') {
-    tokenValueToday = double.tryParse(appState.networkToken.value);
+  if (app.currentAccount.balance != '0') {
+    isThereBalance = true;
+    tokenValueToday = double.tryParse(app.networkToken.value);
     await ValueHistoryTable.instance.readAmount('AVAX', 1).then((value) {
       percentages.add((tokenValueToday / value.first.value.toDouble()) - 1);
       sum += (value.first.value.toDouble());
@@ -500,14 +504,20 @@ Future<String> difference(AvmeWallet appState) async {
   //Other
   //tokenNames.forEach((element) async { //Doesn't work, since it will work and wait for the .forEach but won't wait for the await inside
   for (String element in tokenNames) {
-    tokenValueToday = double.tryParse(appState.activeContracts.token.tokenValue(element));
-    await ValueHistoryTable.instance.readAmount(element, 1).then((value) {
-      percentages.add((tokenValueToday / value.first.value.toDouble()) - 1);
-      sum += (value.first.value.toDouble());
-      tokenValuesYesterday.add(value.first.value.toDouble());
-    });
+    if (double.tryParse(app.currentAccount.tokenWei(name: element)) != 0) {
+      isThereBalance = true;
+      tokenValueToday = double.tryParse(app.activeContracts.token.tokenValue(element));
+      await ValueHistoryTable.instance.readAmount(element, 1).then((value) {
+        percentages.add((tokenValueToday / value.first.value.toDouble()) - 1);
+        sum += (value.first.value.toDouble());
+        tokenValuesYesterday.add(value.first.value.toDouble());
+      });
+    }
   }
   //Processing
+
+  if (!isThereBalance) return '0%';
+
   for (double value in percentages) {
     tempCalc += value * tokenValuesYesterday.elementAt(counter);
     ++counter;

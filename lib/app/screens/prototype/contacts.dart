@@ -229,7 +229,7 @@ class _ContactsState extends State<Contacts> {
                                       Padding(
                                         padding: const EdgeInsets.all(16.0),
                                         child: Center(
-                                          child: Text("No contacts found.")
+                                          child: Text("No contacts found")
                                         ),
                                       )
                                     ],
@@ -450,7 +450,6 @@ class _ContactsState extends State<Contacts> {
                     ),
                   ],
                 ),
-                //TODO: Remove this SizedBox?
                 SizedBox(
                   height: 0,
                 ),

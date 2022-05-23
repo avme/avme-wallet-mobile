@@ -12,7 +12,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class Welcome extends StatefulWidget {
-
   const Welcome({Key key}) : super(key: key);
 
   @override
@@ -20,7 +19,6 @@ class Welcome extends StatefulWidget {
 }
 
 class _WelcomeState extends State<Welcome> {
-
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
@@ -29,14 +27,7 @@ class _WelcomeState extends State<Welcome> {
       body: Container(
         decoration: BoxDecoration(
             gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: <Color>[
-                  AppColors.purpleVariant1,
-                  AppColors.purpleBlue
-                ]
-            )
-        ),
+                begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: <Color>[AppColors.purpleVariant1, AppColors.purpleBlue])),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -55,12 +46,8 @@ class _WelcomeState extends State<Welcome> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Text(
-                            "Welcome to AVME",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: SizeConfig.titleSize)
-                        ),
+                        Text("Welcome to AVME",
+                            textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: SizeConfig.titleSize)),
                         Padding(
                           padding: EdgeInsets.symmetric(
                             vertical: SizeConfig.safeBlockVertical * 3,
@@ -74,8 +61,7 @@ class _WelcomeState extends State<Welcome> {
                           children: [
                             AppButton(
                               onPressed: () {
-                                Navigator.push(context,
-                                    MaterialPageRoute(builder: (builder) => NewAccount()));
+                                Navigator.push(context, MaterialPageRoute(builder: (builder) => NewAccount()));
                               },
                               text: "CREATE NEW WALLET",
                             ),
@@ -83,9 +69,9 @@ class _WelcomeState extends State<Welcome> {
                               height: buttonSpacing,
                             ),
                             AppNeonButton(
+                              textStyle: TextStyle(color: Colors.white, fontSize: SizeConfig.spanSize * 1.6),
                               onPressed: () {
-                                Navigator.push(context,
-                                    MaterialPageRoute(builder: (builder) => ImportAccount()));
+                                Navigator.push(context, MaterialPageRoute(builder: (builder) => ImportAccount()));
                               },
                               text: "IMPORT WALLET",
                             ),

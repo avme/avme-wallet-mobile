@@ -47,7 +47,6 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
 
   @override
   void initState() {
-    // TODO: implement initState
     startFingerprint();
     super.initState();
   }
@@ -186,10 +185,6 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
         AppNeonButton(
           onPressed: () async {
             passwordScreen(app, true);
-            NotificationBar().show(
-              context,
-              text: 'NOT FINALIZED, FIX '
-            );
           },
           text: "IMPORT",
           expanded: false,
@@ -241,7 +236,7 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                   if (await app.walletManager.checkMnemonic(phrase: mnemonicString, phraseCount: _phraseCount)) {
                     controllerMnemonic.clear();
                     Navigator.of(context).pop();
-                    newAccountPopup(app, true, passwordInput.text, mnemonics: mnemonicString);
+                    newAccountPopup(app, true, password, mnemonics: mnemonicString);
                   } else {
                     setState(() {
                       invalidMnemonic = 'Words do not correspond to mnemonic dictionary';
@@ -253,8 +248,22 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                 print('isAllFilled: $isAllFilled');
               }
 
+              void handlePaste() async {
+                final ClipboardData _data = await Clipboard.getData('text/plain');
+                if (_data != null || _data.text != '') {
+                  //
+                  String _mnemonicTemp = _data.text;
+                  _mnemonicTemp = _mnemonicTemp.trim().replaceAll('\n', ' ');
+                  final regex = RegExp(r'\ +');
+                  _mnemonicTemp = _mnemonicTemp.replaceAll(regex, ' ');
+                  setState(() {
+                    controllerMnemonic.text = _mnemonicTemp;
+                  });
+                }
+              }
+
               return AppPopupWidget(
-                title: "Import seed",
+                title: "Import Seed",
                 cancelable: false,
                 showIndicator: false,
                 padding: EdgeInsets.all(20),
@@ -269,7 +278,7 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                         height: SizeConfig.safeBlockVertical * 3,
                       ),
                       Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
+                        // mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           Text(
                             "Fill in mnemonic phrase to import an account",
@@ -321,7 +330,7 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                         ),
                       ),
                       SizedBox(
-                        height: SizeConfig.safeBlockVertical * 4,
+                        height: SizeConfig.safeBlockVertical * 1,
                       ),
                       isAllFilled
                           ? Padding(
@@ -336,7 +345,17 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                               ),
                             ),
                       SizedBox(
-                        height: SizeConfig.safeBlockVertical * 4,
+                        height: SizeConfig.safeBlockVertical * 1,
+                      ),
+                      ElevatedButton(
+                        onPressed: () async {
+                          // Navigator.of(context).pop();
+                          handlePaste();
+                        },
+                        child: Text("PASTE"),
+                        // style: ElevatedButton.styleFrom(
+                        //   padding: EdgeInsets.symmetric(vertical: 21, horizontal: 0),
+                        // style: _btnStyleLogin,
                       ),
                       ElevatedButton(
                         onPressed: () async {
@@ -492,7 +511,7 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                           context: context,
                           builder: (_) => StatefulBuilder(
                               builder: (builder, setState) => AppPopupWidget(
-                                    title: "CREATE NEW ACCOUNT",
+                                    title: "IMPORT NEW ACCOUNT",
                                     textStyle: TextStyle(fontSize: SizeConfig.titleSize * 0.8, fontWeight: FontWeight.bold),
                                     margin: EdgeInsets.all(8),
                                     cancelable: false,
@@ -533,13 +552,13 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
             ));
   }
 
-  List<Widget> previewAccounts(StateSetter setter, AvmeWallet app, bool import, String passwordInput, Map generatedKeys, {String mnemonics}) {
+  List<Widget> previewAccounts(StateSetter setter, AvmeWallet app, bool import, String password, Map generatedKeys, {String mnemonics}) {
     final int flexIndex = 1;
     final int flexAddress = 4;
     final int flexBalance = 2;
     final double darkBorderPadding = 8.0;
     printWarning("previewAccounts");
-    String password = passwordInput;
+    print('password: $password');
 
     //Checking to make sure user chose a different option
 
@@ -657,7 +676,13 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                                     expanded: false,
                                     onPressed: () async {
                                       Navigator.pop(context);
-                                      await createAccount(name: nameController.text, app: app, password: password, mnemonics: mnemonics);
+                                      await createAccount(
+                                        name: nameController.text,
+                                        app: app,
+                                        password: password,
+                                        mnemonics: mnemonics,
+                                        import: import,
+                                      );
                                     },
                                     text: "CONFIRM")
                               ],
@@ -724,12 +749,14 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
     ];
   }
 
-  Future<void> createAccount({AvmeWallet app, String password, String name, String mnemonics}) async {
+  Future<void> createAccount({AvmeWallet app, String password, String name, String mnemonics, bool import}) async {
     showDialog(
         context: context,
         builder: (_) => ProgressPopup(
             title: "Finished",
-            future: app.walletManager.makeAccount(password, app, title: name, slot: this.selectedIndex, mnemonic: mnemonics).then((value) async {
+            future: app.walletManager
+                .makeAccount(password, app, title: name, slot: this.selectedIndex, mnemonic: mnemonics, import: import)
+                .then((value) async {
               // Navigator.pop(context);
               if (name.length == 0) {
                 name = "-unnamed ${this.selectedIndex}-";

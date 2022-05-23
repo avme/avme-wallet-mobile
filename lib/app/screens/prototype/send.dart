@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:avme_wallet/app/controller/contacts.dart';
 import 'package:avme_wallet/app/controller/database/recently_sent.dart';
@@ -18,9 +19,11 @@ import 'package:avme_wallet/app/screens/prototype/widgets/textform.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:web3dart/web3dart.dart';
 
 import '../../controller/authapi.dart';
 import '../qrcode_reader.dart';
@@ -297,7 +300,6 @@ class _SendState extends State<Send> {
                       decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: AppColors.darkBlue),
                       child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 14),
-                          //Todo: Implement "address/contact list" with updated contact storage
                           child: Row(
                             children: [
                               Expanded(
@@ -316,10 +318,7 @@ class _SendState extends State<Send> {
         ),
       );
     } else {
-      return Padding(
-        padding: EdgeInsets.all(SizeConfig.safeBlockVertical),
-        child: Center(child: Text("No contacts found.")),
-      );
+      return Center(child: AppCard(child: Text("No contacts found")));
     }
   }
 
@@ -392,16 +391,26 @@ class _SendState extends State<Send> {
     );
   }
 
-  void displaySendTokens(BuildContext context) {
+  void displaySendTokens(BuildContext context) async {
     NotificationBar().show(context, text: "Continuing to details screen");
     bool disableGasLimit = true;
-    bool disableGasFee = true;
+    bool disableGasPrice = true;
     double convertedValue = 0;
     double tokenValue = getTokenValue(app, tokenDropdownValue);
     String msgNoBalance = "Not enough balance.";
+    String msgGasPriceLow = "Gas Price too low for network at the moment.";
     BigInt weiValue = BigInt.zero;
-    TextEditingController gasLimit = TextEditingController(text: dotenv.get("MAX_GAS"));
-    TextEditingController gasFee = TextEditingController(text: dotenv.get("GAS_PRICE"));
+    BigInt toFromGwei = BigInt.from(1000000000);
+    // TextEditingController gasLimit = TextEditingController(text: dotenv.get("MAX_GAS"));
+    TextEditingController gasLimit = TextEditingController(text: tokenDropdownValue == 'AVAX' ? dotenv.get("MAX_GAS") : '70000');
+    // TextEditingController gasPrice = TextEditingController(text: dotenv.get("GAS_PRICE"));
+    String url = dotenv.get("NETWORK_URL");
+    Client httpClient = Client();
+    Web3Client ethClient = Web3Client(url, httpClient);
+    EtherAmount _gasPriceTemp = EtherAmount.inWei((await ethClient.getGasPrice()).getInWei);
+    BigInt addToFee = BigInt.from((5 * pow(10, 9)));
+    double gasPriceVal = ((_gasPriceTemp.getInWei + addToFee).toDouble()) / toFromGwei.toInt();
+    TextEditingController gasPrice = TextEditingController(text: gasPriceVal.toStringAsFixed(2));
     TextEditingController amount = TextEditingController();
     showDialog(
         context: context,
@@ -487,6 +496,9 @@ class _SendState extends State<Send> {
                                     ? app.currentAccount.networkTokenBalance
                                     : app.currentAccount.tokensBalanceList[tokenDropdownValue]["wei"];
                                 if (weiValue > balance) return msgNoBalance;
+                                if (double.tryParse(gasPrice.text) < double.tryParse(((_gasPriceTemp.getInWei) / toFromGwei).toString())) {
+                                  return msgGasPriceLow;
+                                }
                               } else if (double.tryParse(value) == null) {
                                 return msgNoBalance;
                               }
@@ -538,7 +550,11 @@ class _SendState extends State<Send> {
                                   setState(() {
                                     disableGasLimit = !disableGasLimit;
                                     if (disableGasLimit) {
-                                      gasLimit.text = dotenv.get("MAX_GAS");
+                                      if (tokenDropdownValue == 'AVAX') {
+                                        gasLimit.text = dotenv.get("MAX_GAS");
+                                      } else {
+                                        gasLimit.text = '70000';
+                                      }
                                     }
                                   });
                                 },
@@ -555,7 +571,11 @@ class _SendState extends State<Send> {
                                             onChanged: (bool value) => setState(() {
                                                   disableGasLimit = value;
                                                   if (value) {
-                                                    gasLimit.text = dotenv.get("MAX_GAS");
+                                                    if (tokenDropdownValue == 'AVAX') {
+                                                      gasLimit.text = dotenv.get("MAX_GAS");
+                                                    } else {
+                                                      gasLimit.text = '70000';
+                                                    }
                                                   }
                                                 })),
                                       ),
@@ -620,9 +640,9 @@ class _SendState extends State<Send> {
                               child: GestureDetector(
                                 onTap: () {
                                   setState(() {
-                                    disableGasFee = !disableGasFee;
-                                    if (disableGasFee) {
-                                      gasFee.text = dotenv.get("GAS_PRICE");
+                                    disableGasPrice = !disableGasPrice;
+                                    if (disableGasPrice) {
+                                      gasPrice.text = gasPriceVal.toStringAsFixed(2);
                                     }
                                   });
                                 },
@@ -634,12 +654,12 @@ class _SendState extends State<Send> {
                                         height: 22,
                                         width: 22,
                                         child: Checkbox(
-                                            value: disableGasFee,
+                                            value: disableGasPrice,
                                             fillColor: MaterialStateProperty.resolveWith(getColor),
                                             onChanged: (bool value) => setState(() {
-                                                  disableGasFee = value;
+                                                  disableGasPrice = value;
                                                   if (value) {
-                                                    gasFee.text = dotenv.get("GAS_PRICE");
+                                                    gasPrice.text = gasPriceVal.toStringAsFixed(2);
                                                   }
                                                 })),
                                       ),
@@ -680,8 +700,8 @@ class _SendState extends State<Send> {
                           Expanded(
                             flex: 2,
                             child: AppTextFormField(
-                              enabled: !disableGasFee,
-                              controller: gasFee,
+                              enabled: !disableGasPrice,
+                              controller: gasPrice,
                               textAlign: TextAlign.end,
                               keyboardType: TextInputType.number,
                               contentPadding: EdgeInsets.symmetric(vertical: 6, horizontal: 4),
@@ -702,14 +722,32 @@ class _SendState extends State<Send> {
                                 if (_sendTokenForm.currentState != null && _sendTokenForm.currentState.validate()) {
                                   if (_authApi.canAuthenticate()) {
                                     if (await _authApi.promptFingerprint()) {
-                                      startTransaction(app, weiValue, tokenDropdownValue);
+                                      startTransaction(
+                                        app,
+                                        weiValue,
+                                        // int.tryParse(gasLimit.text),
+                                        // int.tryParse(gasPrice.text),
+                                        int.tryParse(gasLimit.text),
+                                        BigInt.from(double.tryParse(gasPrice.text) * toFromGwei.toInt()),
+                                        tokenDropdownValue,
+                                      );
                                     } else {
                                       NotificationBar().show(context, text: "Fingerprint not authorized");
                                     }
                                   } else {
-                                    startTransaction(app, weiValue, tokenDropdownValue);
+                                    startTransaction(
+                                      app,
+                                      weiValue,
+                                      // int.tryParse(gasLimit.text),
+                                      // int.tryParse(gasPrice.text),
+                                      int.tryParse(gasLimit.text),
+                                      BigInt.from(double.tryParse(gasPrice.text) * toFromGwei.toInt()),
+                                      tokenDropdownValue,
+                                    );
+                                    print(BigInt.from(double.tryParse(gasPrice.text)));
                                   }
                                 }
+                                NotificationBar().show(context, text: "Confirm pressed");
                               },
                               text: "CONFIRM",
                             ),
@@ -723,7 +761,7 @@ class _SendState extends State<Send> {
             }));
   }
 
-  void startTransaction(AvmeWallet app, BigInt value, String token) async {
+  void startTransaction(AvmeWallet app, BigInt value, int maxGas, BigInt gasPrice, String token) async {
     ValueNotifier<int> percentage = ValueNotifier(10);
     ValueNotifier<String> label = ValueNotifier("Starting Transaction");
     List<ValueNotifier> loadingNotifier = [percentage, label];
@@ -735,7 +773,7 @@ class _SendState extends State<Send> {
                     title: "Warning",
                     listNotifier: loadingNotifier,
                     future: app.walletManager
-                        .sendTransaction(app, addressController.text, value, token, listNotifier: loadingNotifier)
+                        .sendTransaction(app, addressController.text, value, maxGas, gasPrice, token, listNotifier: loadingNotifier)
                         .then((response) async {
                       if (response["status"] == 200) {
                         int position = -1;

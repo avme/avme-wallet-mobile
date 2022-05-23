@@ -34,10 +34,24 @@ class WalletManager {
   final FileManager fileManager;
   WalletManager(this.fileManager);
 
-  Future<File> writeWalletJson(String json) async {
-    File file = await this.fileManager.accountFile();
-    // print("$json");
-    await file.writeAsString("$json");
+  Future<File> writeWalletJson(String json, {bool import}) async {
+    print('writeWalletJson import: $import');
+    File file;
+    if (!import) {
+      print('import = false');
+      // default, creates the folder for a first time initialization or multiple accounts for the default seed
+      file = await this.fileManager.accountFile();
+      // print("$json");
+      await file.writeAsString("$json");
+    } else {
+      print('import = true');
+      // check for accounts1, accounts2, accounts3 ... until finds an empty one.
+      // should be Accounts/ImportedAccounts/importedAccount[number].json
+      file = await this.fileManager.importedAccountFile();
+      print('file $file');
+      print('file ${file.toString()}');
+      await file.writeAsString("$json");
+    }
     print("writeWalletJson has finished");
     return file;
   }
@@ -47,6 +61,12 @@ class WalletManager {
     try {
       final file = await this.fileManager.accountFile();
       List contents = jsonDecode(await file.readAsString());
+
+      List list = await this.fileManager.importedAccountFileRead();
+      for (var i = 0; i < list.length; i++) {
+        contents.add(list[i][0]);
+      }
+
       content = (position == -1 ? jsonEncode(contents) : jsonEncode(contents[position]["data"]));
     } catch (e) {
       print(e.toString());
@@ -109,7 +129,8 @@ class WalletManager {
     return true;
   }
 
-  Future<Map<String, dynamic>> makeAccount(String password, AvmeWallet appState, {String mnemonic, String title = "", int slot, int stregth}) async {
+  Future<Map<String, dynamic>> makeAccount(String password, AvmeWallet appState,
+      {String mnemonic, String title = "", int slot, int stregth, bool import = false}) async {
     print("Is account list empty? ${appState.accountList.isEmpty}");
 
     if (appState.accountList.isEmpty) {
@@ -130,7 +151,6 @@ class WalletManager {
       mnemonic = mnemonic ?? await decryptAesWallet(password, shouldReturnMnemonicFile: true);
     }
 
-    print(mnemonic);
     BIP32 node = bip32.BIP32.fromSeed(await compute(bip39.mnemonicToSeed, mnemonic));
     Random _rng = new Random.secure();
 
@@ -138,15 +158,11 @@ class WalletManager {
       throw Exception("Limit of 9 accounts reached!");
     }
 
-    print('test1');
-
     BIP32 child = node.derivePath("m/44'/60'/0'/0/$slot");
     String privateKey = HEX.encode(child.privateKey);
 
     Credentials credentFromHex = EthPrivateKey.fromHex(privateKey);
     Wallet _wallet = Wallet.createNew(credentFromHex, password, _rng);
-
-    print('test2');
 
     if (title.length == 0) {
       title = "-unnamed $slot-";
@@ -161,16 +177,16 @@ class WalletManager {
 
     List walletObject;
 
-    print('test3');
-
-    if (appState.accountList.isEmpty) {
+    if (appState.accountList.isEmpty || import == true) {
+      // if (appState.accountList.isEmpty) {
       walletObject = [accountObject];
     } else {
       walletObject = jsonDecode(await readWalletJson());
       walletObject.add(accountObject);
     }
+
     String json = this.fileManager.encoder.convert(walletObject);
-    await writeWalletJson(json);
+    await writeWalletJson(json, import: import);
     appState.w3dartWallet = _wallet;
 
     if (appState.accountList.isEmpty) {
@@ -242,10 +258,17 @@ class WalletManager {
     if (appState.tProcesses.containsKey("valueSubscription")) appState.killIdProcess("valueSubscription");
   }
 
-  Future<Map<String, dynamic>> sendTransaction(AvmeWallet wallet, String address, BigInt amount, String token,
-      {List<ValueNotifier> listNotifier}) async {
+  Future<Map<String, dynamic>> sendTransaction(
+    AvmeWallet wallet,
+    String address,
+    BigInt amount,
+    int maxGas,
+    BigInt gasPrice,
+    String token, {
+    List<ValueNotifier> listNotifier,
+  }) async {
     print("sendTransaction \n${[wallet, address, amount, token]}");
-    bool hasEnough = await services.hasEnoughBalanceToPayTaxes(wallet.currentAccount.networkTokenBalance, amount);
+    bool hasEnough = await services.hasEnoughBalanceToPayTaxes(wallet.currentAccount.networkTokenBalance, amount, gasPrice);
     print("hasEnoughBalanceToPayTaxes? $hasEnough");
     if (!hasEnough) {
       dynamic error = {"title": "Attention", "status": 500, "message": "Not enough AVAX to complete the transaction."};
@@ -253,7 +276,7 @@ class WalletManager {
       return error;
     }
     wallet.lastTransactionWasSucessful.retrievingData = true;
-    String url = await services.sendTransaction(wallet, address, amount, token, listNotifier: listNotifier);
+    String url = await services.sendTransaction(wallet, address, amount, maxGas, gasPrice, token, listNotifier: listNotifier);
     return {"title": "", "status": 200, "message": url};
   }
 

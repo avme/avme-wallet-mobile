@@ -6,7 +6,6 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 class ValueHistoryTable {
-  //TODO: deletar comentários desnecessários
   //Criar instância da interface, ao chamar a interface, use ValueHistory.instance.metodo
   static final ValueHistoryTable instance = ValueHistoryTable._init();
   static Database? _database;
@@ -115,7 +114,6 @@ class ValueHistoryTable {
 
   ///Retorna todas as entradas na data especificada
   Future<TokenHistory> read(int date) async {
-    //TODO:modificar baseado em o que o usuário quer ler com outras entradas fora data
     final database = await instance.database;
     final maps = await database.query(
       ValueHistoryFields.table,
