@@ -14,7 +14,7 @@ import 'package:avme_wallet/app/screens/prototype/widgets/webview/header.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/widgets.dart';
 import 'package:avme_wallet/app/screens/widgets/custom_widgets.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
-import 'package:avme_wallet/app/test/webview/browser.dart';
+import 'package:avme_wallet/app/screens/prototype/webview/browser.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
