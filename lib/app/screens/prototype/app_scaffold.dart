@@ -12,7 +12,8 @@ import 'package:avme_wallet/app/screens/prototype/tokens.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/accounts_drawer.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/debug.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
-// import 'package:avme_wallet/app/test/webview.dart';
+import 'package:avme_wallet/app/screens/prototype/webview/dashboard.dart';
+import 'package:avme_wallet/app/test/webview.dart' as tWeb;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -173,7 +174,7 @@ class _State extends State<AppScaffold>
           color: AppColors.labelDefaultColor
         ),
         titleSpacing: appBarWidth,
-
+        elevation: 0,
         ///We're populating this property with a Row widget and a Pad widget to
         ///match the original design, since flutter doesn't allow any widget
         ///besides PreferredSizeWidget and AppState.
@@ -273,10 +274,27 @@ class _State extends State<AppScaffold>
           )
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => initWebView(context),
-        tooltip: 'WebView',
-        child: const FaIcon(FontAwesomeIcons.globe,),
+      floatingActionButton: Stack(
+        children: <Widget>[
+          Align(
+            alignment: Alignment.bottomLeft.add(Alignment(0.2,0)),
+            child: FloatingActionButton(
+              onPressed: () => initDashboard(context),
+              tooltip: 'Dashboard',
+              heroTag: 'dashboard',
+              child: const FaIcon(FontAwesomeIcons.stream,),
+            ),
+          ),
+          Align(
+            alignment: Alignment.bottomRight,
+            child: FloatingActionButton(
+              onPressed: () => initWebView(context),
+              tooltip: 'WebView',
+              heroTag: 'webview',
+              child: const FaIcon(FontAwesomeIcons.globe,),
+            ),
+          ),
+        ],
       ),
     );
   }

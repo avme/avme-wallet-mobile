@@ -6,9 +6,11 @@ import 'dart:typed_data';
 
 import 'package:avme_wallet/app/controller/size_config.dart';
 import 'package:avme_wallet/app/controller/web/web_utils.dart';
+import 'package:avme_wallet/app/controller/web/webview.dart';
 import 'package:avme_wallet/app/lib/extensions.dart';
 import 'package:avme_wallet/app/lib/tld.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
+import 'package:avme_wallet/app/screens/prototype/webview/navigation.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/notification_bar.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/webview/header.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/widgets.dart';
@@ -22,6 +24,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:characters/characters.dart' as ch;
 import '../../../test/webview.dart';
 import 'dart:math' as math;
+
+import 'bottom_navigation.dart';
 
 void initDashboard(BuildContext context)
 {
@@ -84,7 +88,7 @@ class _DashboardState extends State<Dashboard> {
 
   late Future init;
   late List bookmarks;
-
+  late AppWebViewController browserController;
   late StreamController<int> browserUtility;
 
   Future<List> getFavoritesData() async
@@ -116,6 +120,7 @@ class _DashboardState extends State<Dashboard> {
   void initState() {
     super.initState();
     init = initialize();
+    browserController = AppWebViewController.getInstance();
     this.browserUtility.stream.listen((value) {
       changeBrowserIndex(value);
     });
@@ -125,6 +130,11 @@ class _DashboardState extends State<Dashboard> {
   {
     if(this.index != index)
     {
+      if(index == 0)
+      {
+        ///Disposing the WebViewController
+        browserController.dispose();
+      }
       setState(() {
         this.index = index;
       });
@@ -234,29 +244,9 @@ class _DashboardState extends State<Dashboard> {
                                 ),
                                 child: Column(
                                   children: [
-                                    Expanded(
-                                      flex: 1,
-                                      child: Padding(
-                                        padding: const EdgeInsets.only(
-                                          top: 0,
-                                          // bottom: 8.0,
-                                          left: 8.0,
-                                          right: 8.0
-                                        ),
-                                        child: Container(
-                                          // color: Colors.white10,
-                                          // child: Row(
-                                          //     mainAxisAlignment: MainAxisAlignment.start,
-                                          //     children:
-                                          //     <Widget>[] +
-                                          //         [ NavigationControls(_controller.future, canGoBack: canGoBack, canGoFoward: canGoFoward) ] +
-                                          //         getURLBar() +
-                                          //         [ ReloadPage(_controller.future) ] +
-                                          //         [ WebMenu(_controller.future, widget.cookieManager) ]
-                                          //   // ..add(),
-                                          // ),
-                                        ),
-                                      ),
+                                    Navigation(
+                                      enabled: false,
+                                      appWebViewController: browserController,
                                     ),
                                     Expanded(
                                       flex: 10,
@@ -390,152 +380,26 @@ class _DashboardState extends State<Dashboard> {
                                         // ),
                                       ),
                                     ),
-                                    // Expanded(
-                                    //   flex: 1,
-                                    //   child: Container(
-                                    //     // color: Colors.white10,
-                                    //     child: Row(
-                                    //       children: [
-                                    //         Expanded(
-                                    //           child: Container(
-                                    //             // color: Colors.red,
-                                    //             child: GestureDetector(
-                                    //               behavior: HitTestBehavior.translucent,
-                                    //               onTap: () {
-                                    //                 NotificationBar().show(context, text: "Going back");
-                                    //               },
-                                    //               child: Center(
-                                    //                   child: Icon(
-                                    //                     Icons.arrow_back,
-                                    //                     color: AppColors.violet,
-                                    //                     size: SizeConfig.safeBlockHorizontal * 8,
-                                    //                   )
-                                    //               ),
-                                    //             ),
-                                    //           ),
-                                    //         ),
-                                    //         Expanded(
-                                    //           child: Container(
-                                    //             // color: Colors.blue,
-                                    //             child: GestureDetector(
-                                    //               behavior: HitTestBehavior.translucent,
-                                    //               onTap: () {
-                                    //                 NotificationBar().show(context, text: "Going forward");
-                                    //               },
-                                    //               child: Center(
-                                    //                 child: Icon(
-                                    //                   Icons.arrow_forward,
-                                    //                   color: AppColors.violet,
-                                    //                   size: SizeConfig.safeBlockHorizontal * 8,
-                                    //                 )
-                                    //               ),
-                                    //             ),
-                                    //           ),
-                                    //         ),
-                                    //         Expanded(
-                                    //           flex: 3,
-                                    //           child: Container(
-                                    //             // color: Colors.green,
-                                    //           ),
-                                    //         ),
-                                    //         Expanded(
-                                    //           flex: 1,
-                                    //           child: GestureDetector(
-                                    //             behavior: HitTestBehavior.translucent,
-                                    //             onTap: () {
-                                    //               NotificationBar().show(context, text: "Redirecting to the Dashboard");
-                                    //             },
-                                    //             child: Center(
-                                    //               child: Icon(
-                                    //                 Icons.home,
-                                    //                 color: AppColors.violet,
-                                    //                 size: SizeConfig.safeBlockHorizontal * 8,
-                                    //               )
-                                    //             ),
-                                    //           ),
-                                    //         ),
-                                    //       ],
-                                    //     ),
-                                    //   ),
-                                    // ),
                                   ],
                                 ),
                               ),
                               ///Browser
                               AppBrowser(
+                                borderRadius: _borderR,
+                                navigation: Navigation(
+                                  appWebViewController: browserController,
+                                ),
                               )
                             ],
                           ),
                         ),
-                        ///Action Buttons at the bottom
-                        Flexible(
-                          flex: 1,
-                          child: Container(
-                            color: AppColors.darkBlue,
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Container(
-                                    // color: Colors.red,
-                                    child: GestureDetector(
-                                      behavior: HitTestBehavior.translucent,
-                                      onTap: () {
-                                        NotificationBar().show(context, text: "Going back");
-                                      },
-                                      child: Center(
-                                        child: Icon(
-                                          Icons.arrow_back,
-                                          color: AppColors.violet,
-                                          size: SizeConfig.safeBlockHorizontal * 8,
-                                        )
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Container(
-                                    // color: Colors.blue,
-                                    child: GestureDetector(
-                                      behavior: HitTestBehavior.translucent,
-                                      onTap: () {
-                                        NotificationBar().show(context, text: "Going forward");
-                                      },
-                                      child: Center(
-                                        child: Icon(
-                                          Icons.arrow_forward,
-                                          color: AppColors.violet,
-                                          size: SizeConfig.safeBlockHorizontal * 8,
-                                        )
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 3,
-                                  child: Container(
-                                    // color: Colors.green,
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 1,
-                                  child: GestureDetector(
-                                    behavior: HitTestBehavior.translucent,
-                                    onTap: () {
-                                      NotificationBar().show(context, text: "Redirecting to the Dashboard");
-                                    },
-                                    child: Center(
-                                      child: Icon(
-                                        Icons.home,
-                                        color: AppColors.violet,
-                                        size: SizeConfig.safeBlockHorizontal * 8,
-                                      )
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
+                        ///Bottom Navigation
+                        BottomNavigation(
+                          browserUtility: browserUtility,
+                          controller: browserController.controller.future,
+                          index: index,
+                          historyStream: browserController.onHistory,
+                        )
                       ],
                     ),
                   ),
@@ -557,6 +421,8 @@ class _DashboardState extends State<Dashboard> {
 
   @override
   void dispose() {
+    ///Disposing the WebViewController
+    browserController.dispose();
     browserUtility.close();
     super.dispose();
   }

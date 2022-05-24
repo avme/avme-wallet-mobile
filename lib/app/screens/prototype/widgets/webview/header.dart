@@ -19,7 +19,7 @@ class _HeaderState extends State<Header> with sa.AnimationMixin {
 
   @override
   void initState() {
-    int bubbles = 8;
+    int bubbles = 3;
 
     for(int i = 0; i < bubbles; i++)
     {
@@ -102,7 +102,7 @@ class BubbleModel {
     double startOff = 1.4 * random.nextDouble();
     Offset startPosition = Offset(0.1 + (startOff * random.nextDouble()), 1.4);
     Offset endPosition = Offset(0.1 + (startOff * random.nextDouble()), -0.4);
-    Duration duration = Duration(milliseconds: 1000 + random.nextInt(3000));
+    Duration duration = Duration(milliseconds: 2000 + random.nextInt(8000));
     AnimationController xController = animationController..animateTo(startPosition.dx, duration: duration);
     x = Tween<double>(begin: startPosition.dx, end: endPosition.dx)
         .animate(xController)..addListener(() {

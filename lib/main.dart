@@ -22,8 +22,6 @@ main() async{
   Threads threads = Threads.getInstance();
   threads.initialize();
 
-  AppWebViewController controller = AppWebViewController.getInstance();
-
   await dotenv.load(fileName: ".env");
   FileManager fileManager = FileManager();
   ActiveContracts activeContracts = ActiveContracts(fileManager);

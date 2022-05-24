@@ -6,80 +6,103 @@ import 'dart:io';
 import 'package:avme_wallet/app/controller/web/webview.dart';
 import 'package:avme_wallet/app/controller/web_requests.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
+import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-class AppBrowser extends StatefulWidget {
-  const AppBrowser({Key? key}) : super(key: key);
+import 'navigation.dart';
 
+class AppBrowser extends StatefulWidget {
+  const AppBrowser({
+    required this.navigation,
+    required this.borderRadius,
+    this.cookieManager
+  });
+  final CookieManager? cookieManager;
+  final Navigation navigation;
+  final BorderRadius borderRadius;
   @override
   _AppBrowserState createState() => _AppBrowserState();
 }
 
-class _AppBrowserState extends State<AppBrowser> {
+class _AppBrowserState extends State<AppBrowser> /*with AutomaticKeepAliveClientMixin*/{
   final Completer<WebViewController> _controller = Completer<WebViewController>();
   late JavascriptChannel ethereumProvider;
-
-  TextEditingController _urlController = TextEditingController(
-    text: "https://www.google.com.br"
-  );
-
+  late AppWebViewController appWebViewController;
   void initState() {
     super.initState();
     if (Platform.isAndroid) {
       WebView.platform = SurfaceAndroidWebView();
     }
+    appWebViewController = AppWebViewController.getInstance();
     ethereumProvider = ethereumChannel(context);
   }
 
   @override
   Widget build(BuildContext context) {
-    return  WebView(
-      initialUrl: _urlController.text,
-      javascriptMode: JavascriptMode.unrestricted,
-      onWebViewCreated: (WebViewController webViewController)
-      {
-        AppWebViewController cWeb = AppWebViewController.getInstance();
-        ///Checking if the controller was initialized
-        _controller.complete(webViewController);
-        cWeb.initialize(webViewController);
+    return  Column(
+      children: [
+        widget.navigation,
+        Expanded(
+          flex: 10,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: widget.borderRadius,
+              color: Colors.black12
+            ),
+            child: WebView(
+              initialUrl: appWebViewController.initialUrl,
+              javascriptMode: JavascriptMode.unrestricted,
+              onWebViewCreated: (WebViewController webViewController)
+              {
+                ///Checking if the controller was initialized
+                appWebViewController.initialize(webViewController, widget.cookieManager);
+                _controller.complete(webViewController);
 
-        // setState(() async {
-        //   canGoBack = await webViewController.canGoBack();
-        //   canGoFoward = await webViewController.canGoForward();
-        // });
-      },
-      onProgress: (int progress) {
-        print('WebView is loading (progress : $progress%)');
-      },
-      javascriptChannels: <JavascriptChannel>{
-        ethereumProvider,
-      },
-      navigationDelegate: (NavigationRequest request) {
-        if (request.url.startsWith('https://www.youtube.com/')) {
-          print('blocking navigation to $request}');
-          return NavigationDecision.prevent;
-        }
-        print('allowing navigation to $request');
-        return NavigationDecision.navigate;
-      },
-      onPageStarted: (String url) async {
-        print('Page started loading: $url');
-        _urlController.text = url;
-        WebViewController controller = await _controller.future;
-        // canGoBack = await controller.canGoBack();
-        // canGoFoward = await controller.canGoForward();
-        // setState(() {});
-        // controller.runJavascript(jsContent);
-      },
-      onPageFinished: (String url) async {
-        print('Page finished loading: $url');
-        // printMark(jsContent);
-        // WebViewController webViewController = await _controller.future;
-        // webViewController.runJavascript(jsContent);
-      },
-      gestureNavigationEnabled: true,
-      backgroundColor: Colors.white,
+
+                // setState(() async {
+                //   canGoBack = await webViewController.canGoBack();
+                //   canGoFoward = await webViewController.canGoForward();
+                // });
+              },
+              onProgress: (int progress) {
+                print('WebView is loading (progress : $progress%)');
+              },
+              javascriptChannels: <JavascriptChannel>{
+                ethereumProvider,
+              },
+              navigationDelegate: (NavigationRequest request) {
+                if (request.url.startsWith('https://www.youtube.com/')) {
+                  print('blocking navigation to $request}');
+                  return NavigationDecision.prevent;
+                }
+                print('allowing navigation to $request');
+                return NavigationDecision.navigate;
+              },
+              onPageStarted: (String url) async {
+                print('Page started loading: $url');
+                appWebViewController.streamOnPageStarted(url);
+                printWarning("[1]banana");
+                await appWebViewController.updateHistoryControls();
+                printWarning("[2]banana");
+                // WebViewController controller = await _controller.future;
+                // canGoBack = await controller.canGoBack();
+                // canGoFoward = await controller.canGoForward();
+                // setState(() {});
+                // controller.runJavascript(jsContent);
+              },
+              onPageFinished: (String url) async {
+                print('Page finished loading: $url');
+                // printMark(jsContent);
+                // WebViewController webViewController = await _controller.future;
+                // webViewController.runJavascript(jsContent);
+              },
+              gestureNavigationEnabled: true,
+              backgroundColor: Colors.white,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -105,4 +128,7 @@ class _AppBrowserState extends State<AppBrowser> {
         // );
       });
   }
+
+  // @override
+  // bool get wantKeepAlive => true;
 }
