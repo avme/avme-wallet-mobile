@@ -55,22 +55,19 @@ class _NavigationState extends State<Navigation> {
         child: Container(
           // color: Colors.white10,
           child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children:
-              <Widget>[] +
-                // [ NavigationControls(_controller.future, canGoBack: canGoBack, canGoFoward: canGoFoward) ] +
-                // getURLBar() +
-                // [ ReloadPage(_controller.future) ] +
-                [
-                  WebMenu(
-                    widget.appWebViewController.controller.future,
-                    widget.appWebViewController.cookieManager
-                  ),
-                  AddressBar(
-                    addressController: addressController,
-                    enabled: widget.enabled,
-                  )
-                ]
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              WebMenu(
+                widget.appWebViewController.controller.future,
+                widget.appWebViewController.cookieManager
+              ),
+              AddressBar(
+                addressController: addressController,
+                enabled: widget.enabled,
+                isLoadingStream: widget.appWebViewController.isLoading,
+                controller: widget.appWebViewController.controller.future,
+              )
+            ]
           ),
         ),
       ),

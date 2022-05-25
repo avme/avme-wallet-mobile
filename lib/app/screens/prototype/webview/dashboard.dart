@@ -11,6 +11,7 @@ import 'package:avme_wallet/app/lib/extensions.dart';
 import 'package:avme_wallet/app/lib/tld.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/screens/prototype/webview/navigation.dart';
+import 'package:avme_wallet/app/screens/prototype/widgets/external/fade_indexed_stack.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/notification_bar.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/webview/header.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/widgets.dart';
@@ -22,6 +23,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:characters/characters.dart' as ch;
+import 'package:webview_flutter/webview_flutter.dart';
 import '../../../test/webview.dart';
 import 'dart:math' as math;
 
@@ -29,11 +31,6 @@ import 'bottom_navigation.dart';
 
 void initDashboard(BuildContext context)
 {
-  // Navigator.push(context,
-  //   MaterialPageRoute(
-  //     builder: (context) => Dashboard(),
-  //   )
-  // );
   Navigator.of(context).push(
     PageRouteBuilder(
       transitionsBuilder: (context, anim1, anim2, widget) {
@@ -51,27 +48,6 @@ void initDashboard(BuildContext context)
       pageBuilder: (_, __, ___) => Dashboard(),
     ),
   );
-  // showGeneralDialog(
-  //   context: context,
-  //   pageBuilder: (context, anim1, anim2) {
-  //     return StatefulBuilder(builder: (builder, setState) => Dashboard());
-  //   },
-  //   barrierDismissible: true,
-  //   barrierLabel: '',
-  //   barrierColor: Colors.black.withOpacity(0.4),
-  //   transitionBuilder: (context, anim1, anim2, widget) {
-  //
-  //     const begin = Offset(0.0, 1.0);
-  //     const end = Offset.zero;
-  //     const curve = Curves.ease;
-  //     var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-  //     return SlideTransition(
-  //       position: anim1.drive(tween),
-  //       child: widget,
-  //     );
-  //   },
-  //   transitionDuration: Duration(milliseconds: 200)
-  // );
 }
 
 class Dashboard extends StatefulWidget {
@@ -89,7 +65,7 @@ class _DashboardState extends State<Dashboard> {
   late Future init;
   late List bookmarks;
   late AppWebViewController browserController;
-  late StreamController<int> browserUtility;
+  late StreamController<int> browserIndexController;
 
   Future<List> getFavoritesData() async
   {
@@ -110,8 +86,8 @@ class _DashboardState extends State<Dashboard> {
 
   Future<int> initialize() async
   {
-    this.browserUtility = StreamController<int>();
-    this.browserUtility.add(0);
+    this.browserIndexController = StreamController<int>();
+    this.browserIndexController.add(0);
     this.bookmarks = await getFavoritesData();
     return 1;
   }
@@ -121,7 +97,7 @@ class _DashboardState extends State<Dashboard> {
     super.initState();
     init = initialize();
     browserController = AppWebViewController.getInstance();
-    this.browserUtility.stream.listen((value) {
+    this.browserIndexController.stream.listen((value) {
       changeBrowserIndex(value);
     });
   }
@@ -296,12 +272,14 @@ class _DashboardState extends State<Dashboard> {
                                                               Discover(
                                                                 horizontalButtons: horizontalButtons,
                                                                 verticalButtons: verticalButtons,
-                                                                browserUtility: browserUtility,
+                                                                browserUtility: browserIndexController,
                                                               ),
                                                               Bookmarks(
-                                                                  favoriteData: bookmarks,
-                                                                  horizontalButtons: horizontalButtons,
-                                                                  verticalButtons: verticalButtons
+                                                                favoriteData: bookmarks,
+                                                                horizontalButtons: horizontalButtons,
+                                                                verticalButtons: verticalButtons,
+                                                                browserIndexController: browserIndexController,
+                                                                browserController: browserController.controller.future,
                                                               )
                                                             ],
                                                           ),
@@ -395,7 +373,7 @@ class _DashboardState extends State<Dashboard> {
                         ),
                         ///Bottom Navigation
                         BottomNavigation(
-                          browserUtility: browserUtility,
+                          browserUtility: browserIndexController,
                           controller: browserController.controller.future,
                           index: index,
                           historyStream: browserController.onHistory,
@@ -423,19 +401,9 @@ class _DashboardState extends State<Dashboard> {
   void dispose() {
     ///Disposing the WebViewController
     browserController.dispose();
-    browserUtility.close();
+    browserIndexController.close();
     super.dispose();
   }
-
-  // void swapBrowser(int id, {String url = ""})
-  // {
-  //   if(id != index)
-  //     setState(() {
-  //       index = id;
-  //     });
-  // }
-
-
 
   void redirect(String url) {
     NotificationBar().show(context, text: url);
@@ -532,60 +500,6 @@ class AppDarkButton extends StatelessWidget {
           elevation: MaterialStateProperty.all(3),
           padding: MaterialStateProperty.all<EdgeInsetsGeometry>(this.padding ?? const EdgeInsets.all(8.0)),
         ),
-      ),
-    );
-  }
-}
-
-class FadeIndexedStack extends StatefulWidget {
-  final int index;
-  final List<Widget> children;
-  final Duration duration;
-
-  const FadeIndexedStack({
-    required this.index,
-    required this.children,
-    this.duration = const Duration(
-      milliseconds: 800,
-    ),
-  });
-
-  @override
-  _FadeIndexedStackState createState() => _FadeIndexedStackState();
-}
-
-class _FadeIndexedStackState extends State<FadeIndexedStack>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void didUpdateWidget(FadeIndexedStack oldWidget) {
-    if (widget.index != oldWidget.index) {
-      _controller.forward(from: 0.0);
-    }
-    super.didUpdateWidget(oldWidget);
-  }
-
-  @override
-  void initState() {
-    _controller = AnimationController(vsync: this, duration: widget.duration);
-    _controller.forward();
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _controller,
-      child: IndexedStack(
-        index: widget.index,
-        children: widget.children,
       ),
     );
   }
@@ -869,10 +783,10 @@ class _DiscoverState extends State<Discover> {
                   ),
                 ),
               ].map((Widget element) =>
-                  Padding(
-                    child: element,
-                    padding: EdgeInsets.only(bottom: widget.horizontalButtons),
-                  )
+                Padding(
+                  child: element,
+                  padding: EdgeInsets.only(bottom: widget.horizontalButtons),
+                )
               ).toList(),
             ),
           ),
@@ -886,11 +800,14 @@ class Bookmarks extends StatefulWidget {
   final double verticalButtons;
   final double horizontalButtons;
   final List favoriteData;
-
+  final StreamController browserIndexController;
+  final Future<WebViewController> browserController;
   const Bookmarks({
     required this.verticalButtons,
     required this.horizontalButtons,
-    required this.favoriteData
+    required this.favoriteData,
+    required this.browserIndexController,
+    required this.browserController
   });
 
   @override
@@ -899,13 +816,27 @@ class Bookmarks extends StatefulWidget {
 
 class _BookmarksState extends State<Bookmarks> {
 
+  late Future<bool> bookmarks;
+  late WebViewController webViewController;
+  @override
+  void initState() {
+    bookmarks = _bookmarks();
+    super.initState();
+  }
+
+  Future<bool> _bookmarks()
+  async {
+    webViewController = await widget.browserController;
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(
-          left: 32.0,
-          right: 32.0,
-          top: widget.horizontalButtons
+        left: 32.0,
+        right: 32.0,
+        top: widget.horizontalButtons
         // top: 64,
       ),
       child: Column(
@@ -927,25 +858,34 @@ class _BookmarksState extends State<Bookmarks> {
                 ),
                 Flexible(
                   child: widget.favoriteData.length > 0
-                    ? GridView(
-                      scrollDirection: Axis.horizontal,
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        // crossAxisSpacing: SizeConfig.safeBlockHorizontal * 3.33,
-                        mainAxisSpacing: SizeConfig.safeBlockHorizontal * 6,
-                        crossAxisCount: 1,
-                        childAspectRatio: 1
-                      ),
-                      children: widget.favoriteData.map((siteData) {
-                        return FavoriteBadge(
-                          url: siteData[0],
-                          title: siteData[1],
-                          image: siteData[2],
-                          color: siteData[3],
-                          onTap: (){
-                            NotificationBar().show(context, text: "FavoriteBadge ${siteData[1]}");
-                          },
+                    ? FutureBuilder<bool>(
+                      future: bookmarks,
+                      builder: (context, snapshot) {
+                        final bool webViewReady =
+                            snapshot.connectionState == ConnectionState.done;
+                        return GridView(
+                          scrollDirection: Axis.horizontal,
+                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            // crossAxisSpacing: SizeConfig.safeBlockHorizontal * 3.33,
+                            mainAxisSpacing: SizeConfig.safeBlockHorizontal * 6,
+                            crossAxisCount: 1,
+                            childAspectRatio: 1
+                          ),
+                          children: widget.favoriteData.map((siteData) {
+                            return FavoriteBadge(
+                              url: siteData[0],
+                              title: siteData[1],
+                              image: siteData[2],
+                              color: siteData[3],
+                              onTap: webViewReady ? () {
+                                NotificationBar().show(context, text: "FavoriteBadge ${siteData[1]}");
+                                widget.browserIndexController.add(1);
+                                webViewController.loadUrl(siteData[0]);
+                              } : null,
+                            );
+                          }).toList(),
                         );
-                      }).toList(),
+                      }
                     )
                     : Row(
                       children: [

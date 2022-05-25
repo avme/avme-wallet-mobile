@@ -15,6 +15,7 @@ class AppWebViewController{
   CookieManager? _cookieManager;
   StreamController onPageStartedController = StreamController.broadcast();
   StreamController<Map> onHistoryController = StreamController.broadcast();
+  StreamController<bool> loadingIndicatorController = StreamController.broadcast();
   WebViewController? _internalController;
 
   static AppWebViewController getInstance()
@@ -39,10 +40,16 @@ class AppWebViewController{
 
   Stream get onPageStarted => onPageStartedController.stream.asBroadcastStream();
   Stream<Map> get onHistory => onHistoryController.stream.asBroadcastStream();
+  Stream<bool> get isLoading => loadingIndicatorController.stream.asBroadcastStream();
 
   void streamOnPageStarted(String url)
   {
     onPageStartedController.add(url);
+  }
+
+  void streamIsPageLoading(bool isLoading)
+  {
+    loadingIndicatorController.add(isLoading);
   }
 
   Future updateHistoryControls()
@@ -53,7 +60,6 @@ class AppWebViewController{
       bool canGoBack = await webViewController.canGoBack();
       bool canGoForward = await webViewController.canGoForward();
       Map data = {"canGoBack" : canGoBack, "canGoForward" : canGoForward};
-      printApprove("updateHistoryControls: $data");
       onHistoryController.add(data);
     }
     catch(e)

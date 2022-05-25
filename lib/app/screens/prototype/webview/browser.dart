@@ -82,9 +82,8 @@ class _AppBrowserState extends State<AppBrowser> /*with AutomaticKeepAliveClient
               onPageStarted: (String url) async {
                 print('Page started loading: $url');
                 appWebViewController.streamOnPageStarted(url);
-                printWarning("[1]banana");
                 await appWebViewController.updateHistoryControls();
-                printWarning("[2]banana");
+                appWebViewController.loadingIndicatorController.add(true);
                 // WebViewController controller = await _controller.future;
                 // canGoBack = await controller.canGoBack();
                 // canGoFoward = await controller.canGoForward();
@@ -93,6 +92,7 @@ class _AppBrowserState extends State<AppBrowser> /*with AutomaticKeepAliveClient
               },
               onPageFinished: (String url) async {
                 print('Page finished loading: $url');
+                appWebViewController.loadingIndicatorController.add(false);
                 // printMark(jsContent);
                 // WebViewController webViewController = await _controller.future;
                 // webViewController.runJavascript(jsContent);

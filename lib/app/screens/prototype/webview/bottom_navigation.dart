@@ -83,7 +83,6 @@ class _BottomNavigationState extends State<BottomNavigation> {
                     else {
                       bool canGoBack = snapshot.data!["canGoBack"];
                       bool canGoForward = snapshot.data!["canGoForward"];
-                      printWarning("can go back? $canGoBack, can go forward? $canGoForward ready? $webViewReady");
                       navigation.addAll([
                         Expanded(
                           child: Container(
