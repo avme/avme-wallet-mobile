@@ -2,6 +2,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:avme_wallet/app/controller/services/navigation_service.dart';
 import 'package:avme_wallet/app/controller/web/web_utils.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/app.dart';
@@ -13,8 +14,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-
-import '../../../main.dart';
 
 enum RequestSignTypes {
   eth_sign, personal_sign, none

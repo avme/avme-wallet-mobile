@@ -1,7 +1,6 @@
 import 'package:avme_wallet/app/controller/contacts.dart';
 import 'package:avme_wallet/app/controller/services/connection.dart';
 import 'package:avme_wallet/app/controller/threads.dart';
-import 'package:avme_wallet/app/controller/web/webview.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:avme_wallet/app/config/routes.dart';
@@ -11,6 +10,7 @@ import 'package:overlay_support/overlay_support.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
 import 'app/controller/file_manager.dart';
+import 'app/controller/services/navigation_service.dart';
 import 'app/model/active_contracts.dart';
 
 main() async{
@@ -55,11 +55,6 @@ class AvmeWalletApp extends StatelessWidget {
         routes: routes),
     );
   }
-}
-
-class NavigationService {
-  static GlobalKey<NavigatorState> globalContext =
-    GlobalKey<NavigatorState>();
 }
 
 

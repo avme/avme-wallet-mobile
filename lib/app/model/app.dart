@@ -1,6 +1,7 @@
 import 'dart:isolate';
 
 import 'package:avme_wallet/app/controller/file_manager.dart';
+import 'package:avme_wallet/app/controller/services/navigation_service.dart';
 import 'package:avme_wallet/app/controller/threads.dart';
 import 'package:avme_wallet/app/controller/wallet_manager.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
@@ -10,7 +11,6 @@ import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
-import '../../main.dart';
 import 'active_contracts.dart';
 import 'network_token.dart';
 import 'transaction_information.dart';
