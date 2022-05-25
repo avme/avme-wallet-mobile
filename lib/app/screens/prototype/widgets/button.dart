@@ -1,18 +1,19 @@
+// @dart=2.12
 import 'package:avme_wallet/app/controller/size_config.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
 
 class AppButton extends StatelessWidget {
-  final Function onPressed;
+  final VoidCallback onPressed;
   final String text;
-  final IconData iconData;
-  final double height;
-  final double width;
-  final double size;
-  final MainAxisAlignment mainAxisAlignment;
-  final double paddingBetweenIcons;
-  final TextStyle textStyle;
-  final EdgeInsets buttonPadding;
+  final IconData? iconData;
+  final double? height;
+  final double? width;
+  final double? size;
+  final MainAxisAlignment? mainAxisAlignment;
+  final double? paddingBetweenIcons;
+  final TextStyle? textStyle;
+  final EdgeInsets? buttonPadding;
   final bool expanded;
   final bool enabled;
   final EdgeInsets paddingText;
@@ -21,13 +22,11 @@ class AppButton extends StatelessWidget {
   final bool square;
 
   const AppButton({
-    @required this.onPressed,
-    @required this.text,
+    required this.onPressed,
+    required this.text,
     this.iconData,
     this.mainAxisAlignment,
     this.paddingBetweenIcons,
-    // this.height = 45,
-    ///Uncomment the above parameter to use static height
     this.height,
     this.width,
     this.size,
@@ -41,77 +40,6 @@ class AppButton extends StatelessWidget {
     this.square = false,
   });
 
-  // @override
-  // Widget build(BuildContext context) {
-  //   SizeConfig().init(context);
-  //   List<Widget> children = [];
-  //
-  //   if(this.iconData != null)
-  //   {
-  //     children.add(
-  //         Icon(this.iconData, color: Colors.white,)
-  //     );
-  //   }
-  //
-  //   if(this.mainAxisAlignment == MainAxisAlignment.start)
-  //   {
-  //     children.add(
-  //         Padding(padding: EdgeInsets.only(left: this.paddingBetweenIcons ?? 8),)
-  //     );
-  //   }
-  //
-  //   TextStyle btnStyle = this.textStyle == null
-  //     ? TextStyle(
-  //       color: Colors.white,
-  //       fontSize: this.size ?? SizeConfig.smallLabel)
-  //     : this.textStyle.copyWith(fontSize: this.size ?? SizeConfig.smallLabel);
-  //
-  //   children.add(
-  //     Flexible(
-  //       child: Padding(
-  //         padding: this.paddingText,
-  //         child: Text(text, style: this.textStyle ??
-  //           btnStyle,
-  //           overflow: this.textOverflow,
-  //           maxLines: this.maxLines,
-  //         ),
-  //       ),
-  //     )
-  //   );
-  //
-  //   return SizedBox(
-  //     height: this.height,
-  //     width: this.width,
-  //     child: ElevatedButton(
-  //       onPressed: this.onPressed,
-  //       child: Row(
-  //         mainAxisAlignment: this.mainAxisAlignment ?? MainAxisAlignment.spaceAround,
-  //         mainAxisSize: this.expanded == true ? MainAxisSize.max : MainAxisSize.min,
-  //         children: children
-  //       ),
-  //       style: ButtonStyle(
-  //         backgroundColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
-  //           if(states.contains(MaterialState.pressed))
-  //             return AppColors.purple;
-  //           else if (states.contains(MaterialState.disabled))
-  //             return AppColors.violet;
-  //           return null;
-  //         }),
-  //         shadowColor: MaterialStateProperty.all<Color>(Colors.transparent),
-  //         padding: MaterialStateProperty.all<EdgeInsets>(
-  //           this.buttonPadding
-  //         ),
-  //
-  //       )
-  //       // style: ButtonStyle(
-  //       //   backgroundColor: MaterialStateProperty.all<Color>(AppColors.purple),
-  //       //   shadowColor: MaterialStateProperty.all<Color>(Colors.transparent),
-  //       // )
-  //     ),
-  //   );
-  // }
-
-  ///Remove the build method and uncomment the above method
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
@@ -127,11 +55,11 @@ class AppButton extends StatelessWidget {
       );
     }
 
-    TextStyle btnStyle = this.textStyle == null
-        ? TextStyle(
-        color: this.enabled ? Colors.white : AppColors.labelDisabledColor,
-        fontSize: this.size ?? SizeConfig.spanSize * 1.6)
-        : this.textStyle.copyWith(fontSize: this.size ?? SizeConfig.spanSize * 1.6);
+    TextStyle btnStyle = this.textStyle ?? TextStyle(
+      color: this.enabled ? Colors.white : AppColors.labelDisabledColor,
+      fontSize: this.size ?? SizeConfig.spanSize * 1.6);
+
+    btnStyle = btnStyle.copyWith(fontSize: this.size ?? SizeConfig.spanSize * 1.6);
 
     children.add(
         Flexible(
@@ -161,12 +89,11 @@ class AppButton extends StatelessWidget {
               children: children
           ),
           style: ButtonStyle(
-              backgroundColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
+              backgroundColor: MaterialStateProperty.resolveWith<Color?>((Set<MaterialState> states) {
                 if(states.contains(MaterialState.pressed))
                   return AppColors.purple;
                 else if (states.contains(MaterialState.disabled))
                   return AppColors.violet;
-                return null;
               }),
               shape: !this.square
                 ? null
@@ -185,24 +112,23 @@ class AppButton extends StatelessWidget {
 class AppIconButton extends StatelessWidget {
 
   final double iconSize;
-  final VisualDensity visualDensity;
+  final VisualDensity? visualDensity;
   final EdgeInsetsGeometry padding;
   final AlignmentGeometry alignment;
-  final Color color;
-  final Function onPressed;
+  final Color? color;
+  final VoidCallback? onPressed;
   final Widget icon;
 
 
   const AppIconButton(
     {
-      Key key,
       this.iconSize = 24.0,
       this.visualDensity,
       this.padding = const EdgeInsets.all(8.0),
       this.alignment = Alignment.center,
       this.color,
       this.onPressed,
-      @required this.icon,
+      required this.icon,
     }
   );
 
@@ -227,3 +153,96 @@ class AppIconButton extends StatelessWidget {
   }
 }
 
+class AppDarkIconButton extends StatelessWidget {
+  final VoidCallback? onPressed;
+  final Widget text;
+  final Widget icon;
+  final EdgeInsets? padding;
+  final bool centered;
+  final double? height;
+  final AlignmentGeometry? alignment;
+  const AppDarkIconButton({
+    Key? key,
+    required this.onPressed,
+    this.padding,
+    this.centered = false,
+    required this.text,
+    required this.icon,
+    this.height,
+    this.alignment,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    SizeConfig().init(context);
+    return SizedBox(
+      height: this.height ?? SizeConfig.safeBlockVertical * 6.5,
+      child: ElevatedButton.icon(
+        onPressed: this.onPressed,
+        label: this.text,
+        style: ButtonStyle(
+          alignment: alignment,
+          backgroundColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
+            return AppColors.purpleDark3;
+          }),
+          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+              RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.0),
+              )
+          ),
+          shadowColor: MaterialStateProperty.all<Color>(Colors.black),
+          elevation: MaterialStateProperty.all(3),
+          padding: MaterialStateProperty.all<EdgeInsetsGeometry>(this.padding ?? const EdgeInsets.all(8.0)),
+        ),
+        icon: SizedBox(
+          width: SizeConfig.safeBlockHorizontal * 8,
+          child: Center(child: this.icon),
+        ),
+      ),
+    );
+  }
+}
+
+class AppDarkButton extends StatelessWidget {
+  final VoidCallback? onPressed;
+  final Widget child;
+  final EdgeInsets? padding;
+  final bool centered;
+  final double? height;
+  final AlignmentGeometry? alignment;
+  const AppDarkButton({
+    Key? key,
+    required this.onPressed,
+    this.padding,
+    this.centered = false,
+    required this.child,
+    this.height,
+    this.alignment,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    SizeConfig().init(context);
+    return SizedBox(
+      height: this.height ?? SizeConfig.safeBlockVertical * 6.5,
+      child: ElevatedButton(
+        onPressed: this.onPressed,
+        child: this.child,
+        style: ButtonStyle(
+          alignment: alignment,
+          backgroundColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
+            return AppColors.purpleDark3;
+          }),
+          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+              RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.0),
+              )
+          ),
+          shadowColor: MaterialStateProperty.all<Color>(Colors.black),
+          elevation: MaterialStateProperty.all(3),
+          padding: MaterialStateProperty.all<EdgeInsetsGeometry>(this.padding ?? const EdgeInsets.all(8.0)),
+        ),
+      ),
+    );
+  }
+}

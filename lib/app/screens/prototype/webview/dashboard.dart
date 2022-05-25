@@ -11,6 +11,7 @@ import 'package:avme_wallet/app/lib/extensions.dart';
 import 'package:avme_wallet/app/lib/tld.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/screens/prototype/webview/navigation.dart';
+import 'package:avme_wallet/app/screens/prototype/widgets/button.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/external/fade_indexed_stack.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/notification_bar.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/webview/header.dart';
@@ -28,6 +29,7 @@ import '../../../test/webview.dart';
 import 'dart:math' as math;
 
 import 'bottom_navigation.dart';
+import 'discover.dart';
 
 void initDashboard(BuildContext context)
 {
@@ -410,101 +412,6 @@ class _DashboardState extends State<Dashboard> {
   }
 }
 
-
-class AppDarkIconButton extends StatelessWidget {
-  final VoidCallback? onPressed;
-  final Widget text;
-  final Widget icon;
-  final EdgeInsets? padding;
-  final bool centered;
-  final double? height;
-  final AlignmentGeometry? alignment;
-  const AppDarkIconButton({
-    Key? key,
-    required this.onPressed,
-    this.padding,
-    this.centered = false,
-    required this.text,
-    required this.icon,
-    this.height,
-    this.alignment,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    SizeConfig().init(context);
-    return SizedBox(
-      height: this.height ?? SizeConfig.safeBlockVertical * 6.5,
-      child: ElevatedButton.icon(
-        onPressed: this.onPressed,
-        label: this.text,
-        style: ButtonStyle(
-          alignment: alignment,
-          backgroundColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
-            return AppColors.purpleDark3;
-          }),
-          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-            RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12.0),
-            )
-          ),
-          shadowColor: MaterialStateProperty.all<Color>(Colors.black),
-          elevation: MaterialStateProperty.all(3),
-          padding: MaterialStateProperty.all<EdgeInsetsGeometry>(this.padding ?? const EdgeInsets.all(8.0)),
-        ),
-        icon: SizedBox(
-          width: SizeConfig.safeBlockHorizontal * 8,
-          child: Center(child: this.icon),
-        ),
-      ),
-    );
-  }
-}
-
-class AppDarkButton extends StatelessWidget {
-  final VoidCallback? onPressed;
-  final Widget child;
-  final EdgeInsets? padding;
-  final bool centered;
-  final double? height;
-  final AlignmentGeometry? alignment;
-  const AppDarkButton({
-    Key? key,
-    required this.onPressed,
-    this.padding,
-    this.centered = false,
-    required this.child,
-    this.height,
-    this.alignment,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    SizeConfig().init(context);
-    return SizedBox(
-      height: this.height ?? SizeConfig.safeBlockVertical * 6.5,
-      child: ElevatedButton(
-        onPressed: this.onPressed,
-        child: this.child,
-        style: ButtonStyle(
-          alignment: alignment,
-          backgroundColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
-            return AppColors.purpleDark3;
-          }),
-          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-            RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12.0),
-            )
-          ),
-          shadowColor: MaterialStateProperty.all<Color>(Colors.black),
-          elevation: MaterialStateProperty.all(3),
-          padding: MaterialStateProperty.all<EdgeInsetsGeometry>(this.padding ?? const EdgeInsets.all(8.0)),
-        ),
-      ),
-    );
-  }
-}
-
 class DashboardTabs extends StatefulWidget {
 
   DashboardTabs({
@@ -625,176 +532,6 @@ class DashboardTab extends StatelessWidget {
   }
 }
 
-class Discover extends StatefulWidget {
-
-  final double verticalButtons;
-  final double horizontalButtons;
-  final StreamController<int> browserUtility;
-  const Discover({
-    required this.verticalButtons,
-    required this.horizontalButtons,
-    required this.browserUtility
-  });
-
-  @override
-  _DiscoverState createState() => _DiscoverState();
-}
-
-class _DiscoverState extends State<Discover> {
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      physics: BouncingScrollPhysics(),
-      // shrinkWrap: true,
-      children: [
-        Padding(
-          padding: EdgeInsets.only(
-              left: 32.0,
-              right: 32.0,
-              top: widget.horizontalButtons
-            // top: 64,
-          ),
-          child: Container(
-            // color: Colors.red,
-            child: Column(
-              children: [
-                SizedBox(
-                  width: double.infinity,
-                  child: AppDarkIconButton(
-                    onPressed: () {  },
-                    text: Text("BUY \$AVME",style: TextStyle(color: AppColors.labelDefaultColor),),
-                    icon: Transform(
-                        alignment: Alignment.center,
-                        transform: Matrix4.rotationY(math.pi),
-                        child: Icon(Icons.shopping_cart, color: AppColors.labelDefaultColor)
-                    ),
-                  ),
-                ),
-                Row(
-                  children: [
-                    AppDarkIconButton(
-                      onPressed: () {  },
-                      alignment: Alignment.centerLeft,
-                      text: Text("NFTs",style: TextStyle(color: AppColors.labelDefaultColor),),
-                      icon: Transform(
-                        alignment: Alignment.center,
-                        transform: Matrix4.rotationY(math.pi),
-                        child: Icon(Icons.insert_photo_rounded, color: AppColors.labelDefaultColor)
-                      ),
-                    ),
-                    AppDarkIconButton(
-                      onPressed: () {  },
-                      alignment: Alignment.centerLeft,
-                      text: FittedBox(child: Text("DECENTRALIZED\nFINANCE",style: TextStyle(color: AppColors.labelDefaultColor),)),
-                      icon: Transform(
-                        alignment: Alignment.center,
-                        transform: Matrix4.rotationY(math.pi),
-                        child: FaIcon(FontAwesomeIcons.exchangeAlt, color: AppColors.labelDefaultColor, size: 18,)
-                      ),
-                    ),
-                  ].asMap().map((int key, Widget element) {
-                    if(key == 0)
-                      return MapEntry(
-                          key,
-                          Flexible(
-                            child: Padding(
-                              padding: EdgeInsets.only(right: widget.verticalButtons),
-                              child: SizedBox(
-                                width: double.infinity,
-                                child: element,
-                              ),
-                            ),
-                          )
-                      );
-                    return MapEntry(
-                        key,
-                        Flexible(
-                          child: Padding(
-                            padding: EdgeInsets.only(left: widget.verticalButtons),
-                            child: SizedBox(
-                              width: double.infinity,
-                              child: element,
-                            ),
-                          ),
-                        )
-                    );
-                  }).values.toList(),
-                ),
-                Row(
-                  children: [
-                    AppDarkIconButton(
-                      onPressed: () {  },
-                      alignment: Alignment.centerLeft,
-                      text: Text("CHARTS",style: TextStyle(color: AppColors.labelDefaultColor),),
-                      icon: FaIcon(FontAwesomeIcons.chartLine, color: AppColors.labelDefaultColor, size: 18,),
-                    ),
-                    AppDarkIconButton(
-                      onPressed: () {  },
-                      alignment: Alignment.centerLeft,
-                      text: FittedBox(child: Text("OUR WEBSITE",style: TextStyle(color: AppColors.labelDefaultColor),)),
-                      icon: FaIcon(FontAwesomeIcons.globeAmericas,  color: AppColors.labelDefaultColor, size: 18,),
-                    ),
-                  ].asMap().map((int key, Widget element) {
-                    if(key == 0)
-                      return MapEntry(
-                          key,
-                          Flexible(
-                            child: Padding(
-                              padding: EdgeInsets.only(right: widget.verticalButtons),
-                              child: SizedBox(
-                                width: double.infinity,
-                                child: element,
-                              ),
-                            ),
-                          )
-                      );
-                    return MapEntry(
-                        key,
-                        Flexible(
-                          child: Padding(
-                            padding: EdgeInsets.only(left: widget.verticalButtons),
-                            child: SizedBox(
-                              width: double.infinity,
-                              child: element,
-                            ),
-                          ),
-                        )
-                    );
-                  }).values.toList(),
-                ),
-                SizedBox(
-                  width: double.infinity,
-                  child: AppDarkIconButton(
-                    onPressed: () {
-                      NotificationBar().show(context, text: "I Don't know");
-                    },
-                    text: Text("HOW DOES THIS WORK?",style: TextStyle(color: AppColors.labelDefaultColor),),
-                    icon: FaIcon(FontAwesomeIcons.solidQuestionCircle, color: AppColors.labelDefaultColor, size: 18,),
-                  ),
-                ),
-                SizedBox(
-                  width: double.infinity,
-                  child: AppDarkIconButton(
-                    onPressed: () {
-                      widget.browserUtility.add(1);
-                    },
-                    text: Text("Swap to Browser",style: TextStyle(color: AppColors.labelDefaultColor),),
-                    icon: FaIcon(FontAwesomeIcons.solidQuestionCircle, color: AppColors.labelDefaultColor, size: 18,),
-                  ),
-                ),
-              ].map((Widget element) =>
-                Padding(
-                  child: element,
-                  padding: EdgeInsets.only(bottom: widget.horizontalButtons),
-                )
-              ).toList(),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
 
 class Bookmarks extends StatefulWidget {
   final double verticalButtons;
@@ -878,7 +615,6 @@ class _BookmarksState extends State<Bookmarks> {
                               image: siteData[2],
                               color: siteData[3],
                               onTap: webViewReady ? () {
-                                NotificationBar().show(context, text: "FavoriteBadge ${siteData[1]}");
                                 widget.browserIndexController.add(1);
                                 webViewController.loadUrl(siteData[0]);
                               } : null,
