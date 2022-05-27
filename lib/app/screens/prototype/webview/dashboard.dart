@@ -91,6 +91,24 @@ class _DashboardState extends State<Dashboard> {
     this.browserIndexController = StreamController<int>();
     this.browserIndexController.add(0);
     this.bookmarks = await getFavoritesData();
+
+    ///Stream to define if the browser is showing up
+
+    browserController = AppWebViewController.getInstance();
+    this.browserIndexController.stream.listen((value) {
+      changeBrowserIndex(value);
+    });
+
+    ///Listening if the controller forced the widget tree
+    ///to be updated
+
+    browserController.forceUpdateWidget.listen((forceUpdate) {
+      printApprove("force update? $forceUpdate");
+      if(forceUpdate)
+        setState(() async {
+          this.bookmarks = await getFavoritesData();
+        });
+    });
     return 1;
   }
 
@@ -98,10 +116,6 @@ class _DashboardState extends State<Dashboard> {
   void initState() {
     super.initState();
     init = initialize();
-    browserController = AppWebViewController.getInstance();
-    this.browserIndexController.stream.listen((value) {
-      changeBrowserIndex(value);
-    });
   }
 
   void changeBrowserIndex(int index)
@@ -121,7 +135,6 @@ class _DashboardState extends State<Dashboard> {
 
   @override
   Widget build(BuildContext context) {
-
     double verticalButtons = SizeConfig.safeBlockVertical * 1;
     double horizontalButtons = SizeConfig.safeBlockVertical * 2;
 
@@ -263,7 +276,7 @@ class _DashboardState extends State<Dashboard> {
                                                               "onTap" : () => swapDashboard(1),
                                                             },
                                                           ],
-                                                              index: dashboardIndex),
+                                                          index: dashboardIndex),
                                                         ),
                                                         Flexible(
                                                           child: FadeIndexedStack(
@@ -275,6 +288,8 @@ class _DashboardState extends State<Dashboard> {
                                                                 horizontalButtons: horizontalButtons,
                                                                 verticalButtons: verticalButtons,
                                                                 browserUtility: browserIndexController,
+                                                                browserIndexController: browserIndexController,
+                                                                browserController: browserController.controller.future,
                                                               ),
                                                               Bookmarks(
                                                                 favoriteData: bookmarks,
@@ -325,7 +340,6 @@ class _DashboardState extends State<Dashboard> {
                                                               filled: true,
                                                               hintText: 'Search or type URL',
                                                               fillColor: AppColors.purpleDark3,
-                                                              // fillColor: AppColors.purpleDark2,
                                                               suffixIcon: GestureDetector(
                                                                 onTap: () {
                                                                   redirect(dashSearch.text);
@@ -555,6 +569,7 @@ class _BookmarksState extends State<Bookmarks> {
 
   late Future<bool> bookmarks;
   late WebViewController webViewController;
+
   @override
   void initState() {
     bookmarks = _bookmarks();

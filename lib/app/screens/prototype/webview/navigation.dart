@@ -59,7 +59,8 @@ class _NavigationState extends State<Navigation> {
             children: [
               WebMenu(
                 widget.appWebViewController.controller.future,
-                widget.appWebViewController.cookieManager
+                widget.appWebViewController.cookieManager,
+                widget.appWebViewController
               ),
               AddressBar(
                 addressController: addressController,

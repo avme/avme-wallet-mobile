@@ -13,8 +13,9 @@ class AppWebViewController{
   String _initialUrl = 'https://www.google.com';
   Completer<WebViewController> _controller = Completer<WebViewController>();
   CookieManager? _cookieManager;
-  StreamController onPageStartedController = StreamController.broadcast();
-  StreamController<Map> onHistoryController = StreamController.broadcast();
+  StreamController _onPageStartedController = StreamController.broadcast();
+  StreamController<Map> _onHistoryController = StreamController.broadcast();
+  StreamController<bool> forceUpdateController = StreamController.broadcast();
   StreamController<bool> loadingIndicatorController = StreamController.broadcast();
   WebViewController? _internalController;
 
@@ -38,18 +39,25 @@ class AppWebViewController{
   get cookieManager => _cookieManager;
   get initialUrl => _initialUrl;
 
-  Stream get onPageStarted => onPageStartedController.stream.asBroadcastStream();
-  Stream<Map> get onHistory => onHistoryController.stream.asBroadcastStream();
+  Stream get onPageStarted => _onPageStartedController.stream.asBroadcastStream();
+  Stream<Map> get onHistory => _onHistoryController.stream.asBroadcastStream();
+  Stream<bool> get forceUpdateWidget => forceUpdateController.stream.asBroadcastStream();
   Stream<bool> get isLoading => loadingIndicatorController.stream.asBroadcastStream();
 
   void streamOnPageStarted(String url)
   {
-    onPageStartedController.add(url);
+    _onPageStartedController.add(url);
   }
 
   void streamIsPageLoading(bool isLoading)
   {
     loadingIndicatorController.add(isLoading);
+  }
+
+  void forceBrowserUpdateWidgets()
+  {
+    printMark("forceUpdateController.add(true);");
+    forceUpdateController.add(true);
   }
 
   Future updateHistoryControls()
@@ -60,7 +68,7 @@ class AppWebViewController{
       bool canGoBack = await webViewController.canGoBack();
       bool canGoForward = await webViewController.canGoForward();
       Map data = {"canGoBack" : canGoBack, "canGoForward" : canGoForward};
-      onHistoryController.add(data);
+      _onHistoryController.add(data);
     }
     catch(e)
     {
@@ -74,10 +82,12 @@ class AppWebViewController{
 
   void dispose()
   {
-    onPageStartedController.close();
-    onPageStartedController = StreamController.broadcast();
-    onHistoryController.close();
-    onHistoryController = StreamController.broadcast();
+    _onPageStartedController.close();
+    _onPageStartedController = StreamController.broadcast();
+    _onHistoryController.close();
+    _onHistoryController = StreamController.broadcast();
+    forceUpdateController.close();
+    forceUpdateController = StreamController.broadcast();
     _controller = Completer<WebViewController>();
   }
 }

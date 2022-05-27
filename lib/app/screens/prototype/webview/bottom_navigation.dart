@@ -3,6 +3,7 @@ import 'dart:async';
 
 import 'package:avme_wallet/app/controller/size_config.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
+import 'package:avme_wallet/app/screens/prototype/widgets/external/fade_indexed_stack.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/notification_bar.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
@@ -91,7 +92,6 @@ class _BottomNavigationState extends State<BottomNavigation> {
                               behavior: HitTestBehavior.translucent,
                               onTap: canGoBack ? () {
                                 if(webViewReady) {
-                                  NotificationBar().show(context, text: "Going back");
                                   webViewController.goBack();
                                 }
                               } : null,
@@ -112,7 +112,6 @@ class _BottomNavigationState extends State<BottomNavigation> {
                               behavior: HitTestBehavior.translucent,
                               onTap: canGoForward ? () {
                                 if(webViewReady) {
-                                  NotificationBar().show(context, text: "Going forward");
                                   webViewController.goForward();
                                 }
                               } : null,
@@ -132,25 +131,36 @@ class _BottomNavigationState extends State<BottomNavigation> {
                       children: navigation + [
                         Expanded(
                           flex: 3,
-                          child: Container(
-                            // color: Colors.green,
-                          ),
+                          child: Container(),
                         ),
                         Expanded(
                           flex: 1,
                           child: GestureDetector(
                             behavior: HitTestBehavior.translucent,
                             onTap: () {
-                              NotificationBar().show(context, text: "Redirecting to the Dashboard");
+                              // NotificationBar().show(context, text: "Redirecting to the Dashboard");
                               if(widget.index != 0)
                                 widget.browserUtility.add(0);
+                              else
+                                widget.browserUtility.add(1);
                             },
                             child: Center(
-                                child: Icon(
-                                  Icons.home,
-                                  color: AppColors.violet,
-                                  size: SizeConfig.safeBlockHorizontal * 8,
-                                )
+                              child: FadeIndexedStack(
+                                duration: const Duration(milliseconds: 250),
+                                index: widget.index,
+                                children: [
+                                  Icon(
+                                    Icons.explore,
+                                    color: AppColors.violet,
+                                    size: SizeConfig.safeBlockHorizontal * 8,
+                                  ),
+                                  Icon(
+                                    Icons.home,
+                                    color: AppColors.violet,
+                                    size: SizeConfig.safeBlockHorizontal * 8,
+                                  ),
+                                ],
+                              )
                             ),
                           ),
                         ),
