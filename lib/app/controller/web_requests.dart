@@ -118,11 +118,79 @@ async {
     }
     return;
   }
+  else if(requestTransaction.contains(request["method"]))
+  {
+    String from, to, gas, value, data = "";
+
+    if(request["params"][0].containsKey("data"))
+      data = request["params"][0]["data"];
+    if (request["params"][0].containsKey("gas")) {
+      gas = request["params"][0]["gas"];
+    } else {
+      gas = "0xc3500";
+    }
+    if (request["params"][0].containsKey("value")) { // Value input is optional! check if exists to set it properly.
+      value = request["params"][0]["value"];
+    } else {
+      value = "0x0";
+    }
+
+    from = request["params"][0]["from"];
+    to = request["params"][0]["to"];
+
+    /// Awaiting the user to confirm the transaction
+    Completer<bool> askForTransaction = Completer();
+    showDialog(
+      context: context, builder: (BuildContext context) {
+      return AppPopupWidget(
+        title: "Warning",
+        cancelable: false,
+        canClose: false,
+        actions: [
+          AppNeonButton(
+            expanded: false,
+            onPressed: () {
+              askForTransaction.complete(false);
+              Navigator.of(context).pop();
+            },
+            text: "CANCEL"
+          ),
+          AppButton(
+            expanded: false,
+            onPressed: () {
+              askForTransaction.complete(true);
+              Navigator.of(context).pop();
+            },
+            text: "CONFIRM"
+          ),
+        ],
+        children: [
+          Column(
+            children: [
+              // Text("The website \"$origin\" is requesting your permission, allow it?")
+              Text("")
+            ],
+          )
+        ]
+      );
+    });
+    bool approved = await askForTransaction.future;
+    // while(waiting)
+    // {
+    //   await Future.delayed(Duration(seconds: 1));
+    //   printMark("Waiting to confirm!");
+    // }
+
+    printError("REQUESTING TRANSACTION data: $data, approved: $approved");
+    return;
+  }
   else
   {
     String res = await executeInNetwork(request);
     response = jsonDecode(res);
-    printApprove("[handleServer] ?${request["method"]}?: $res");
+    if(response["result"] == "0x")
+      throw "Error at handleServer -> ${request["method"]}: Returned \"0x\"";
+    printApprove("[handleServer] ?${request["method"]}?: $res, result: ${response["result"]}");
   }
 
   /// Asking if the WebSite has permission
@@ -148,7 +216,7 @@ async {
     }
     else if(allowed == 0)
     {
-      /// Holding the request until the user interacts
+      /// This Popup will hold the request until the user interacts
       bool waiting = true;
       showDialog(
         context: context, builder: (BuildContext context) {

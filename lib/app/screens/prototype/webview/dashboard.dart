@@ -21,6 +21,7 @@ import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:avme_wallet/app/screens/prototype/webview/browser.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:characters/characters.dart' as ch;
@@ -68,7 +69,7 @@ class _DashboardState extends State<Dashboard> {
   late List bookmarks;
   late AppWebViewController browserController;
   late StreamController<int> browserIndexController;
-
+  late String jsContent;
   Future<List> getFavoritesData() async
   {
     List favoritesData = await Favorites().getSites();
@@ -82,8 +83,25 @@ class _DashboardState extends State<Dashboard> {
       int color = int.tryParse(data["color"]) ?? 0;
       ret.add([data["url"],title, data["ico"], HexColor.fromHex("#${color.toRadixString(16)}")]);
     });
-    await Future.delayed(Duration(milliseconds: 250));
+    await Future.delayed(Duration(milliseconds: 50));
     return ret;
+  }
+
+  ///Loading the transpiled JS into a String to be injected later...
+  Future assignJsContent() async {
+    String content =  await rootBundle.loadString("assets/www/js/index.js");
+    jsContent = '''
+      try
+      {
+        var avme = $content;
+        let script = document.createElement('script');
+        script.setAttribute('type', 'text/javascript');
+        script.innerText = avme;
+        script.onload = function (){ this.remove() };
+        document.head ? document.head.prepend(script) : document.documentElement.prepend(script);      
+      }
+      catch (e) {console.error('[AVME Extension] Error: ', e)}
+    ''';
   }
 
   Future<int> initialize() async
@@ -109,6 +127,8 @@ class _DashboardState extends State<Dashboard> {
           this.bookmarks = await getFavoritesData();
         });
     });
+
+    await assignJsContent();
     return 1;
   }
 
@@ -379,6 +399,7 @@ class _DashboardState extends State<Dashboard> {
                               ),
                               ///Browser
                               AppBrowser(
+                                jsContent: jsContent,
                                 borderRadius: _borderR,
                                 navigation: Navigation(
                                   appWebViewController: browserController,

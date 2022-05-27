@@ -16,19 +16,26 @@ class AppBrowser extends StatefulWidget {
   const AppBrowser({
     required this.navigation,
     required this.borderRadius,
-    this.cookieManager
+    required this.jsContent,
+    this.cookieManager,
   });
+
   final CookieManager? cookieManager;
   final Navigation navigation;
   final BorderRadius borderRadius;
+
+  final String jsContent;
+
   @override
   _AppBrowserState createState() => _AppBrowserState();
 }
 
 class _AppBrowserState extends State<AppBrowser> {
+
   final Completer<WebViewController> _controller = Completer<WebViewController>();
   late JavascriptChannel ethereumProvider;
   late AppWebViewController appWebViewController;
+
   void initState() {
     super.initState();
     if (Platform.isAndroid) {
@@ -78,6 +85,8 @@ class _AppBrowserState extends State<AppBrowser> {
                 appWebViewController.streamOnPageStarted(url);
                 await appWebViewController.updateHistoryControls();
                 appWebViewController.loadingIndicatorController.add(true);
+                WebViewController controller = await _controller.future;
+                controller.runJavascript(widget.jsContent);
               },
               onPageFinished: (String url) async {
                 print('Page finished loading: $url');
@@ -96,7 +105,7 @@ class _AppBrowserState extends State<AppBrowser> {
     return JavascriptChannel(
       name: 'Mobile',
       onMessageReceived: (JavascriptMessage message) {
-        printWarning("[ethereumProvider.Mobile] ${message.message}");
+        printWarning("[ethereumProvider.Mobile] ${message.message}\n");
         try
         {
           Map request = jsonDecode(message.message);

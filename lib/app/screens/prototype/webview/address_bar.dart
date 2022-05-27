@@ -94,7 +94,6 @@ class _AddressBarState extends State<AddressBar> with SingleTickerProviderStateM
                       onTap: controllerReady && !isLoading ?
                         () {
                           webViewController.reload();
-                          NotificationBar().show(context, text: "reload");
                         } : null,
                       child: Padding(
                         padding: const EdgeInsets.only(

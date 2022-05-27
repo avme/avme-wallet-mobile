@@ -20,7 +20,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:provider/provider.dart';
 import 'package:avme_wallet/app/screens/prototype/send.dart';
-import 'webview.dart';
 import 'app_drawer.dart';
 import 'overview.dart';
 
@@ -277,18 +276,9 @@ class _State extends State<AppScaffold>
       floatingActionButton: Stack(
         children: <Widget>[
           Align(
-            alignment: Alignment.bottomLeft.add(Alignment(0.2,0)),
-            child: FloatingActionButton(
-              onPressed: () => initDashboard(context),
-              tooltip: 'Dashboard',
-              heroTag: 'dashboard',
-              child: const FaIcon(FontAwesomeIcons.stream,),
-            ),
-          ),
-          Align(
             alignment: Alignment.bottomRight,
             child: FloatingActionButton(
-              onPressed: () => initWebView(context),
+              onPressed: () => initDashboard(context),
               tooltip: 'WebView',
               heroTag: 'webview',
               child: const FaIcon(FontAwesomeIcons.globe,),
