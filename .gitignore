@@ -15,6 +15,7 @@ lib/app/test/*
 .history
 .svn/
 .env*
+.gradle/
 TODO.md
 
 # IntelliJ related
