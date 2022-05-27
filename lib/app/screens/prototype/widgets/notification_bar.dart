@@ -1,6 +1,12 @@
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
-
+/// Just a simple notification bar
+///
+/// The [context] and [text] arguments must not be null.
+@Deprecated(
+  'Use AppHint instead \n'
+  'AppHint.show(String Text, AppHintPosition? AppHintPosition.BOTTOM)',
+)
 class NotificationBar {
   void show(BuildContext context, {Function onPressed, String text})
   {
