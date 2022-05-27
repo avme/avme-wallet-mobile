@@ -269,13 +269,6 @@ class WebMenu extends StatelessWidget {
     ));
   }
 
-  // Future<void> _onNavigationDelegateExample(
-  //     WebViewController controller, BuildContext context) async {
-  //   final String contentBase64 =
-  //   base64Encode(const Utf8Encoder().convert(kNavigationExamplePage));
-  //   await controller.loadUrl('data:text/html;base64,$contentBase64');
-  // }
-
   Future<void> _onSetCookie(
       WebViewController controller, BuildContext context) async {
     await cookieManager.setCookie(
@@ -306,27 +299,10 @@ class WebMenu extends StatelessWidget {
     ).toString());
   }
 
-  // Future<void> _onLoadDevPage(
-  //     WebViewController controller, BuildContext context) async {
-  //   final String pathToIndex = await _prepareLocalFile();
-  //   printApprove(pathToIndex);
-  //   await controller.loadFile(pathToIndex);
-  // }
-
   Future<void> _onLoadFlutterAssetExample(
       WebViewController controller, BuildContext context) async {
     await controller.loadFlutterAsset('assets/www/index.html');
   }
-
-  // Future<void> _onLoadHtmlStringExample(
-  //     WebViewController controller, BuildContext context) async {
-  //   await controller.loadHtmlString(kLocalExamplePage);
-  // }
-  //
-  // Future<void> _onTransparentBackground(
-  //     WebViewController controller, BuildContext context) async {
-  //   await controller.loadHtmlString(kTransparentBackgroundPage);
-  // }
 
   Widget _getCookieList(String cookies) {
     if (cookies == null || cookies == '""') {

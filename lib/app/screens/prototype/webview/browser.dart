@@ -25,7 +25,7 @@ class AppBrowser extends StatefulWidget {
   _AppBrowserState createState() => _AppBrowserState();
 }
 
-class _AppBrowserState extends State<AppBrowser> /*with AutomaticKeepAliveClientMixin*/{
+class _AppBrowserState extends State<AppBrowser> {
   final Completer<WebViewController> _controller = Completer<WebViewController>();
   late JavascriptChannel ethereumProvider;
   late AppWebViewController appWebViewController;
@@ -58,12 +58,6 @@ class _AppBrowserState extends State<AppBrowser> /*with AutomaticKeepAliveClient
                 ///Checking if the controller was initialized
                 appWebViewController.initialize(webViewController, widget.cookieManager);
                 _controller.complete(webViewController);
-
-
-                // setState(() async {
-                //   canGoBack = await webViewController.canGoBack();
-                //   canGoFoward = await webViewController.canGoForward();
-                // });
               },
               onProgress: (int progress) {
                 print('WebView is loading (progress : $progress%)');
@@ -84,18 +78,10 @@ class _AppBrowserState extends State<AppBrowser> /*with AutomaticKeepAliveClient
                 appWebViewController.streamOnPageStarted(url);
                 await appWebViewController.updateHistoryControls();
                 appWebViewController.loadingIndicatorController.add(true);
-                // WebViewController controller = await _controller.future;
-                // canGoBack = await controller.canGoBack();
-                // canGoFoward = await controller.canGoForward();
-                // setState(() {});
-                // controller.runJavascript(jsContent);
               },
               onPageFinished: (String url) async {
                 print('Page finished loading: $url');
                 appWebViewController.loadingIndicatorController.add(false);
-                // printMark(jsContent);
-                // WebViewController webViewController = await _controller.future;
-                // webViewController.runJavascript(jsContent);
               },
               gestureNavigationEnabled: true,
               backgroundColor: Colors.white,
@@ -122,13 +108,6 @@ class _AppBrowserState extends State<AppBrowser> /*with AutomaticKeepAliveClient
         catch(e) {
           printError("[ethereumProvider.Mobile] Error: $e");
         }
-
-        // ScaffoldMessenger.of(context).showSnackBar(
-        //   SnackBar(content: Text(message.message)),
-        // );
       });
   }
-
-  // @override
-  // bool get wantKeepAlive => true;
 }

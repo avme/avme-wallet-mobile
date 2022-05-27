@@ -53,7 +53,6 @@ class _BottomNavigationState extends State<BottomNavigation> {
           builder: (context, snapWeb) {
             final bool webViewReady =
               snapWeb.connectionState == ConnectionState.done;
-            // WebViewController? webViewController = snapWeb.data;
             return Container(
               child: StreamBuilder<Map>(
                   stream: widget.historyStream,

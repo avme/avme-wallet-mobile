@@ -52,7 +52,6 @@ class _DiscoverState extends State<Discover> {
   Widget build(BuildContext context) {
     return ListView(
       physics: BouncingScrollPhysics(),
-      // shrinkWrap: true,
       children: [
         Padding(
           padding: EdgeInsets.only(
@@ -194,33 +193,6 @@ class _DiscoverState extends State<Discover> {
                         icon: FaIcon(FontAwesomeIcons.solidQuestionCircle, color: AppColors.labelDefaultColor, size: 18,),
                       ),
                     ),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FlatButton(
-                        onPressed: () {  },
-                        child: Text("gay"),
-                      ),
-                    ),
-                    // SizedBox(
-                    //   width: double.infinity,
-                    //   child: AppDarkIconButton(
-                    //     onPressed: () {
-                    //       AppHint.show("app hint 1");
-                    //     },
-                    //     text: Text("app hint 1",style: TextStyle(color: AppColors.labelDefaultColor),),
-                    //     icon: FaIcon(FontAwesomeIcons.solidQuestionCircle, color: AppColors.labelDefaultColor, size: 18,),
-                    //   ),
-                    // ),
-                    // SizedBox(
-                    //   width: double.infinity,
-                    //   child: AppDarkIconButton(
-                    //     onPressed: () {
-                    //       AppHint.show("app hint 2", position: AppHintPosition.TOP);
-                    //     },
-                    //     text: Text("app hint 2",style: TextStyle(color: AppColors.labelDefaultColor),),
-                    //     icon: FaIcon(FontAwesomeIcons.solidQuestionCircle, color: AppColors.labelDefaultColor, size: 18,),
-                    //   ),
-                    // ),
                   ].map((Widget element) =>
                     Padding(
                       child: element,
