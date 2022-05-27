@@ -135,62 +135,60 @@ class Favorites
     return jsonDecode(await (await this.getFile()).readAsString()) as List;
   }
 
-  List add(String title, String url) {
+  Future<List> add(String title, String url) async{
     List _s = [];
-    this.getFile().then((File value) async {
-      _s = jsonDecode(value.readAsStringSync())
-        ?? [];
+    File file = await this.getFile();
+    _s = jsonDecode(file.readAsStringSync()) ?? [];
 
-      Completer imageCompleter = Completer<List>();
-      Threads threads = Threads.getInstance();
-      ThreadMessage task = ThreadMessage(
-        caller: "processImage",
-        function: processImage,
-        params: [url]
-      );
-      threads.addToPool(id: 0, task: task)
+    Completer imageCompleter = Completer<List>();
+    Threads threads = Threads.getInstance();
+    ThreadMessage task = ThreadMessage(
+      caller: "processImage",
+      function: processImage,
+      params: [url]
+    );
+    threads.addToPool(id: 0, task: task)
         .listen((message) async {
-          ///In this case, if is a map is requesting something
-          if(message is Map)
-          {
-            if(message.containsKey("responseBytes"))
-            {
-              Uint8List bodyBytes = message["responseBytes"];
-              SendPort port = message["sendPort"];
-              ui.Codec codec = await ui.instantiateImageCodec(bodyBytes);
-              ui.FrameInfo frameInfo = await codec.getNextFrame();
-              ByteData? imageByteData = await frameInfo.image.toByteData(format: ui.ImageByteFormat.png);
-              if(imageByteData == null)
-                throw "FrameInfo.image returned null when converting to byte data";
-              printOk("sending back the data");
-              await Future.delayed(Duration(seconds: 2));
-              port.send(imageByteData.buffer.asUint8List());
-            }
-          }
-          ///Case the message is a List it means the process is finished!
-          else if(message is Uint8List)
-          {
-            imageCompleter.complete(message);
-          }
-      });
-      Uint8List imageBytes = await imageCompleter.future;
-
-      ImageProvider imageProvider = Image.memory(imageBytes).image;
-      PaletteGenerator paletteGenerator = await PaletteGenerator.fromImageProvider(
-        imageProvider
-      );
-      _s.add({
-        "title":title,
-        "url":url,
-        "color": paletteGenerator.dominantColor!.color.value.toString(),
-        "ico": base64.encode(imageBytes)
-      });
-      try
+      ///In this case, if is a map is requesting something
+      if(message is Map)
       {
-        value.writeAsString(jsonEncode(_s));
+        if(message.containsKey("responseBytes"))
+        {
+          Uint8List bodyBytes = message["responseBytes"];
+          SendPort port = message["sendPort"];
+          ui.Codec codec = await ui.instantiateImageCodec(bodyBytes);
+          ui.FrameInfo frameInfo = await codec.getNextFrame();
+          ByteData? imageByteData = await frameInfo.image.toByteData(format: ui.ImageByteFormat.png);
+          if(imageByteData == null)
+            throw "FrameInfo.image returned null when converting to byte data";
+          printOk("sending back the data");
+          await Future.delayed(Duration(seconds: 2));
+          port.send(imageByteData.buffer.asUint8List());
+        }
       }
-      catch(e) {printError("$e");}
+      ///Case the message is a List it means the process is finished!
+      else if(message is Uint8List)
+      {
+        imageCompleter.complete(message);
+      }
     });
+    Uint8List imageBytes = await imageCompleter.future;
+
+    ImageProvider imageProvider = Image.memory(imageBytes).image;
+    PaletteGenerator paletteGenerator = await PaletteGenerator.fromImageProvider(
+        imageProvider
+    );
+    _s.add({
+      "title":title,
+      "url":url,
+      "color": paletteGenerator.dominantColor!.color.value.toString(),
+      "ico": base64.encode(imageBytes)
+    });
+    try
+    {
+      await file.writeAsString(jsonEncode(_s));
+    }
+    catch(e) {printError("$e");}
     return _s;
   }
 

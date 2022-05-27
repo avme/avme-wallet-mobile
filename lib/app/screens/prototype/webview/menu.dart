@@ -3,6 +3,9 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:avme_wallet/app/controller/web/web_utils.dart';
+import 'package:avme_wallet/app/controller/web/webview.dart';
+import 'package:avme_wallet/app/lib/utils.dart';
+import 'package:avme_wallet/app/screens/prototype/widgets/app_hint.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -27,9 +30,13 @@ enum MenuOptions {
 }
 
 class WebMenu extends StatelessWidget {
-  WebMenu(this.controller, CookieManager? cookieManager)
-      : cookieManager = cookieManager ?? CookieManager();
+  WebMenu(
+    this.controller,
+    CookieManager? cookieManager,
+    this.appWebViewController
+  ) : cookieManager = cookieManager ?? CookieManager();
 
+  final AppWebViewController appWebViewController;
   final Future<WebViewController> controller;
   late final CookieManager cookieManager;
 
@@ -344,22 +351,9 @@ class WebMenu extends StatelessWidget {
     String url = await webViewController.currentUrl() ?? "www.google.com";
 
     Favorites _f = Favorites();
-    _f.add(title, url);
-    // Map favoritesList = await _f.getSites();
-    // if(favoritesList.containsKey(title)) {
-    //   NotificationBar().show(context, text: );
-    //   return;
-    // }
+    await _f.add(title, url);
+    appWebViewController.forceBrowserUpdateWidgets();
+    await Future.delayed(const Duration(milliseconds: 50));
+    AppHint.show("Added Site to Favorites!", position: AppHintPosition.TOP);
   }
-
-// static Future<String> _prepareLocalFile() async {
-//   final String tmpDir = (await getTemporaryDirectory()).path;
-//   final File indexFile = File(
-//       <String>{tmpDir, 'www', 'index.html'}.join(Platform.pathSeparator));
-//
-//   await indexFile.create(recursive: true);
-//   await indexFile.writeAsString(kLocalExamplePage);
-//
-//   return indexFile.path;
-// }
 }
