@@ -2,13 +2,11 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:avme_wallet/app/controller/size_config.dart';
 import 'package:avme_wallet/app/controller/web/web_utils.dart';
 import 'package:avme_wallet/app/controller/web/webview.dart';
 import 'package:avme_wallet/app/lib/extensions.dart';
-import 'package:avme_wallet/app/lib/tld.dart';
 import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/screens/prototype/webview/navigation.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/button.dart';
@@ -19,14 +17,9 @@ import 'package:avme_wallet/app/screens/prototype/widgets/widgets.dart';
 import 'package:avme_wallet/app/screens/widgets/custom_widgets.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:avme_wallet/app/screens/prototype/webview/browser.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:characters/characters.dart' as ch;
 import 'package:webview_flutter/webview_flutter.dart';
-import '../../../test/webview.dart';
 import 'dart:math' as math;
 
 import 'bottom_navigation.dart';
@@ -181,7 +174,7 @@ class _DashboardState extends State<Dashboard> {
             if(snapshot.data == null)
               return Column(
                 children: [
-                  Colored(flex: 1, color: Colors.transparent,
+                  Expanded(flex: 1,
                     child: GestureDetector(
                       onTap: () {
                         Navigator.pop(context);
@@ -228,7 +221,7 @@ class _DashboardState extends State<Dashboard> {
               );
             return Column(
               children: [
-                Colored(flex: 1, color: Colors.transparent,
+                Expanded(flex: 1,
                   child: GestureDetector(
                     onTap: () {
                       Navigator.pop(context);

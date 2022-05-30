@@ -13,7 +13,6 @@ import 'package:avme_wallet/app/screens/prototype/widgets/accounts_drawer.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/debug.dart';
 import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:avme_wallet/app/screens/prototype/webview/dashboard.dart';
-import 'package:avme_wallet/app/test/webview.dart' as tWeb;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
