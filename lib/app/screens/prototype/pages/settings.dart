@@ -49,100 +49,62 @@ class _SettingsState extends State<Settings> {
         ),
         body: SingleChildScrollView(
           child: SafeArea(
-            child: Column(
-                children: [
-              ///Section/Category
+              child: Column(
+                  children: [
+            ///Section/Category
 
-              ListTile(
-                title: Text(
-                  "Security Settings",
-                  style: AppTextStyles.label,
-                ),
+            ListTile(
+              title: Text(
+                "Security Settings",
+                style: AppTextStyles.label,
               ),
-            ]
-                  ..addAll(
-                    ListTile.divideTiles(context: context, tiles: [
-                      ListTile(
-                        title: Text("Fingerprint Authentication", style: TextStyle(fontSize: SizeConfig.fontSizeLarge)),
-                        leading: Icon(Icons.fingerprint),
-                        onTap: () {
-                          fingerprintPopup(context);
-                        },
-                      ),
-                    ]),
-                  )
-                  ..addAll([
-                    ///Section/Category
-                    ListTile(
-                      title: Text("Advanced Settings", style: AppTextStyles.label),
-                    ),
-                  ])
-                  ..addAll(
-                    ListTile.divideTiles(context: context, tiles: [
-                      ListTile(
-                        title: Text("Debug Mode", style: TextStyle(fontSize: SizeConfig.fontSizeLarge)),
-                        leading: Icon(Icons.bug_report_outlined),
-                        onTap: () => setState(() => debugMode = !debugMode),
-                        subtitle: Text(debugMode ? "Enabled" : "Disabled"),
-                        trailing: Switch(
-                          value: debugMode,
-                          onChanged: (bool value) {
-                            Provider.of<AvmeWallet>(context, listen: false).debugMode = !(Provider.of<AvmeWallet>(context, listen: false).debugMode);
-                            setState(() => debugMode = !debugMode);
+            ),
+          ]
+                    ..addAll(
+                      ListTile.divideTiles(context: context, tiles: [
+                        ListTile(
+                          title: Text("Fingerprint Authentication", style: TextStyle(fontSize: SizeConfig.fontSizeLarge)),
+                          leading: Icon(Icons.fingerprint),
+                          onTap: () {
+                            fingerprintPopup(context);
                           },
                         ),
-                      ),
+                      ]),
+                    )
+                    ..addAll([
+                      ///Section/Category
                       ListTile(
-                        title: Text("Text input sample", style: TextStyle(fontSize: SizeConfig.fontSizeLarge)),
-                        leading: Icon(Icons.verified_user_sharp),
-                        onTap: () async {
-                          await exampleTextPopup();
-                          setState(() {});
-                          // setState(() => debugMode = !debugMode);
-                        },
-                        subtitle: Text(textSize),
+                        title: Text("Advanced Settings", style: AppTextStyles.label),
                       ),
-
-                      /*
-                      ListTile(
-                        title: Text("Text input sample"),
-                        leading: Icon(Icons.verified_user_sharp),
-                        onTap: () async {
-                          FocusNode fieldFocus = new FocusNode();
-                          fieldFocus.requestFocus();
-                          await exampleTextPopup(fieldFocus);
-                          setState((){});
-                          // setState(() => debugMode = !debugMode);
-                        },
-                        subtitle: Text(this.textInput.value.text),
-                      ),
-                       */
-                    ]),
-                  )
-                  ..addAll([
-                    ///Section/Category
-                    ListTile(
-                      title: Text("Network", style: AppTextStyles.label),
-                    ),
-                  ])
-                  ..addAll(ListTile.divideTiles(context: context, tiles: [
-                    ListTile(
-                      title: Text("Wallet API", style: TextStyle(fontSize: SizeConfig.fontSizeLarge)),
-                      leading: Icon(Icons.web),
-                      subtitle: Text(websocketServer, style: TextStyle(fontSize: SizeConfig.fontSize * 1.2)),
-                    ),
-                    ListTile(
-                      title: Text("Websocket Server", style: TextStyle(fontSize: SizeConfig.fontSizeLarge)),
-                      leading: Icon(Icons.alternate_email),
-                      subtitle: Text(websocketServer, style: TextStyle(fontSize: SizeConfig.fontSize * 1.2)),
-                    ),
-                    ListTile(
-                      title: Text("Websocket Client", style: TextStyle(fontSize: SizeConfig.fontSizeLarge)),
-                      leading: Icon(Icons.tag),
-                      subtitle: Text("Port: $websocketClient", style: TextStyle(fontSize: SizeConfig.fontSize * 1.2)),
-                    ),
-                  ]))),
-          ),
+                    ])
+                    ..addAll(
+                      ListTile.divideTiles(context: context, tiles: [
+                        ListTile(
+                          title: Text("Debug Mode", style: TextStyle(fontSize: SizeConfig.fontSizeLarge)),
+                          leading: Icon(Icons.bug_report_outlined),
+                          onTap: () => setState(() => debugMode = !debugMode),
+                          subtitle: Text(debugMode ? "Enabled" : "Disabled"),
+                          trailing: Switch(
+                            value: debugMode,
+                            onChanged: (bool value) {
+                              Provider.of<AvmeWallet>(context, listen: false).debugMode =
+                                  !(Provider.of<AvmeWallet>(context, listen: false).debugMode);
+                              setState(() => debugMode = !debugMode);
+                            },
+                          ),
+                        ),
+                        ListTile(
+                          title: Text("Text size", style: TextStyle(fontSize: SizeConfig.fontSizeLarge)),
+                          leading: Icon(Icons.verified_user_sharp),
+                          onTap: () async {
+                            await exampleTextPopup();
+                            setState(() {});
+                            // setState(() => debugMode = !debugMode);
+                          },
+                          subtitle: Text(textSize),
+                        ),
+                      ]),
+                    ))),
         ),
       ),
     );
