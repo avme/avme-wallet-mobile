@@ -10,10 +10,13 @@ import 'package:avme_wallet/app/packages/services.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/button.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/neon_button.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/popup.dart';
+import 'package:avme_wallet/app/screens/prototype/widgets/webview/popup/approve_transaction.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+
+import '../screens/prototype/widgets/webview/popup/allow_site.dart';
 
 enum RequestSignTypes {
   eth_sign, personal_sign, none
@@ -41,6 +44,7 @@ List<String> requestSign = [
 Map<int, String> errorList = {
   -32601 : "\"eth_subscribe\" method not found",
   -32603 : "Internal error",
+  4001 : "User rejected request"
 };
 
 ///List of methods
@@ -58,12 +62,12 @@ String walletAddEthereumChain = "wallet_addEthereumChain";
 Future<void> handleServer (Completer completer, Map request, String origin)
 async {
   BuildContext? context = NavigationService.globalContext.currentContext;
-  AllowedUrls aUrl = AllowedUrls();
-
   if(context == null)
   {
     throw "No context found in handleServer";
   }
+  AllowedUrls allowedUrls = AllowedUrls();
+
   WebViewController controller = await completer.future;
   Map response = {
     "jsonrpc" : "2.0",
@@ -111,77 +115,11 @@ async {
     // See https://eips.ethereum.org/EIPS/eip-3085
     // TODO: When implementing multichain, ask the user to accept a new network from the website
     if (request["params"][0]["chainId"] !=  "0x" + (hexId.toRadixString(16))) {
-      response = {
+      response["error"] = {
         "code": -32601,
         "error": errorList[-32601]
       };
     }
-    return;
-  }
-  else if(requestTransaction.contains(request["method"]))
-  {
-    String from, to, gas, value, data = "";
-
-    if(request["params"][0].containsKey("data"))
-      data = request["params"][0]["data"];
-    if (request["params"][0].containsKey("gas")) {
-      gas = request["params"][0]["gas"];
-    } else {
-      gas = "0xc3500";
-    }
-    if (request["params"][0].containsKey("value")) { // Value input is optional! check if exists to set it properly.
-      value = request["params"][0]["value"];
-    } else {
-      value = "0x0";
-    }
-
-    from = request["params"][0]["from"];
-    to = request["params"][0]["to"];
-
-    /// Awaiting the user to confirm the transaction
-    Completer<bool> askForTransaction = Completer();
-    showDialog(
-      context: context, builder: (BuildContext context) {
-      return AppPopupWidget(
-        title: "Warning",
-        cancelable: false,
-        canClose: false,
-        actions: [
-          AppNeonButton(
-            expanded: false,
-            onPressed: () {
-              askForTransaction.complete(false);
-              Navigator.of(context).pop();
-            },
-            text: "CANCEL"
-          ),
-          AppButton(
-            expanded: false,
-            onPressed: () {
-              askForTransaction.complete(true);
-              Navigator.of(context).pop();
-            },
-            text: "CONFIRM"
-          ),
-        ],
-        children: [
-          Column(
-            children: [
-              // Text("The website \"$origin\" is requesting your permission, allow it?")
-              Text("")
-            ],
-          )
-        ]
-      );
-    });
-    bool approved = await askForTransaction.future;
-    // while(waiting)
-    // {
-    //   await Future.delayed(Duration(seconds: 1));
-    //   printMark("Waiting to confirm!");
-    // }
-
-    printError("REQUESTING TRANSACTION data: $data, approved: $approved");
     return;
   }
   else
@@ -197,87 +135,63 @@ async {
   if(requirePermission.contains(request["method"]))
   {
     bool hasPermission = false;
-    int allowed = await aUrl.isAllowed(origin);
+    int allowed = await allowedUrls.isAllowed(origin);
     printApprove("Is allowed? $allowed");
-    // List sites = await aUrl.getSites();
-    // /// For now we're just gonna add it without permission
-    // for (List site in sites)
-    // {
-    //   printMark("$site == $origin");
-    //   if(site[0] == origin && site[1])
-    //   {
-    //     allowed = true;
-    //     hasPermission = true;
-    //   }
-    // }
     if(allowed == 1)
     {
       hasPermission = true;
     }
     else if(allowed == 0)
     {
-      /// This Popup will hold the request until the user interacts
-      bool waiting = true;
-      showDialog(
-        context: context, builder: (BuildContext context) {
-          return AppPopupWidget(
-            title: "Warning",
-            cancelable: false,
-            canClose: false,
-            actions: [
-              AppNeonButton(
-                expanded: false,
-                onPressed: () {
-                  aUrl.blockSite(origin);
-                  Navigator.of(context).pop();
-                },
-                text: "CANCEL"
-              ),
-              AppButton(
-                expanded: false,
-                onPressed: () {
-                  // hasPermission = true;
-                  aUrl.allowSite(origin);
-                  hasPermission = true;
-                  Navigator.of(context).pop();
-                },
-                text: "ALLOW"
-              ),
-            ],
-            children: [
-              Column(
-                children: [
-                  Text("The website \"$origin\" is requesting your permission, allow it?")
-                ],
-              )
-            ]
-          );
-      },
-      ).then((value){
-        waiting = false;
-      });
-
-      while(waiting)
-      {
-        await Future.delayed(Duration(seconds: 1));
-        printMark("Waiting to confirm!");
-      }
+      hasPermission = await requestSitePermission(context, origin, allowedUrls: allowedUrls);
     }
     if(!hasPermission) {
-      response = {
+      response["error"] = {
         "code": -32603,
         "error": errorList[-32603]
       };
       response.removeWhere((key, value) => key == "result");
     }
+  }
 
-      // return;
+  if(requestTransaction.contains(request["method"]))
+  {
+    Map<String, String> transactionData = {
+      "origin": origin
+    };
+
+    if(request["params"][0].containsKey("data"))
+      transactionData["data"] = request["params"][0]["data"];
+    if (request["params"][0].containsKey("gas")) {
+      transactionData["gas"] = request["params"][0]["gas"];
+    } else {
+      transactionData["gas"] = "0xc3500";
+    }
+    if (request["params"][0].containsKey("value")) { // Value input is optional! check if exists to set it properly.
+      transactionData["value"] = request["params"][0]["value"];
+    } else {
+      transactionData["value"] = "0x0";
+    }
+
+    transactionData["from"] = request["params"][0]["from"];
+    transactionData["to"] = request["params"][0]["to"];
+
+    bool approved = await requestApproveTransaction(context, transactionData, allowedUrls: allowedUrls);
+
+    printError("REQUESTING TRANSACTION data: ${transactionData["data"]}, approved: $approved");
+    if(approved == false)
+    {
+      response["error"] = {
+        "code": 4001,
+        "error": errorList[4001],
+      };
+    }
   }
 
   /// Returning the request
   String res = jsonEncode({
-    "type" : "eth:payload",
-    "payload" : response
+    "type": "eth:payload",
+    "payload": response
   });
 
   printApprove("window.postMessage($res)");

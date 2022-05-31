@@ -3,6 +3,7 @@ import 'dart:async';
 
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
+import 'package:web3dart/web3dart.dart';
 
 import '../../../../../controller/web/web_utils.dart';
 import '../../../../../lib/utils.dart';
@@ -13,7 +14,8 @@ import '../../popup.dart';
 Future<bool> requestApproveTransaction(BuildContext context, Map<String,String> transactionData, {bool unlocked = false, required AllowedUrls allowedUrls})
 async {
   int gas = int.parse(transactionData["gas"]!.replaceAll('0x', ''), radix: 16);
-  int intValue = int.parse(transactionData["v"]!.replaceAll('0x', ''), radix: 16);
+  // Decimal.fromInt(intValue)
+  EtherAmount valueAmount = EtherAmount.inWei(BigInt.from(int.parse(transactionData["value"]!.replaceAll('0x', ''), radix: 16)));
   printOk(transactionData.toString());
   /// Awaiting the user to confirm the transaction
   Completer<bool> askForTransaction = Completer();
@@ -51,7 +53,7 @@ async {
                     TextSpan(text: 'The following website is requesting a transaction: \n'),
                     TextSpan(text: '${transactionData["origin"]}\n', style: TextStyle(fontWeight: FontWeight.bold)),
                     TextSpan(text: 'Total Value: '),
-                    TextSpan(text: '0.0\n', style: TextStyle(fontWeight: FontWeight.bold)),
+                    TextSpan(text: '${valueAmount.getValueInUnit(EtherUnit.gwei)} GWEI\n', style: TextStyle(fontWeight: FontWeight.bold)),
                     TextSpan(text: 'Gas Limit: '),
                     TextSpan(text: '$gas\n', style: TextStyle(fontWeight: FontWeight.bold)),
                     TextSpan(text: 'Fee Cost: '),
