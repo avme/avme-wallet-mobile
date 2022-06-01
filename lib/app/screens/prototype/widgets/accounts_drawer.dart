@@ -9,6 +9,7 @@ import 'package:avme_wallet/app/lib/utils.dart';
 import 'package:avme_wallet/app/model/account_item.dart';
 import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/screens/prototype/app_drawer.dart';
+import 'package:avme_wallet/app/screens/prototype/widgets/app_hint.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/button.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/gradient_card.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/neon_button.dart';
@@ -61,6 +62,7 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
     List<Widget> drawerElements = [];
 
     widget.app.accountList.forEach((key, accountObject) {
+      bool isNotFirstKey = (key != 0);
       // bool selected = key == widget.app.currentWalletId ? true : false;
       DecorationTween balanceTween = DecorationTween(
           begin: BoxDecoration(
@@ -85,6 +87,73 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
             NotificationBar().show(context, text: "Account \"${widget.app.accountList[key].title}\" selected.");
           },
           onIconPressed: () {},
+          iconChild: isNotFirstKey
+              ? Container(
+                  color: Colors.transparent,
+                  child: GestureDetector(
+                    onTap: () {
+                      if (key != 0) {
+                        showDialog(
+                            context: context,
+                            builder: (_) => StatefulBuilder(
+                                builder: (builder, setState) => AppPopupWidget(
+                                      title: "Delete Account",
+                                      cancelable: false,
+                                      showIndicator: false,
+                                      padding: EdgeInsets.all(20),
+                                      children: [
+                                        Column(
+                                          children: [
+                                            Padding(
+                                              padding: EdgeInsets.only(
+                                                  bottom: SizeConfig.blockSizeHorizontal * 4,
+                                                  left: SizeConfig.blockSizeHorizontal * 2,
+                                                  right: SizeConfig.blockSizeHorizontal * 2),
+                                              child: Text(
+                                                'Are you sure you want to delete\naccount ${widget.app.accountList[key].title}?',
+                                                style: AppTextStyles.spanWhiteMedium,
+                                              ),
+                                            ),
+                                            Container(
+                                                width: SizeConfig.screenWidth / 3,
+                                                child: AppNeonButton(
+                                                  onPressed: () async {
+                                                    print('Pressed key $key with following info:');
+                                                    print(widget.app.accountList[key].title);
+                                                    Navigator.pop(context);
+                                                    await deleteAccountByName(widget.app, widget.app.accountList[key].title, key);
+                                                  },
+                                                  text: 'YES',
+                                                  // size: SizeConfig.fontSizeLarge,
+                                                  textStyle: AppTextStyles.spanWhite,
+                                                )),
+                                            SizedBox(
+                                              height: SizeConfig.blockSizeVertical * 2,
+                                            ),
+                                            Container(
+                                                width: SizeConfig.screenWidth / 3,
+                                                child: AppNeonButton(
+                                                  onPressed: () => Navigator.pop(context),
+                                                  text: 'NO',
+                                                  // size: SizeConfig.fontSizeLarge,
+                                                  textStyle: AppTextStyles.spanWhite,
+                                                )),
+                                          ],
+                                        ),
+                                      ],
+                                    )));
+                      } else {
+                        AppHint.show('Cannot delete Default Account');
+                      }
+                    },
+                    child: Icon(
+                      Icons.delete_outline,
+                      size: 36,
+                      color: Colors.white,
+                    ),
+                  ),
+                )
+              : Container(),
           balance: _totalBalance(accountObject),
           label: accountObject.title,
           balanceTween: balanceTween,
@@ -105,6 +174,17 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
     });
 
     return CustomAppDrawer(header(), finalDrawer.asMap(), footer(widget.app));
+  }
+
+  Future<void> deleteAccountByName(AvmeWallet app, String name, int key) async {
+    showDialog(
+        context: context,
+        builder: (_) => ProgressPopup(
+            title: "Finished",
+            future: app.walletManager.deleteAccountByName(widget.app.accountList[key].title).then((value) async {
+              //Do the whole thing idk
+              return value ? [Text('Account $name deleted successfully')] : [Text('Account $name failed to delete')];
+            })));
   }
 
   String _totalBalance(AccountObject accountObject) {
@@ -226,7 +306,6 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                 bool validated = response[0];
                 String mnemonicString = response[1];
                 int _phraseCount = response[2];
-                print('validating... $response');
                 if (validated == false) {
                   setState(() {
                     invalidMnemonic = 'One or more words are missing';
@@ -244,8 +323,6 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                     });
                   }
                 }
-                print('invalidMnemonic: $invalidMnemonic');
-                print('isAllFilled: $isAllFilled');
               }
 
               void handlePaste() async {
@@ -557,8 +634,6 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
     final int flexAddress = 4;
     final int flexBalance = 2;
     final double darkBorderPadding = 8.0;
-    printWarning("previewAccounts");
-    print('password: $password');
 
     //Checking to make sure user chose a different option
 
@@ -675,14 +750,71 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                                 AppButton(
                                     expanded: false,
                                     onPressed: () async {
-                                      Navigator.pop(context);
-                                      await createAccount(
-                                        name: nameController.text,
-                                        app: app,
-                                        password: password,
-                                        mnemonics: mnemonics,
-                                        import: import,
-                                      );
+                                      // If no name, check if any unnamed exists, create the highest possible
+                                      if (nameController.text.isEmpty) {
+                                        String _title;
+                                        //Default, in case it doesn't find any unnamed accounts, only default account
+                                        if (app.accountList.length == 1) {
+                                          print('app.accountList.length == 1');
+                                          _title = 'unnamed 1';
+                                        } else {
+                                          //Searches for the list and flicks to true if it finds unnamed number.
+                                          //Then it does a last search to know which unnamed it can make
+                                          //Create a list of 9 false slots, then make the first one is true, being the default account
+                                          List<bool> numbers = List.filled(9, false);
+                                          numbers[0] = true;
+                                          for (int i = 1; i < app.accountList.length; i++) {
+                                            for (AccountObject account in app.accountList.values) {
+                                              if (account.title == 'unnamed $i') numbers[i] = true;
+                                            }
+                                          }
+                                          //Checking which slot in the list is false
+                                          for (int i = 0; i < numbers.length; i++) {
+                                            if (numbers[i] == false) {
+                                              _title = 'unnamed $i';
+                                              break;
+                                            }
+                                          }
+                                        }
+                                        Navigator.pop(context);
+                                        await createAccount(
+                                          name: _title,
+                                          app: app,
+                                          password: password,
+                                          mnemonics: mnemonics,
+                                          import: import,
+                                        );
+                                      } else {
+                                        // If custom name, check if name already exists
+                                        bool alreadyExists = false;
+                                        for (int i = 0; i < app.accountList.length; i++) {
+                                          if (nameController.text == app.accountList[i].title) {
+                                            print('alreadyExists = true');
+                                            alreadyExists = true;
+                                          }
+                                        }
+                                        if (!alreadyExists) {
+                                          Navigator.pop(context);
+                                          await createAccount(
+                                            name: nameController.text,
+                                            app: app,
+                                            password: password,
+                                            mnemonics: mnemonics,
+                                            import: import,
+                                          );
+                                        } else {
+                                          showDialog(
+                                              context: context,
+                                              builder: (_) => StatefulBuilder(builder: (builder, setState) {
+                                                    return AppPopupWidget(
+                                                      cancelable: false,
+                                                      title: 'Error',
+                                                      children: [Text('Name already exists')],
+                                                      actions: [AppButton(onPressed: () => Navigator.pop(context), text: 'CANCEL')],
+                                                    );
+                                                  }));
+                                        }
+                                      }
                                     },
                                     text: "CONFIRM")
                               ],

@@ -90,4 +90,33 @@ class FileManager {
     }
     return listReturn;
   }
+
+  //For deleting imported accounts below
+
+  ///Returns either a file or bool false
+  Future<dynamic> readImported(int i) async {
+    String path = "${this.documentsFolder}$importedAccountFolder";
+    await Directory(path).create(recursive: true);
+
+    bool exists = await File("$path$filenameImport$i$ext").exists();
+
+    if (exists)
+      return File("$path$filenameImport$i$ext");
+    else
+      return false;
+  }
+
+  ///Deletes the imported file with i number
+  Future<bool> deleteImported(int i) async {
+    String path = "${this.documentsFolder}$importedAccountFolder";
+    await Directory(path).create(recursive: true);
+
+    try {
+      await File("$path$filenameImport$i$ext").delete();
+      return true;
+    } catch (e) {
+      print('Error deleting: $e');
+      return false;
+    }
+  }
 }

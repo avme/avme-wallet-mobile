@@ -56,15 +56,75 @@ class WalletManager {
     return file;
   }
 
-  Future<String> readWalletJson({position = -1}) async {
+  Future<bool> deleteAccountByName(String name) async {
+    print('Deleteing account $name...');
+    print('Checking the default accounts.json created from the same seed...');
+    bool found = false;
+    File file = await this.fileManager.accountFile();
+    List contents = jsonDecode(await file.readAsString());
+    for (int i = 0; i < contents.length; i++) {
+      if (contents[i]['title'] == name) {
+        print('Found a match for $name! Deleting...');
+        contents.removeAt(i);
+        found = true;
+      }
+    }
+    if (found) {
+      //Doesn't need to go further, just fix the main accounts.json and ignore imported accounts
+      String json = this.fileManager.encoder.convert(contents);
+      // String json = jsonEncode(contents);
+      await file.writeAsString("$json");
+      return true;
+    } else {
+      print('Not found in main');
+      print('Checking the imported accounts from importedAccountX.json created from a different seed...');
+      //Has to grab one, check, then move on to the next if false, or delete that one if true
+      found = false;
+      dynamic _temp;
+      for (int i = 0; i < 9; i++) {
+        print('Entering loop...');
+        _temp = await this.fileManager.readImported(i);
+        print('_temp = $_temp');
+
+        //Continue in dart means restarting the for at the next iteration.  Go figure...
+        if (_temp == false) continue;
+
+        print('Continuing!');
+
+        contents = jsonDecode(await _temp.readAsString());
+        print('contents $contents');
+        if (contents.first['title'] == name) {
+          print('Found an imported match for $name! Deleting...');
+          bool delete = await this.fileManager.deleteImported(i);
+          print('delete: $delete');
+          if (delete)
+            print('Deleted successfully');
+          else
+            print('Failed to delete imported account');
+          found = true;
+          break;
+        }
+      }
+      //Continuing after for...
+      return found ? true : false;
+    }
+  }
+
+  ///Added import boolean function when creating accounts, so it can check whether account
+  ///is imported or not.  It also makes so when creating a new account from the same seed,
+  ///it won't even attempt to check other imported accounts as they shouldn't be of worry
+  ///otherwise, leave import to default
+  Future<String> readWalletJson({position = -1, bool import = true}) async {
     String content;
     try {
       final file = await this.fileManager.accountFile();
       List contents = jsonDecode(await file.readAsString());
 
-      List list = await this.fileManager.importedAccountFileRead();
-      for (var i = 0; i < list.length; i++) {
-        contents.add(list[i][0]);
+      if (import) {
+        List list = await this.fileManager.importedAccountFileRead();
+        for (var i = 0; i < list.length; i++) {
+          contents.add(list[i][0]);
+        }
       }
 
       content = (position == -1 ? jsonEncode(contents) : jsonEncode(contents[position]["data"]));
@@ -164,9 +224,9 @@ class WalletManager {
     Credentials credentFromHex = EthPrivateKey.fromHex(privateKey);
     Wallet _wallet = Wallet.createNew(credentFromHex, password, _rng);
 
-    if (title.length == 0) {
-      title = "-unnamed $slot-";
-    }
+    // if (title.length == 0) {
+    //   title = "-unnamed $slot-";
+    // }
 
     Map accountObject = {
       "slot": slot,
@@ -181,7 +241,7 @@ class WalletManager {
       // if (appState.accountList.isEmpty) {
       walletObject = [accountObject];
     } else {
-      walletObject = jsonDecode(await readWalletJson());
+      walletObject = jsonDecode(await readWalletJson(import: false));
       walletObject.add(accountObject);
     }
 
@@ -264,10 +324,9 @@ class WalletManager {
     BigInt amount,
     int maxGas,
     BigInt gasPrice,
-    String token,
-    {
-      List<ValueNotifier> listNotifier,
-    }) async {
+    String token, {
+    List<ValueNotifier> listNotifier,
+  }) async {
     print("sendTransaction \n${[wallet, address, amount, token]}");
     bool hasEnough = await services.hasEnoughBalanceToPayTaxes(wallet.currentAccount.networkTokenBalance, amount, gasPrice);
     print("hasEnoughBalanceToPayTaxes? $hasEnough");
@@ -385,19 +444,18 @@ class WalletManager {
     // app.activeContracts.sContracts.addContract(abi, address, chainId, name, res)
   }
 
-  BigInt calculateTransactionCost(BigInt amount, BigInt gasLimit, BigInt gasPrice)
-  {
+  BigInt calculateTransactionCost(BigInt amount, BigInt gasLimit, BigInt gasPrice) {
     // Amount is in fixed point (10^18 Wei), gas limit is in Wei, gas price is in Gwei (10^9 Wei)
     BigInt totalU256 = amount + (gasLimit * gasPrice);
     printError("totalU256 $totalU256");
     return totalU256;
   }
 
-  Future<EtherAmount> getGasPrice() async
-  {
+  Future<EtherAmount> getGasPrice() async {
     Client httpClient = Client();
     Web3Client ethClient = Web3Client(dotenv.get('NETWORK_URL'), httpClient);
     EtherAmount networkGas = await ethClient.getGasPrice();
+
     ///Adding 20 GWEI as a "safe" to approve the transaction
     BigInt graceGas = BigInt.from((20 * pow(10, 9)));
     return EtherAmount.inWei(networkGas.getInWei + graceGas);
