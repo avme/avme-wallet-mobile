@@ -22,6 +22,7 @@ class TransactionInformation with ChangeNotifier {
     web3Dart.EtherAmount tokenValue,
     String to,
     String tokenName,
+    String operation = "Exchange between accounts"
   }) {
     DateTime now = DateTime.now();
     String formattedDate = DateFormat("yyyy-MM-dd HH-mm-ss").format(now);
@@ -48,7 +49,7 @@ class TransactionInformation with ChangeNotifier {
     transaction["confirmed"] = true;
     transaction["invalid"] = false;
     transaction["creates"] = "";
-    transaction["operation"] = "Exchange between accounts";
+    transaction["operation"] = operation;
   }
 
   void writeTransaction() async {

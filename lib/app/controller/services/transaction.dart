@@ -28,6 +28,94 @@ Future<bool> hasEnoughBalanceToPayTaxes(BigInt balance, BigInt amount, BigInt ga
   return tax > balance ? false : true;
 }
 
+Future<String> sendRaw(
+  AvmeWallet appState,
+  String contractAddress,
+  BigInt amount,
+  int maxGas,
+  BigInt gasPriceBigInt,
+  {
+    List<ValueNotifier> listNotifier,
+    Uint8List data,
+  }) async {
+  Client httpClient = Client();
+  Web3Client ethClient = Web3Client(url, httpClient);
+  EtherAmount gasPrice = EtherAmount.inWei(gasPriceBigInt);
+  EthereumAddress ethereumAddress = EthereumAddress.fromHex(contractAddress);
+  Map<String, List> contracts = Contracts.getInstance().contracts;
+
+  Transaction transaction = Transaction(
+    to: ethereumAddress,
+    maxGas: maxGas,
+    gasPrice: gasPrice,
+    data: data,
+    value: EtherAmount.inWei(amount),
+  );
+  listNotifier = listNotifier ?? [ValueNotifier<int>(0), ValueNotifier<String>("")];
+  listNotifier[0].value = 40;
+  listNotifier[1].value = "Signing Transaction";
+
+  String transactionHash;
+  Web3Client transactionClient;
+
+  print("AVAX - MAINNET");
+
+  ///Get the chainId
+  // int chainId = (await ethClient.getChainId()).toInt();
+  int chainId = int.tryParse(dotenv.get("CHAIN_ID")) ?? 43114;
+  print("MEU CHAIN ID $chainId");
+  Credentials accountCredentials = appState.currentAccount.walletObj.privateKey;
+  // Uint8List signedTransaction = await accountCredentials.sign(data);
+  Uint8List signedTransaction = await ethClient.signTransaction(
+    accountCredentials,
+    transaction,
+    chainId: chainId,
+  );
+  print("[signedTransaction]");
+  print(signedTransaction);
+  transactionHash = await ethClient.sendRawTransaction(signedTransaction);
+
+  // transactionHash = await ethClient.callRaw(sender: sender,contract: ethereumAddress, data: signedTransaction);
+  print("[transactionHash]$transactionHash");
+  listNotifier[0].value = 60;
+  listNotifier[1].value = "Sending Transaction";
+  transactionClient = ethClient;
+
+  print(transactionHash);
+  listNotifier[0].value = 90;
+  listNotifier[1].value = "Confirming Transaction";
+
+  int secondsPassed = 0;
+  while (true) {
+    try {
+      await Future.delayed(Duration(seconds: 1));
+      TransactionReceipt transactionReceipt = await transactionClient.getTransactionReceipt(transactionHash);
+      print("[info] Receipt: $transactionReceipt");
+      if (transactionReceipt.status) {
+        TransactionInformation transactionInformation = await transactionClient.getTransactionByHash(transactionHash);
+        print("[Info] seconds passed: $secondsPassed, and returned $transactionInformation");
+        if (transactionInformation != null) {
+          appState.lastTransactionWasSucessful
+            .setLastTransactionInformation(
+              transactionInformation,
+              tokenValue: EtherAmount.inWei(amount),
+              to: contractAddress.toString(),
+              tokenName: "AVAX",
+              operation: "Interaction with Contract"
+          );
+          appState.lastTransactionWasSucessful.writeTransaction();
+          break;
+        }
+      }
+    } catch (e) {
+      print("ERROR $e");
+    }
+  }
+  listNotifier[0].value = 100;
+  listNotifier[1].value = "Done";
+  return transactionHash;
+}
+
 Future<String> sendTransaction(
   AvmeWallet appState,
   String receiverAddress,

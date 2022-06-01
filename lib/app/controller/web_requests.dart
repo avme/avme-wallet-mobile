@@ -1,6 +1,7 @@
 // @dart=2.12
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:avme_wallet/app/controller/services/navigation_service.dart';
 import 'package:avme_wallet/app/controller/web/web_utils.dart';
@@ -14,7 +15,10 @@ import 'package:avme_wallet/app/screens/prototype/widgets/webview/popup/approve_
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
+import 'package:web3dart/crypto.dart';
+import 'package:web3dart/web3dart.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import '../controller/services/transaction.dart';
 
 import '../screens/prototype/widgets/webview/popup/allow_site.dart';
 
@@ -154,36 +158,84 @@ async {
     }
   }
 
-  if(requestTransaction.contains(request["method"]))
-  {
-    Map<String, String> transactionData = {
-      "origin": origin
-    };
+  if(requestTransaction.contains(request["method"])) {
+    String data = "",
+        gas = "",
+        value = "",
+        from = "",
+        to = "";
 
-    if(request["params"][0].containsKey("data"))
-      transactionData["data"] = request["params"][0]["data"];
+    if (request["params"][0].containsKey("data"))
+      data = request["params"][0]["data"];
     if (request["params"][0].containsKey("gas")) {
-      transactionData["gas"] = request["params"][0]["gas"];
+      gas = request["params"][0]["gas"];
     } else {
-      transactionData["gas"] = "0xc3500";
+      gas = "0xc3500";
     }
-    if (request["params"][0].containsKey("value")) { // Value input is optional! check if exists to set it properly.
-      transactionData["value"] = request["params"][0]["value"];
+    if (request["params"][0].containsKey(
+        "value")) { // Value input is optional! check if exists to set it properly.
+      value = request["params"][0]["value"];
     } else {
-      transactionData["value"] = "0x0";
+      value = "0x0";
     }
 
-    transactionData["from"] = request["params"][0]["from"];
-    transactionData["to"] = request["params"][0]["to"];
+    from = request["params"][0]["from"];
+    to = request["params"][0]["to"];
 
-    bool approved = await requestApproveTransaction(context, transactionData, allowedUrls: allowedUrls);
+    int _gasLimit = int.parse(gas.replaceAll('0x', ''), radix: 16);
 
-    printError("REQUESTING TRANSACTION data: ${transactionData["data"]}, approved: $approved");
+    EtherAmount valueAmount = EtherAmount.inWei(
+        BigInt.from(int.parse(value.replaceAll('0x', ''), radix: 16)));
+    printOk("data: $data, gas: $gas, ");
+
+    /// Awaiting the user to confirm the transaction
+    AvmeWallet app = Provider.of<AvmeWallet>(context, listen: false);
+
+    /// + 2000000000
+    EtherAmount gasPrice = await app.walletManager.getGasPrice();
+    EtherAmount gasLimit = EtherAmount.fromUnitAndValue(
+        EtherUnit.gwei, BigInt.from(_gasLimit));
+    printWarning(
+        "app.walletManager.calculateTransactionCost(${valueAmount.getInWei
+            .toString()}, $_gasLimit, ${gasPrice.getInWei.toString()})");
+    BigInt _totalCost = app.walletManager.calculateTransactionCost(
+        valueAmount.getInWei, BigInt.from(_gasLimit), gasPrice.getInWei);
+    BigInt _fee = _totalCost - valueAmount.getInWei;
+    printError("totalCost: $_totalCost, fee: $_fee");
+
+    EtherAmount fee = EtherAmount.fromUnitAndValue(EtherUnit.wei, _fee);
+
+    bool approved = await requestApproveTransaction(
+      context,
+      origin,
+      gasPrice: gasPrice,
+      gasLimit: gasLimit,
+      valueAmount: valueAmount,
+      unlocked: true,
+      fee: fee,
+    );
     if(approved == false)
     {
       response["error"] = {
         "code": 4001,
         "error": errorList[4001],
+      };
+    }
+    else
+    {
+      String hash = await sendRaw(
+        app,
+        to,
+        valueAmount.getInWei,
+        gasLimit.getValueInUnit(EtherUnit.gwei).toInt(),
+        gasPrice.getInWei,
+        data: hexToBytes(data)
+      );
+      printError("PROCESSED DATAS $hash");
+      response = {
+        "jsonrpc" : "2.0",
+        "id" : request["id"],
+        "result" : hash
       };
     }
   }
