@@ -18,22 +18,22 @@ async {
         canClose: true,
         actions: [
           AppNeonButton(
-              expanded: false,
-              onPressed: () {
-                allowedUrls.blockSite(origin);
-                Navigator.of(context).pop();
-                onWait.complete(false);
-              },
-              text: "CANCEL"
+            expanded: false,
+            onPressed: () {
+              allowedUrls.blockSite(origin);
+              Navigator.of(context).pop();
+              onWait.complete(false);
+            },
+            text: "DENY"
           ),
           AppButton(
-              expanded: false,
-              onPressed: () {
-                allowedUrls.allowSite(origin);
-                Navigator.of(context).pop();
-                onWait.complete(true);
-              },
-              text: "ALLOW"
+            expanded: false,
+            onPressed: () {
+              allowedUrls.allowSite(origin);
+              Navigator.of(context).pop();
+              onWait.complete(true);
+            },
+            text: "ALLOW"
           ),
         ],
         children: [
