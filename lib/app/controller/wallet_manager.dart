@@ -264,9 +264,10 @@ class WalletManager {
     BigInt amount,
     int maxGas,
     BigInt gasPrice,
-    String token, {
-    List<ValueNotifier> listNotifier,
-  }) async {
+    String token,
+    {
+      List<ValueNotifier> listNotifier,
+    }) async {
     print("sendTransaction \n${[wallet, address, amount, token]}");
     bool hasEnough = await services.hasEnoughBalanceToPayTaxes(wallet.currentAccount.networkTokenBalance, amount, gasPrice);
     print("hasEnoughBalanceToPayTaxes? $hasEnough");
@@ -382,5 +383,23 @@ class WalletManager {
     }
 
     // app.activeContracts.sContracts.addContract(abi, address, chainId, name, res)
+  }
+
+  BigInt calculateTransactionCost(BigInt amount, BigInt gasLimit, BigInt gasPrice)
+  {
+    // Amount is in fixed point (10^18 Wei), gas limit is in Wei, gas price is in Gwei (10^9 Wei)
+    BigInt totalU256 = amount + (gasLimit * gasPrice);
+    printError("totalU256 $totalU256");
+    return totalU256;
+  }
+
+  Future<EtherAmount> getGasPrice() async
+  {
+    Client httpClient = Client();
+    Web3Client ethClient = Web3Client(dotenv.get('NETWORK_URL'), httpClient);
+    EtherAmount networkGas = await ethClient.getGasPrice();
+    ///Adding 20 GWEI as a "safe" to approve the transaction
+    BigInt graceGas = BigInt.from((20 * pow(10, 9)));
+    return EtherAmount.inWei(networkGas.getInWei + graceGas);
   }
 }
