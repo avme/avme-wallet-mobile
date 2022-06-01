@@ -7,19 +7,19 @@ import 'package:flutter/material.dart';
 import 'gradient_container.dart';
 
 class GradientCard extends StatefulWidget {
-
   final String address;
   final Function onPressed;
   final Function onIconPressed;
+  final Widget iconChild;
   final String balance;
   final String label;
   final DecorationTween balanceTween;
 
-  GradientCard(
-  {
+  GradientCard({
     @required this.address,
     @required this.onPressed,
     @required this.onIconPressed,
+    @required this.iconChild,
     @required this.balance,
     @required this.label,
     @required this.balanceTween,
@@ -56,7 +56,6 @@ class GradientCard extends StatefulWidget {
 }
 
 class _GradientCardState extends State<GradientCard> {
-
   @override
   void initState() {
     super.initState();
@@ -67,13 +66,9 @@ class _GradientCardState extends State<GradientCard> {
     SizeConfig().init(context);
     return GradientContainer(
         decorationTween: widget.balanceTween,
-        onPressed: (){},
+        onPressed: () {},
         child: Padding(
-          padding: const EdgeInsets.only(
-            top: 16.0,
-            bottom: 16.0,
-            left: 16.0
-          ),
+          padding: const EdgeInsets.only(top: 16.0, bottom: 16.0, left: 16.0),
           child: Row(
             children: [
               ///Fist Column with Data.
@@ -81,29 +76,36 @@ class _GradientCardState extends State<GradientCard> {
                 child: GestureDetector(
                   onTap: widget.onPressed,
                   child: Container(
-                    color:Colors.transparent,
+                    color: Colors.transparent,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(widget.label,style: TextStyle(fontSize: SizeConfig.fontSizeLarge)),
-                        SizedBox(height: 8,),
-                        Text("\$${widget.balance}",
+                        Text(widget.label, style: TextStyle(fontSize: SizeConfig.fontSizeLarge)),
+                        SizedBox(
+                          height: 8,
+                        ),
+                        Text(
+                          "\$${widget.balance}",
                           style: TextStyle(
-                            fontSize: SizeConfig.fontSizeLarge*1.1,
-                          ),),
-                        SizedBox(height: 18,),
+                            fontSize: SizeConfig.fontSizeLarge * 1.1,
+                          ),
+                        ),
+                        SizedBox(
+                          height: 18,
+                        ),
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Icon(Icons.copy),
-                            SizedBox(width: 8,),
+                            SizedBox(
+                              width: 8,
+                            ),
                             Flexible(
                               child: Column(
                                 children: [
-                                  Text("${widget.address}",
-                                    style: TextStyle(
-                                      fontSize: SizeConfig.fontSize
-                                    ),
+                                  Text(
+                                    "${widget.address}",
+                                    style: TextStyle(fontSize: SizeConfig.fontSize),
                                   ),
                                 ],
                               ),
@@ -115,18 +117,23 @@ class _GradientCardState extends State<GradientCard> {
                   ),
                 ),
               ),
+
               ///This is the second column, icon only
               Column(
                 children: [
                   TextButton(
-                    child: Icon(Icons.account_circle_outlined, size: 36,color: Colors.white,),
+                    child: Icon(
+                      Icons.account_circle_outlined,
+                      size: 36,
+                      color: Colors.white,
+                    ),
                     onPressed: widget.onIconPressed,
                   ),
+                  widget.iconChild
                 ],
               )
             ],
           ),
-        )
-    );
+        ));
   }
 }
