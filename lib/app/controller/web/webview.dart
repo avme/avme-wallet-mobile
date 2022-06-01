@@ -38,6 +38,7 @@ class AppWebViewController{
 
   get cookieManager => _cookieManager;
   get initialUrl => _initialUrl;
+  get currentController => _internalController;
 
   Stream get onPageStarted => _onPageStartedController.stream.asBroadcastStream();
   Stream<Map> get onHistory => _onHistoryController.stream.asBroadcastStream();

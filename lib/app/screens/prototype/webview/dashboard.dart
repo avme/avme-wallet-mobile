@@ -22,6 +22,7 @@ import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'dart:math' as math;
 
+import '../widgets/app_hint.dart';
 import 'bottom_navigation.dart';
 import 'discover.dart';
 
@@ -150,8 +151,6 @@ class _DashboardState extends State<Dashboard> {
   Widget build(BuildContext context) {
     double verticalButtons = SizeConfig.safeBlockVertical * 1;
     double horizontalButtons = SizeConfig.safeBlockVertical * 2;
-
-    TextEditingController dashSearch = TextEditingController();
 
     BorderRadius _borderR = BorderRadius.only(
       topLeft: Radius.circular(16),
@@ -344,32 +343,9 @@ class _DashboardState extends State<Dashboard> {
                                                               ),
                                                             ],
                                                           ),
-                                                          child: TextFormField(
-                                                            controller: dashSearch,
-                                                            onFieldSubmitted: (String formData){
-                                                              redirect(formData);
-                                                            },
-                                                            decoration: InputDecoration(
-                                                              filled: true,
-                                                              hintText: 'Search or type URL',
-                                                              fillColor: AppColors.purpleDark3,
-                                                              suffixIcon: GestureDetector(
-                                                                onTap: () {
-                                                                  redirect(dashSearch.text);
-                                                                },
-                                                                child: Transform(
-                                                                    alignment: Alignment.center,
-                                                                    transform: Matrix4.rotationY(math.pi),
-                                                                    child: Icon(Icons.search, size: 28, color: AppColors.labelDefaultColor,)
-                                                                ),
-                                                              ),
-                                                              contentPadding: const EdgeInsets.symmetric(
-                                                                  vertical: 16,
-                                                                  horizontal: 16
-                                                              ),
-                                                              isDense: true,
-                                                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
-                                                            ),
+                                                          child: DashboardSearch(
+                                                            browserUtility: browserIndexController,
+                                                            browserController: browserController.controller.future,
                                                           ),
                                                         ),
                                                       ),
@@ -434,11 +410,96 @@ class _DashboardState extends State<Dashboard> {
     browserIndexController.close();
     super.dispose();
   }
+}
 
-  void redirect(String url) {
-    NotificationBar().show(context, text: url);
+class DashboardSearch extends StatefulWidget {
+  const DashboardSearch({
+    required this.browserController,
+    required this.browserUtility
+  });
+  final StreamController<int> browserUtility;
+  final Future<WebViewController> browserController;
+
+  @override
+  State<DashboardSearch> createState() => _DashboardSearchState();
+}
+
+class _DashboardSearchState extends State<DashboardSearch> {
+
+  late Future<bool> search;
+  late WebViewController controller;
+
+  TextEditingController dashSearch = TextEditingController();
+
+  Future<bool> _search() async
+  {
+    controller = await widget.browserController;
+    return true;
+  }
+
+  @override
+  void initState() {
+    search = _search();
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      controller: dashSearch,
+      // onFieldSubmitted: (String formData){
+      //   redirect(formData);
+      // },
+      onFieldSubmitted: dashboardSearch,
+      decoration: InputDecoration(
+        filled: true,
+        hintText: 'Search or type URL',
+        fillColor: AppColors.purpleDark3,
+        suffixIcon: GestureDetector(
+          onTap: () {
+            dashboardSearch(dashSearch.text);
+          },
+          child: Transform(
+            alignment: Alignment.center,
+            transform: Matrix4.rotationY(math.pi),
+            child: Icon(Icons.search, size: 28, color: AppColors.labelDefaultColor,)
+          ),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 16,
+          horizontal: 16
+        ),
+        isDense: true,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
+      ),
+    );
+  }
+
+  Future<void> dashboardSearch(String _query) async {
+    String? url;
+    String pattern = r'(http|https)://[\w-]+(\.[\w-]+)+([\w.,@?^=%&amp;:/~+#-]*[\w@?^=%&amp;/~+#-])?';
+    RegExp regExp = new RegExp(pattern);
+    if (_query.length == 0)
+    {
+      return;
+    }
+    else if (!regExp.hasMatch(_query))
+    {
+      url = "https://www.google.com/search?q=$_query";
+    }
+    else
+    {
+      url = _query;
+    }
+    // AppHint.show("$url");
+    controller.loadUrl(url);
+    widget.browserUtility.add(1);
+    dashSearch.text = "";
+    setState(() {});
+    // AppHint.show("${await controller.currentUrl()}");
   }
 }
+
 
 class DashboardTabs extends StatefulWidget {
 
