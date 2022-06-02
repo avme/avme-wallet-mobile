@@ -11,6 +11,7 @@ import 'package:avme_wallet/app/model/app.dart';
 import 'package:avme_wallet/app/screens/prototype/app_drawer.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/app_hint.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/button.dart';
+import 'package:avme_wallet/app/screens/prototype/widgets/card.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/gradient_card.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/neon_button.dart';
 import 'package:avme_wallet/app/screens/prototype/widgets/notification_bar.dart';
@@ -22,6 +23,7 @@ import 'package:avme_wallet/app/screens/widgets/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_restart/flutter_restart.dart';
 import 'package:provider/provider.dart';
 
 import '../../../controller/file_manager.dart';
@@ -93,55 +95,7 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                   child: GestureDetector(
                     onTap: () {
                       if (key != 0) {
-                        showDialog(
-                            context: context,
-                            builder: (_) => StatefulBuilder(
-                                builder: (builder, setState) => AppPopupWidget(
-                                      title: "Delete Account",
-                                      cancelable: false,
-                                      showIndicator: false,
-                                      padding: EdgeInsets.all(20),
-                                      children: [
-                                        Column(
-                                          children: [
-                                            Padding(
-                                              padding: EdgeInsets.only(
-                                                  bottom: SizeConfig.blockSizeHorizontal * 4,
-                                                  left: SizeConfig.blockSizeHorizontal * 2,
-                                                  right: SizeConfig.blockSizeHorizontal * 2),
-                                              child: Text(
-                                                'Are you sure you want to delete\naccount ${widget.app.accountList[key].title}?',
-                                                style: AppTextStyles.spanWhiteMedium,
-                                              ),
-                                            ),
-                                            Container(
-                                                width: SizeConfig.screenWidth / 3,
-                                                child: AppNeonButton(
-                                                  onPressed: () async {
-                                                    print('Pressed key $key with following info:');
-                                                    print(widget.app.accountList[key].title);
-                                                    Navigator.pop(context);
-                                                    await deleteAccountByName(widget.app, widget.app.accountList[key].title, key);
-                                                  },
-                                                  text: 'YES',
-                                                  // size: SizeConfig.fontSizeLarge,
-                                                  textStyle: AppTextStyles.spanWhite,
-                                                )),
-                                            SizedBox(
-                                              height: SizeConfig.blockSizeVertical * 2,
-                                            ),
-                                            Container(
-                                                width: SizeConfig.screenWidth / 3,
-                                                child: AppNeonButton(
-                                                  onPressed: () => Navigator.pop(context),
-                                                  text: 'NO',
-                                                  // size: SizeConfig.fontSizeLarge,
-                                                  textStyle: AppTextStyles.spanWhite,
-                                                )),
-                                          ],
-                                        ),
-                                      ],
-                                    )));
+                        passwordScreen(widget.app, false, delete: true, key: key);
                       } else {
                         AppHint.show('Cannot delete Default Account');
                       }
@@ -176,15 +130,99 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
     return CustomAppDrawer(header(), finalDrawer.asMap(), footer(widget.app));
   }
 
-  Future<void> deleteAccountByName(AvmeWallet app, String name, int key) async {
+  void deleteScreen(int key, String password) {
+    showDialog(
+        context: context,
+        builder: (_) => StatefulBuilder(
+            builder: (builder, setState) => AppPopupWidget(
+                  title: "Delete Account",
+                  cancelable: false,
+                  showIndicator: false,
+                  padding: EdgeInsets.all(20),
+                  children: [
+                    Column(
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.only(
+                              bottom: SizeConfig.blockSizeHorizontal * 4,
+                              left: SizeConfig.blockSizeHorizontal * 2,
+                              right: SizeConfig.blockSizeHorizontal * 2),
+                          child: Text(
+                            'Are you sure you want to delete\naccount ${widget.app.accountList[key].title}?',
+                            style: AppTextStyles.spanWhiteMedium,
+                          ),
+                        ),
+                        Container(
+                            width: SizeConfig.screenWidth / 3,
+                            child: AppNeonButton(
+                              onPressed: () async {
+                                Navigator.pop(context);
+                                await deleteAccountByName(widget.app.accountList[key].title, key, widget.app);
+                              },
+                              text: 'YES',
+                              // size: SizeConfig.fontSizeLarge,
+                              textStyle: AppTextStyles.spanWhite,
+                            )),
+                        SizedBox(
+                          height: SizeConfig.blockSizeVertical * 2,
+                        ),
+                        Container(
+                            width: SizeConfig.screenWidth / 3,
+                            child: AppNeonButton(
+                              onPressed: () => Navigator.pop(context),
+                              text: 'NO',
+                              // size: SizeConfig.fontSizeLarge,
+                              textStyle: AppTextStyles.spanWhite,
+                            )),
+                      ],
+                    ),
+                  ],
+                )));
+  }
+
+  Future<void> deleteAccountByName(String name, int key, AvmeWallet app) async {
     showDialog(
         context: context,
         builder: (_) => ProgressPopup(
             title: "Finished",
-            future: app.walletManager.deleteAccountByName(widget.app.accountList[key].title).then((value) async {
-              //Do the whole thing idk
-              return value ? [Text('Account $name deleted successfully')] : [Text('Account $name failed to delete')];
+            future: app.walletManager.deleteAccountByName(app.accountList[key].title).then((value) async {
+              await Future.delayed(Duration(seconds: 1));
+              if (value) restartApp();
+              return value ? [Text('Account $name deleted successfully!  Restarting app...')] : [Text('Account $name failed to delete')];
             })));
+  }
+
+  Future<void> restartApp() async {
+    Navigator.pop(context);
+    Navigator.push(context, MaterialPageRoute(builder: (context) {
+      return AppCard(
+        child: Container(
+          width: double.maxFinite,
+          height: double.maxFinite,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(
+                  color: AppColors.purple,
+                  strokeWidth: 6,
+                ),
+                SizedBox(
+                  height: 16,
+                ),
+                Text(
+                  'Restarting app...',
+                  style: AppTextStyles.label,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }));
+    await Future.delayed(Duration(seconds: 2));
+    FlutterRestart.restartApp();
   }
 
   String _totalBalance(AccountObject accountObject) {
@@ -451,7 +489,7 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
             }));
   }
 
-  void passwordScreen(AvmeWallet app, bool import) async {
+  void passwordScreen(AvmeWallet app, bool import, {bool delete = false, int key}) async {
     showDialog(
         context: context,
         builder: (_) => StatefulBuilder(builder: (builder, setState) {
@@ -488,7 +526,7 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                         hintText: "**********",
                         onFieldSubmitted: (_) {
                           Navigator.of(context).pop();
-                          authenticate(app, passwordInput.text, import);
+                          authenticate(app, passwordInput.text, import, delete: delete, key: key);
                           passwordInput.clear();
                         },
                         icon: canAuthenticate
@@ -503,7 +541,7 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                             dynamic _temp = await authApi.retrieveSecret();
                             if (_temp is String) {
                               Navigator.of(context).pop();
-                              authenticate(app, _temp, import);
+                              authenticate(app, _temp, import, delete: delete, key: key);
                             }
                           }
                         },
@@ -514,7 +552,7 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                       ElevatedButton(
                         onPressed: () async {
                           Navigator.of(context).pop();
-                          authenticate(app, passwordInput.text, import);
+                          authenticate(app, passwordInput.text, import, delete: delete, key: key);
                           passwordInput.clear();
                         },
                         child: Text("VERIFY PASSWORD"),
@@ -532,12 +570,12 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
       dynamic _temp = await authApi.retrieveSecret();
       if (_temp is String) {
         Navigator.of(context).pop();
-        authenticate(app, _temp, import);
+        authenticate(app, _temp, import, delete: delete, key: key);
       }
     }
   }
 
-  void authenticate(AvmeWallet app, String passwordInput, bool import) async {
+  void authenticate(AvmeWallet app, String passwordInput, bool import, {bool delete, int key}) async {
     bool empty = (passwordInput == null || passwordInput.length == 0) ? true : false;
     if (empty)
       showDialog(
@@ -566,7 +604,15 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
       if (valid) {
         // Navigator.of(context).pop();
         FocusScope.of(context).unfocus();
-        import ? importScreen(app, passwordInput) : newAccountPopup(app, false, passwordInput);
+        if (import) {
+          importScreen(app, passwordInput);
+        } else {
+          if (delete) {
+            deleteScreen(key, passwordInput);
+          } else {
+            newAccountPopup(app, false, passwordInput);
+          }
+        }
       } else {
         NotificationBar().show(context, text: "Failed to Authenticate");
       }
@@ -755,7 +801,6 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                                         String _title;
                                         //Default, in case it doesn't find any unnamed accounts, only default account
                                         if (app.accountList.length == 1) {
-                                          print('app.accountList.length == 1');
                                           _title = 'unnamed 1';
                                         } else {
                                           //Searches for the list and flicks to true if it finds unnamed number.
@@ -789,7 +834,6 @@ class _AccountsDrawerState extends State<AccountsDrawer> {
                                         bool alreadyExists = false;
                                         for (int i = 0; i < app.accountList.length; i++) {
                                           if (nameController.text == app.accountList[i].title) {
-                                            print('alreadyExists = true');
                                             alreadyExists = true;
                                           }
                                         }

@@ -35,21 +35,16 @@ class WalletManager {
   WalletManager(this.fileManager);
 
   Future<File> writeWalletJson(String json, {bool import}) async {
-    print('writeWalletJson import: $import');
     File file;
     if (!import) {
-      print('import = false');
       // default, creates the folder for a first time initialization or multiple accounts for the default seed
       file = await this.fileManager.accountFile();
       // print("$json");
       await file.writeAsString("$json");
     } else {
-      print('import = true');
       // check for accounts1, accounts2, accounts3 ... until finds an empty one.
       // should be Accounts/ImportedAccounts/importedAccount[number].json
       file = await this.fileManager.importedAccountFile();
-      print('file $file');
-      print('file ${file.toString()}');
       await file.writeAsString("$json");
     }
     print("writeWalletJson has finished");
@@ -57,14 +52,11 @@ class WalletManager {
   }
 
   Future<bool> deleteAccountByName(String name) async {
-    print('Deleteing account $name...');
-    print('Checking the default accounts.json created from the same seed...');
     bool found = false;
     File file = await this.fileManager.accountFile();
     List contents = jsonDecode(await file.readAsString());
     for (int i = 0; i < contents.length; i++) {
       if (contents[i]['title'] == name) {
-        print('Found a match for $name! Deleting...');
         contents.removeAt(i);
         found = true;
       }
@@ -76,31 +68,23 @@ class WalletManager {
       await file.writeAsString("$json");
       return true;
     } else {
-      print('Not found in main');
-      print('Checking the imported accounts from importedAccountX.json created from a different seed...');
       //Has to grab one, check, then move on to the next if false, or delete that one if true
       found = false;
       dynamic _temp;
       for (int i = 0; i < 9; i++) {
-        print('Entering loop...');
         _temp = await this.fileManager.readImported(i);
-        print('_temp = $_temp');
 
         //Continue in dart means restarting the for at the next iteration.  Go figure...
         if (_temp == false) continue;
 
-        print('Continuing!');
-
         contents = jsonDecode(await _temp.readAsString());
-        print('contents $contents');
         if (contents.first['title'] == name) {
-          print('Found an imported match for $name! Deleting...');
           bool delete = await this.fileManager.deleteImported(i);
-          print('delete: $delete');
-          if (delete)
+          if (delete) {
             print('Deleted successfully');
-          else
+          } else {
             print('Failed to delete imported account');
+          }
           found = true;
           break;
         }
