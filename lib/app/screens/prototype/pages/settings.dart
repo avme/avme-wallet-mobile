@@ -159,6 +159,7 @@ class _SettingsState extends State<Settings> {
                       onChanged: (int selectedValue) {
                         textInput.text = selectedValue.toString();
                         if (_size.currentState != null) _size.currentState.validate();
+                        print(textInput.text);
                       },
                       style: const TextStyle(color: Colors.white),
                       decoration: InputDecoration(
@@ -186,9 +187,6 @@ class _SettingsState extends State<Settings> {
                 onPressed: () async {
                   if (_size.currentState != null && _size.currentState.validate()) {
                     //Salvar valor e pop
-                    // Phoenix.rebirth(context);
-                    // Navigator.of(context).pop();
-                    //displaySendTokens(context);
                     file(1, textInput.text);
                   }
                   Navigator.push(context, MaterialPageRoute(builder: (context) {
