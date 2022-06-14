@@ -870,7 +870,7 @@ class _ImportAccountTileState extends State<ImportAccountTile> {
                                 Row(
                                   children: [
                                     Expanded(
-                                      flex: 10,
+                                      flex: 9,
                                       child: Text(
                                         "Fill in mnemonic phrase to import an account",
                                         style: AppTextStyles.spanWhite,
@@ -897,7 +897,7 @@ class _ImportAccountTileState extends State<ImportAccountTile> {
                                               dropdownColor: AppColors.purple,
                                               autofocus: false,
                                               onChanged: (v) => dropChange(v),
-                                              style: AppTextStyles.spanWhiteMedium,
+                                              style: AppTextStyles.spanWhite,
                                               value: _dropValue,
                                               underline: SizedBox(),
                                               isExpanded: true,
@@ -924,6 +924,7 @@ class _ImportAccountTileState extends State<ImportAccountTile> {
                                             text: '',
                                             paddingBetweenIcons: SizeConfig.blockSizeHorizontal * 5,
                                             iconData: Icons.content_paste,
+                                            // iconSize: 20,
                                           )),
                                     ),
                                   ],

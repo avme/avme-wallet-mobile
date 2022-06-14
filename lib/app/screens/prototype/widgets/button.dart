@@ -7,6 +7,7 @@ class AppButton extends StatelessWidget {
   final VoidCallback onPressed;
   final String text;
   final IconData? iconData;
+  final double? iconSize;
   final double? height;
   final double? width;
   final double? size;
@@ -25,6 +26,7 @@ class AppButton extends StatelessWidget {
     required this.onPressed,
     required this.text,
     this.iconData,
+    this.iconSize,
     this.mainAxisAlignment,
     this.paddingBetweenIcons,
     this.height,
@@ -45,72 +47,58 @@ class AppButton extends StatelessWidget {
     SizeConfig().init(context);
     List<Widget> children = [];
 
-    if(this.iconData != null)
-    {
-      children.add(
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: this.paddingBetweenIcons ?? SizeConfig.safeBlockHorizontal * 2.5),
-            child: Icon(this.iconData, color: this.enabled ? Colors.white : Colors.grey,),
-          )
-      );
+    if (this.iconData != null) {
+      children.add(Padding(
+        padding: EdgeInsets.symmetric(horizontal: this.paddingBetweenIcons ?? SizeConfig.safeBlockHorizontal * 2.5),
+        child: Icon(
+          this.iconData,
+          color: this.enabled ? Colors.white : Colors.grey,
+          size: iconSize ?? 24.0,
+        ),
+      ));
     }
 
-    TextStyle btnStyle = this.textStyle ?? TextStyle(
-      color: this.enabled ? Colors.white : AppColors.labelDisabledColor,
-      fontSize: this.size ?? SizeConfig.spanSize * 1.6);
+    TextStyle btnStyle = this.textStyle ??
+        TextStyle(color: this.enabled ? Colors.white : AppColors.labelDisabledColor, fontSize: this.size ?? SizeConfig.spanSize * 1.6);
 
     btnStyle = btnStyle.copyWith(fontSize: this.size ?? SizeConfig.spanSize * 1.6);
 
-    children.add(
-        Flexible(
-          child: Padding(
-            padding: this.iconData != null ? EdgeInsets.zero : EdgeInsets.symmetric(horizontal: SizeConfig.safeBlockHorizontal * 4),
-            child: Text(text,style: this.textStyle ??
-                btnStyle,
-              textAlign: TextAlign.left,
-              overflow: this.textOverflow,
-              maxLines: this.maxLines,
-            ),
-          ),
-        )
-    );
+    children.add(Flexible(
+      child: Padding(
+        padding: this.iconData != null ? EdgeInsets.zero : EdgeInsets.symmetric(horizontal: SizeConfig.safeBlockHorizontal * 4),
+        child: Text(
+          text,
+          style: this.textStyle ?? btnStyle,
+          textAlign: TextAlign.left,
+          overflow: this.textOverflow,
+          maxLines: this.maxLines,
+        ),
+      ),
+    ));
     MainAxisAlignment itemsAlign = this.mainAxisAlignment ?? MainAxisAlignment.center;
 
-    if(this.iconData != null)
-      itemsAlign = MainAxisAlignment.start;
+    if (this.iconData != null) itemsAlign = MainAxisAlignment.start;
 
     return SizedBox(
       height: this.height ?? SizeConfig.safeBlockVertical * 6,
       child: ElevatedButton(
           onPressed: this.enabled ? this.onPressed : null,
-          child: Row(
-              mainAxisAlignment: itemsAlign,
-              mainAxisSize: this.expanded == true ? MainAxisSize.max : MainAxisSize.min,
-              children: children
-          ),
+          child: Row(mainAxisAlignment: itemsAlign, mainAxisSize: this.expanded == true ? MainAxisSize.max : MainAxisSize.min, children: children),
           style: ButtonStyle(
-              backgroundColor: MaterialStateProperty.resolveWith<Color?>((Set<MaterialState> states) {
-                if(states.contains(MaterialState.pressed))
-                  return AppColors.purple;
-                else if (states.contains(MaterialState.disabled))
-                  return AppColors.violet;
-              }),
-              shape: !this.square
-                ? null
-                : MaterialStateProperty.all<RoundedRectangleBorder>(
-                  RoundedRectangleBorder(
-                    borderRadius: BorderRadius.zero)
-                  ),
-              shadowColor: MaterialStateProperty.all<Color>(Colors.transparent),
-              padding: MaterialStateProperty.all<EdgeInsetsGeometry>(EdgeInsets.zero),
-          )
-      ),
+            backgroundColor: MaterialStateProperty.resolveWith<Color?>((Set<MaterialState> states) {
+              if (states.contains(MaterialState.pressed))
+                return AppColors.purple;
+              else if (states.contains(MaterialState.disabled)) return AppColors.violet;
+            }),
+            shape: !this.square ? null : MaterialStateProperty.all<RoundedRectangleBorder>(RoundedRectangleBorder(borderRadius: BorderRadius.zero)),
+            shadowColor: MaterialStateProperty.all<Color>(Colors.transparent),
+            padding: MaterialStateProperty.all<EdgeInsetsGeometry>(EdgeInsets.zero),
+          )),
     );
   }
 }
 
 class AppIconButton extends StatelessWidget {
-
   final double iconSize;
   final VisualDensity? visualDensity;
   final EdgeInsetsGeometry padding;
@@ -119,24 +107,20 @@ class AppIconButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final Widget icon;
 
-
-  const AppIconButton(
-    {
-      this.iconSize = 24.0,
-      this.visualDensity,
-      this.padding = const EdgeInsets.all(8.0),
-      this.alignment = Alignment.center,
-      this.color,
-      this.onPressed,
-      required this.icon,
-    }
-  );
+  const AppIconButton({
+    this.iconSize = 24.0,
+    this.visualDensity,
+    this.padding = const EdgeInsets.all(8.0),
+    this.alignment = Alignment.center,
+    this.color,
+    this.onPressed,
+    required this.icon,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Theme(
-      data:
-        avmeTheme.copyWith(
+      data: avmeTheme.copyWith(
         splashColor: Colors.transparent,
         highlightColor: Colors.transparent,
       ),
@@ -185,11 +169,9 @@ class AppDarkIconButton extends StatelessWidget {
           backgroundColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
             return AppColors.purpleDark3;
           }),
-          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-              RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.0),
-              )
-          ),
+          shape: MaterialStateProperty.all<RoundedRectangleBorder>(RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.0),
+          )),
           shadowColor: MaterialStateProperty.all<Color>(Colors.black),
           elevation: MaterialStateProperty.all(3),
           padding: MaterialStateProperty.all<EdgeInsetsGeometry>(this.padding ?? const EdgeInsets.all(8.0)),
@@ -233,11 +215,9 @@ class AppDarkButton extends StatelessWidget {
           backgroundColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
             return AppColors.purpleDark3;
           }),
-          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-              RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.0),
-              )
-          ),
+          shape: MaterialStateProperty.all<RoundedRectangleBorder>(RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.0),
+          )),
           shadowColor: MaterialStateProperty.all<Color>(Colors.black),
           elevation: MaterialStateProperty.all(3),
           padding: MaterialStateProperty.all<EdgeInsetsGeometry>(this.padding ?? const EdgeInsets.all(8.0)),
