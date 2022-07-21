@@ -1,63 +1,73 @@
-import 'package:avme_wallet/app/controller/contacts.dart';
-import 'package:avme_wallet/app/controller/services/connection.dart';
-import 'package:avme_wallet/app/controller/threads.dart';
-import 'package:avme_wallet/app/screens/widgets/theme.dart';
+import 'package:avme_wallet/app.dart';
+import 'package:avme_wallet/app/src/controller/controller.dart';
+import 'package:avme_wallet/app/src/helper/print.dart';
+import 'package:avme_wallet/app/src/screen/widgets/theme.dart';
 import 'package:flutter/material.dart';
-import 'package:avme_wallet/app/config/routes.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:avme_wallet/app/model/app.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter/services.dart';
-import 'app/controller/file_manager.dart';
-import 'app/controller/services/navigation_service.dart';
-import 'app/model/active_contracts.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'dart:io';
+import 'package:sqflite/sqflite.dart';
 
-main() async{
+import 'app/src/controller/routes.dart';
+
+Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  AppConnection appConnection = AppConnection.getInstance();
-  appConnection.initialize();
-
-  Threads threads = Threads.getInstance();
-  threads.initialize();
-
   await dotenv.load(fileName: ".env");
-  FileManager fileManager = FileManager();
-  ActiveContracts activeContracts = ActiveContracts(fileManager);
-  runApp(MultiProvider(
-    providers: [
-      ChangeNotifierProvider<AvmeWallet>(create:(_) => AvmeWallet(fileManager, activeContracts)),
-      ChangeNotifierProvider<ActiveContracts>(create:(_) => activeContracts),
-      ChangeNotifierProvider<ContactsController>(create:(_) => ContactsController(fileManager)),
-    ],
-    child: AvmeWalletApp(),
+
+  bool debug = dotenv.env["DEBUG_MODE"] == "TRUE" ? true : false;
+  Print(debug: debug);
+
+  if (Platform.isWindows || Platform.isLinux) {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+    Print.error("Platform is windows or linux!");
+  }
+
+  App app = App();
+  Account account = Account();
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider<App>(create: (_) => app),
+        ChangeNotifierProvider<Account>(create: (_) => account),
+      ],
+      child: AvmeApp(app: app,),
     )
   );
 }
+class AvmeApp extends StatefulWidget {
+  final App app;
+  const AvmeApp({Key? key, required this.app}) : super(key: key);
 
-class AvmeWalletApp extends StatelessWidget {
-  // This widget is the root of your application.
+  @override
+  State<AvmeApp> createState() => AvmeAppState();
+}
+
+class AvmeAppState extends State<AvmeApp> {
+
+  @override
+  void initState() {
+    super.initState();
+    if(SchedulerBinding.instance != null)
+    {
+      SchedulerBinding.instance!.addPostFrameCallback(widget.app.frameCallback);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown
-    ]);
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-    ));
+    ///Default route is SplashScreen in there the app waits
+    ///for every essential initialization and completes inside App.ready
     return OverlaySupport.global(
       child: MaterialApp(
-        navigatorKey: NavigationService.globalContext,
-        theme: avmeTheme,
-        initialRoute: defaultRoute,
-        routes: routes),
+        navigatorKey: Routes.globalContext,
+        initialRoute: Routes.defaultRoute,
+        routes: Routes.list,
+        theme: AppTheme.theme,
+      ),
     );
   }
 }
-
-
-
-
-

@@ -1,0 +1,7 @@
+class NFTs {
+
+}
+
+class NFTData {
+
+}

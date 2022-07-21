@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.avme.avme_wallet">
+    package="com.avme.wallet">
     <uses-permission android:name="android.permission.INTERNET"/>
    <application
         android:label="AVME Wallet"
