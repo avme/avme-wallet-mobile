@@ -5,6 +5,7 @@ import 'package:avme_wallet/app/src/helper/file_manager.dart';
 import 'package:avme_wallet/app/src/helper/print.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 ///Describe an list of Active CoinsTokens
 ///Add, Remove, Etc
@@ -63,27 +64,34 @@ class Coins extends ChangeNotifier {
     }
     for(Map coinData in coinList)
     {
-      list.add(
-        CoinData(
-          coinData["name"],
-          coinData["symbol"],
-          coinData["address"],
-          coinData["test-address"],
-          int.parse(coinData["decimals"]),
-          coinData["image"],
-          coinData["abi"],
-          active: coinData["active"]
-        )
+      String address = coinData["address"];
+      if(dotenv.env["NETWORK_URL"]!.contains('test'))
+      {
+        address = coinData["test-address"];
+      }
+      CoinData data = CoinData(
+        coinData["name"],
+        coinData["symbol"],
+        address,
+        coinData["test-address"],
+        int.parse(coinData["decimals"]),
+        coinData["image"],
+        coinData["abi"],
+        active: coinData["active"]
       );
+
+      list.add(data);
     }
     _rawCoinsData.complete(coinList);
     init.complete(true);
   }
 
+  ///When it receives -1 it means the API refused to return
   static void updateValue(String name, double value)
   {
-    if(value == -1.0) { return; }
-    Decimal _value = Decimal.fromJson(value.toStringAsFixed(6));
+    Print.approve("$name, $value");
+    if(value == -1.0 || name.contains('testnet')) { return; }
+    // Decimal _value = Decimal.fromJson(value.toStringAsFixed(6));
 
     dynamic coin;
     if(name == "platform")
@@ -95,9 +103,15 @@ class Coins extends ChangeNotifier {
       coin = list.where((_coin) => _coin.name == name).first;
     }
 
-    if(coin.value != _value)
+    // if(coin.value != _value)
+    // {
+    //   coin.value = _value;
+    //   _self.notifyListeners();
+    // }
+
+    if(coin.value != value)
     {
-      coin.value = _value;
+      coin.value = value;
       _self.notifyListeners();
     }
   }
@@ -163,32 +177,34 @@ class CoinData {
   final String image;
   final String abi;
   late bool active;
-  Decimal value = Decimal.zero;
+  // Decimal value = Decimal.zero;
+  double value = 0;
 
   CoinData(this.name, this.symbol, this.address, this.testAddress, this.decimals, this.image, this.abi, {this.active = false});
 
   /// I'm overwriting this class toString because is more common across the app
   ///to get the token value instead of other properties
-  @override
-  String toString()
-  {
-    if(value == Decimal.zero) {
-      return "0.0";
-    }
-    return value.toString();
-  }
+  // @override
+  // String toString()
+  // {
+  //   if(value == Decimal.zero) {
+  //     return "0.0";
+  //   }
+  //   return value.toString();
+  // }
 }
 
 class Platform {
-  Decimal value = Decimal.zero;
+  // Decimal value = Decimal.zero;
+  double value = 0;
 
-  @override
-  String toString()
-  {
-    if(value == Decimal.zero)
-    {
-      return "0.0";
-    }
-    return value.toString();
-  }
+  // @override
+  // String toString()
+  // {
+  //   if(value == Decimal.zero)
+  //   {
+  //     return "0.0";
+  //   }
+  //   return value.toString();
+  // }
 }

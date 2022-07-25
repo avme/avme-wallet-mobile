@@ -1,9 +1,15 @@
+import 'package:avme_wallet/app/src/helper/print.dart';
+import 'package:avme_wallet/app/src/model/db/coin.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:avme_wallet/app/src/helper/size.dart';
 
 import 'package:avme_wallet/app/src/screen/widgets/widgets.dart';
+
+import '../../../controller/db/coin.dart';
+import '../../../controller/wallet/account.dart';
+import '../../../controller/wallet/token/coins.dart';
 
 class OverviewAndButtons extends StatefulWidget {
   final String totalBalance;
@@ -195,48 +201,49 @@ class _OverviewAndButtonsState extends State<OverviewAndButtons> {
     );
   }
 }
-Future<String> difference() async {
-  return "FIX_ME%";
-}
-// Future<String> difference(AvmeWallet app) async {
-//   int counter = 0;
-//   double difference = 0, sum = 0, tokenValueToday, tempCalc = 0;
-//   List<double> tokenValuesYesterday = [], percentages = [];
-//   List<String> tokenNames = app.activeContracts.tokens;
-//   bool isThereBalance = false;
-//   //AVAX
-//   if (app.currentAccount.balance != '0') {
-//     isThereBalance = true;
-//     tokenValueToday = double.tryParse(app.networkToken.value);
-//     await ValueHistoryTable.instance.readAmount('AVAX', 1).then((value) {
-//       percentages.add((tokenValueToday / value.first.value.toDouble()) - 1);
-//       sum += (value.first.value.toDouble());
-//       tokenValuesYesterday.add(value.first.value.toDouble());
-//     });
-//   }
-//   //Other
-//   //tokenNames.forEach((element) async { //Doesn't work, since it will work and wait for the .forEach but won't wait for the await inside
-//   for (String element in tokenNames) {
-//     if (double.tryParse(app.currentAccount.tokenWei(name: element)) != 0) {
-//       isThereBalance = true;
-//       tokenValueToday = double.tryParse(app.activeContracts.token.tokenValue(element));
-//       await ValueHistoryTable.instance.readAmount(element, 1).then((value) {
-//         percentages.add((tokenValueToday / value.first.value.toDouble()) - 1);
-//         sum += (value.first.value.toDouble());
-//         tokenValuesYesterday.add(value.first.value.toDouble());
-//       });
-//     }
-//   }
-//   //Processing
-//
-//   if (!isThereBalance) return '0%';
-//
-//   for (double value in percentages) {
-//     tempCalc += value * tokenValuesYesterday.elementAt(counter);
-//     ++counter;
-//   }
-//
-//   difference = (tempCalc / sum) * 100;
-//
-//   return '${difference.toStringAsFixed(2)}%';
+// Future<String> difference() async {
+//   return "FIX_ME%";
 // }
+Future<String> difference() async {
+  int counter = 0;
+  double difference = 0, sum = 0, tokenValueToday, tempCalc = 0;
+  List<double> tokenValuesYesterday = [], percentages = [];
+  // List<String> tokenNames = app.activeContracts.tokens;
+  List<String> tokenNames = Coins.list.map((e) => e.name).toList();
+  bool isThereBalance = false;
+  //AVAX
+  if (Account.current().platform.total > 0.0) {
+    isThereBalance = true;
+    tokenValueToday = Account.current().platform.total;
+    List<TokenHistory> value = await ValueHistoryTable.instance.readAmount('AVAX', 1);
+    // percentages.add((tokenValueToday / value.first.value.toDouble()) - 1);
+    // sum += (value.first.value.toDouble());
+    // tokenValuesYesterday.add(value.first.value.toDouble());
+    Print.error("come this way $value");
+  }
+  //Other
+  //tokenNames.forEach((element) async { //Doesn't work, since it will work and wait for the .forEach but won't wait for the await inside
+  // for (String element in tokenNames) {
+  //   if (double.tryParse(app.currentAccount.tokenWei(name: element)) != 0) {
+  //     isThereBalance = true;
+  //     tokenValueToday = double.tryParse(app.activeContracts.token.tokenValue(element));
+  //     await ValueHistoryTable.instance.readAmount(element, 1).then((value) {
+  //       percentages.add((tokenValueToday / value.first.value.toDouble()) - 1);
+  //       sum += (value.first.value.toDouble());
+  //       tokenValuesYesterday.add(value.first.value.toDouble());
+  //     });
+  //   }
+  // }
+  //Processing
+
+  if (!isThereBalance) return '0%';
+
+  for (double value in percentages) {
+    tempCalc += value * tokenValuesYesterday.elementAt(counter);
+    ++counter;
+  }
+
+  difference = (tempCalc / sum) * 100;
+
+  return '${difference.toStringAsFixed(2)}%';
+}

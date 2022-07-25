@@ -22,6 +22,8 @@ import 'package:avme_wallet/app/src/model/db/coin.dart';
 import 'package:avme_wallet/app/src/controller/threads.dart';
 import 'package:avme_wallet/app/src/controller/wallet/balance.dart';
 
+import '../ui/push_notification.dart';
+
 class Network {
   static final Network _self = Network._internal();
 
@@ -244,10 +246,8 @@ class Network {
 
       if (simplify) {
         DateTime _dateTime = DateTime.fromMillisecondsSinceEpoch(day.first);
-        dateTime = DateTime(
-            _dateTime.year, _dateTime.month, _dateTime.day, _dateTime.hour);
-        unix = int.parse(
-            dateTime.millisecondsSinceEpoch.toString().substring(0, 10));
+        dateTime = DateTime(_dateTime.year, _dateTime.month, _dateTime.day, _dateTime.hour);
+        unix = int.parse(dateTime.millisecondsSinceEpoch.toString().substring(0, 10));
       }
 
       ///Skipping duplicates
@@ -337,8 +337,7 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
         caller: 'observeTodayHistory',
         function: observeHourlyCoinHistory
     );
-    stream = threads.addToPool(
-        id: 0, task: observeHist, shouldReturnReference: true);
+    stream = threads.addToPool(id: 0, task: observeHist, shouldReturnReference: true);
     stream.listen((event) async {
       if (event is Map) {
         if (event["command"] == "getMissingDays") {
@@ -347,15 +346,13 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
           await Future.forEach(coins, (CoinData coin) async {
             List<int> missing = await ValueHistoryTable.getMissingHours(
                 coin.name);
-            pending.add(
-              {
-                coin.name: [
-                  Utils.lowest(missing),
-                  Utils.highest(missing),
-                  coin.address
-                ]
-              }
-            );
+            pending.add({
+              coin.name: [
+                Utils.lowest(missing),
+                Utils.highest(missing),
+                coin.address
+              ]
+            });
           });
           List<int> pMissing = await ValueHistoryTable.getMissingHours("platform");
           pending.insert(0,
@@ -405,10 +402,9 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
       Print.error("receivePort listen $event");
       if (event is List<Map>) {
         Map result = {};
-        // Print.mark(event.toString());
+
         await Future.forEach(event, (Map _entry) async
-        // for(Map _entry in event)
-            {
+        {
           List properties = _entry.entries.first.value;
 
           String coin = _entry.entries.first.key;
@@ -420,8 +416,7 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
           int highest = properties[1];
           String address = properties[2];
           if (lowest == highest) {
-            Print.ok("[T#${wrap.info.id} ID#${wrap
-                .id}] Skipping history request for Coin \"$coin\" UNIX range [$lowest - $highest] being too short");
+            Print.ok("[T#${wrap.info.id} ID#${wrap.id}] Skipping history request for Coin \"$coin\" UNIX range [$lowest - $highest] being too short");
             return;
           }
           Print.warning("[T#${wrap.info.id} ID#${wrap
@@ -433,7 +428,7 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
           );
           result[coin] = missingHoursData;
         });
-        // Print.warning("$result");
+
         if (result.isNotEmpty) {
           wrap.send({
             "command": "update",
@@ -447,7 +442,6 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
       wrap.send(
           {"command": "getMissingDays", "sendPort": receivePort.sendPort});
       await Future.delayed(Duration(minutes: 1));
-      // await Future.delayed(Duration(seconds: 5));
     }
     while (!wrap.isCanceled());
   }
@@ -502,28 +496,29 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
     await prepareOperation(wrap);
 
     List<CoinData> coins = params.first;
+    coins.removeWhere((coin) => coin.name.contains('testnet'));
     do {
-      await Future.delayed(Duration(seconds: 1));
       double platformValue = await getPrice();
 
       List<Map> coinsValue = await Future.wait(
-        coins.map((CoinData coinData) async {
-          if (coinData.name.contains("testnet")) {
-            return {coinData.name: 1.0};
-          }
-          return {coinData.name: await getPrice(address: coinData.address)};
-        })
+        coins.map((CoinData coinData) async =>
+          {coinData.name: await getPrice(address: coinData.address)}
+        )
       );
       coinsValue.add({"platform": platformValue});
       wrap.send(coinsValue);
+
+      ///Lowered from 1 second to 30 seconds, the CoinGecko's endpoint can negate
+      ///our request, and its unnecessary to request so many updates when
+      ///dealing with a mobile device
+      await Future.delayed(Duration(seconds: 30));
     }
     while (!wrap.isCanceled());
   }
 
   Future _insertHistoryValues(String coinName, int unix, Decimal value) async
   {
-    TokenHistory th = TokenHistory(
-        tokenName: coinName, value: value, dateTime: unix);
+    TokenHistory th = TokenHistory(tokenName: coinName, value: value, dateTime: unix);
     TokenHistory inserted = await ValueHistoryTable.insert(th);
     Print.mark("[TokenHistory.inserted] $inserted");
   }
@@ -550,6 +545,7 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
       params: [Account.accounts, _self.url, _self.chain],
       function: wrapObserveBalance,
     );
+    bool selfInitialized = false;
     stream = threads.addToPool(id: 0, task: observeBalance, shouldReturnReference: true);
     stream.listen((event) {
       // Print.approve("wrapObserveBalance $event");
@@ -563,15 +559,60 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
         {
           for(String address in event["update"]!.keys)
           {
-            AccountData operatingAccount = Account.accounts.firstWhere((AccountData ad) => ad.address! == address);
+            AccountData resAccount = Account.accounts.firstWhere((AccountData ad) => ad.address! == address);
 
             Map update = event["update"]![address];
             List<Balance> tokens = update["token"];
+            for(int i = 0; i < tokens.length; i++)
+            {
+              Balance token = tokens[i];
+              Print.error("balance ${tokens[i].name}: ${resAccount.balance[i].total}");
+
+              if(token.total != resAccount.balance[i].total)
+              {
+                token.total = token.total * token.token().value;
+                double difference = token.total - resAccount.balance[i].total;
+                Print.ok("${token.name} ${token.total} - ${resAccount.balance[i].total}");
+                if(difference > 0 && selfInitialized)
+                {
+                  PushNotification.showNotification(
+                    id: 9,
+                    title: "Transfer received (${token.name})",
+                    body:
+'''Account Update: 
+You received \$${difference.toStringAsFixed(2)}\b (${token.name}) in the Account#${Account.accounts.indexOf(resAccount)} ${resAccount.title}.''',
+                    payload: "app/history"
+                  );
+                }
+                resAccount.updateToken(token, i);
+              }
+            }
             PlatformBalance platform = update["platform"];
-            operatingAccount.updateToken(tokens);
-            operatingAccount.updatePlatform(platform);
-            Print.mark("tf2 sex update: $update");
+            Print.error("balance platform: ${resAccount.platform.total}");
+            if(platform.total != resAccount.platform.total)
+            {
+              platform.total = platform.total * platform.token().value;
+              double difference = platform.total - resAccount.platform.total;
+              Print.ok("platform: ${platform.total} - ${resAccount.platform.total}");
+              if(difference > 0 && selfInitialized)
+              {
+                PushNotification.showNotification(
+                    id: 9,
+                    title: "Transfer received (${platform.name})",
+                    body:
+                    '''Account Update: 
+You received \$${difference.toStringAsFixed(2)}\b (${platform.name}) in the Account#${Account.accounts.indexOf(resAccount)} ${resAccount.title}.''',
+                    payload: "app/history"
+                );
+              }
+              resAccount.updatePlatform(platform);
+            }
+            Print.mark("balance update: $update");
           }
+        }
+        if(!selfInitialized)
+        {
+          selfInitialized = true;
         }
       }
     });

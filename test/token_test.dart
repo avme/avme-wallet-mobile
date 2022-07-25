@@ -32,9 +32,9 @@ class TokenTest {
       
       test("Update value of AVME Coin/Token", () async {
         String syb = "AVME";
-        Decimal oldValue = Coins.list.where((coin) => coin.name == syb).first.value;
+        double oldValue = Coins.list.where((coin) => coin.name == syb).first.value;
         Coins.updateValue("AVME", 10.0);
-        Decimal newValue = Coins.list.where((coin) => coin.name == syb).first.value;
+        double newValue = Coins.list.where((coin) => coin.name == syb).first.value;
         expect(newValue, greaterThan(oldValue));
       });
       

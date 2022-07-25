@@ -26,19 +26,22 @@ class AccountData {
   ///to be used...
   /// You can also use : hasAddress.future.asStream
   Completer<bool> hasAddress = Completer();
+
   AccountData(this.data, this.title, this.slot, this.derived) {
     insert(data);
   }
 
-  void updateToken(List<Balance> value)
+  void updateToken(Balance value, int pos)
   {
-    this.balance = value;
+    this.balance[pos] = value;
+    Account.notify();
     Print.mark("${this.address} -> AccountData.updateToken");
   }
 
   void updatePlatform(PlatformBalance value)
   {
     this.platform = value;
+    Account.notify();
     Print.mark("${this.address} -> AccountData.updatePlatform");
   }
 
@@ -100,6 +103,11 @@ class Account extends ChangeNotifier
       rawAccounts.complete(source);
     }
     Print.warning("Account.init: ${source.runtimeType}");
+  }
+
+  static notify()
+  {
+    _self.notifyListeners();
   }
 
   ///Changes current working account

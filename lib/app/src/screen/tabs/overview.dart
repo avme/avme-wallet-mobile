@@ -215,7 +215,8 @@ class _OverviewState extends State<Overview> {
     tokensValue.forEach((value) => platformValue += value);
 
     print(tokensValue);
-    return "${Utils.shortReadable(platformValue.toString(),comma: true, length: 7)}";
+    // return "${Utils.shortReadable(platformValue.toString(),comma: true, length: 7)}";
+    return "$platformValue";
   }
   // String _totalBalance(AvmeWallet app)
   // {

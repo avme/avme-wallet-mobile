@@ -19,6 +19,10 @@ class Balance {
     this.decimals = Coins.list[id].decimals;
   }
 
+  CoinData token (){
+    return Coins.list.firstWhere((coin) => coin.name == this.name);
+  }
+
   static from(Balance origin)
   {
     Balance balance = Balance(origin.id, true);
@@ -49,5 +53,10 @@ class PlatformBalance{
   String toString()
   {
     return "PlatformBalance(total:\"${this.total}\", raw:\"${this.raw}\" name:\"${this.name}\", address:\"${this.address}\", symbol:\"${this.symbol}\", decimals:\"${this.decimals}\")";
+  }
+
+  Platform token()
+  {
+    return Coins.platform;
   }
 }

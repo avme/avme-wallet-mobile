@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:avme_wallet/app/src/controller/network/connection.dart';
+import 'package:avme_wallet/app/src/controller/ui/push_notification.dart';
 import 'package:avme_wallet/app/src/helper/size.dart';
 import 'package:avme_wallet/app/src/screen/tabs/tabs.dart';
 import 'package:avme_wallet/app/src/screen/widgets/theme.dart';
@@ -58,6 +59,9 @@ class _State extends State<AppScaffold>
 
   @override
   void initState() {
+
+    PushNotification.init();
+    listenNotifications();
 
     appScaffoldTabController = TabController(
         length: this.routeLabels.length,
@@ -123,6 +127,14 @@ class _State extends State<AppScaffold>
             Text("Disconnected from the internet"),
             background: Colors.red
         );
+    });
+  }
+
+  void listenNotifications() {
+    PushNotification.onNotifications.stream.listen((payload) {
+      if (payload.toString() == "app/overview" && appScaffoldTabController.index != 1) {
+        appScaffoldTabController.index = 1;
+      }
     });
   }
 

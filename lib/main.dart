@@ -12,6 +12,7 @@ import 'dart:io';
 import 'package:sqflite/sqflite.dart';
 
 import 'app/src/controller/routes.dart';
+import 'app/src/controller/wallet/token/coins.dart' hide Platform;
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,10 +29,12 @@ Future main() async {
 
   App app = App();
   Account account = Account();
+  Coins coins = Coins();
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider<App>(create: (_) => app),
+        ChangeNotifierProvider<Coins>(create: (_) => coins),
         ChangeNotifierProvider<Account>(create: (_) => account),
       ],
       child: AvmeApp(app: app,),
