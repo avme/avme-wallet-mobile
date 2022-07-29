@@ -4,6 +4,7 @@ import 'dart:isolate';
 
 import 'package:avme_wallet/app/src/controller/wallet/token/coins.dart';
 import 'package:avme_wallet/app/src/helper/crypto/convert.dart';
+import 'package:avme_wallet/app/src/model/db/market_data.dart';
 import 'package:avme_wallet/app/src/model/services.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -15,14 +16,12 @@ import 'package:web3dart/web3dart.dart';
 import 'package:avme_wallet/app/src/helper/print.dart';
 import 'package:avme_wallet/app/src/controller/wallet/account.dart';
 
-import 'package:avme_wallet/app/src/controller/db/coin.dart';
-
 import 'package:avme_wallet/app/src/helper/utils.dart';
-import 'package:avme_wallet/app/src/model/db/coin.dart';
 import 'package:avme_wallet/app/src/controller/threads.dart';
 import 'package:avme_wallet/app/src/controller/wallet/balance.dart';
 
-import '../ui/push_notification.dart';
+import 'package:avme_wallet/app/src/controller/db/app.dart';
+import 'package:avme_wallet/app/src/controller/ui/push_notification.dart';
 
 class Network {
   static final Network _self = Network._internal();
@@ -330,12 +329,16 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
   static Future<bool> observeTodayHistory() async
   {
     List<CoinData> coins = Coins.list;
+    for(CoinData coin in coins)
+    {
+      Print.approve("${coin.name} | ${coin.address}");
+    }
     Threads threads = Threads();
 
     late Stream stream;
     ThreadMessage observeHist = ThreadMessage(
-        caller: 'observeTodayHistory',
-        function: observeHourlyCoinHistory
+      caller: 'observeTodayHistory',
+      function: observeHourlyCoinHistory
     );
     stream = threads.addToPool(id: 0, task: observeHist, shouldReturnReference: true);
     stream.listen((event) async {
@@ -344,8 +347,7 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
           SendPort socket = event["sendPort"];
           List<Map> pending = [];
           await Future.forEach(coins, (CoinData coin) async {
-            List<int> missing = await ValueHistoryTable.getMissingHours(
-                coin.name);
+            List<int> missing = await WalletDB.getMissingHours(coin.name);
             pending.add({
               coin.name: [
                 Utils.lowest(missing),
@@ -354,7 +356,7 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
               ]
             });
           });
-          List<int> pMissing = await ValueHistoryTable.getMissingHours("platform");
+          List<int> pMissing = await WalletDB.getMissingHours("platform");
           pending.insert(0,
             {
               "platform": [
@@ -451,7 +453,7 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
   {
     List<CoinData> coins = Coins.list;
     List<int> platformMissing =
-      await ValueHistoryTable.getMissingDays("platform");
+      await WalletDB.getMissingDays("platform");
     if (platformMissing.isNotEmpty) {
       Print.warning("platform? $platformMissing");
       List platformData = await getTokenHistoryRange(
@@ -469,7 +471,7 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
       if (coin.name.contains('testnet')) {
         continue;
       }
-      List<int> _missing = await ValueHistoryTable.getMissingDays(coin.name);
+      List<int> _missing = await WalletDB.getMissingDays(coin.name);
       if (_missing.isEmpty) {
         continue;
       }
@@ -521,9 +523,9 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
 
   Future _insertHistoryValues(String coinName, int unix, Decimal value) async
   {
-    TokenHistory th = TokenHistory(tokenName: coinName, value: value, dateTime: unix);
-    TokenHistory inserted = await ValueHistoryTable.insert(th);
-    Print.mark("[TokenHistory.inserted] $inserted");
+    MarketData md = MarketData(tokenName: coinName, value: value, dateTime: unix);
+    MarketData inserted = await WalletDB.insert(md);
+    Print.mark("[MarketData.inserted] $inserted");
   }
 
   static Future<bool> observeBalance() async

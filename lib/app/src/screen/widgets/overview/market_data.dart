@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:avme_wallet/app/src/controller/wallet/account.dart';
 import 'package:avme_wallet/app/src/helper/print.dart';
-import 'package:avme_wallet/app/src/model/db/coin.dart';
+import 'package:avme_wallet/app/src/model/db/market_data.dart' as model;
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
@@ -9,13 +9,14 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:intl/date_symbol_data_local.dart';
 
-import 'package:avme_wallet/app/src/controller/db/coin.dart';
 import 'package:avme_wallet/app/src/controller/wallet/token/coins.dart' as Coins;
 import 'package:avme_wallet/app/src/helper/size.dart';
 import 'package:avme_wallet/app/src/helper/utils.dart';
 import 'package:avme_wallet/app/src/screen/widgets/card.dart';
 import 'package:avme_wallet/app/src/screen/widgets/generic.dart';
 import 'package:avme_wallet/app/src/screen/widgets/theme.dart';
+import 'package:avme_wallet/app/src/controller/db/app.dart';
+import 'package:avme_wallet/app/src/controller/wallet/balance.dart';
 
 class MarketData extends StatefulWidget {
   final String tokenName;
@@ -73,10 +74,10 @@ class _MarketDataState extends State<MarketData> {
                     builder: (_, coins, __) {
                       ///Getting the current date at each build/state
                       Map currentTokenInfo = updateCurrentData(
-                          minVal: pendingData['aux'][1],
-                          maxVal: pendingData['aux'][2],
-                          aux: pendingData['aux'][0],
-                          currentValue: coins.getPlatform().value
+                        minVal: pendingData['aux'][1],
+                        maxVal: pendingData['aux'][2],
+                        aux: pendingData['aux'][0],
+                        currentValue: coins.getPlatform().value
                       );
                       double variation = ((pendingData['aux'][2] - pendingData['aux'][1])/0.8)/8;
                       _chartMinVal = currentTokenInfo['minVal'];
@@ -125,19 +126,59 @@ class _MarketDataState extends State<MarketData> {
                 );
               }
               else {
-                return Center(
-                    child: Column(
-                      children: [
-                        LabelText("TODO IMPLEMENT OTHER TOKENS MARKET DATA"),
-                        Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: CircularProgressIndicator(
-                            color: AppColors.purple,
-                            strokeWidth: 6,
+                return Container(
+                  child:
+                  Consumer<Coins.Coins>(
+                    builder: (_, coins, __) {
+                      Coins.CoinData coin = coins.getCoins().firstWhere((_coin) => _coin.name == widget.tokenName);
+                      Balance balance = Account.current().balance.firstWhere((_balance) => _balance.name == coin.name);
+                      ///Getting the current date at each build/state
+                      Map currentTokenInfo = updateCurrentData(
+                        minVal: pendingData['aux'][1],
+                        maxVal: pendingData['aux'][2],
+                        aux: pendingData['aux'][0],
+                        currentValue: coin.value
+                      );
+                      // Map contractInfo = iWallet.wallet.activeContracts.sContracts.contractsRaw[widget.tokenName]!;
+                      double variation = ((pendingData['aux'][2] - pendingData['aux'][1])/0.8)/8;
+                      _chartMinVal = currentTokenInfo['minVal'];
+                      _chartMaxVal = currentTokenInfo['maxVal'];
+                      _minVal = currentTokenInfo['minVal'] - variation;
+                      _maxVal = currentTokenInfo['maxVal'] + variation;
+                      // print('minVal ${currentTokenInfo['minVal']}, maxVal ${currentTokenInfo['maxVal']}');
+                      // print('INFO: variation $variation, minVal $_minVal, maxVal $_maxVal');
+                      Map data = {
+                        "symbol": coin.symbol,
+                        "name": coin.name,
+                        "balance": balance.inCurrency,
+                        "res": coin.image
+                      };
+                      return Column(
+                        children: [
+                          tokenCard(data),
+                          FutureBuilder(
+                            future: generateChart(variation: variation),
+                            builder: (_, AsyncSnapshot<Widget> snapshot){
+                              if(snapshot.data != null) {
+                                return snapshot.data!;
+                              } else {
+                                return Center(
+                                  child: Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: CircularProgressIndicator(
+                                      color: AppColors.purple,
+                                      strokeWidth: 6,
+                                    ),
+                                  )
+                              );
+                              }
+                            },
                           ),
-                        ),
-                      ],
-                    )
+                          valueList()
+                        ],
+                      );
+                    },
+                  ),
                 );
               }
             } else {
@@ -400,7 +441,7 @@ class _MarketDataState extends State<MarketData> {
     List<ChartSampleData> days = [];
     bool isFirst = true;
     double _aux = 0, _minVal = 0, _maxVal = 0;
-    List<TokenHistory> tokenHistory = await ValueHistoryTable.instance.readAmount(tokenName, 30);
+    List<model.MarketData> tokenHistory = await WalletDB.viewMarketDataMonth(tokenName, offset: 1);
     tokenHistory.reversed.forEach((element) {
       if (isFirst)
       {

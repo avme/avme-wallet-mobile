@@ -3,13 +3,13 @@ import 'package:avme_wallet/app/src/helper/size.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-import '../../../controller/db/coin.dart';
-import '../../../controller/wallet/balance.dart';
-import '../buttons.dart';
-import '../hint.dart';
-import '../painted.dart';
-import '../theme.dart';
-import 'market_data.dart';
+import 'package:avme_wallet/app/src/controller/db/app.dart';
+import 'package:avme_wallet/app/src/controller/wallet/balance.dart';
+import 'package:avme_wallet/app/src/screen/widgets/buttons.dart';
+import 'package:avme_wallet/app/src/screen/widgets/hint.dart';
+import 'package:avme_wallet/app/src/screen/widgets/painted.dart';
+import 'package:avme_wallet/app/src/screen/widgets/theme.dart';
+import 'package:avme_wallet/app/src/screen/widgets/overview/market_data.dart';
 
 class TokenValue extends StatefulWidget {
   final Image image;
@@ -273,7 +273,7 @@ Future<List> lastFiveBalance(String name) async {
     tokenValues.add(balance.inCurrency);
   }
 
-  await ValueHistoryTable.instance.readAmount(name, 4).then((value) => {
+  await WalletDB().readAmount(name, 4).then((value) => {
     value.forEach((element) {
       tokenValues.add(element.value.toDouble());
     })

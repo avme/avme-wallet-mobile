@@ -1,16 +1,16 @@
 import 'package:avme_wallet/app/src/helper/print.dart';
-import 'package:avme_wallet/app/src/model/db/coin.dart';
+import 'package:avme_wallet/app/src/model/db/market_data.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:avme_wallet/app/src/helper/size.dart';
 
 import 'package:avme_wallet/app/src/screen/widgets/widgets.dart';
-
-import 'package:avme_wallet/app/src/controller/db/coin.dart';
 import 'package:avme_wallet/app/src/controller/wallet/account.dart';
 import 'package:avme_wallet/app/src/controller/wallet/balance.dart';
 import 'package:avme_wallet/app/src/controller/wallet/token/coins.dart';
+
+import '../../../controller/db/app.dart';
 
 class OverviewAndButtons extends StatefulWidget {
   final String totalBalance;
@@ -213,7 +213,7 @@ Future<String> difference() async {
   if (Account.current().platform.inCurrency > 0.0) {
     isThereBalance = true;
     tokenValueToday = Account.current().platform.inCurrency;
-    List<TokenHistory> value = await ValueHistoryTable.instance.readAmount('PLATFORM', 1);
+    List<MarketData> value = await WalletDB().readAmount('PLATFORM', 1);
     percentages.add((tokenValueToday / value.first.value.toDouble()) - 1);
     sum += (value.first.value.toDouble());
     tokenValuesYesterday.add(value.first.value.toDouble());
@@ -241,7 +241,7 @@ Future<String> difference() async {
     {
       isThereBalance = true;
       double tokenValueToday = tokenBalance.token().value;
-      await ValueHistoryTable.instance.readAmount(element, 1).then((value) {
+      await WalletDB().readAmount(element, 1).then((value) {
         percentages.add((tokenValueToday / value.first.value.toDouble()) - 1);
         sum += (value.first.value.toDouble());
         tokenValuesYesterday.add(value.first.value.toDouble());
