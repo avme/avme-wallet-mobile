@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:avme_wallet/app/src/controller/controller.dart';
 import 'package:avme_wallet/app/src/helper/enums.dart';
 import 'package:avme_wallet/app/src/helper/file_manager.dart';
 import 'package:avme_wallet/app/src/helper/print.dart';
@@ -46,7 +47,7 @@ class Coins extends ChangeNotifier {
           "test-address": "0x02aDedcfe78757C3d0a545CB0Cbd78a7d19eEE4f",
           "decimals": "18",
           "abi": "",
-          "image": "",
+          "image": "assets/avme_logo.png",
           "active": true
         },
         {
@@ -56,7 +57,7 @@ class Coins extends ChangeNotifier {
           "test-address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
           "decimals": "18",
           "abi": "",
-          "image": "",
+          "image": "assets/avme_logo.png",
           "active": true
         }
       ];
@@ -86,6 +87,10 @@ class Coins extends ChangeNotifier {
     init.complete(true);
   }
 
+  List<CoinData> getCoins() => list;
+  Platform getPlatform() => platform;
+
+
   ///When it receives -1 it means the API refused to return
   static void updateValue(String name, double value)
   {
@@ -112,6 +117,8 @@ class Coins extends ChangeNotifier {
     if(coin.value != value)
     {
       coin.value = value;
+
+      ///Notifying any listener widget Consumer/Provider using this singleton
       _self.notifyListeners();
     }
   }

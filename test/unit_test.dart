@@ -27,7 +27,7 @@ Future main() async {
   Print(debug: dotenv.env["DEBUG_MODE"] == "TRUE" ? true : false);
   FileManagerTest.main();
   TokenTest.main();
-  // await ThreadsTest.main();
+  await ThreadsTest.main();
   NetworkTest.main();
 }
 

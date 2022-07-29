@@ -7,9 +7,10 @@ import 'package:avme_wallet/app/src/helper/size.dart';
 
 import 'package:avme_wallet/app/src/screen/widgets/widgets.dart';
 
-import '../../../controller/db/coin.dart';
-import '../../../controller/wallet/account.dart';
-import '../../../controller/wallet/token/coins.dart';
+import 'package:avme_wallet/app/src/controller/db/coin.dart';
+import 'package:avme_wallet/app/src/controller/wallet/account.dart';
+import 'package:avme_wallet/app/src/controller/wallet/balance.dart';
+import 'package:avme_wallet/app/src/controller/wallet/token/coins.dart';
 
 class OverviewAndButtons extends StatefulWidget {
   final String totalBalance;
@@ -135,12 +136,6 @@ class _OverviewAndButtonsState extends State<OverviewAndButtons> {
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Center(
-                      //   child: TextButton(
-                      //     child: Icon(Icons.qr_code_scanner, size: 58,color: Colors.white,),
-                      //     onPressed: widget.onIconPressed,
-                      //   ),
-                      // ),
                       GestureDetector(
                         onTap: widget.onIconPressed,
                         child: Container(
@@ -184,16 +179,19 @@ class _OverviewAndButtonsState extends State<OverviewAndButtons> {
                   iconData: Icons.download_sharp,
                 ),
               ),
-              SizedBox(
-                width: DeviceSize.safeBlockHorizontal * 1.6,
-              ),
-              Expanded(
-                child: AppNeonButton(
-                  onPressed: widget.onBuyPressed,
-                  text: "BUY",
-                  iconData: Icons.shopping_cart,
-                ),
-              ),
+
+              ///Uncomment this to display the "buy" button referenced
+              ///inside the design
+              // SizedBox(
+              //   width: DeviceSize.safeBlockHorizontal * 1.6,
+              // ),
+              // Expanded(
+              //   child: AppNeonButton(
+              //     onPressed: widget.onBuyPressed,
+              //     text: "BUY",
+              //     iconData: Icons.shopping_cart,
+              //   ),
+              // ),
             ],
           )
         ],
@@ -212,31 +210,47 @@ Future<String> difference() async {
   List<String> tokenNames = Coins.list.map((e) => e.name).toList();
   bool isThereBalance = false;
   //AVAX
-  if (Account.current().platform.total > 0.0) {
+  if (Account.current().platform.inCurrency > 0.0) {
     isThereBalance = true;
-    tokenValueToday = Account.current().platform.total;
-    List<TokenHistory> value = await ValueHistoryTable.instance.readAmount('AVAX', 1);
-    // percentages.add((tokenValueToday / value.first.value.toDouble()) - 1);
-    // sum += (value.first.value.toDouble());
-    // tokenValuesYesterday.add(value.first.value.toDouble());
-    Print.error("come this way $value");
+    tokenValueToday = Account.current().platform.inCurrency;
+    List<TokenHistory> value = await ValueHistoryTable.instance.readAmount('PLATFORM', 1);
+    percentages.add((tokenValueToday / value.first.value.toDouble()) - 1);
+    sum += (value.first.value.toDouble());
+    tokenValuesYesterday.add(value.first.value.toDouble());
   }
   //Other
-  //tokenNames.forEach((element) async { //Doesn't work, since it will work and wait for the .forEach but won't wait for the await inside
+  // tokenNames.forEach((element) async { //Doesn't work, since it will work and wait for the .forEach but won't wait for the await inside
   // for (String element in tokenNames) {
-  //   if (double.tryParse(app.currentAccount.tokenWei(name: element)) != 0) {
-  //     isThereBalance = true;
-  //     tokenValueToday = double.tryParse(app.activeContracts.token.tokenValue(element));
-  //     await ValueHistoryTable.instance.readAmount(element, 1).then((value) {
-  //       percentages.add((tokenValueToday / value.first.value.toDouble()) - 1);
-  //       sum += (value.first.value.toDouble());
-  //       tokenValuesYesterday.add(value.first.value.toDouble());
-  //     });
-  //   }
-  // }
+  await Future.forEach(tokenNames, (String element) async {
+    Balance? tokenBalance;
+    try
+    {
+      tokenBalance = Account.current().balance.firstWhere((_b) => _b.name == element);
+    }
+    catch (e)
+    {
+      if (e is StateError) {
+        Print.error("[Widget -> Overview\\Balance] Error finding token named $element");
+        return;
+      }
+      else {
+        throw e;
+      }
+    }
+    if (tokenBalance.inCurrency > 0)
+    {
+      isThereBalance = true;
+      double tokenValueToday = tokenBalance.token().value;
+      await ValueHistoryTable.instance.readAmount(element, 1).then((value) {
+        percentages.add((tokenValueToday / value.first.value.toDouble()) - 1);
+        sum += (value.first.value.toDouble());
+        tokenValuesYesterday.add(value.first.value.toDouble());
+      });
+    }
+  });
   //Processing
-
-  if (!isThereBalance) return '0%';
+  String warning = "FIX THIS -> ";
+  if (!isThereBalance) return warning + '0%';
 
   for (double value in percentages) {
     tempCalc += value * tokenValuesYesterday.elementAt(counter);
@@ -245,5 +259,5 @@ Future<String> difference() async {
 
   difference = (tempCalc / sum) * 100;
 
-  return '${difference.toStringAsFixed(2)}%';
+  return '$warning ${difference.toStringAsFixed(2)}%';
 }

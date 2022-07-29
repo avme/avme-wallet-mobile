@@ -1,4 +1,9 @@
+import 'package:avme_wallet/app/src/controller/wallet/balance.dart';
+import 'package:avme_wallet/app/src/controller/wallet/token/coins.dart';
+import 'package:avme_wallet/app/src/helper/print.dart';
+import 'package:avme_wallet/app/src/helper/utils.dart';
 import 'package:avme_wallet/app/src/screen/widgets/hint.dart';
+import 'package:avme_wallet/app/src/screen/widgets/overview/token_value.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
@@ -6,11 +11,12 @@ import 'package:flutter/material.dart';
 import 'package:avme_wallet/app/src/screen/widgets/theme.dart';
 
 import 'package:avme_wallet/app/src/controller/wallet/account.dart';
-import 'package:avme_wallet/app/src/helper/utils.dart';
 import 'package:avme_wallet/app/src/screen/widgets/overview/export.dart';
 
-class Overview extends StatefulWidget {
+import '../widgets/generic.dart';
+import '../widgets/overview/pie_chart.dart';
 
+class Overview extends StatefulWidget {
   final TabController appScaffoldTabController;
   const Overview({Key? key, required this.appScaffoldTabController}) : super(key: key);
   @override
@@ -35,187 +41,181 @@ class _OverviewState extends State<Overview> {
     return Consumer<Account>(
       builder: (context, account, _){
         return ListView(
-            children: [
-              OverviewAndButtons(
-                balanceTween: DecorationTween(
-                  begin: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    gradient: LinearGradient(
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                      colors: <Color>[
-                        // appColors.preColorList[app.currentWalletId][0],
-                        // appColors.preColorList[app.currentWalletId][1],
-                        //TODO: Get the current wallet id
-                        appColors.preColorList[0][0],
-                        appColors.preColorList[0][1],
-                      ]
-                    )
-                  ),
-                  end: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    gradient: LinearGradient(
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                      colors: <Color>[
-                        //TODO: Get the current wallet id
-                        appColors.preColorList[0][0],
-                        appColors.preColorList[0][1],
-                      ]
-                    )
+          children: [
+            OverviewAndButtons(
+              balanceTween: DecorationTween(
+                begin: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: <Color>[
+                      appColors.preColorList[Account.currentSelectedId()][0],
+                      appColors.preColorList[Account.currentSelectedId()][1],
+                    ]
                   )
                 ),
-                // totalBalance: _totalBalance(app),
-                totalBalance: _totalBalance(),
-                address: Account.accounts[account.selected].address!,
-                onPressed: () async {
-                  await Clipboard.setData(ClipboardData(text: Account.accounts[account.selected].address!));
-                  AppHint.show("Address copied to clipboard");
-
-                },
-                onIconPressed: () async {
-                  // NotificationBar().show(context,text: "Show RECEIVE widgets");
-                  //TODO: Implent this back
-                  // await showDialog(
-                  //     context: context,
-                  //     builder: (context) {
-                  //       return StatefulBuilder(builder: (builder, setState){
-                  //         return ReceivePopup(
-                  //           title: "Share QR Address",
-                  //           accountTitle: app.currentAccount.title,
-                  //           address: app.currentAccount.address,
-                  //           onQrPressed: () {
-                  //             NotificationBar().show(
-                  //                 context,
-                  //                 text: "Address copied to clipboard",
-                  //                 onPressed: () async {
-                  //                   await Clipboard.setData(
-                  //                       ClipboardData(text: app.currentAccount.address));
-                  //                 }
-                  //             );
-                  //           },
-                  //         );
-                  //       });
-                  //     }
-                  // );
-                },
-                onReceivePressed: () async {
-                  // await showDialog(
-                  //     context: context,
-                  //     builder: (context) {
-                  //       return StatefulBuilder(builder: (builder, setState){
-                  //         return ReceivePopup(
-                  //           title: "Share QR Address",
-                  //           address: app.currentAccount.address,
-                  //           accountTitle: app.currentAccount.title,
-                  //           onQrPressed: () {
-                  //             NotificationBar().show(
-                  //                 context,
-                  //                 text: "Address copied to clipboard",
-                  //                 onPressed: () async {
-                  //                   await Clipboard.setData(
-                  //                       ClipboardData(text: app.currentAccount.address));
-                  //                 }
-                  //             );
-                  //           },
-                  //         );
-                  //       });
-                  //     }
-                  // );
-                },
-                onSendPressed: () {
-                  widget.appScaffoldTabController.index = 3;
-                },
-                onBuyPressed: () {
-                  AppHint.show("Not implemented");
-                },
+                end: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: <Color>[
+                      //TODO: Get the current wallet id
+                      appColors.preColorList[0][0],
+                      appColors.preColorList[0][1],
+                    ]
+                  )
+                )
               ),
-              //TODO: Implement PIE
-              // TokenDistribution(
-              //   chartData: _tokenDistribution(app),
-              //   shouldAnimate: initialPieAnimate,
-              //   appScaffoldTabController: widget.appScaffoldTabController,
-              // ),
-            ]
-              // ..addAll(_tokenDetailsCard(app))
-              // ..addAll([
-              //   HistorySnippet(
-              //     appScaffoldTabController: widget.appScaffoldTabController,
-              //     app: app,
-              //   )
-              // ])
+              // totalBalance: _totalBalance(app),
+              totalBalance: _totalBalance(),
+              address: Account.accounts[account.selected].address,
+              onPressed: () async {
+                await Clipboard.setData(ClipboardData(text: Account.accounts[account.selected].address));
+                AppHint.show("Address copied to clipboard");
+              },
+              onIconPressed: () async {
+                // NotificationBar().show(context,text: "Show RECEIVE widgets");
+                //TODO: Implent this back
+                await showDialog(
+                  context: context,
+                  builder: receivePopup
+                );
+              },
+              onReceivePressed: () async {
+                await showDialog(
+                  context: context,
+                  builder: receivePopup
+                );
+              },
+              onSendPressed: () {
+                widget.appScaffoldTabController.index = 3;
+              },
+              onBuyPressed: () {
+                AppHint.show("Not implemented");
+              },
+            ),
+            TokenDistribution(
+              chartData: _tokenDistribution(),
+              shouldAnimate: initialPieAnimate,
+              appScaffoldTabController: widget.appScaffoldTabController,
+            ),
+          ]
+          ..addAll(_tokenDetailsCard())
+            // ..addAll([
+            //   HistorySnippet(
+            //     appScaffoldTabController: widget.appScaffoldTabController,
+            //     app: app,
+            //   )
+            // ])
         );
       },
     );
   }
 
-  // List<Widget> _tokenDetailsCard(AvmeWallet app)
-  // {
-  //   Map tokensWithBalance = app.currentAccount.tokensBalanceList;
-  //   List<Widget> ret = [
-  //     TokenTracker(
-  //       image:
-  //       Image.asset(
-  //         'assets/avax_logo.png',
-  //         fit: BoxFit.fitHeight,),
-  //       name: 'AVAX',
-  //       amount: "${shortAmount(app.currentAccount.balance)}",
-  //       marketValue: "${shortAmount(app.currentAccount.networkBalance.toString(),comma: true, length: 3)}",
-  //       asNetworkToken: '',
-  //     )
-  //   ];
-  //   ///Checking for any token recovered
-  //   if(tokensWithBalance.length > 0)
-  //     return ret..addAll(tokensWithBalance.entries.map((entry) {
-  //       return TokenTracker(
-  //         image: resolveImage(app.activeContracts.sContracts.contractsRaw[entry.key]["logo"]),
-  //         name: entry.key,
-  //         amount: "${shortAmount(app.currentAccount.tokenWei(name: entry.key))}",
-  //         marketValue: shortAmount(app.currentAccount.tokenBalance(name: entry.key),comma: false, length: 3),
-  //         asNetworkToken: (app.currentAccount.tokensBalanceList[entry.key]["balance"] / app.networkToken.decimal.toDouble()).toString(),
-  //       );
-  //     }).toList());
-  //   return ret;
-  // }
+  StatefulBuilder receivePopup(BuildContext? context)
+  {
+    return StatefulBuilder(builder: (builder, setState) =>
+      ReceivePopup(
+        title: "Share QR Address",
+        accountTitle: Account.current().title,
+        address: Account.current().address,
+        onQrPressed: () {
+          AppHint.show(
+            "text",
+            onPressed:() async {
+              await Clipboard.setData(ClipboardData(text: Account.current().address));
+            }
+          );
+        },
+      )
+    );
+  }
 
-  // Map _tokenDistribution(AvmeWallet app)
-  // {
-  //   Map tokensWithBalance = app.currentAccount.tokensBalanceList;
-  //   Map<String, List> ret = {
-  //     "AVAX": [
-  //       app.currentAccount.networkBalance,
-  //       Colors.red
-  //     ]
-  //   };
-  //   int pos = 0;
-  //
-  //   ///Checking for any token
-  //   if(app.currentAccount.tokensBalanceList.length > 0)
-  //     ret.addAll(
-  //         tokensWithBalance.map((key, value) {
-  //           pos++;
-  //           return MapEntry(key, [
-  //             tokensWithBalance[key]["balance"],
-  //             AppColors.availableColors[pos]
-  //           ]);
-  //         }
-  //         )
-  //     );
-  //
-  //   return ret;
-  // }
+  List<Widget> _tokenDetailsCard()
+  {
+    AccountData account = Account.current();
+    Map tokensWithBalance = {};
+    for(Balance balance in account.balance)
+    {
+      tokensWithBalance[balance.name] = balance.inCurrency;
+    }
+    List<Widget> ret = [
+      TokenTracker(
+        image:
+        Image.asset(
+          'assets/avax_logo.png',
+          fit: BoxFit.fitHeight,),
+        name: 'PLATFORM',
+        // amount: "${Utils.shortReadable(app.currentAccount.balance)}",
+        // amount: "${account.platform.inCurrency.toStringAsFixed(5)}",
+        amount: "${Utils.shortReadable(account.platform.qtd.toString(),comma: true, length: 3)}",
+        // marketValue: "${shortAmount(app.currentAccount.networkBalance.toString(),comma: true, length: 3)}",
+        // marketValue: "${Utils.shortReadable(account.platform.raw.toString(),comma: true, length: 3)}",
+        marketValue: "${account.platform.inCurrency.toStringAsFixed(5)}",
+        asNetworkToken: '',
+      )
+    ];
+    ///Checking for any token recovered
+    if(tokensWithBalance.length > 0) {
+      return ret..addAll(tokensWithBalance.entries.map((entry) {
+        CoinData coinData = Coins.list.firstWhere((_coinData) => _coinData.name == entry.key);
+        Balance balance = account.balance.firstWhere((_balance) => _balance.name == entry.key);
+        return TokenTracker(
+          // image: Utils.resolveImage(app.activeContracts.sContracts.contractsRaw[entry.key]["logo"]),
+          image: Utils.resolveImage(coinData.image),
+          name: entry.key,
+          // amount: "${Utils.shortReadable(app.currentAccount.tokenWei(name: entry.key))}",
+          amount: "${Utils.shortReadable(balance.qtd.toString())}",
+          // marketValue: Utils.shortReadable(app.currentAccount.tokenBalance(name: entry.key),comma: false, length: 3),
+          marketValue: "${Utils.shortReadable(balance.inCurrency.toString())}",
+          // asNetworkToken: (app.currentAccount.tokensBalanceList[entry.key]["balance"] / app.networkToken.decimal.toDouble()).toString(),
+          asNetworkToken: "FIX THIS",
+        );
+      }).toList());
+    }
+    return ret;
+  }
+
+  Map<String, List> _tokenDistribution()
+  {
+    // Map tokensWithBalance = app.currentAccount.tokensBalanceList;
+    AccountData account = Account.current();
+    Map tokensWithBalance = {};
+    for(Balance balance in account.balance)
+    {
+      tokensWithBalance[balance.name] = balance.inCurrency;
+    }
+    Map<String, List> ret = {
+      "AVAX": [
+        account.platform.inCurrency,
+        Colors.red
+      ]
+    };
+    int pos = 0;
+
+    ///Checking for any token
+    if(account.balance.length > 0) {
+      ret.addAll(
+        tokensWithBalance.map((key, value) {
+          pos++;
+          return MapEntry(key, [
+            tokensWithBalance[key],
+            AppColors.availableColors[pos]
+          ]);
+        })
+      );
+    }
+    Print.warning(ret.toString());
+    return ret;
+  }
   String _totalBalance()
   {
-    // List tokensValue = app.currentAccount.tokensBalanceList.entries.map((e) =>
-    // e.value["balance"]).toList();
     AccountData currentAccount = Account.current();
-    List<double> tokensValue = currentAccount.balance.map((e) => e.total).toList();
-    double platformValue = currentAccount.platform.total;
-
+    List<double> tokensValue = currentAccount.balance.map((e) => e.inCurrency).toList();
+    double platformValue = currentAccount.platform.inCurrency;
     tokensValue.forEach((value) => platformValue += value);
-
-    print(tokensValue);
-    // return "${Utils.shortReadable(platformValue.toString(),comma: true, length: 7)}";
     return "$platformValue";
   }
   // String _totalBalance(AvmeWallet app)

@@ -71,14 +71,14 @@ class ThreadsTest{
         expect(didStart, true);
       });
 
-      // test("Gathering Coin values", () async {
-      //   await Network.observeValueChanges();
-      // });
+      test("Gathering Coin values", () async {
+        await Network.observeValueChanges();
+      });
 
-      // test("Gather history data", () async {
-      //   bool done = await Network.updateCoinHistory();
-      //   expect(done, true);
-      // });
+      test("Gather history data", () async {
+        bool done = await Network.updateCoinHistory();
+        expect(done, true);
+      });
 
       test("Synchronize current day missing dates", () async {
         bool done = await Network.observeTodayHistory();
@@ -86,8 +86,8 @@ class ThreadsTest{
       });
       test("Dispose Threads", () async {
         ///Dispose after 30 seconds
-        for(int i = 7200; i >= 0; i--)
-        // for(int i = 10; i >= 0; i--)
+        // for(int i = 7200; i >= 0; i--)
+        for(int i = 10; i >= 0; i--)
         {
           await Future.delayed(Duration(seconds: 1));
           if(i <= 3)

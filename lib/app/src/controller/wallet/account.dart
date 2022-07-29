@@ -19,7 +19,7 @@ class AccountData {
   final int slot;
   final int derived;
   EthereumAddress? ethereumAddress;
-  String? address;
+  late String address;
   List<Balance> balance = [];
   PlatformBalance platform = PlatformBalance();
   /// Anywhere in the app you can wait if the information is ready
@@ -109,6 +109,8 @@ class Account extends ChangeNotifier
   {
     _self.notifyListeners();
   }
+
+  static int currentSelectedId() => _self.selected;
 
   ///Changes current working account
   static change(int id)
@@ -208,7 +210,7 @@ class Account extends ChangeNotifier
   static Future load(String password) async
   {
     List _accounts = await rawAccounts.future;
-    Print.warning("accounts? ${_accounts}");
+    Print.warning("accounts? $_accounts");
     ProgressDialog init = ProgressDialog();
     ProgressDialog progress = ProgressPopup.display();
     progress.label.value = "Initializing ${_accounts.length > 1 ? "Accounts" : "Account"}...";

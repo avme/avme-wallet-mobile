@@ -1,6 +1,8 @@
 import 'dart:math';
 import 'dart:io';
 import 'package:avme_wallet/app/src/helper/print.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class Utils {
@@ -86,6 +88,40 @@ class Utils {
     {
       if (Platform.isIOS)
       exit(0);
+    }
+  }
+
+  static Image resolveImage(String res, {
+    double height = 128,
+    double width = 128,
+    BoxFit fit = BoxFit.contain
+  }) {
+    double _default = 128;
+
+    if(height != _default)
+    {
+      width = height;
+    }
+    else if(width != _default)
+    {
+      height = width;
+    }
+
+    if (res.contains('http'))
+    {
+      return Image(image: CachedNetworkImageProvider(
+        res,
+        maxHeight: height.ceil(),
+        maxWidth: width.ceil(),
+      ), fit: fit, height: height, width: width);
+    }
+    else if (res.contains('assets/'))
+    {
+      return Image.asset(res, fit: fit, height: height, width: width);
+    }
+    else
+    {
+      return Image.file(File(res), fit: fit, height: height, width: width);
     }
   }
 }

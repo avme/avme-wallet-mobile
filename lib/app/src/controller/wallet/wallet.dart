@@ -104,6 +104,7 @@ class Wallet
   static Future<bool> auth(String password) async
   {
     String? secret = await compute(_computeValidate, [password, _self._secretPath!]);
+    print("secret: $secret");
     if(secret == null) {
       return false;
     }
@@ -133,7 +134,7 @@ class Wallet
       {
         for(Balance balance in account.balance)
         {
-          Print.warning("[${balance.symbol}]${balance.name} \$${balance.total}");
+          Print.warning("[${balance.symbol}]${balance.name} \$${balance.inCurrency} Token Amount ${balance.qtd}");
         }
       }
     }
@@ -152,7 +153,6 @@ class Wallet
       AesCrypt aes = AesCrypt()
         ..setPassword(args[0]);
       ret = await aes.decryptTextFromFile(args[1], utf16: true);
-      // Print.printWarning("Decoded: $ret");
     }
     catch(e){ return null; }
     return ret;

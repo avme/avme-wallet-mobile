@@ -4,7 +4,8 @@ import 'package:avme_wallet/app/src/helper/print.dart';
 
 class Balance {
   final int id; ///ID do Token em Coins.list
-  double total = 0.0;
+  double inCurrency = 0.0;
+  double qtd = 0.0;
   BigInt raw = BigInt.zero;
   String name = "";
   String address = "";
@@ -37,12 +38,13 @@ class Balance {
   @override
   String toString()
   {
-    return "Balance(id:\"${this.id}\", total:\"${this.total}\", raw:\"${this.raw}\" name:\"${this.name}\", address:\"${this.address}\", symbol:\"${this.symbol}\", decimals:\"${this.decimals}\")";
+    return "Balance(id:\"${this.id}\", inCurrency:\"${this.inCurrency}\", qtd:\"${this.qtd}\" ,raw:\"${this.raw}\", name:\"${this.name}\", address:\"${this.address}\", symbol:\"${this.symbol}\", decimals:\"${this.decimals}\")";
   }
 }
 
 class PlatformBalance{
-  double total = 0.0;
+  double inCurrency = 0.0;
+  double qtd = 0.0;
   BigInt raw = BigInt.zero;
   String name = "Avalanche";
   String address = "0x0";
@@ -52,9 +54,12 @@ class PlatformBalance{
   @override
   String toString()
   {
-    return "PlatformBalance(total:\"${this.total}\", raw:\"${this.raw}\" name:\"${this.name}\", address:\"${this.address}\", symbol:\"${this.symbol}\", decimals:\"${this.decimals}\")";
+    return "PlatformBalance(inCurrency:\"${this.inCurrency}\", qtd:\"${this.qtd}\", raw:\"${this.raw}\" ,name:\"${this.name}\", address:\"${this.address}\", symbol:\"${this.symbol}\", decimals:\"${this.decimals}\")";
   }
 
+  ///Since this variable is accessible though the entire app,
+  ///i'm copying the same method name/call from Balance class
+  ///to be equal when working with PlatformBalance
   Platform token()
   {
     return Coins.platform;

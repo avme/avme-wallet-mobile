@@ -81,7 +81,7 @@ class Network {
       for (int i = 0; i < accounts.length; i++) {
         Map<String, dynamic> instance = Map.from(body);
         instance["id"] = "$i";
-        instance["params"] = [accounts[i].address!, "latest"];
+        instance["params"] = [accounts[i].address, "latest"];
         mapRequest.add(instance);
       }
     }
@@ -497,9 +497,12 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
 
     List<CoinData> coins = params.first;
     coins.removeWhere((coin) => coin.name.contains('testnet'));
+    double test = 0;
     do {
       double platformValue = await getPrice();
-
+      test += 0.2;
+      platformValue += test;
+      Print.mark("platformValue = $platformValue");
       List<Map> coinsValue = await Future.wait(
         coins.map((CoinData coinData) async =>
           {coinData.name: await getPrice(address: coinData.address)}
@@ -559,20 +562,20 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
         {
           for(String address in event["update"]!.keys)
           {
-            AccountData resAccount = Account.accounts.firstWhere((AccountData ad) => ad.address! == address);
+            AccountData resAccount = Account.accounts.firstWhere((AccountData ad) => ad.address == address);
 
             Map update = event["update"]![address];
             List<Balance> tokens = update["token"];
             for(int i = 0; i < tokens.length; i++)
             {
               Balance token = tokens[i];
-              Print.error("balance ${tokens[i].name}: ${resAccount.balance[i].total}");
+              Print.error("balance ${tokens[i].name}: \$${resAccount.balance[i].inCurrency}:TokenAmount ${resAccount.balance[i].qtd}");
 
-              if(token.total != resAccount.balance[i].total)
+              if(token.qtd != resAccount.balance[i].qtd)
               {
-                token.total = token.total * token.token().value;
-                double difference = token.total - resAccount.balance[i].total;
-                Print.ok("${token.name} ${token.total} - ${resAccount.balance[i].total}");
+                token.inCurrency = token.qtd * token.token().value;
+                double difference = token.inCurrency - resAccount.balance[i].inCurrency;
+                Print.ok("${token.name} ${token.inCurrency} - ${resAccount.balance[i].inCurrency}");
                 if(difference > 0 && selfInitialized)
                 {
                   PushNotification.showNotification(
@@ -588,26 +591,30 @@ You received \$${difference.toStringAsFixed(2)}\b (${token.name}) in the Account
               }
             }
             PlatformBalance platform = update["platform"];
-            Print.error("balance platform: ${resAccount.platform.total}");
-            if(platform.total != resAccount.platform.total)
+            platform.inCurrency = platform.qtd * platform.token().value;
+            if(platform.qtd != resAccount.platform.qtd)
             {
-              platform.total = platform.total * platform.token().value;
-              double difference = platform.total - resAccount.platform.total;
-              Print.ok("platform: ${platform.total} - ${resAccount.platform.total}");
+
+              double difference = platform.inCurrency - resAccount.platform.inCurrency;
+              Print.ok("platform: ${platform.inCurrency} - ${resAccount.platform.inCurrency}");
               if(difference > 0 && selfInitialized)
               {
                 PushNotification.showNotification(
-                    id: 9,
-                    title: "Transfer received (${platform.name})",
-                    body:
-                    '''Account Update: 
+                  id: 9,
+                  title: "Transfer received (${platform.name})",
+                  body:
+                  '''Account Update: 
 You received \$${difference.toStringAsFixed(2)}\b (${platform.name}) in the Account#${Account.accounts.indexOf(resAccount)} ${resAccount.title}.''',
-                    payload: "app/history"
+                  payload: "app/history"
                 );
               }
               resAccount.updatePlatform(platform);
             }
-            Print.mark("balance update: $update");
+            else if(resAccount.platform.inCurrency != platform.qtd * platform.token().value)
+            {
+              resAccount.updatePlatform(platform);
+            }
+            // Print.mark("balance update: $update");
           }
         }
         if(!selfInitialized)
@@ -647,15 +654,15 @@ You received \$${difference.toStringAsFixed(2)}\b (${platform.name}) in the Acco
           balance.raw = await typeERC20.balanceOf(address);
           String total =
             Convert.weiToFixedPoint(balance.raw.toString(), digits: balance.decimals);
-          balance.total = double.parse(total);
+          balance.qtd = double.parse(total);
           _tokens.add(balance);
         }
-        List result = await getBalanceAny(account.address!, url);
+        List result = await getBalanceAny(account.address, url);
 
         String hexValue = Convert.decimalToReadable(result.first["result"]);
         PlatformBalance platformBalance = PlatformBalance();
         platformBalance.raw = Decimal.fromJson(hexValue).toBigInt();
-        platformBalance.total = double.parse(hexValue);
+        platformBalance.qtd = double.parse(hexValue);
         update[address.hex] = {
           "token": _tokens,
           "platform": platformBalance

@@ -125,25 +125,17 @@ class ValueHistoryTable {
     }
   }
 
-  ///Retorna os ultimos valores [limit] salvos na database do token [tokenName]
-  ///limit máximo de 30, pois apenas os ultimos 30 dias são salvos na database
+  ///A database só têm um range de 30 dias deis da ultima conexão com a internet
   Future<List<TokenHistory>> readAmount(String tokenName, int limit) async {
     final database = await instance.database;
     final result = await database.query(
-        ValueHistoryFields.table,
-        columns: ValueHistoryFields.values,
-        limit: limit,
-        orderBy: '${ValueHistoryFields.dateTime} DESC',
-        where: '${ValueHistoryFields.tokenName} = ?',
-        whereArgs: [tokenName]
+      ValueHistoryFields.table,
+      columns: ValueHistoryFields.values,
+      limit: limit,
+      orderBy: '${ValueHistoryFields.dateTime} DESC',
+      where: '${ValueHistoryFields.tokenName} = ?',
+      whereArgs: [tokenName]
     );
-    return result.map((map) => TokenHistory.fromMap(map)).toList();
-  }
-
-  ///Retorna uma lista de TokenValues com todas as linhas da database (30)
-  Future<List<TokenHistory>> readAll() async {
-    final database = await instance.database;
-    final result = await database.query(ValueHistoryFields.table, orderBy: '${ValueHistoryFields.dateTime} DESC');
     return result.map((map) => TokenHistory.fromMap(map)).toList();
   }
 

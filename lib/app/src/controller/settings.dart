@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:avme_wallet/app/src/helper/file_manager.dart';
-import 'package:avme_wallet/app/src/helper/print.dart';
 import 'package:avme_wallet/app/src/helper/enums.dart';
 import 'package:avme_wallet/app/src/helper/utils.dart';
 import 'package:flutter/foundation.dart';
@@ -17,7 +16,6 @@ class Settings extends ChangeNotifier {
   ///Settings
   Map<String, dynamic> properties = {};
   Completer<bool> init = Completer();
-
 
   Settings._internal(){
     _init();

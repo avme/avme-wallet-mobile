@@ -28,7 +28,7 @@ class WalletTest {
       test("Display the account public key", () async {
         List<AccountData> accounts = Account.accounts;
         // EthereumAddress address = await accounts.first.address;
-        String address = accounts.first.address!;
+        String address = accounts.first.address;
         Print.approve("First account's address: \"${address}\"");
         expect(accounts.length, greaterThan(0));
       });
@@ -44,7 +44,7 @@ class WalletTest {
         for(int i = 0; i < accounts.length; i++)
         {
           // EthereumAddress address = await accounts[i].address;
-          String address = accounts[i].address!;
+          String address = accounts[i].address;
           Print.approve("Master | ID #$i Account Address: \"${address}\"");
         }
         expect(didDerive, true);
@@ -59,8 +59,8 @@ class WalletTest {
         );
         List<AccountData> accounts = Account.accounts;
         // EthereumAddress address = await accounts.last.address;
-        String address = accounts.last.address!;
-        Print.approve("Imported | ID #${accounts.length - 1} Account Address ${address}");
+        String address = accounts.last.address;
+        Print.approve("Imported | ID #${accounts.length - 1} Account Address $address");
         expect(didDerive, true);
       });
     });
