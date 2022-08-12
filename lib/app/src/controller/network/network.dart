@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:isolate';
+import 'dart:math';
 
 import 'package:avme_wallet/app/src/controller/wallet/token/coins.dart';
 import 'package:avme_wallet/app/src/helper/crypto/convert.dart';
@@ -118,7 +119,7 @@ class Network {
 
   ///The id of the platform issuing tokens (See asset_platforms endpoint for list of options)
   ///asset_platforms: https://api.coingecko.com/api/v3/asset_platforms
-  static Future<double> getPrice(
+  static Future<Iterable<double>> getPrice(
       {String currency = "usd", String? address}) async
   {
     String base = "https://api.coingecko.com/api/v3/simple/";
@@ -126,27 +127,21 @@ class Network {
     String key = "avalanche-2";
     if (address != null) {
       url +=
-      "token_price/avalanche?contract_addresses=$address&vs_currencies=$currency";
+      "token_price/avalanche?contract_addresses=$address&vs_currencies=$currency%2Ceth";
       key = "$address";
     }
     else {
-      url += "price?ids=avalanche-2&vs_currencies=$currency";
+      url += "price?ids=avalanche-2&vs_currencies=$currency%2Ceth";
     }
 
     String response = await get(null, url: url, method: "GET");
 
     try {
-      dynamic value = (jsonDecode(response) as Map)[key][currency];
-      if (value is double) {
-        return value;
-      }
-      if (value is String) {
-        return double.parse(value);
-      }
-      return 0.0;
+      Map data = (jsonDecode(response) as Map)[key] as Map;
+      return List<double>.from(data.values);
     }
     catch (e) {
-      return -1.0;
+      return [-1.0, -1.0];
     }
   }
 
@@ -317,8 +312,10 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
       else if (event is List) {
         for (Map coinData in event) {
           String coinName = coinData.entries.first.key;
-          double value = coinData.entries.first.value;
-          Coins.updateValue(coinName, value);
+          List info = coinData.entries.first.value;
+          double currency = info.first;
+          BigInt ether = info.last;
+          Coins.updateValue(coinName, currency, ether);
         }
       }
     });
@@ -501,16 +498,21 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
     coins.removeWhere((coin) => coin.name.contains('testnet'));
     double test = 0;
     do {
-      double platformValue = await getPrice();
+      Iterable<double> platformData = await getPrice();
+      double platformCurrency = platformData.first;
+      BigInt platformEther = BigInt.from(platformData.last);
       test += 0.2;
-      platformValue += test;
-      Print.mark("platformValue = $platformValue");
+      platformCurrency += test;
+      Print.mark("platformCurrency = $platformCurrency");
       List<Map> coinsValue = await Future.wait(
-        coins.map((CoinData coinData) async =>
-          {coinData.name: await getPrice(address: coinData.address)}
-        )
+        coins.map((CoinData coinData) async {
+          Iterable data = await getPrice(address: coinData.address);
+          double currency = data.first;
+          BigInt ether = BigInt.from(data.last);
+          return {coinData.name: [currency, ether]};
+        })
       );
-      coinsValue.add({"platform": platformValue});
+      coinsValue.add({"platform": [platformCurrency, platformEther]});
       wrap.send(coinsValue);
 
       ///Lowered from 1 second to 30 seconds, the CoinGecko's endpoint can negate
@@ -661,10 +663,10 @@ You received \$${difference.toStringAsFixed(2)}\b (${platform.name}) in the Acco
         }
         List result = await getBalanceAny(account.address, url);
 
-        String hexValue = Convert.decimalToReadable(result.first["result"]);
+        BigInt ether = Convert.bigIntFromUnit(result.first["result"]);
         PlatformBalance platformBalance = PlatformBalance();
-        platformBalance.raw = Decimal.fromJson(hexValue).toBigInt();
-        platformBalance.qtd = double.parse(hexValue);
+        platformBalance.qtd = double.parse(Convert.bigIntReadable(ether));
+        platformBalance.raw = ether;
         update[address.hex] = {
           "token": _tokens,
           "platform": platformBalance
@@ -674,5 +676,18 @@ You received \$${difference.toStringAsFixed(2)}\b (${platform.name}) in the Acco
       await Future.delayed(Duration(seconds: seconds));
     }
     while (!wrap.isCanceled());
+  }
+
+  static Future<BigInt> calculateGasPrice() async
+  {
+    String url = dotenv.get("NETWORK_URL");
+    http.Client httpClient = http.Client();
+    Web3Client ethClient = Web3Client(url, httpClient);
+    // EtherAmount _gasPriceTemp = EtherAmount.inWei((await ethClient.getGasPrice()).getInWei);
+    EtherAmount _gasPriceTemp = await ethClient.getGasPrice();
+    BigInt addToFee = BigInt.from((5 * pow(10, 9)));
+    double gasPriceVal = ((_gasPriceTemp.getInWei + addToFee).toDouble()) / 1000000000;
+
+    return BigInt.from(gasPriceVal);
   }
 }

@@ -3,7 +3,7 @@ import 'package:avme_wallet/app/src/screen/widgets/theme.dart';
 import 'package:avme_wallet/app/src/helper/size.dart';
 
 class AppNeonButton extends StatelessWidget {
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final String? text;
   final IconData? iconData;
   final double? height;
@@ -103,7 +103,7 @@ class AppNeonButton extends StatelessWidget {
 
 
 class AppButton extends StatelessWidget {
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final String text;
   final IconData? iconData;
   final double? iconSize;
@@ -122,7 +122,7 @@ class AppButton extends StatelessWidget {
   final bool square;
 
   const AppButton({
-    required this.onPressed,
+    this.onPressed,
     required this.text,
     this.iconData,
     this.iconSize,

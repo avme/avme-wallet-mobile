@@ -387,10 +387,10 @@ class _MarketDataState extends State<MarketData> {
           //plotAreaBorderColor: Colors.green,
           plotAreaBackgroundColor: AppColors.darkBlue,
           zoomPanBehavior: ZoomPanBehavior(
-              zoomMode: ZoomMode.x,
-              enablePinching: true,
-              enablePanning: true,
-              maximumZoomLevel: 0.2
+            zoomMode: ZoomMode.x,
+            enablePinching: true,
+            enablePanning: true,
+            maximumZoomLevel: 0.2
           ),
           series: <CandleSeries>[
             CandleSeries<ChartSampleData,DateTime>(
@@ -408,28 +408,28 @@ class _MarketDataState extends State<MarketData> {
             )
           ],
           primaryXAxis: DateTimeAxis(
-              labelStyle: TextStyle(fontSize: DeviceSize.fontSize),
-              dateFormat: intl.DateFormat.MMMd(Platform.localeName),
-              majorGridLines: MajorGridLines(width: 1,dashArray: [1,5]),
-              interval: 5,
-              minimum: DateTime(_chartData.first.x.year,_chartData.first.x.month,_chartData.first.x.day-1),
-              maximum: DateTime(_chartData.last.x.year,_chartData.last.x.month,_chartData.last.x.day+1),
-              //rangePadding: ChartRangePadding.additional,
-              interactiveTooltip: InteractiveTooltip(
-                  enable: true,
-                  canShowMarker: false
-              )
+            labelStyle: TextStyle(fontSize: DeviceSize.fontSize),
+            dateFormat: intl.DateFormat.MMMd(Platform.localeName),
+            majorGridLines: MajorGridLines(width: 1,dashArray: [1,5]),
+            interval: 5,
+            minimum: DateTime(_chartData.first.x.year,_chartData.first.x.month,_chartData.first.x.day-1),
+            maximum: DateTime(_chartData.last.x.year,_chartData.last.x.month,_chartData.last.x.day+1),
+            //rangePadding: ChartRangePadding.additional,
+            interactiveTooltip: InteractiveTooltip(
+              enable: true,
+              canShowMarker: false
+            )
           ),
           primaryYAxis: NumericAxis(
-              labelStyle: TextStyle(fontSize: DeviceSize.fontSize),
-              minimum: _minVal,
-              maximum: _maxVal,
-              interval: variation,
-              numberFormat: intl.NumberFormat.simpleCurrency(decimalDigits: 3),
-              interactiveTooltip: InteractiveTooltip(
-                enable: true,
-                //canShowMarker: false
-              )
+            labelStyle: TextStyle(fontSize: DeviceSize.fontSize),
+            minimum: _minVal,
+            maximum: _maxVal,
+            interval: variation,
+            numberFormat: intl.NumberFormat.simpleCurrency(decimalDigits: 3),
+            interactiveTooltip: InteractiveTooltip(
+              enable: true,
+              //canShowMarker: false
+            )
           ),
         ),
       ),

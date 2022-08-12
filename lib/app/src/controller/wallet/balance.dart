@@ -42,7 +42,7 @@ class Balance {
   }
 }
 
-class PlatformBalance{
+class PlatformBalance {
   double inCurrency = 0.0;
   double qtd = 0.0;
   BigInt raw = BigInt.zero;

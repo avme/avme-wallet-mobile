@@ -59,7 +59,7 @@ class WalletDB {
   }
 
   Future resetTempData(Database db) async {
-    // await db.execute('DELETE from $temp;');
+    await db.execute('DELETE from $temp;');
     await db.execute('''
       INSERT INTO $temp (dateepoch, dia) values
       (cast(strftime('%s', date('now')) as int) + 3600, date('now')),
@@ -138,7 +138,8 @@ class WalletDB {
       print('Error at getMissingDates ->  No data found querying $tokenName in table \"${MarketDataFields.table}\"');
     }
     Print.warning("[Missing days for $tokenName] $_filterDays");
-    return _filterDays;
+    // return _filterDays;
+    return [];
   }
   
   Future<MarketData> read(int date) async {

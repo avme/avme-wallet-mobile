@@ -73,7 +73,7 @@ class _State extends State<AppScaffold>
       TokenTabs(),
       Overview(appScaffoldTabController: this.appScaffoldTabController,),
       History(appScaffoldTabController: this.appScaffoldTabController,),
-      Send(appScaffoldTabController: this.appScaffoldTabController,),
+      Send(),
       Contacts(),
       Exchange(),
       About(),

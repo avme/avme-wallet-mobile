@@ -7,19 +7,25 @@ import 'dart:typed_data';
 import 'package:aes_crypt_null_safe/aes_crypt_null_safe.dart';
 import 'package:avme_wallet/app/src/controller/network/network.dart';
 import 'package:avme_wallet/app/src/controller/wallet/balance.dart';
+import 'package:avme_wallet/app/src/controller/wallet/token/coins.dart';
 import 'package:avme_wallet/app/src/helper/crypto/phrase.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart';
 import 'package:bip32/bip32.dart';
 import 'package:bip39/bip39.dart';
 import 'package:flutter/foundation.dart';
 import 'package:convert/convert.dart';
-import 'package:web3dart/credentials.dart' as web3c;
+import 'package:web3dart/contracts/erc20.dart';
+import 'package:web3dart/web3dart.dart' as web3;
 
+import 'package:web3dart/credentials.dart' as web3c;
 import 'package:avme_wallet/app/src/helper/enums.dart';
 import 'package:avme_wallet/app/src/helper/file_manager.dart';
 import 'package:avme_wallet/app/src/helper/print.dart';
 import 'package:avme_wallet/app/src/controller/wallet/account.dart';
 
 import '../../model/services.dart';
+import '../ui/popup.dart';
 
 class Wallet
 {
@@ -30,7 +36,7 @@ class Wallet
   Completer<bool> init = Completer();
   static const String _file = 'secret';
   String? _secretPath;
-
+  String url = dotenv.env["NETWORK_URL"] ?? "https://api.avax.network/ext/bc/C/rpc";
   Wallet._internal() {
     _init();
   }
@@ -199,5 +205,149 @@ int secret.length = ${secret.length}''';
     }
     Uint8List seed = mnemonicToSeed(secret);
     return BIP32.fromSeed(seed);
+  }
+
+  static Future<String> makeTransaction(String receiver, String token, BigInt amount, int maxGas, BigInt bigIntGasPrice) async
+  {
+    /*
+    ProgressDialog progress = ProgressPopup.display();
+    for(double i = 0; i < 100; i++)
+    {
+      Random random = Random();
+      int index = random.nextInt(WORDLIST.length - 1);
+      progress.percentage.value = i;
+      progress.label.value = WORDLIST[index];
+      await Future.delayed(Duration(milliseconds: 40));
+    }
+    ProgressPopup.dismiss();
+    */
+
+    // ProgressDialog progress = await ProgressPopup.display();
+    // progress.percentage.value = 10;
+    // progress.label.value = "futabu";
+    // await Future.delayed(Duration(seconds: 1));
+    // progress.percentage.value = 100;
+    // progress.label.value = "anal sex";
+    // await Future.delayed(Duration(seconds: 2));
+    // ProgressPopup.dismiss();
+
+    ProgressDialog progress = await ProgressPopup.display();
+    Client httpClient = Client();
+    web3.Web3Client ethClient = web3.Web3Client(_self.url, httpClient);
+
+    /*OLD CODE*/
+
+    web3.EtherAmount gasPrice = web3.EtherAmount.inWei(bigIntGasPrice);
+
+    // Map<String, List> contracts = Contracts.getInstance().contracts;
+    // List<CoinData> contracts = Coins.list;
+    AccountData currentAccount = Account.current();
+    web3c.Credentials accountCredentials = currentAccount.data.privateKey;
+    CoinData contract = Coins.list.firstWhere((coinData) => coinData.symbol == token);
+    web3.Transaction transaction = web3.Transaction(
+      to: web3c.EthereumAddress.fromHex(receiver),
+      maxGas: maxGas,
+      gasPrice: gasPrice,
+      value: web3.EtherAmount.inWei(amount),
+    );
+
+    progress.percentage.value = 40;
+    progress.label.value = "Signing Transaction";
+
+    String? transactionHash;
+    web3.Web3Client? transactionClient;
+    if (token == dotenv.env["PLATFORM_SYMBOL"]) {
+      Print.mark("AVAX - MAINNET");
+
+      ///Get the chainId
+      // int chainId = (await ethClient.getChainId()).toInt();
+      int chainId = int.tryParse(dotenv.get("CHAIN_ID")) ?? 43114;
+      Print.mark("MEU CHAIN ID $chainId");
+      // web3c.Credentials accountCredentials = appState.currentAccount.walletObj.privateKey;
+      Uint8List signedTransaction = await ethClient.signTransaction(
+        accountCredentials,
+        transaction,
+        chainId: chainId,
+      );
+
+      progress.percentage.value = 60;
+      progress.label.value = "Sending Transaction";
+
+      Print.mark("[signedTransaction]\b\n $signedTransaction");
+      transactionHash = await ethClient.sendRawTransaction(signedTransaction);
+      Print.mark("[transactionHash] $transactionHash");
+
+      transactionClient = ethClient;
+    } else {
+      // if going to uncomment this, fix maxGas to be widget's parameter
+      web3.Transaction transaction = web3.Transaction(maxGas: 70000, gasPrice: gasPrice);
+      web3c.EthereumAddress contractAddress = web3c.EthereumAddress.fromHex(contract.address);
+      int chainId = int.tryParse(dotenv.get("CHAIN_ID")) ?? 43114;
+
+      Erc20 erc20 = Erc20(
+        address: contractAddress,
+        client: ethClient,
+        chainId: chainId
+      );
+
+      progress.percentage.value = 60;
+      progress.label.value = "Sending Transaction";
+
+      try {
+        transactionHash = await erc20.transfer(
+          web3c.EthereumAddress.fromHex(receiver),
+          amount, credentials: accountCredentials, transaction: transaction
+        );
+
+        print("[transactionHash]$transactionHash");
+        transactionClient = erc20.client;
+      } catch (e) {
+        print(e);
+      }
+
+      // transactionHash =
+      //     await contract.transfer(EthereumAddress.fromHex(receiverAddress), amount, credentials: accountCredentials, transaction: transaction);
+      // print("[transactionHash]$transactionHash");
+      // transactionClient = contract.client;
+    }
+    print(transactionHash);
+
+    progress.percentage.value = 90;
+    progress.label.value = "Confirming Transaction";
+
+    int secondsPassed = 0;
+    while (true) {
+      try {
+        await Future.delayed(Duration(seconds: 1));
+        web3.TransactionReceipt? transactionReceipt = await transactionClient?.getTransactionReceipt(transactionHash!);
+        print("[info] Receipt: $transactionReceipt");
+        if (transactionReceipt != null) {
+          if(transactionReceipt.status != null) {
+            web3.TransactionInformation transactionInformation = await transactionClient!
+              .getTransactionByHash(transactionHash!);
+            print("[Info] seconds passed: $secondsPassed, and returned $transactionInformation");
+            //TODO: Implement transactions history
+            // if (transactionInformation != null) {
+            //   appState.lastTransactionWasSucessful
+            //       .setLastTransactionInformation(
+            //       transactionInformation, tokenValue: web3.EtherAmount.inWei(amount),
+            //       to: receiverAddress,
+            //       tokenName: token);
+            //   appState.lastTransactionWasSucessful.writeTransaction();
+            //   break;
+            // }
+            break;
+          }
+        }
+      } catch (e) {
+        print("ERROR $e");
+      }
+    }
+    progress.percentage.value = 100;
+    progress.label.value = "Done";
+    ProgressPopup.dismiss();
+    return "https://snowtrace.io/tx/$transactionHash";
+
+    /*END OLD CODE*/
   }
 }

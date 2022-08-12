@@ -148,11 +148,8 @@ class _OverviewState extends State<Overview> {
           'assets/avax_logo.png',
           fit: BoxFit.fitHeight,),
         name: 'PLATFORM',
-        // amount: "${Utils.shortReadable(app.currentAccount.balance)}",
-        // amount: "${account.platform.inCurrency.toStringAsFixed(5)}",
-        amount: "${Utils.shortReadable(account.platform.qtd.toString(),comma: true, length: 3)}",
-        // marketValue: "${shortAmount(app.currentAccount.networkBalance.toString(),comma: true, length: 3)}",
-        // marketValue: "${Utils.shortReadable(account.platform.raw.toString(),comma: true, length: 3)}",
+        // amount: "${Utils.shortReadable(account.platform.qtd.toString(),comma: true, length: 3)}",
+        amount: "${account.platform.qtd}",
         marketValue: "${account.platform.inCurrency.toStringAsFixed(5)}",
         asNetworkToken: '',
       )
@@ -163,14 +160,10 @@ class _OverviewState extends State<Overview> {
         CoinData coinData = Coins.list.firstWhere((_coinData) => _coinData.name == entry.key);
         Balance balance = account.balance.firstWhere((_balance) => _balance.name == entry.key);
         return TokenTracker(
-          // image: Utils.resolveImage(app.activeContracts.sContracts.contractsRaw[entry.key]["logo"]),
           image: Utils.resolveImage(coinData.image),
           name: entry.key,
-          // amount: "${Utils.shortReadable(app.currentAccount.tokenWei(name: entry.key))}",
-          amount: "${Utils.shortReadable(balance.qtd.toString())}",
-          // marketValue: Utils.shortReadable(app.currentAccount.tokenBalance(name: entry.key),comma: false, length: 3),
+          amount: "${balance.qtd}",
           marketValue: "${Utils.shortReadable(balance.inCurrency.toString())}",
-          // asNetworkToken: (app.currentAccount.tokensBalanceList[entry.key]["balance"] / app.networkToken.decimal.toDouble()).toString(),
           asNetworkToken: "FIX THIS",
         );
       }).toList());

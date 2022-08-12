@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import 'package:avme_wallet/app/src/controller/ui/popup.dart';
+import 'package:avme_wallet/app/src/controller/ui/test_popup.dart' as test;
 import 'package:avme_wallet/app/src/controller/wallet/authentication.dart';
 import 'package:avme_wallet/app/src/helper/crypto/wordlist.dart';
 import 'package:avme_wallet/app/src/helper/print.dart';
@@ -23,12 +24,12 @@ class _DashboardState extends State<Dashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Row(
+      body: Column(
         children: [
           Expanded(
             child: AppDarkButton(
               onPressed: () async {
-                ProgressDialog progress = ProgressPopup.display();
+                ProgressDialog progress = await ProgressPopup.display();
                 for(double i = 0; i < 100; i++)
                 {
                   Random random = Random();
@@ -40,6 +41,31 @@ class _DashboardState extends State<Dashboard> {
                 ProgressPopup.dismiss();
               },
               child: Text("TEST NEW POPUP"),
+            ),
+          ),
+          Expanded(
+            child: AppDarkButton(
+              onPressed: () async {
+                test.ProgressDialog progress = await test.ProgressPopup.display();
+                for(double i = 0; i < 100; i++)
+                {
+                  Random random = Random();
+                  int index = random.nextInt(WORDLIST.length - 1);
+                  progress.percentage.value = i;
+                  progress.label.value = WORDLIST[index];
+                  await Future.delayed(Duration(milliseconds: 40));
+                }
+                await Future.delayed(Duration(seconds: 2), () {
+                  test.ProgressPopup.dismiss();
+                });
+                await Future.delayed(Duration(seconds: 2));
+                test.ProgressDialog progress2 = await test.ProgressPopup.display();
+                progress2.label.value = "MONSTERS";
+                progress2.percentage.value = 333;
+                await Future.delayed(Duration(seconds: 1));
+                test.ProgressPopup.dismiss();
+              },
+              child: Text("TEST"),
             ),
           ),
           Expanded(
@@ -60,7 +86,7 @@ class _DashboardState extends State<Dashboard> {
                 {
                   // EthereumAddress address = await accounts[i].address;
                   await accounts[i].hasAddress.future;
-                  String address = accounts[i].address!;
+                  String address = accounts[i].address;
                   Print.approve("Master | ID #$i Account Address: \"$address\"");
                   dev++;
                   setState(() {});

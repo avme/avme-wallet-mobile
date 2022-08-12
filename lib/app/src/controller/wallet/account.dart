@@ -33,6 +33,7 @@ class AccountData {
 
   void updateToken(Balance value, int pos)
   {
+    Print.mark("updateToken raw: ${value.raw}");
     this.balance[pos] = value;
     Account.notify();
     Print.mark("${this.address} -> AccountData.updateToken");
@@ -212,7 +213,7 @@ class Account extends ChangeNotifier
     List _accounts = await rawAccounts.future;
     Print.warning("accounts? $_accounts");
     ProgressDialog init = ProgressDialog();
-    ProgressDialog progress = ProgressPopup.display();
+    ProgressDialog progress = await ProgressPopup.display();
     progress.label.value = "Initializing ${_accounts.length > 1 ? "Accounts" : "Account"}...";
     Threads threads = Threads();
 

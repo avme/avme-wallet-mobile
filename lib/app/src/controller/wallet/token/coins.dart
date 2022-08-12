@@ -11,8 +11,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 ///Describe an list of Active CoinsTokens
 ///Add, Remove, Etc
 class Coins extends ChangeNotifier {
-  //...Storage management
-
   static final Coins _self = Coins._internal();
   factory Coins() => _self;
 
@@ -29,7 +27,7 @@ class Coins extends ChangeNotifier {
   {
     _init();
   }
-  
+
   void _init() async {
     Object coinList = await FileManager.readFile(AppRootFolder.Tokens.name, _file);
     if(coinList is List)
@@ -87,15 +85,18 @@ class Coins extends ChangeNotifier {
     init.complete(true);
   }
 
+  static Future<List> listRaw() async {
+    return await _self._rawCoinsData.future;
+  }
+
   List<CoinData> getCoins() => list;
   Platform getPlatform() => platform;
 
-
   ///When it receives -1 it means the API refused to return
-  static void updateValue(String name, double value)
+  static void updateValue(String name, double currency, BigInt ether)
   {
-    Print.approve("$name, $value");
-    if(value == -1.0 || name.contains('testnet')) { return; }
+    Print.approve("$name, $currency");
+    if(currency == -1.0 || name.contains('testnet')) { return; }
     // Decimal _value = Decimal.fromJson(value.toStringAsFixed(6));
 
     dynamic coin;
@@ -108,16 +109,10 @@ class Coins extends ChangeNotifier {
       coin = list.where((_coin) => _coin.name == name).first;
     }
 
-    // if(coin.value != _value)
-    // {
-    //   coin.value = _value;
-    //   _self.notifyListeners();
-    // }
-
-    if(coin.value != value)
+    if(coin.value != currency)
     {
-      coin.value = value;
-
+      coin.value = currency;
+      coin.ether = ether;
       ///Notifying any listener widget Consumer/Provider using this singleton
       _self.notifyListeners();
     }
@@ -184,34 +179,13 @@ class CoinData {
   final String image;
   final String abi;
   late bool active;
-  // Decimal value = Decimal.zero;
+  BigInt ether = BigInt.zero;
   double value = 0;
 
   CoinData(this.name, this.symbol, this.address, this.testAddress, this.decimals, this.image, this.abi, {this.active = false});
-
-  /// I'm overwriting this class toString because is more common across the app
-  ///to get the token value instead of other properties
-  // @override
-  // String toString()
-  // {
-  //   if(value == Decimal.zero) {
-  //     return "0.0";
-  //   }
-  //   return value.toString();
-  // }
 }
 
 class Platform {
-  // Decimal value = Decimal.zero;
+  BigInt ether = BigInt.zero;
   double value = 0;
-
-  // @override
-  // String toString()
-  // {
-  //   if(value == Decimal.zero)
-  //   {
-  //     return "0.0";
-  //   }
-  //   return value.toString();
-  // }
 }

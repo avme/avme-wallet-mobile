@@ -124,4 +124,98 @@ class Utils {
       return Image.file(File(res), fit: fit, height: height, width: width);
     }
   }
+
+  static bool isHex(String hex)
+  {
+    RegExp regIsAddress = new RegExp(r"^(0x)[a-zA-Z\d]*$",multiLine: false);
+    return regIsAddress.hasMatch(hex);
+  }
+
+  static BigInt bigIntFixedPointToWei(String amount, {int decimals = 18})
+  {
+    return BigInt.tryParse(fixedPointToWei(amount, decimals)) ?? BigInt.zero;
+  }
+
+  //Thank Itamar for the snippet
+  static String fixedPointToWei(String amount, int decimals) {
+
+    if(double.tryParse(amount) == 0) {
+      return amount;
+    }
+
+    String digitPadding = "";
+    String valuestr = "";
+    RegExp validate = new RegExp(r"^[0-9.]*$", caseSensitive: false, multiLine:  false);
+    RegExp hasDot = new RegExp(r"\.", caseSensitive: false, multiLine: false);
+
+    if(!hasDot.hasMatch(amount)) {
+      amount += ".0";
+    }
+
+    // Check if input is valid
+    if(!validate.hasMatch(amount))
+    {
+      return "";
+    }
+
+    // Read value from input String
+    int index = 0;
+    while (index < amount.length && amount[index] != '.') {
+      valuestr += amount[index];
+      print(amount[index]);
+      ++index;
+    }
+
+    // Jump fixed point.
+    ++index;
+    if (amount[index-1] == '.' && (amount.length - (index)) > decimals)
+    {
+      return "";
+    }
+
+    // Check if input precision matches digit precision
+    if (index < amount.length) {
+      // Read precision point into digitPadding
+      while (index < amount.length)
+      {
+        digitPadding += amount[index];
+        ++index;
+      }
+    }
+
+    // Create padding if there are missing decimals
+    while(digitPadding.length < decimals)
+    {
+      digitPadding += '0';
+    }
+    valuestr += digitPadding;
+    while(valuestr[0] == '0')
+      valuestr = valuestr.substring(1);
+
+    if (valuestr == "") valuestr = "0";
+    return valuestr;
+  }
+
+  //Thank Itamar for the snipet
+  static String weiToFixedPoint(String amount, {int digits = 18})
+  {
+    String result = "";
+    if (amount.length <= digits) {
+      int valueToPoint = digits - amount.length;
+      result += "0.";
+
+      for (int i = 0; i < valueToPoint; ++i) {
+        result += "0";
+      }
+      result += amount;
+    }
+    else
+    {
+      result = amount;
+      int pointToPlace = result.length - digits;
+      result = result.substring(0, pointToPlace) + "." + result.substring(pointToPlace);
+    }
+    if (result == "") result = "0";
+    return result;
+  }
 }

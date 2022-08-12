@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:avme_wallet/app/src/helper/print.dart';
 import 'package:flutter/material.dart';
 
 import 'package:avme_wallet/app/src/controller/routes.dart';
@@ -26,24 +29,27 @@ class ProgressPopup {
   bool visible = false;
   static BuildContext? context;
 
-  static ProgressDialog display([ProgressDialog? progress]) {
-    if (_self.visible) {
-      throw "Error at ProgressPopup.display -> Already displaying a process";
-    }
+  Completer<bool> isDone = Completer();
 
+  static Future<ProgressDialog> display([ProgressDialog? progress]) async {
+    if (_self.visible) {
+      // throw "Error at ProgressPopup.display -> Already displaying a process";
+      Print.warning("Error at ProgressPopup.display -> Already displaying a process");
+      await _self.isDone.future;
+    }
     ProgressDialog pDialog = progress ?? ProgressDialog();
 
     _self.visible = true;
     context = Routes.globalContext.currentContext;
     showDialog(
-      context: context!,
-      builder: (_) {
-        return StatefulBuilder(
-          builder: (builder, setState) {
-            return _self.ui(context!, pDialog);
-          },
-        );
-      }
+        context: context!,
+        builder: (_) {
+          return StatefulBuilder(
+            builder: (builder, setState) {
+              return _self.ui(context!, pDialog);
+            },
+          );
+        }
     );
     return pDialog;
   }
@@ -52,7 +58,9 @@ class ProgressPopup {
   {
     if(_self.visible) {
       _self.visible = !_self.visible;
+      _self.isDone.complete(true);
       Navigator.pop(context!);
+      _self.isDone = Completer();
     }
   }
 
@@ -69,82 +77,82 @@ class ProgressPopup {
         backgroundColor: Colors.transparent,
         body: Builder(
           builder: (BuildContext context) =>
-            Center(
-              child: ListView(
-                physics: NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                children: [
-                  GestureDetector(
-                    onTap: () => null,
-                    child: WillPopScope(
-                      onWillPop: () async {
-                        AppHint.show("please wait for the current operation to finish.");
-                        return false;
-                      },
-                      child: AlertDialog(
-                          backgroundColor: AppColors.cardDefaultColor,
-                          contentPadding: EdgeInsets.all(DeviceSize.safeBlockHorizontal * 6),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)
-                          ),
-                          content: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: EdgeInsets.only(right: DeviceSize.safeBlockHorizontal * 6),
-                                child: Column(
-                                  children: [
-                                    Container(
-                                      // color: Colors.green,
-                                      child: SizedBox(
-                                        height: DeviceSize.safeBlockVertical * 5.5,
-                                        width: DeviceSize.safeBlockVertical * 5.5,
-                                        child: CircularProgressIndicator(
-                                          color: AppColors.purple,
-                                          strokeWidth: DeviceSize.titleSize / 5,
+              Center(
+                child: ListView(
+                  physics: NeverScrollableScrollPhysics(),
+                  shrinkWrap: true,
+                  children: [
+                    GestureDetector(
+                      onTap: () => null,
+                      child: WillPopScope(
+                        onWillPop: () async {
+                          AppHint.show("please wait for the current operation to finish.");
+                          return false;
+                        },
+                        child: AlertDialog(
+                            backgroundColor: AppColors.cardDefaultColor,
+                            contentPadding: EdgeInsets.all(DeviceSize.safeBlockHorizontal * 6),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8)
+                            ),
+                            content: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.only(right: DeviceSize.safeBlockHorizontal * 6),
+                                  child: Column(
+                                    children: [
+                                      Container(
+                                        // color: Colors.green,
+                                        child: SizedBox(
+                                          height: DeviceSize.safeBlockVertical * 5.5,
+                                          width: DeviceSize.safeBlockVertical * 5.5,
+                                          child: CircularProgressIndicator(
+                                            color: AppColors.purple,
+                                            strokeWidth: DeviceSize.titleSize / 5,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Container(
-                                // color:Colors.blue,
-                                child: Flexible(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      ValueListenableBuilder(
-                                        valueListenable: progress.percentage,
-                                        builder: (BuildContext context, text, Widget? child) {
-                                          return Text("Loading $text%",
-                                            textAlign: TextAlign.left);
-                                        }
-                                      ),
-                                      SizedBox(height: 8),
-                                      ValueListenableBuilder(
-                                        valueListenable: progress.label,
-                                        builder: (BuildContext context, String text, Widget? child) {
-                                          return Text(text,
-                                            style: AppTextStyles.span,
-                                            textAlign: TextAlign.left,
-                                          );
-                                        }
-                                      )
                                     ],
                                   ),
                                 ),
-                              ),
-                            ],
-                          )
+                                Container(
+                                  // color:Colors.blue,
+                                  child: Flexible(
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        ValueListenableBuilder(
+                                            valueListenable: progress.percentage,
+                                            builder: (BuildContext context, text, Widget? child) {
+                                              return Text("Loading $text%",
+                                                  textAlign: TextAlign.left);
+                                            }
+                                        ),
+                                        SizedBox(height: 8),
+                                        ValueListenableBuilder(
+                                            valueListenable: progress.label,
+                                            builder: (BuildContext context, String text, Widget? child) {
+                                              return Text(text,
+                                                style: AppTextStyles.span,
+                                                textAlign: TextAlign.left,
+                                              );
+                                            }
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            )
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
         ),
       ),
     );

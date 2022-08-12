@@ -1,5 +1,6 @@
 import 'package:avme_wallet/app.dart';
 import 'package:avme_wallet/app/src/controller/controller.dart';
+import 'package:avme_wallet/app/src/controller/wallet/contacts.dart';
 import 'package:avme_wallet/app/src/helper/print.dart';
 import 'package:avme_wallet/app/src/screen/widgets/theme.dart';
 import 'package:flutter/material.dart';
@@ -36,6 +37,7 @@ Future main() async {
         ChangeNotifierProvider<App>(create: (_) => app),
         ChangeNotifierProvider<Coins>(create: (_) => coins),
         ChangeNotifierProvider<Account>(create: (_) => account),
+        ChangeNotifierProvider<Contacts>(create: (_) => Contacts()),
       ],
       child: AvmeApp(app: app,),
     )

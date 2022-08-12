@@ -33,7 +33,7 @@ class TokenTest {
       test("Update value of AVME Coin/Token", () async {
         String syb = "AVME";
         double oldValue = Coins.list.where((coin) => coin.name == syb).first.value;
-        Coins.updateValue("AVME", 10.0);
+        Coins.updateValue("AVME", 10.0, BigInt.from(10));
         double newValue = Coins.list.where((coin) => coin.name == syb).first.value;
         expect(newValue, greaterThan(oldValue));
       });

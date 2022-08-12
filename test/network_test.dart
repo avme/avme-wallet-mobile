@@ -22,9 +22,9 @@ class NetworkTest {
       });
 
       test("Request AVME value from Network", () async {
-        double value = await Network.getPrice(address: "0x1ecd47ff4d9598f89721a2866bfeb99505a413ed");
+        Iterable<double> value = await Network.getPrice(address: "0x1ecd47ff4d9598f89721a2866bfeb99505a413ed");
         Print.mark("[Coin Value] 0x1ecd47ff4d9598f89721a2866bfeb99505a413ed: $value");
-        expect(value, greaterThan(0));
+        expect(value.first, greaterThan(0));
       });
 
       // test("Request Balance from Network", () async {
@@ -64,7 +64,7 @@ class NetworkTest {
       // });
 
       test("Test balance and conversion token to USD", () async {
-        double value = await Network.getPrice();
+        Iterable<double> value = await Network.getPrice();
         Print.warning("Platform token value: $value");
         List keys = decimalToReadable.keys.toList();
         List kValue = decimalToReadable.values.toList();
@@ -72,11 +72,11 @@ class NetworkTest {
         for(int i = 0; i < decimalToReadable.length; i++)
         {
           Decimal tokenQtd = Decimal.parse(kValue[i]);
-          Decimal decimalValue = Decimal.parse(value.toStringAsFixed(6));
+          Decimal decimalValue = Decimal.parse(value.first.toStringAsFixed(6));
           Decimal usdValue = tokenQtd * decimalValue;
           Print.mark("${keys[i]}: Platform Token: ${kValue[i]} | \$: ${usdValue.toDouble().toStringAsFixed(2)}");
         }
-        expect(value, greaterThan(0));
+        expect(value.first, greaterThan(0));
       });
 
       test("Platform History 30 day history", () async {
