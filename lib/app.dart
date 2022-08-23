@@ -60,22 +60,6 @@ class App extends ChangeNotifier {
       await Network.updateCoinHistory();
       await Network.observeTodayHistory();
     }
-    // List<bool> complete = await Future.wait([
-    //   wallet.init.future,
-    //   settings.init.future,
-    //   authentication.init.future,
-    //   coins.init.future,
-    //   Network.observeValueChanges(),
-    // ]);
-    //
-    // int id = 0;
-    // for (bool completed in complete)
-    // {
-    //   if (completed == false) {
-    //     throw "Error at App._init: Failed to initialize ID#$id";
-    //   }
-    //   id++;
-    // }
     Print.warning("App._init ready");
     ready.complete(true);
   }

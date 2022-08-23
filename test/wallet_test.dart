@@ -25,17 +25,17 @@ class WalletTest {
         expect(Wallet.exists, true);
       });
 
+      test("Unlocking file with password", () async {
+        bool didAuth = await Wallet.auth(password);
+        expect(didAuth, true);
+      });
+
       test("Display the account public key", () async {
         List<AccountData> accounts = Account.accounts;
         // EthereumAddress address = await accounts.first.address;
         String address = accounts.first.address;
         Print.approve("First account's address: \"${address}\"");
         expect(accounts.length, greaterThan(0));
-      });
-
-      test("Unlocking file with password", () async {
-        bool didAuth = await Wallet.auth(password);
-        expect(didAuth, true);
       });
 
       test("Deriving account from master mnemonic", () async {

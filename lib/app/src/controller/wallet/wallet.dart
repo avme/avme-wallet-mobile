@@ -24,8 +24,8 @@ import 'package:avme_wallet/app/src/helper/file_manager.dart';
 import 'package:avme_wallet/app/src/helper/print.dart';
 import 'package:avme_wallet/app/src/controller/wallet/account.dart';
 
-import '../../model/services.dart';
-import '../ui/popup.dart';
+import 'package:avme_wallet/app/src/model/services.dart';
+import 'package:avme_wallet/app/src/controller/ui/popup.dart';
 
 class Wallet
 {
@@ -131,7 +131,9 @@ class Wallet
       await Account.load(password);
       AccountData def = Account.accounts.first;
       await def.hasAddress.future;
+      Print.mark("address: ${def.address}");
     }
+
     if(!Services.contains("observeBalance"))
     {
       Print.warning("Starting service observe balance");

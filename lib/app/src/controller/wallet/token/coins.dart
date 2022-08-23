@@ -44,33 +44,47 @@ class Coins extends ChangeNotifier {
           "name": "AVME",
           "symbol": "AVME",
           "address": "0x1ecd47ff4d9598f89721a2866bfeb99505a413ed",
-          "test-address": "0x02aDedcfe78757C3d0a545CB0Cbd78a7d19eEE4f",
+          "test-address": "0xa5f05f0403F56ddF9FB90ebAA2610c3166994016",
           "decimals": "18",
           "abi": "",
           "image": "assets/avme_logo.png",
           "active": true
         },
-        {
-          "name": "AVME testnet",
-          "symbol": "AVME",
-          "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-          "test-address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-          "decimals": "18",
-          "abi": "",
-          "image": "assets/avme_logo.png",
-          "active": true
-        }
+        // {
+        //   "name": "AVME testnet",
+        //   "symbol": "AVME",
+        //   "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+        //   "test-address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+        //   "decimals": "18",
+        //   "abi": "",
+        //   "image": "assets/avme_logo.png",
+        //   "active": true
+        // }
       ];
       await FileManager.writeString(AppRootFolder.Tokens.name, _file, coinList);
     }
+    bool inTestnet = Utils.inTestnet();
     for(Map coinData in coinList)
     {
-      String address = coinData["address"];
+      String address = "";
+      String testAddress = "";
+
+      if(inTestnet)
+      {
+        address = coinData["address"];
+        testAddress = coinData["test-address"];
+      }
+      else
+      {
+        testAddress = coinData["address"];
+        address = coinData["test-address"];
+      }
+
       CoinData data = CoinData(
         coinData["name"],
         coinData["symbol"],
         address,
-        coinData["test-address"],
+        testAddress,
         int.parse(coinData["decimals"]),
         coinData["image"],
         coinData["abi"],
@@ -107,25 +121,6 @@ class Coins extends ChangeNotifier {
   {
     Print.approve("$name, $currency");
     if(currency == -1.0 || name.contains('testnet')) { return; }
-    // Decimal _value = Decimal.fromJson(value.toStringAsFixed(6));
-
-
-    // if(name == dotenv.env["PLATFORM_NAME"])
-    // {
-    //   coin = list.first;
-    // }
-    // else
-    // {
-    //   coin = list.where((_coin) => _coin.name == name).first;
-    // }
-    // if(name == "platform")
-    // {
-    //   coin = platform;
-    // }
-    // else
-    // {
-    //   coin = list.where((_coin) => _coin.name == name).first;
-    // }
     Token coin = list[index];
     if(coin.value != currency)
     {
@@ -225,26 +220,7 @@ class CoinData extends Token {
       active : data["active"],
     );
   }
-
-  // CoinData fromMap()
-  // {
-  //
-  // }
 }
-// class CoinData {
-//   final String name;
-//   final String symbol;
-//   final String address;
-//   final String testAddress;
-//   final int decimals;
-//   final String image;
-//   final String abi;
-//   late bool active;
-//   BigInt ether = BigInt.zero;
-//   double value = 0;
-//
-//   CoinData(this.name, this.symbol, this.address, this.testAddress, this.decimals, this.image, this.abi, {this.active = false});
-// }
 
 class Platform extends Token {
   Platform(

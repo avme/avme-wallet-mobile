@@ -26,6 +26,8 @@ Future main() async {
   await dotenv.load(fileName: '.env');
   Print(debug: dotenv.env["DEBUG_MODE"] == "TRUE" ? true : false);
   FileManagerTest.main();
+  // String password = "abacaxi";
+  // WalletTest.main(password);
   TokenTest.main();
   await ThreadsTest.main();
   NetworkTest.main();

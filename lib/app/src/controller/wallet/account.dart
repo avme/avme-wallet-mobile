@@ -212,7 +212,7 @@ class Account extends ChangeNotifier
   {
     List _accounts = await rawAccounts.future;
     Print.warning("accounts? $_accounts");
-    ProgressDialog init = ProgressDialog();
+    // ProgressDialog init = ProgressDialog();
     ProgressDialog progress = await ProgressPopup.display();
     progress.label.value = "Initializing ${_accounts.length > 1 ? "Accounts" : "Account"}...";
     Threads threads = Threads();

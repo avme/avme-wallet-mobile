@@ -104,7 +104,6 @@ class Threads extends ChangeNotifier
             break;
           default:
             throw "[T#Main] Error at Thread.listener, unrecognised ThreadOperation \"${message.operation}\"";
-            break;
         }
       }
       else

@@ -32,9 +32,36 @@ class Network {
 
   factory Network() => _self;
 
-  String url = dotenv.env["NETWORK_URL"] ??
-      'https://api.avax.network/ext/bc/C/rpc';
-  String chain = dotenv.env["CHAIN_ID"] ?? '43114';
+  String get url
+  {
+    if(Utils.inTestnet())
+    {
+      return dotenv.env["TESTNET_URL"] ?? "https://api.avax-test.network/ext/bc/C/rpc";
+    }
+    return dotenv.env["NETWORK_URL"] ?? "https://api.avax.network/ext/bc/C/rpc";
+  }
+
+  String get chain
+  {
+    if(Utils.inTestnet())
+    {
+      return dotenv.env["TESTNET_CHAIN_ID"] ?? "43113";
+    }
+    return dotenv.env["CHAIN_ID"] ?? "43114";
+  }
+
+  String get port
+  {
+    if(Utils.inTestnet())
+    {
+      return dotenv.env["TESTNET_PORT"] ?? "4812";
+    }
+    return dotenv.env["NETWORK_PORT"] ?? "7545";
+  }
+
+  // String url = dotenv.env["NETWORK_URL"] ??
+  //     'https://api.avax.network/ext/bc/C/rpc';
+  // String chain = dotenv.env["CHAIN_ID"] ?? '43114';
 
   static Future<bool> checkConnection({String? url}) async
   {
@@ -170,11 +197,11 @@ class Network {
   ///The id of the platform issuing tokens (See asset_platforms endpoint for list of options)
   ///asset_platforms: https://api.coingecko.com/api/v3/asset_platforms
   static Future<List<Map>> getTokenHistory(String address,
-      {
-        String currency = "usd",
-        String id = "avalanche",
-        int days = 30
-      }) async
+    {
+      String currency = "usd",
+      String id = "avalanche",
+      int days = 30
+    }) async
   {
     try {
       EthereumAddress.fromHex(address);
@@ -657,7 +684,8 @@ You received \$${difference.toStringAsFixed(2)}\b (${platform.name}) in the Acco
     await stream.first;
     return true;
   }
-
+  /*TODO: Using different objects to distinguish both Platform and Coins is
+    TODO: not a good practice*/
   static Future wrapObserveBalance(List params, ThreadWrapper wrap) async {
     await prepareOperation(wrap);
 
@@ -665,7 +693,7 @@ You received \$${difference.toStringAsFixed(2)}\b (${platform.name}) in the Acco
     String url = params[1];
     int chainId = int.parse(params[2]);
     int seconds = 5;
-
+    Print.mark("url: $url, chainID: $chainId");
     ///Network socket
     http.Client httpClient = http.Client();
     Web3Client web3client = Web3Client(url, httpClient);
@@ -673,8 +701,13 @@ You received \$${difference.toStringAsFixed(2)}\b (${platform.name}) in the Acco
       Map<String, Map> update = {};
       for (AccountData account in accounts) {
         EthereumAddress accountAddress = account.ethereumAddress!;
+        Print.mark("accountAddress in wrapObserveBalance ${account.ethereumAddress!.hex}");
         List<Balance> _tokens = [];
         for (Balance token in account.balance) {
+          if(token.address.isEmpty) {
+            continue;
+          }
+          Print.mark("balance? $token");
           EthereumAddress contract = EthereumAddress.fromHex(token.address);
           Erc20 typeERC20 = Erc20(
             address: contract,
@@ -682,7 +715,24 @@ You received \$${difference.toStringAsFixed(2)}\b (${platform.name}) in the Acco
             chainId: chainId
           );
           Balance balance = Balance.from(token);
-          balance.raw = await typeERC20.balanceOf(accountAddress);
+          int tries = 0;
+          do {
+            try {
+              balance.raw = await typeERC20.balanceOf(accountAddress);
+              break;
+            }
+            catch (e) {
+              if (e is RangeError) {
+                Print.error("[T#${wrap.info
+                  .id} P#${wrap.id}] Failed to recover balance at contract \"${balance
+                  .name}\": ${balance.address} on address $accountAddress");
+                await Future.delayed(Duration(seconds: 1));
+                tries++;
+              }
+              else
+                throw e;
+            }
+          } while(tries < 3);
           String total =
             Convert.weiToFixedPoint(balance.raw.toString(), digits: balance.decimals);
           balance.qtd = double.parse(total);
@@ -718,15 +768,17 @@ You received \$${difference.toStringAsFixed(2)}\b (${platform.name}) in the Acco
     return BigInt.from(gasPriceVal);
   }
 
-  static void isTestnet()
+  static bool isTestnet()
   {
-    if (Utils.inTestnet())
+    bool isTestnet = Utils.inTestnet();
+    if (isTestnet)
     {
-      Print.mark("[WARNING] Using testnet faucet network");
+      Print.mark("[WARNING] Using testnet faucet network or local");
     }
     else
     {
       Print.mark("[WARNING] Using main network");
     }
+    return isTestnet;
   }
 }

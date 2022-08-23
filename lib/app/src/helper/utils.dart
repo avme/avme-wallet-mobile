@@ -222,6 +222,8 @@ class Utils {
 
   static bool inTestnet()
   {
-    return dotenv.env["NETWORK_URL"]!.contains('test');
+    String envTestnet = dotenv.env["TESTNET_MODE"] ?? "FALSE";
+    if(envTestnet == "TRUE") { return true; }
+    return false;
   }
 }

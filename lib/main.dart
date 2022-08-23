@@ -18,7 +18,6 @@ import 'app/src/controller/wallet/token/coins.dart' hide Platform;
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
-
   bool debug = dotenv.env["DEBUG_MODE"] == "TRUE" ? true : false;
   Print(debug: debug);
 
