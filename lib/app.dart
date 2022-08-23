@@ -29,6 +29,7 @@ class App extends ChangeNotifier {
   App._internal()
   {
     Print.warning("Starting...");
+    Network.isTestnet();
     _init();
   }
 

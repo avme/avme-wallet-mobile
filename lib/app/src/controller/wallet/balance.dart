@@ -21,7 +21,7 @@ class Balance {
   }
 
   CoinData token (){
-    return Coins.list.firstWhere((coin) => coin.name == this.name);
+    return Coins.list.firstWhere((coin) => coin.name == this.name) as CoinData;
   }
 
   static from(Balance origin)
@@ -62,6 +62,6 @@ class PlatformBalance {
   ///to be equal when working with PlatformBalance
   Platform token()
   {
-    return Coins.platform;
+    return Coins.list.first as Platform;
   }
 }

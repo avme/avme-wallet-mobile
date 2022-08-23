@@ -141,6 +141,10 @@ class _OverviewState extends State<Overview> {
     {
       tokensWithBalance[balance.name] = balance.inCurrency;
     }
+    return [
+      Container(child: Text("FIX ME"),)
+    ];
+    /*
     List<Widget> ret = [
       TokenTracker(
         image:
@@ -169,6 +173,8 @@ class _OverviewState extends State<Overview> {
       }).toList());
     }
     return ret;
+    */
+
   }
 
   Map<String, List> _tokenDistribution()

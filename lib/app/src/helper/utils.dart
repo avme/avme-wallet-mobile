@@ -4,6 +4,7 @@ import 'package:avme_wallet/app/src/helper/print.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class Utils {
   ///Returns both the key where it was found and the value
@@ -217,5 +218,10 @@ class Utils {
     }
     if (result == "") result = "0";
     return result;
+  }
+
+  static bool inTestnet()
+  {
+    return dotenv.env["NETWORK_URL"]!.contains('test');
   }
 }

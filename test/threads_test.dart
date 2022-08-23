@@ -61,6 +61,7 @@ class ThreadsTest{
     });
     sendport.send("isoFunction finished");
   }
+
   static Future<void> main() async
   {
     Threads? threads;
@@ -79,7 +80,7 @@ class ThreadsTest{
         bool done = await Network.updateCoinHistory();
         expect(done, true);
       });
-
+      //
       test("Synchronize current day missing dates", () async {
         bool done = await Network.observeTodayHistory();
         expect(done, true);
@@ -102,4 +103,7 @@ class ThreadsTest{
       });
     });
   }
+
+
+
 }

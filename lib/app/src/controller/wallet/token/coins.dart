@@ -1,12 +1,15 @@
 import 'dart:async';
 
 import 'package:avme_wallet/app/src/controller/controller.dart';
+import 'package:avme_wallet/app/src/controller/wallet/token/token.dart';
 import 'package:avme_wallet/app/src/helper/enums.dart';
 import 'package:avme_wallet/app/src/helper/file_manager.dart';
 import 'package:avme_wallet/app/src/helper/print.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+import 'package:avme_wallet/app/src/helper/utils.dart';
 
 ///Describe an list of Active CoinsTokens
 ///Add, Remove, Etc
@@ -15,8 +18,7 @@ class Coins extends ChangeNotifier {
   factory Coins() => _self;
 
   ///Coin's value, Platform is the Network's coin
-  static List<CoinData> list = [];
-  static Platform platform = Platform();
+  static List<Token> list = [];
 
   Completer<bool> init = Completer();
   Completer<List> _rawCoinsData = Completer();
@@ -64,10 +66,6 @@ class Coins extends ChangeNotifier {
     for(Map coinData in coinList)
     {
       String address = coinData["address"];
-      if(dotenv.env["NETWORK_URL"]!.contains('test'))
-      {
-        address = coinData["test-address"];
-      }
       CoinData data = CoinData(
         coinData["name"],
         coinData["symbol"],
@@ -81,6 +79,18 @@ class Coins extends ChangeNotifier {
 
       list.add(data);
     }
+    list.insert(0,
+      Platform(
+        dotenv.env["PLATFORM_NAME"] ?? "Avalanche",
+        dotenv.env["PLATFORM_SYMBOL"] ?? "AVAX",
+        "",
+        "",
+        1,
+        dotenv.env["PLATFORM_IMAGE"] ?? "assets/avax_logo.png",
+        "",
+        active: true,
+      )
+    );
     _rawCoinsData.complete(coinList);
     init.complete(true);
   }
@@ -89,26 +99,34 @@ class Coins extends ChangeNotifier {
     return await _self._rawCoinsData.future;
   }
 
-  List<CoinData> getCoins() => list;
-  Platform getPlatform() => platform;
+  List<Token> getCoins() => list;
+  Platform getPlatform() => list.first as Platform;
 
   ///When it receives -1 it means the API refused to return
-  static void updateValue(String name, double currency, BigInt ether)
+  static void updateValue(int index, String name, double currency, BigInt ether)
   {
     Print.approve("$name, $currency");
     if(currency == -1.0 || name.contains('testnet')) { return; }
     // Decimal _value = Decimal.fromJson(value.toStringAsFixed(6));
 
-    dynamic coin;
-    if(name == "platform")
-    {
-      coin = platform;
-    }
-    else
-    {
-      coin = list.where((_coin) => _coin.name == name).first;
-    }
 
+    // if(name == dotenv.env["PLATFORM_NAME"])
+    // {
+    //   coin = list.first;
+    // }
+    // else
+    // {
+    //   coin = list.where((_coin) => _coin.name == name).first;
+    // }
+    // if(name == "platform")
+    // {
+    //   coin = platform;
+    // }
+    // else
+    // {
+    //   coin = list.where((_coin) => _coin.name == name).first;
+    // }
+    Token coin = list[index];
     if(coin.value != currency)
     {
       coin.value = currency;
@@ -120,22 +138,26 @@ class Coins extends ChangeNotifier {
 
   static Future<bool> add(CoinData data) async
   {
+    Print.warning("Coins add: $data");
     try {
-      List<CoinData> _currentTokens = list;
+      List<Token> _currentTokens = list;
       _currentTokens.add(data);
       List raw = await asListOfMap(refList: _currentTokens);
       await FileManager.writeString(AppRootFolder.Tokens.name, _self._file, raw);
     }
     catch(e) {
-      return false;
+      // Print.error(e.toString());
+      // return false;
+      throw e;
     }
     return true;
   }
 
-  static Future<bool> remove(CoinData data) async
+  static Future<bool> remove(Token data) async
   {
     try {
-      List<CoinData> _currentTokens = list;
+      List<Token> _currentTokens = list;
+      if(data is Platform) { return false; }
       _currentTokens.removeWhere((coin) => coin == data);
       List raw = await asListOfMap(refList: _currentTokens);
       await FileManager.writeString(AppRootFolder.Tokens.name, _self._file, raw);
@@ -146,12 +168,13 @@ class Coins extends ChangeNotifier {
     return true;
   }
 
-  static Future<List> asListOfMap({List<CoinData>? refList}) async
+  static Future<List> asListOfMap({List<Token>? refList}) async
   {
-    List<CoinData> _currentTokens = refList ?? list;
+    List<Token> _currentTokens = refList ?? list;
     List _ret = [];
-    for(CoinData coin in _currentTokens)
+    for(Token coin in _currentTokens)
     {
+      if(coin is Platform) { continue; }
       _ret.add(
         {
           "name": coin.name,
@@ -170,22 +193,82 @@ class Coins extends ChangeNotifier {
 }
 
 ///Properties of Coin's Symbol, Name, ABI
-class CoinData {
-  final String name;
-  final String symbol;
-  final String address;
-  final String testAddress;
-  final int decimals;
-  final String image;
-  final String abi;
-  late bool active;
-  BigInt ether = BigInt.zero;
-  double value = 0;
+class CoinData extends Token {
+  CoinData(
+    String name,
+    String symbol,
+    String address,
+    String testAddress,
+    int decimals,
+    String image,
+    String abi,
+    {bool active = false}
+  ) : super(
+    name,
+    symbol,
+    address,
+    testAddress,
+    decimals,
+    image,
+    abi,
+    active: active
+  );
 
-  CoinData(this.name, this.symbol, this.address, this.testAddress, this.decimals, this.image, this.abi, {this.active = false});
+  CoinData fromMap(Map data) {
+    return CoinData(data["name"],
+      data["symbol"],
+      data["address"],
+      data["test-address"],
+      int.parse(data["decimals"]),
+      data["image"],
+      data["abi"],
+      active : data["active"],
+    );
+  }
+
+  // CoinData fromMap()
+  // {
+  //
+  // }
 }
+// class CoinData {
+//   final String name;
+//   final String symbol;
+//   final String address;
+//   final String testAddress;
+//   final int decimals;
+//   final String image;
+//   final String abi;
+//   late bool active;
+//   BigInt ether = BigInt.zero;
+//   double value = 0;
+//
+//   CoinData(this.name, this.symbol, this.address, this.testAddress, this.decimals, this.image, this.abi, {this.active = false});
+// }
 
-class Platform {
-  BigInt ether = BigInt.zero;
-  double value = 0;
+class Platform extends Token {
+  Platform(
+    String name,
+    String symbol,
+    String address,
+    testAddress,
+    decimals,
+    image,
+    abi,
+    {bool active = false}
+  ) : super(name, symbol, address, testAddress, decimals, image, abi);
+
+  @override
+  Platform fromMap(Map data) {
+    return Platform(
+      data["name"],
+      data["symbol"],
+      data["address"],
+      data["testAddress"],
+      int.parse(data["decimals"]),
+      data["image"],
+      data["abi"],
+      active: data["active"]
+    );
+  }
 }

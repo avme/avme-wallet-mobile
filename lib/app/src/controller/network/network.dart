@@ -4,6 +4,7 @@ import 'dart:isolate';
 import 'dart:math';
 
 import 'package:avme_wallet/app/src/controller/wallet/token/coins.dart';
+import 'package:avme_wallet/app/src/controller/wallet/token/token.dart';
 import 'package:avme_wallet/app/src/helper/crypto/convert.dart';
 import 'package:avme_wallet/app/src/model/db/market_data.dart';
 import 'package:avme_wallet/app/src/model/services.dart';
@@ -42,15 +43,14 @@ class Network {
 
     Duration timeoutTimer = const Duration(seconds: 3);
     Future pending = Future.wait(
-        List.generate(repeat, (index) =>
-        http.get(uri)
-          ..timeout(timeoutTimer,
-              onTimeout: () => _self._timeout("checkConnection", timeoutTimer))
-        ));
-    // ..timeout(timeoutTimer, onTimeout: () => List.generate(repeat, (index) => _self._timeout("checkConnection", timeoutTimer)));
+      List.generate(repeat, (index) =>
+      http.get(uri)
+        ..timeout(timeoutTimer,
+            onTimeout: () => _self._timeout("checkConnection", timeoutTimer))
+      )
+    );
     List<http.Response> results = await pending;
     for (http.Response response in results) {
-      // Utils.printApprove("Code: ${response.statusCode}");
       if (response.statusCode == 500) {
         return false;
       }
@@ -227,6 +227,7 @@ class Network {
       api +=
       "avalanche/contract/$address/market_chart/range?vs_currency=$currency&from=$from&to=$to";
     }
+    Print.mark("[$name] \"$api\"");
     String response = await get(null, url: api, method: "GET");
     List date = [];
     if (response.isNotEmpty) {
@@ -294,7 +295,7 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
   ///this is a live service
   static Future<bool> observeValueChanges() async
   {
-    List<CoinData> coins = Coins.list;
+    List<Token> coins = Coins.list;
     Threads threads = Threads();
 
     late Stream stream;
@@ -315,7 +316,7 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
           List info = coinData.entries.first.value;
           double currency = info.first;
           BigInt ether = info.last;
-          Coins.updateValue(coinName, currency, ether);
+          Coins.updateValue(event.indexOf(coinData), coinName, currency, ether);
         }
       }
     });
@@ -325,8 +326,8 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
 
   static Future<bool> observeTodayHistory() async
   {
-    List<CoinData> coins = Coins.list;
-    for(CoinData coin in coins)
+    List<Token> coins = Coins.list;
+    for(Token coin in coins)
     {
       Print.approve("${coin.name} | ${coin.address}");
     }
@@ -343,40 +344,42 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
         if (event["command"] == "getMissingDays") {
           SendPort socket = event["sendPort"];
           List<Map> pending = [];
-          await Future.forEach(coins, (CoinData coin) async {
-            List<int> missing = await WalletDB.getMissingHours(coin.name);
-            pending.add({
-              coin.name: [
-                Utils.lowest(missing),
-                Utils.highest(missing),
-                coin.address
-              ]
-            });
-          });
-          List<int> pMissing = await WalletDB.getMissingHours("platform");
-          pending.insert(0,
+          await Future.forEach(coins, (Token token) async {
+            List<int> missing = await WalletDB.getMissingHours(token.name);
+            if (token is Platform)
             {
-              "platform": [
-                Utils.lowest(pMissing),
-                Utils.highest(pMissing),
-                "0x0"
-              ]
+              pending.insert(0,
+                {
+                  token.name : [
+                    Utils.lowest(missing),
+                    Utils.highest(missing),
+                    "0x0"
+                  ]
+                }
+              );
             }
-          );
+            else if (token is CoinData) {
+              pending.add({
+                token.name: [
+                  Utils.lowest(missing),
+                  Utils.highest(missing),
+                  token.address
+                ]
+              });
+            }
+          });
           socket.send(pending);
         }
         else if (event["command"] == "update") {
-          // await Future.forEach(event["data"].entries, (MapEntry entry) async
           for (MapEntry entry in event["data"].entries) {
             String coin = entry.key;
-            // Print.approve(coin);
             for (Map _entry in entry.value) {
               String price = _entry['exact'].toStringAsFixed(6);
               Decimal value = Decimal.parse(price);
               Print.ok("$price, $value");
               await _self._insertHistoryValues(coin, _entry['unix'], value);
             }
-          } //);
+          }
         }
       }
     });
@@ -448,23 +451,24 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
   ///Gathers 30 day coin market for every coin, including platform
   static Future<bool> updateCoinHistory() async
   {
-    List<CoinData> coins = Coins.list;
-    List<int> platformMissing =
-      await WalletDB.getMissingDays("platform");
-    if (platformMissing.isNotEmpty) {
-      Print.warning("platform? $platformMissing");
-      List platformData = await getTokenHistoryRange(
-        from: Utils.lowest(platformMissing),
-        to: Utils.highest(platformMissing),
-      );
-      for (Map _entry in platformData) {
-        String price = _entry['exact'].toStringAsFixed(6);
-        Decimal value = Decimal.parse(price);
-        _self._insertHistoryValues("platform", _entry['unix'], value);
-      }
-    }
+    List<Token> coins = Coins.list;
+    // List<int> platformMissing =
+    //   await WalletDB.getMissingDays("platform");
+    // if (platformMissing.isNotEmpty) {
+    //   Print.warning("platform? $platformMissing");
+    //   List platformData = await getTokenHistoryRange(
+    //     from: Utils.lowest(platformMissing),
+    //     to: Utils.highest(platformMissing),
+    //   );
+    //   for (Map _entry in platformData) {
+    //     String price = _entry['exact'].toStringAsFixed(6);
+    //     Decimal value = Decimal.parse(price);
+    //     _self._insertHistoryValues("platform", _entry['unix'], value);
+    //   }
+    // }
 
-    for (CoinData coin in coins) {
+    for (Token coin in coins) {
+      Print.error("[${coin.name}]");
       if (coin.name.contains('testnet')) {
         continue;
       }
@@ -472,16 +476,35 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
       if (_missing.isEmpty) {
         continue;
       }
+      // late List<Map> result;
+      // if(coin is Platform)
+      // {
+      //   result = await getTokenHistoryRange(
+      //     from: Utils.lowest(_missing),
+      //     to: Utils.highest(_missing),
+      //     name: coin.name,
+      //   );
+      // }
+      // else
+      // {
       List<Map> result = await getTokenHistoryRange(
         from: Utils.lowest(_missing),
         to: Utils.highest(_missing),
-        address: coin.address,
+        address: coin is Platform ? "0x0" : coin.address,
         name: coin.name
       );
-      for (Map _entry in result) {
-        String price = _entry['exact'].toStringAsFixed(6);
-        Decimal value = Decimal.parse(price);
-        _self._insertHistoryValues(_entry["name"], _entry['unix'], value);
+
+      List<MarketData> marketList = result.map((_entry) {
+        return MarketData(
+          tokenName: _entry["name"],
+          value: Decimal.parse(_entry['exact'].toStringAsFixed(6)),
+          dateTime: _entry['unix']
+        );
+      }).toList();
+
+      if(marketList.isNotEmpty)
+      {
+        await WalletDB.insertList(marketList);
       }
     }
     return true;
@@ -494,25 +517,30 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
     ///CancellableOperation[self] = null
     await prepareOperation(wrap);
 
-    List<CoinData> coins = params.first;
+    List<Token> coins = params.first;
     coins.removeWhere((coin) => coin.name.contains('testnet'));
     double test = 0;
     do {
-      Iterable<double> platformData = await getPrice();
-      double platformCurrency = platformData.first;
-      BigInt platformEther = BigInt.from(platformData.last);
-      test += 0.2;
-      platformCurrency += test;
-      Print.mark("platformCurrency = $platformCurrency");
       List<Map> coinsValue = await Future.wait(
-        coins.map((CoinData coinData) async {
-          Iterable data = await getPrice(address: coinData.address);
-          double currency = data.first;
+        coins.map((Token coinData) async {
+          late Iterable data;
+          late double currency;
+          if(coinData is Platform)
+          {
+            data = await getPrice();
+            test += 0.2;
+            currency = data.first + test;
+          }
+          else if (coinData is CoinData)
+          {
+            data = await getPrice(address: coinData.address);
+            currency = data.first;
+          }
+
           BigInt ether = BigInt.from(data.last);
           return {coinData.name: [currency, ether]};
         })
       );
-      coinsValue.add({"platform": [platformCurrency, platformEther]});
       wrap.send(coinsValue);
 
       ///Lowered from 1 second to 30 seconds, the CoinGecko's endpoint can negate
@@ -618,7 +646,6 @@ You received \$${difference.toStringAsFixed(2)}\b (${platform.name}) in the Acco
             {
               resAccount.updatePlatform(platform);
             }
-            // Print.mark("balance update: $update");
           }
         }
         if(!selfInitialized)
@@ -645,7 +672,7 @@ You received \$${difference.toStringAsFixed(2)}\b (${platform.name}) in the Acco
     do {
       Map<String, Map> update = {};
       for (AccountData account in accounts) {
-        EthereumAddress address = account.ethereumAddress!;
+        EthereumAddress accountAddress = account.ethereumAddress!;
         List<Balance> _tokens = [];
         for (Balance token in account.balance) {
           EthereumAddress contract = EthereumAddress.fromHex(token.address);
@@ -655,7 +682,7 @@ You received \$${difference.toStringAsFixed(2)}\b (${platform.name}) in the Acco
             chainId: chainId
           );
           Balance balance = Balance.from(token);
-          balance.raw = await typeERC20.balanceOf(address);
+          balance.raw = await typeERC20.balanceOf(accountAddress);
           String total =
             Convert.weiToFixedPoint(balance.raw.toString(), digits: balance.decimals);
           balance.qtd = double.parse(total);
@@ -667,7 +694,7 @@ You received \$${difference.toStringAsFixed(2)}\b (${platform.name}) in the Acco
         PlatformBalance platformBalance = PlatformBalance();
         platformBalance.qtd = double.parse(Convert.bigIntReadable(ether));
         platformBalance.raw = ether;
-        update[address.hex] = {
+        update[accountAddress.hex] = {
           "token": _tokens,
           "platform": platformBalance
         };
@@ -689,5 +716,17 @@ You received \$${difference.toStringAsFixed(2)}\b (${platform.name}) in the Acco
     double gasPriceVal = ((_gasPriceTemp.getInWei + addToFee).toDouble()) / 1000000000;
 
     return BigInt.from(gasPriceVal);
+  }
+
+  static void isTestnet()
+  {
+    if (Utils.inTestnet())
+    {
+      Print.mark("[WARNING] Using testnet faucet network");
+    }
+    else
+    {
+      Print.mark("[WARNING] Using main network");
+    }
   }
 }

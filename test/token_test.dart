@@ -1,4 +1,5 @@
 import 'package:avme_wallet/app/src/controller/wallet/token/coins.dart';
+import 'package:avme_wallet/app/src/controller/wallet/token/token.dart';
 import 'package:avme_wallet/app/src/helper/print.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -13,7 +14,7 @@ class TokenTest {
       "",
       18,
       "",
-      ""
+      "",
     );
     group("Token Test", () {
       test("Coins initializer", () async {
@@ -21,6 +22,7 @@ class TokenTest {
       });
 
       test("Add new Coin Token", () async {
+        Print.warning("active initialized? ${coin.active}");
         bool didAdd = await Coins.add(coin);
         expect(didAdd, true);
       });
@@ -29,21 +31,32 @@ class TokenTest {
         bool didAdd = await Coins.remove(coin);
         expect(didAdd, true);
       });
-      
+
       test("Update value of AVME Coin/Token", () async {
         String syb = "AVME";
         double oldValue = Coins.list.where((coin) => coin.name == syb).first.value;
-        Coins.updateValue("AVME", 10.0, BigInt.from(10));
+        Coins.updateValue(1, "AVME", 10.0, BigInt.from(10));
         double newValue = Coins.list.where((coin) => coin.name == syb).first.value;
         expect(newValue, greaterThan(oldValue));
       });
-      
+
       test("Listen to Coin updates", () async {
         Coins().addListener(() {
-          Print.mark("COINS: ${Coins.list.toString()}");
-          Print.mark("Platform: ${Coins.platform}");
+          Print.mark("[Listen] COINS: ${Coins.list.toString()}");
+          Print.mark("[Listen] Platform: ${Coins.list.first}");
         });
       });
+
+      // ///Remove
+      // test("Describe Coins", () async {
+      //   List<Token> a = Coins.list;
+      //   Print.mark("Coins.list [${a.length}]:");
+      //   for(Token item in a)
+      //   {
+      //     String typeObject = item is Platform ? "Platform" : "CoinData";
+      //     Print.mark("[$typeObject] $item");
+      //   }
+      // });
     });
   }
 }

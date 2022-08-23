@@ -243,7 +243,7 @@ int secret.length = ${secret.length}''';
     // List<CoinData> contracts = Coins.list;
     AccountData currentAccount = Account.current();
     web3c.Credentials accountCredentials = currentAccount.data.privateKey;
-    CoinData contract = Coins.list.firstWhere((coinData) => coinData.symbol == token);
+    CoinData contract = Coins.list.firstWhere((coinData) => coinData.symbol == token) as CoinData;
     web3.Transaction transaction = web3.Transaction(
       to: web3c.EthereumAddress.fromHex(receiver),
       maxGas: maxGas,

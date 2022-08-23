@@ -126,6 +126,16 @@ class _MarketDataState extends State<MarketData> {
                 );
               }
               else {
+                return Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: CircularProgressIndicator(
+                        color: AppColors.purple,
+                        strokeWidth: 6,
+                      ),
+                    )
+                );
+                /*
                 return Container(
                   child:
                   Consumer<Coins.Coins>(
@@ -179,7 +189,7 @@ class _MarketDataState extends State<MarketData> {
                       );
                     },
                   ),
-                );
+                );*/
               }
             } else {
               return Center(

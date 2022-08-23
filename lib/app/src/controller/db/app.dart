@@ -96,12 +96,49 @@ class WalletDB {
     ''');
   }
 
+  static Future<List<MarketData>> insertList(List<MarketData> data) async
+  {/*
+  select md.dateTime from tbMarketData as md
+    where /*md.tokenName like '%AVAL%';*/
+        md.tokenName = 'AVALANCHE'
+        and md.dateTime in (1658188800);
+  */
+    List<MarketData> ret = [];
+    final Database database = await _self.database;
+    String whereIn = data.map((marketData) => marketData.dateTime).join(", ");
+    // Print.warning("insertList '$whereIn'");
+
+    List<Map>? rows = await database.query(
+      MarketDataFields.table,
+      columns: [
+        MarketDataFields.dateTime
+      ],
+      where: "(${MarketDataFields.tokenName} = ?) and (${MarketDataFields.dateTime} in (?))",
+      whereArgs: [data.first.tokenName.toUpperCase(), whereIn]
+    );
+
+    print("[where]\"(${MarketDataFields.tokenName} = ${data.first.tokenName}) and (${MarketDataFields.dateTime} in ($whereIn))\"");
+    print(rows);
+    Iterable ignore = rows.map((row) => row[MarketDataFields.dateTime]);
+
+    String insert = data.map((MarketData marketData) {
+      if(ignore.contains(marketData.dateTime)) { return null; }
+      ret.add(marketData);
+      return "(\"${marketData.tokenName.toUpperCase()}\", ${marketData.value}, ${marketData.dateTime})";
+    }).toList().join(",\n");
+    // Print.error("returned rows: $rows");
+    // Print.mark("insert: $insert");
+    int lastInserted = await database.rawInsert("insert into tbMarketData(tokenName, value, dateTime) values $insert;");
+    Print.warning("[rows: ${ret.length}][lastInserted: $lastInserted]");
+    return ret;
+  }
+
   static Future<MarketData> insert(MarketData values) async {
-    final database = await _self.database;
+    final Database database = await _self.database;
     List<Map>? check = await database.query(
         MarketDataFields.table,
         where: "(${MarketDataFields.tokenName} = ?) and (${MarketDataFields.dateTime} = ?)",
-        whereArgs: [values.tokenName,values.dateTime]
+        whereArgs: [values.tokenName, values.dateTime]
     );
     if (check.isNotEmpty){
       return values.copy();
@@ -117,7 +154,7 @@ class WalletDB {
     List<int> _filterDays = [];
     List<Map> queryResult = await selectAllTemp();
     queryResult.forEach((Map row) => _filterDays.add(row['dateepoch']));
-    final database = await _self.database;
+    final Database database = await _self.database;
     List<Map> days = await database.query(
       MarketDataFields.table,
       columns: [MarketDataFields.dateTime],
@@ -138,12 +175,12 @@ class WalletDB {
       print('Error at getMissingDates ->  No data found querying $tokenName in table \"${MarketDataFields.table}\"');
     }
     Print.warning("[Missing days for $tokenName] $_filterDays");
-    // return _filterDays;
-    return [];
+    return _filterDays;
+    // return [];
   }
   
   Future<MarketData> read(int date) async {
-    final database = await _self.database;
+    final Database database = await _self.database;
     final maps = await database.query(
       MarketDataFields.table,
       columns: MarketDataFields.values,
@@ -160,7 +197,7 @@ class WalletDB {
   }
   
   Future<List<MarketData>> readAmount(String tokenName, int limit) async {
-    final database = await _self.database;
+    final Database database = await _self.database;
     final result = await database.query(
       MarketDataFields.table,
       columns: MarketDataFields.values,
@@ -173,7 +210,7 @@ class WalletDB {
   }
 
   Future close() async{
-    final database = await _self.database;
+    final Database database = await _self.database;
     database.close();
   }
 
@@ -190,7 +227,7 @@ class WalletDB {
     for(int i = startUnix; i < nowUnix; i += 3600)
     { todayUnixHours.add(i); }
 
-    final database = await _self.database;
+    final Database database = await _self.database;
     List<Map> rows = await database.query(
         MarketDataFields.table,
         columns: [MarketDataFields.dateTime],
@@ -213,13 +250,13 @@ class WalletDB {
 
   static Future<List<Map>> selectAllTemp() async
   {
-    final database = await _self.database;
+    final Database database = await _self.database;
     return await database.rawQuery('SELECT dateepoch, datetime(dateepoch, \'unixepoch\') as converted FROM ${_self.temp};');
   }
 
   static Future<Map> selectLatestTemp() async
   {
-    final database = await _self.database;
+    final Database database = await _self.database;
     List<Map> result = await database.rawQuery('''
       SELECT 
         dateepoch,
@@ -232,7 +269,7 @@ class WalletDB {
   static Future<List<MarketData>> viewMarketDataMonth(String token, {int limit = 30, int offset = 0}) async
   {
     List<MarketData> ret = [];
-    final database = await _self.database;
+    final Database database = await _self.database;
     List<Map> result = await database.rawQuery(
       '''
         SELECT
