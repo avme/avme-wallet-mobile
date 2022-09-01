@@ -43,10 +43,14 @@ class FileManager
   static Future<Directory> documents({AppRootFolder? rootFolder}) async
   {
     Directory documentsFolder = await getApplicationDocumentsDirectory();
-    if(rootFolder == null) {
-      return documentsFolder;
+    String path = documentsFolder.path + "/";
+    if (Platform.isWindows || Platform.isLinux) {
+      path +=  "com.avme.wallet";
     }
-    return Directory(documentsFolder.path + "/${rootFolder.name}");
+    if(rootFolder == null) {
+      return Directory(path);
+    }
+    return Directory(path + rootFolder.name);
   }
 
   static Future<Directory> checkStructure(String path, {bool create = false}) async
