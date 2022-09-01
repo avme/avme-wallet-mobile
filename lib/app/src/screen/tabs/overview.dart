@@ -1,4 +1,3 @@
-import 'package:avme_wallet/app/src/controller/wallet/balance.dart';
 import 'package:avme_wallet/app/src/controller/wallet/token/coins.dart';
 import 'package:avme_wallet/app/src/helper/print.dart';
 import 'package:avme_wallet/app/src/helper/utils.dart';
@@ -13,8 +12,9 @@ import 'package:avme_wallet/app/src/screen/widgets/theme.dart';
 import 'package:avme_wallet/app/src/controller/wallet/account.dart';
 import 'package:avme_wallet/app/src/screen/widgets/overview/export.dart';
 
-import '../widgets/generic.dart';
-import '../widgets/overview/pie_chart.dart';
+import 'package:avme_wallet/app/src/controller/wallet/token/balance.dart';
+import 'package:avme_wallet/app/src/screen/widgets/generic.dart';
+import 'package:avme_wallet/app/src/screen/widgets/overview/pie_chart.dart';
 
 class Overview extends StatefulWidget {
   final TabController appScaffoldTabController;
@@ -38,6 +38,14 @@ class _OverviewState extends State<Overview> {
   @override
   Widget build(BuildContext context) {
     AppColors appColors = AppColors();
+    // return Container(
+    //   child: Column(
+    //     children: [
+    //       Text("watch length: ${context.watch<Account>().accounts.length}"),
+    //       Text("singleton lenght: ${Account().accounts.length}"),
+    //     ],
+    //   ),
+    // );
     return Consumer<Account>(
       builder: (context, account, _){
         return ListView(
@@ -70,9 +78,9 @@ class _OverviewState extends State<Overview> {
               ),
               // totalBalance: _totalBalance(app),
               totalBalance: _totalBalance(),
-              address: Account.accounts[account.selected].address,
+              address: Account().accounts[account.selected].address,
               onPressed: () async {
-                await Clipboard.setData(ClipboardData(text: Account.accounts[account.selected].address));
+                await Clipboard.setData(ClipboardData(text: Account().accounts[account.selected].address));
                 AppHint.show("Address copied to clipboard");
               },
               onIconPressed: () async {
@@ -137,7 +145,7 @@ class _OverviewState extends State<Overview> {
   {
     AccountData account = Account.current();
     Map tokensWithBalance = {};
-    for(Balance balance in account.balance)
+    for(BalanceInfo balance in account.balance)
     {
       tokensWithBalance[balance.name] = balance.inCurrency;
     }
@@ -182,16 +190,12 @@ class _OverviewState extends State<Overview> {
     // Map tokensWithBalance = app.currentAccount.tokensBalanceList;
     AccountData account = Account.current();
     Map tokensWithBalance = {};
-    for(Balance balance in account.balance)
+    for(BalanceInfo balance in account.balance)
     {
       tokensWithBalance[balance.name] = balance.inCurrency;
     }
-    Map<String, List> ret = {
-      "AVAX": [
-        account.platform.inCurrency,
-        Colors.red
-      ]
-    };
+
+    Map<String, List> ret = {};
     int pos = 0;
 
     ///Checking for any token
@@ -211,11 +215,15 @@ class _OverviewState extends State<Overview> {
   }
   String _totalBalance()
   {
-    AccountData currentAccount = Account.current();
-    List<double> tokensValue = currentAccount.balance.map((e) => e.inCurrency).toList();
-    double platformValue = currentAccount.platform.inCurrency;
-    tokensValue.forEach((value) => platformValue += value);
-    return "$platformValue";
+    // AccountData currentAccount = Account.current();
+    // double total = currentAccount.balance.map((balance) => balance.inCurrency).reduce((t, c) => t + c);
+    // return "$total";
+    return "0%";
+    // List<double> tokensValue = currentAccount.balance.map((e) => e.inCurrency).toList();
+    // double total = tokensValue.ma
+    // double platformValue = currentAccount.platform.inCurrency;
+    // tokensValue.forEach((value) => platformValue += value);
+    // return "$platformValue";
   }
   // String _totalBalance(AvmeWallet app)
   // {
