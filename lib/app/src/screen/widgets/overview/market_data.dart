@@ -16,7 +16,6 @@ import 'package:avme_wallet/app/src/screen/widgets/card.dart';
 import 'package:avme_wallet/app/src/screen/widgets/generic.dart';
 import 'package:avme_wallet/app/src/screen/widgets/theme.dart';
 import 'package:avme_wallet/app/src/controller/db/app.dart';
-import 'package:avme_wallet/app/src/controller/wallet/balance.dart';
 
 class MarketData extends StatefulWidget {
   final String tokenName;
@@ -56,6 +55,7 @@ class _MarketDataState extends State<MarketData> {
     super.initState();
   }
 
+
   @override
   Widget build(BuildContext context)
   {
@@ -65,67 +65,67 @@ class _MarketDataState extends State<MarketData> {
           future: pending,
           builder: (BuildContext context,snapshot) {
             if(snapshot.data != null) {
-              Map pendingData = snapshot.data as Map<String, dynamic>;
-              Print.mark("pendingData $pendingData");
-              if(widget.tokenName.toUpperCase() == "PLATFORM") {
-                return Container(
-                  child:
-                  Consumer<Coins.Coins>(
-                    builder: (_, coins, __) {
-                      ///Getting the current date at each build/state
-                      Map currentTokenInfo = updateCurrentData(
-                        minVal: pendingData['aux'][1],
-                        maxVal: pendingData['aux'][2],
-                        aux: pendingData['aux'][0],
-                        currentValue: coins.getPlatform().value
-                      );
-                      double variation = ((pendingData['aux'][2] - pendingData['aux'][1])/0.8)/8;
-                      _chartMinVal = currentTokenInfo['minVal'];
-                      _chartMaxVal = currentTokenInfo['maxVal'];
-                      _minVal = currentTokenInfo['minVal'] - variation;
-                      _maxVal = currentTokenInfo['maxVal'] + variation;
-                      // print('minVal ${currentTokenInfo['minVal']}, maxVal ${currentTokenInfo['maxVal']}');
-                      // print('INFO: variation $variation, minVal $_minVal, maxVal $_maxVal');
-                      Map data = {
-                        "symbol": dotenv.env["PLATFORM_SYMBOL"],
-                        "name": dotenv.env["PLATFORM_NAME"],
-                        "balance": Account.current().platform.inCurrency,
-                        "res": dotenv.env["PLATFORM_IMAGE"]
-                      };
-                      // return Center(
-                      //   child: Text("Get Coins ${coins.getPlatform().value}"),
-                      // );
-                      return Column(
-                        children: [
-                          tokenCard(data),
-                          FutureBuilder(
-                            future: Future.delayed(Duration(milliseconds: 400), () =>generateChart(variation: variation)),
-                            builder: (_, AsyncSnapshot<Widget> snapshot){
-                              if(snapshot.data == null) {
-                                return Expanded(
-                                  flex: 6,
-                                  child: Center(
-                                    child: Padding(
-                                      padding: EdgeInsets.all(8.0),
-                                      child: CircularProgressIndicator(
-                                        color: AppColors.purple,
-                                        strokeWidth: 6,
-                                      ),
-                                    )
-                                  ),
-                                );
-                              }
-                              return snapshot.data!;
-                            },
-                          ),
-                          valueList()
-                        ],
-                      );
-                    },
-                  )
-                );
-              }
-              else {
+              // Map pendingData = snapshot.data as Map<String, dynamic>;
+              // Print.mark("pendingData $pendingData");
+              // if(widget.tokenName.toUpperCase() == "PLATFORM") {
+              //   return Container(
+              //     child:
+              //     Consumer<Coins.Coins>(
+              //       builder: (_, coins, __) {
+              //         ///Getting the current date at each build/state
+              //         Map currentTokenInfo = updateCurrentData(
+              //           minVal: pendingData['aux'][1],
+              //           maxVal: pendingData['aux'][2],
+              //           aux: pendingData['aux'][0],
+              //           currentValue: coins.getPlatform().value
+              //         );
+              //         double variation = ((pendingData['aux'][2] - pendingData['aux'][1])/0.8)/8;
+              //         _chartMinVal = currentTokenInfo['minVal'];
+              //         _chartMaxVal = currentTokenInfo['maxVal'];
+              //         _minVal = currentTokenInfo['minVal'] - variation;
+              //         _maxVal = currentTokenInfo['maxVal'] + variation;
+              //         // print('minVal ${currentTokenInfo['minVal']}, maxVal ${currentTokenInfo['maxVal']}');
+              //         // print('INFO: variation $variation, minVal $_minVal, maxVal $_maxVal');
+              //         Map data = {
+              //           "symbol": dotenv.env["PLATFORM_SYMBOL"],
+              //           "name": dotenv.env["PLATFORM_NAME"],
+              //           "balance": Account.current().platform.inCurrency,
+              //           "res": dotenv.env["PLATFORM_IMAGE"]
+              //         };
+              //         // return Center(
+              //         //   child: Text("Get Coins ${coins.getPlatform().value}"),
+              //         // );
+              //         return Column(
+              //           children: [
+              //             tokenCard(data),
+              //             FutureBuilder(
+              //               future: Future.delayed(Duration(milliseconds: 400), () =>generateChart(variation: variation)),
+              //               builder: (_, AsyncSnapshot<Widget> snapshot){
+              //                 if(snapshot.data == null) {
+              //                   return Expanded(
+              //                     flex: 6,
+              //                     child: Center(
+              //                       child: Padding(
+              //                         padding: EdgeInsets.all(8.0),
+              //                         child: CircularProgressIndicator(
+              //                           color: AppColors.purple,
+              //                           strokeWidth: 6,
+              //                         ),
+              //                       )
+              //                     ),
+              //                   );
+              //                 }
+              //                 return snapshot.data!;
+              //               },
+              //             ),
+              //             valueList()
+              //           ],
+              //         );
+              //       },
+              //     )
+              //   );
+              // }
+              // else {
                 return Center(
                     child: Padding(
                       padding: EdgeInsets.all(8.0),
@@ -191,7 +191,7 @@ class _MarketDataState extends State<MarketData> {
                   ),
                 );*/
               }
-            } else {
+            // } else {
               return Center(
                 child: Padding(
                   padding: EdgeInsets.all(8.0),
@@ -201,7 +201,7 @@ class _MarketDataState extends State<MarketData> {
                   ),
                 )
               );
-            }
+            // }
           }
         )
       )

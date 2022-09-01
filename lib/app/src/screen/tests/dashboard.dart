@@ -74,14 +74,14 @@ class _DashboardState extends State<Dashboard> {
                 String? password = await Authentication.auth();
                 if(password == null)
                 { return; }
-                int d = Account.accounts.length - 1;
+                int d = Account().accounts.length - 1;
                 do {
                   didDerive = await Wallet.deriveAccount(password, d);
                   d++;
                 }
                 while(d < 10);
 
-                List<AccountData> accounts = Account.accounts;
+                List<AccountData> accounts = Account().accounts;
                 for(int i = 0; i < accounts.length; i++)
                 {
                   // EthereumAddress address = await accounts[i].address;

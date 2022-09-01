@@ -1,10 +1,10 @@
 import 'package:avme_wallet/app/src/controller/wallet/account.dart';
+import 'package:avme_wallet/app/src/controller/wallet/token/balance.dart';
 import 'package:avme_wallet/app/src/helper/size.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'package:avme_wallet/app/src/controller/db/app.dart';
-import 'package:avme_wallet/app/src/controller/wallet/balance.dart';
 import 'package:avme_wallet/app/src/screen/widgets/buttons.dart';
 import 'package:avme_wallet/app/src/screen/widgets/hint.dart';
 import 'package:avme_wallet/app/src/screen/widgets/painted.dart';
@@ -265,13 +265,14 @@ class _TokenTrackerState extends State<TokenTracker> {
 Future<List> lastFiveBalance(String name) async {
   List tokenValues = [];
   AccountData current = Account.current();
-  if (name == 'PLATFORM') {
-    // tokenValues.add(double.tryParse(appState.networkToken.value));
-    tokenValues.add(current.platform.inCurrency);
-  } else {
-    Balance balance = current.balance.firstWhere((_balance) => _balance.name == name);
+  // if (name == 'PLATFORM') {
+  //   // tokenValues.add(double.tryParse(appState.networkToken.value));
+  //   tokenValues.add(current.platform.inCurrency);
+  // }
+  // else {
+    BalanceInfo balance = current.balance.firstWhere((_balance) => _balance.name == name);
     tokenValues.add(balance.inCurrency);
-  }
+  // }
 
   await WalletDB().readAmount(name, 4).then((value) => {
     value.forEach((element) {

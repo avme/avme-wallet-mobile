@@ -7,10 +7,10 @@ import 'package:avme_wallet/app/src/helper/size.dart';
 
 import 'package:avme_wallet/app/src/screen/widgets/widgets.dart';
 import 'package:avme_wallet/app/src/controller/wallet/account.dart';
-import 'package:avme_wallet/app/src/controller/wallet/balance.dart';
 import 'package:avme_wallet/app/src/controller/wallet/token/coins.dart';
 
-import '../../../controller/db/app.dart';
+import 'package:avme_wallet/app/src/controller/db/app.dart';
+import 'package:avme_wallet/app/src/controller/wallet/token/balance.dart';
 
 class OverviewAndButtons extends StatefulWidget {
   final String totalBalance;
@@ -209,20 +209,20 @@ Future<String> difference() async {
   // List<String> tokenNames = app.activeContracts.tokens;
   List<String> tokenNames = Coins.list.map((e) => e.name).toList();
   bool isThereBalance = false;
-  //AVAX
-  if (Account.current().platform.inCurrency > 0.0) {
-    isThereBalance = true;
-    tokenValueToday = Account.current().platform.inCurrency;
-    List<MarketData> value = await WalletDB().readAmount('PLATFORM', 1);
-    percentages.add((tokenValueToday / value.first.value.toDouble()) - 1);
-    sum += (value.first.value.toDouble());
-    tokenValuesYesterday.add(value.first.value.toDouble());
-  }
+  // //AVAX
+  // if (Account.current().platform.inCurrency > 0.0) {
+  //   isThereBalance = true;
+  //   tokenValueToday = Account.current().platform.inCurrency;
+  //   List<MarketData> value = await WalletDB().readAmount('PLATFORM', 1);
+  //   percentages.add((tokenValueToday / value.first.value.toDouble()) - 1);
+  //   sum += (value.first.value.toDouble());
+  //   tokenValuesYesterday.add(value.first.value.toDouble());
+  // }
   //Other
   // tokenNames.forEach((element) async { //Doesn't work, since it will work and wait for the .forEach but won't wait for the await inside
   // for (String element in tokenNames) {
   await Future.forEach(tokenNames, (String element) async {
-    Balance? tokenBalance;
+    late BalanceInfo tokenBalance;
     try
     {
       tokenBalance = Account.current().balance.firstWhere((_b) => _b.name == element);
@@ -240,7 +240,7 @@ Future<String> difference() async {
     if (tokenBalance.inCurrency > 0)
     {
       isThereBalance = true;
-      double tokenValueToday = tokenBalance.token().value;
+      double tokenValueToday = tokenBalance.token.value;
       await WalletDB().readAmount(element, 1).then((value) {
         percentages.add((tokenValueToday / value.first.value.toDouble()) - 1);
         sum += (value.first.value.toDouble());
