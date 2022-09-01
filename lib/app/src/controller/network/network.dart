@@ -20,10 +20,11 @@ import 'package:avme_wallet/app/src/controller/wallet/account.dart';
 
 import 'package:avme_wallet/app/src/helper/utils.dart';
 import 'package:avme_wallet/app/src/controller/threads.dart';
-import 'package:avme_wallet/app/src/controller/wallet/balance.dart';
 
 import 'package:avme_wallet/app/src/controller/db/app.dart';
 import 'package:avme_wallet/app/src/controller/ui/push_notification.dart';
+
+import '../wallet/token/balance.dart';
 
 class Network {
   static final Network _self = Network._internal();
@@ -104,7 +105,7 @@ class Network {
     List<Map> mapRequest = [];
 
     if (addressList == null) {
-      List<AccountData> accounts = Account.accounts;
+      List<AccountData> accounts = Account().accounts;
       for (int i = 0; i < accounts.length; i++) {
         Map<String, dynamic> instance = Map.from(body);
         instance["id"] = "$i";
@@ -585,30 +586,50 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
     Print.mark("[MarketData.inserted] $inserted");
   }
 
+  // static Future wrapObserveBalanceTest(List params, ThreadWrapper wrap) async {
+  //   await prepareOperation(wrap);
+  //   Print.warning("params wrapObserveBalanceTest: ${params.first}");
+  //   wrap.send("getAccounts");
+  //   print("AAAAAAAAAAAAAAAAAAAAAAAAAAA");
+  //   Print.warning("_QQQQQQQQQQQQQQQQQQQQQQ");
+  //   print("BBBBBBBBBBBBBBBBBBBBBBBBBBBB");
+  //   // do await Future.delayed(Duration(seconds: 1));
+  //   // while(!wrap.isCanceled());
+  //   await Future.delayed(Duration(seconds: 5));
+  //   print("done processo kst");
+  //   wrap.send("done processo kst");
+  // }
+
   static Future<bool> observeBalance() async
   {
-    for (AccountData account in Account.accounts) {
-      ///Initialize a list of <Balance> for every Account with positional as id
-      ///to later update its BigInt value and readable value
-      List<Balance> balance = [];
-      for (int i = 0; i < Coins.list.length; i++) {
-        if (Coins.list[i].name.contains("testnet")) {
-          continue;
-        }
-        balance.add(Balance(i));
-      }
-      account.balance = balance;
+    Account accountObj = Account();
+    for (AccountData account in accountObj.accounts) {
+      account.balance = Coins.list.skipWhile((token) => token.name.contains("testnet")).map((token) {
+        if(token is Platform) return PlatformBalance.fromToken(token);
+        return Balance.fromToken(token);
+      }).toList();
     }
-
     Threads threads = Threads();
     late Stream stream;
+    // Print.mark("Accounts 1337: ${Account.accounts}");
+    List<Map> accountsRaw = accountObj.accounts.map((accountData) => {
+      "ethereumAddress": accountData.ethereumAddress,
+      "address": accountData.address,
+      "title": accountData.title,
+      "slot": accountData.slot,
+      "derived": accountData.derived,
+      "balance": accountData.balance
+    }).toList();
     ThreadMessage observeBalance = ThreadMessage(
       caller: "observeBalance",
-      params: [Account.accounts, _self.url, _self.chain],
+      params: [accountsRaw, _self.url, _self.chain],
+      // params: [[], "https://api.avax-test.network:443/ext/bc/C/rpc", "43114"],
       function: wrapObserveBalance,
     );
     bool selfInitialized = false;
     stream = threads.addToPool(id: 0, task: observeBalance, shouldReturnReference: true);
+    await accountObj.rawAccounts.future;
+
     stream.listen((event) {
       // Print.approve("wrapObserveBalance $event");
       if (event is ThreadReference) {
@@ -621,18 +642,18 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
         {
           for(String address in event["update"]!.keys)
           {
-            AccountData resAccount = Account.accounts.firstWhere((AccountData ad) => ad.address == address);
+            AccountData resAccount = accountObj.accounts.firstWhere((AccountData ad) => ad.address == address);
 
             Map update = event["update"]![address];
-            List<Balance> tokens = update["token"];
+            List<BalanceInfo> tokens = update["token"];
             for(int i = 0; i < tokens.length; i++)
             {
-              Balance token = tokens[i];
+              BalanceInfo token = tokens[i];
               Print.error("balance ${tokens[i].name}: \$${resAccount.balance[i].inCurrency}:TokenAmount ${resAccount.balance[i].qtd}");
 
               if(token.qtd != resAccount.balance[i].qtd)
               {
-                token.inCurrency = token.qtd * token.token().value;
+                token.inCurrency = token.qtd * token.token.value;
                 double difference = token.inCurrency - resAccount.balance[i].inCurrency;
                 Print.ok("${token.name} ${token.inCurrency} - ${resAccount.balance[i].inCurrency}");
                 if(difference > 0 && selfInitialized)
@@ -641,38 +662,38 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
                     id: 9,
                     title: "Transfer received (${token.name})",
                     body:
-'''Account Update: 
-You received \$${difference.toStringAsFixed(2)}\b (${token.name}) in the Account#${Account.accounts.indexOf(resAccount)} ${resAccount.title}.''',
+'''Account Update:
+You received \$${difference.toStringAsFixed(2)}\b (${token.name}) in the Account#${accountObj.accounts.indexOf(resAccount)} ${resAccount.title}.''',
                     payload: "app/history"
                   );
                 }
                 resAccount.updateToken(token, i);
               }
             }
-            PlatformBalance platform = update["platform"];
-            platform.inCurrency = platform.qtd * platform.token().value;
-            if(platform.qtd != resAccount.platform.qtd)
-            {
-
-              double difference = platform.inCurrency - resAccount.platform.inCurrency;
-              Print.ok("platform: ${platform.inCurrency} - ${resAccount.platform.inCurrency}");
-              if(difference > 0 && selfInitialized)
-              {
-                PushNotification.showNotification(
-                  id: 9,
-                  title: "Transfer received (${platform.name})",
-                  body:
-                  '''Account Update: 
-You received \$${difference.toStringAsFixed(2)}\b (${platform.name}) in the Account#${Account.accounts.indexOf(resAccount)} ${resAccount.title}.''',
-                  payload: "app/history"
-                );
-              }
-              resAccount.updatePlatform(platform);
-            }
-            else if(resAccount.platform.inCurrency != platform.qtd * platform.token().value)
-            {
-              resAccount.updatePlatform(platform);
-            }
+//             PlatformBalance platform = update["platform"];
+//             platform.inCurrency = platform.qtd * platform.token().value;
+//             if(platform.qtd != resAccount.platform.qtd)
+//             {
+//
+//               double difference = platform.inCurrency - resAccount.platform.inCurrency;
+//               Print.ok("platform: ${platform.inCurrency} - ${resAccount.platform.inCurrency}");
+//               if(difference > 0 && selfInitialized)
+//               {
+//                 PushNotification.showNotification(
+//                   id: 9,
+//                   title: "Transfer received (${platform.name})",
+//                   body:
+//                   '''Account Update:
+// You received \$${difference.toStringAsFixed(2)}\b (${platform.name}) in the Account#${Account.accounts.indexOf(resAccount)} ${resAccount.title}.''',
+//                   payload: "app/history"
+//                 );
+//               }
+//               resAccount.updatePlatform(platform);
+//             }
+//             else if(resAccount.platform.inCurrency != platform.qtd * platform.token().value)
+//             {
+//               resAccount.updatePlatform(platform);
+//             }
           }
         }
         if(!selfInitialized)
@@ -681,7 +702,8 @@ You received \$${difference.toStringAsFixed(2)}\b (${platform.name}) in the Acco
         }
       }
     });
-    await stream.first;
+    // await stream.first;
+    await Future.delayed(Duration(seconds: 5));
     return true;
   }
   /*TODO: Using different objects to distinguish both Platform and Coins is
@@ -689,7 +711,7 @@ You received \$${difference.toStringAsFixed(2)}\b (${platform.name}) in the Acco
   static Future wrapObserveBalance(List params, ThreadWrapper wrap) async {
     await prepareOperation(wrap);
 
-    List<AccountData> accounts = params[0];
+    List<Map> accounts = params[0];
     String url = params[1];
     int chainId = int.parse(params[2]);
     int seconds = 5;
@@ -699,33 +721,44 @@ You received \$${difference.toStringAsFixed(2)}\b (${platform.name}) in the Acco
     Web3Client web3client = Web3Client(url, httpClient);
     do {
       Map<String, Map> update = {};
-      for (AccountData account in accounts) {
-        EthereumAddress accountAddress = account.ethereumAddress!;
-        Print.mark("accountAddress in wrapObserveBalance ${account.ethereumAddress!.hex}");
-        List<Balance> _tokens = [];
-        for (Balance token in account.balance) {
-          if(token.address.isEmpty) {
-            continue;
-          }
-          Print.mark("balance? $token");
-          EthereumAddress contract = EthereumAddress.fromHex(token.address);
-          Erc20 typeERC20 = Erc20(
-            address: contract,
-            client: web3client,
-            chainId: chainId
-          );
-          Balance balance = Balance.from(token);
+      for (Map account in accounts) {
+        EthereumAddress accountAddress = account["ethereumAddress"];
+        Print.mark("accountAddress in wrapObserveBalance ${account["address"]}");
+        List<BalanceInfo> _tokens = [];
+        for (BalanceInfo balance in account["balance"]) {
+          // if(balance.address.isEmpty) {
+          //   continue;
+          // }
+          // for (Balance token in account.balance) {
+          // if(token.address.isEmpty) {
+          //   continue;
+          // }
+
+
           int tries = 0;
+          Print.mark("balance? $balance");
           do {
             try {
-              balance.raw = await typeERC20.balanceOf(accountAddress);
+              if(balance is PlatformBalance)
+              {
+                balance.raw = (await web3client.getBalance(accountAddress)).getInWei;
+              }
+              else {
+                EthereumAddress contract = EthereumAddress.fromHex(balance.address);
+                Erc20 typeERC20 = Erc20(
+                  address: contract,
+                  client: web3client,
+                  chainId: chainId
+                );
+                balance.raw = await typeERC20.balanceOf(accountAddress);
+              }
               break;
             }
             catch (e) {
               if (e is RangeError) {
                 Print.error("[T#${wrap.info
-                  .id} P#${wrap.id}] Failed to recover balance at contract \"${balance
-                  .name}\": ${balance.address} on address $accountAddress");
+                    .id} ID#${wrap.id}] Failed to recover balance at contract \"${balance
+                    .name}\": ${balance.address} on address $accountAddress");
                 await Future.delayed(Duration(seconds: 1));
                 tries++;
               }
@@ -733,20 +766,20 @@ You received \$${difference.toStringAsFixed(2)}\b (${platform.name}) in the Acco
                 throw e;
             }
           } while(tries < 3);
-          String total =
-            Convert.weiToFixedPoint(balance.raw.toString(), digits: balance.decimals);
+
+          String total = Convert.weiToFixedPoint(balance.raw.toString(), digits: balance.decimals);
           balance.qtd = double.parse(total);
           _tokens.add(balance);
         }
-        List result = await getBalanceAny(account.address, url);
-
-        BigInt ether = Convert.bigIntFromUnit(result.first["result"]);
-        PlatformBalance platformBalance = PlatformBalance();
-        platformBalance.qtd = double.parse(Convert.bigIntReadable(ether));
-        platformBalance.raw = ether;
+        // List result = await getBalanceAny(account.address, url);
+        //
+        // BigInt ether = Convert.bigIntFromUnit(result.first["result"]);
+        // PlatformBalance platformBalance = PlatformBalance();
+        // platformBalance.qtd = double.parse(Convert.bigIntReadable(ether));
+        // platformBalance.raw = ether;
         update[accountAddress.hex] = {
           "token": _tokens,
-          "platform": platformBalance
+          // "platform": platformBalance
         };
       }
       wrap.send({"update": update});

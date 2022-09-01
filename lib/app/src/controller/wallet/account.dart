@@ -10,8 +10,7 @@ import 'package:avme_wallet/app/src/controller/ui/popup.dart';
 import 'package:avme_wallet/app/src/helper/enums.dart';
 import 'package:avme_wallet/app/src/helper/file_manager.dart';
 import 'package:avme_wallet/app/src/helper/print.dart';
-
-import 'balance.dart';
+import 'package:avme_wallet/app/src/controller/wallet/token/balance.dart';
 
 class AccountData {
   final Wallet data;
@@ -20,8 +19,7 @@ class AccountData {
   final int derived;
   EthereumAddress? ethereumAddress;
   late String address;
-  List<Balance> balance = [];
-  PlatformBalance platform = PlatformBalance();
+  List<BalanceInfo> balance = [];
   /// Anywhere in the app you can wait if the information is ready
   ///to be used...
   /// You can also use : hasAddress.future.asStream
@@ -31,19 +29,12 @@ class AccountData {
     insert(data);
   }
 
-  void updateToken(Balance value, int pos)
+  void updateToken(BalanceInfo value, int pos)
   {
     Print.mark("updateToken raw: ${value.raw}");
     this.balance[pos] = value;
     Account.notify();
     Print.mark("${this.address} -> AccountData.updateToken");
-  }
-
-  void updatePlatform(PlatformBalance value)
-  {
-    this.platform = value;
-    Account.notify();
-    Print.mark("${this.address} -> AccountData.updatePlatform");
   }
 
   void insert(Wallet _data) async
@@ -62,8 +53,6 @@ class AccountData {
 
     hasAddress.complete(true);
   }
-
-// Future<EthereumAddress> get address => _data.privateKey.extractAddress();
 }
 
 class Account extends ChangeNotifier
@@ -72,8 +61,8 @@ class Account extends ChangeNotifier
 
   factory Account() => _self;
 
-  static List<AccountData> accounts = [];
-  static Completer<List> rawAccounts = Completer();
+  List<AccountData> accounts = [];
+  Completer<List> rawAccounts = Completer();
 
   static const String filename = 'accounts.json';
   static final String folder = AppRootFolder.Accounts.name;
@@ -104,6 +93,7 @@ class Account extends ChangeNotifier
       rawAccounts.complete(source);
     }
     Print.warning("Account.init: ${source.runtimeType}");
+    notify();
   }
 
   static notify()
@@ -121,7 +111,7 @@ class Account extends ChangeNotifier
 
   ///Returns current working account
   static AccountData current() {
-    return accounts[_self.selected];
+    return _self.accounts[_self.selected];
   }
 
   static Future<bool> add(Map entry, Wallet? wallet) async {
@@ -131,7 +121,7 @@ class Account extends ChangeNotifier
       Print.error("Error at Account.add: Malformed param key");
       return false;
     }
-    List account = await rawAccounts.future;
+    List account = await _self.rawAccounts.future;
     account.add(entry);
     bool didSave = await FileManager.writeString(folder, filename, jsonEncode(account));
     if(!didSave) {
@@ -144,18 +134,21 @@ class Account extends ChangeNotifier
     ///initialized, perhaps an App State could solve that... (please no!)
     if(wallet != null)
     {
-      List<AccountData> _accounts = [];
-      if(accounts != null)
-      {
-        _accounts = accounts;
-      }
+      // List<AccountData> _accounts = [];
+      // if(_self.accounts.isNotEmpty)
+      // {
+      //   _accounts = _self.accounts;
+      // }
+      AccountData account = AccountData(wallet, entry["title"], entry["slot"], entry["derived"]);
+      await account.hasAddress.future;
+      _self.accounts.add(account);
 
-      _accounts.add(AccountData(wallet, entry["title"], entry["slot"], entry["derived"]));
-      accounts = _accounts;
+      // _self.accounts = _accounts;
     }
 
-    rawAccounts = Completer()
+    _self.rawAccounts = Completer()
       ..complete(account);
+    notify();
     return true;
   }
 
@@ -190,7 +183,7 @@ class Account extends ChangeNotifier
       throw "Error at Account.remove: Invalid keys";
     }
 
-    List account = await rawAccounts.future;
+    List account = await _self.rawAccounts.future;
     bool didRemove = account.remove(entry);
     if(!didRemove) {
       throw "Error at Account.remove: Could not find account";
@@ -203,14 +196,14 @@ class Account extends ChangeNotifier
     }
     // accounts = Completer()
     //   ..complete(account);
-    rawAccounts = Completer()
+    _self.rawAccounts = Completer()
       ..complete(account);
     return true;
   }
 
   static Future load(String password) async
   {
-    List _accounts = await rawAccounts.future;
+    List _accounts = await _self.rawAccounts.future;
     Print.warning("accounts? $_accounts");
     // ProgressDialog init = ProgressDialog();
     ProgressDialog progress = await ProgressPopup.display();
@@ -226,7 +219,6 @@ class Account extends ChangeNotifier
     Completer<bool> processEnded = Completer();
     threads.addToPool(id: 0, task: threadMessage)
       .listen((event) {
-        Print.approve(event.toString());
         if(event is Map)
         {
           ///This key is provided when the function finished processing!
@@ -243,7 +235,7 @@ class Account extends ChangeNotifier
         }
       })
       ..onDone(() {
-        accounts = accountList!;
+        _self.accounts = accountList!;
       processEnded.complete(true);
     });
 

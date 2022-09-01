@@ -209,7 +209,7 @@ class CoinData extends Token {
     active: active
   );
 
-  CoinData fromMap(Map data) {
+  factory CoinData.fromMap(Map data) {
     return CoinData(data["name"],
       data["symbol"],
       data["address"],
@@ -219,6 +219,12 @@ class CoinData extends Token {
       data["abi"],
       active : data["active"],
     );
+  }
+
+  @override
+  String toString()
+  {
+    return super.toString().replaceFirst("Token", "CoinData");
   }
 }
 
@@ -235,7 +241,7 @@ class Platform extends Token {
   ) : super(name, symbol, address, testAddress, decimals, image, abi);
 
   @override
-  Platform fromMap(Map data) {
+  factory Platform.fromMap(Map data) {
     return Platform(
       data["name"],
       data["symbol"],
@@ -246,5 +252,11 @@ class Platform extends Token {
       data["abi"],
       active: data["active"]
     );
+  }
+
+  @override
+  String toString()
+  {
+    return super.toString().replaceFirst("Token", "Platform");
   }
 }

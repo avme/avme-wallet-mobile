@@ -6,7 +6,7 @@ import 'dart:typed_data';
 
 import 'package:aes_crypt_null_safe/aes_crypt_null_safe.dart';
 import 'package:avme_wallet/app/src/controller/network/network.dart';
-import 'package:avme_wallet/app/src/controller/wallet/balance.dart';
+import 'package:avme_wallet/app/src/controller/wallet/token/balance.dart';
 import 'package:avme_wallet/app/src/controller/wallet/token/coins.dart';
 import 'package:avme_wallet/app/src/helper/crypto/phrase.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -51,12 +51,11 @@ class Wallet
     Directory documents = await FileManager.documents();
     _secretPath = "${documents.path}/$_file";
 
-    Account();
-    await Account.rawAccounts.future;
+    Account account = Account();
+    await account.rawAccounts.future;
     init.complete(true);
-    // if(data is bool && data == false)
-    // {}
   }
+
   ///Wallet.CreateWallet verifies it self for any the wallet exists
   ///and returns false, this behaviour is to prevent overwriting any
   ///existing accounts, it also
@@ -102,13 +101,14 @@ class Wallet
     {
       exists = true;
     }
-    Print.warning("ACCOUNT CREATED");
-    Print.warning(Account.accounts.toString());
+
     return didAddAccount;
   }
 
   static Future<bool> auth(String password) async
   {
+    print("password \"$password\"");
+    print("args \"${[password, _self._secretPath!]}\"");
     String? secret = await compute(_computeValidate, [password, _self._secretPath!]);
     print("secret: $secret");
     if(secret == null) {
@@ -122,14 +122,15 @@ class Wallet
     return true;
   }
 
-  static Future initializeServices(String password) async
+  static Future<bool> initializeServices(String password) async
   {
     ///Loading accounts into memory!
-    Print.warning("Account.accounts.isEmpty ${Account.accounts.isEmpty}");
-    if(Account.accounts.isEmpty)
+    Account account = Account();
+    Print.warning("Account.accounts.isEmpty ${account.accounts.isEmpty}");
+    if(account.accounts.isEmpty)
     {
       await Account.load(password);
-      AccountData def = Account.accounts.first;
+      AccountData def = account.accounts.first;
       await def.hasAddress.future;
       Print.mark("address: ${def.address}");
     }
@@ -138,15 +139,16 @@ class Wallet
     {
       Print.warning("Starting service observe balance");
       await Network.observeBalance();
-      for(AccountData account in Account.accounts)
+      for(AccountData account in account.accounts)
       {
-        for(Balance balance in account.balance)
+        for(BalanceInfo balance in account.balance)
         {
           Print.warning("[${balance.symbol}]${balance.name} \$${balance.inCurrency} Token Amount ${balance.qtd}");
         }
       }
     }
     Print.warning("Wallet.auth done");
+    return true;
   }
 
   ///Args:
