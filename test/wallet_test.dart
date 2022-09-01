@@ -1,3 +1,4 @@
+import 'package:avme_wallet/app/src/controller/threads.dart';
 import 'package:avme_wallet/app/src/controller/wallet/account.dart';
 import 'package:avme_wallet/app/src/controller/wallet/wallet.dart';
 import 'package:avme_wallet/app/src/helper/enums.dart';
@@ -19,6 +20,12 @@ class WalletTest {
         // Utils.printMark("Authentication.accountExists: ${Authentication.walletExists}");
       });
 
+      test("Can initialize Threads", () async {
+        Threads threads = Threads();
+        bool didStart = await threads.init.future;
+        expect(didStart, true);
+      });
+
       test("Creating Wallet if not exists", () async {
         Print.warning("[Password] \"$password\"");
         await Wallet.createWallet(password, Strenght.twelve);
@@ -30,39 +37,44 @@ class WalletTest {
         expect(didAuth, true);
       });
 
+      // test("Initializing services", () async {
+      //   bool didInitialize = await Wallet.initializeServices(password);
+      //   expect(didInitialize, true);
+      // });
+
       test("Display the account public key", () async {
-        List<AccountData> accounts = Account.accounts;
+        List<AccountData> accounts = Account().accounts;
         // EthereumAddress address = await accounts.first.address;
         String address = accounts.first.address;
-        Print.approve("First account's address: \"${address}\"");
+        Print.approve("First account's address: \"$address\"");
         expect(accounts.length, greaterThan(0));
       });
 
-      test("Deriving account from master mnemonic", () async {
-        bool didDerive = await Wallet.deriveAccount(password, 1);
-        List<AccountData> accounts = Account.accounts;
-        for(int i = 0; i < accounts.length; i++)
-        {
-          // EthereumAddress address = await accounts[i].address;
-          String address = accounts[i].address;
-          Print.approve("Master | ID #$i Account Address: \"${address}\"");
-        }
-        expect(didDerive, true);
-      });
-
-      test("Deriving account from imported mnemonic", () async {
-        bool didDerive = await Wallet.deriveAccount(
-          password,
-          0,
-          title: "Imported from Testing",
-          mnemonic: "hat salt toy seed check wise link execute pattern senior eyebrow melody"
-        );
-        List<AccountData> accounts = Account.accounts;
-        // EthereumAddress address = await accounts.last.address;
-        String address = accounts.last.address;
-        Print.approve("Imported | ID #${accounts.length - 1} Account Address $address");
-        expect(didDerive, true);
-      });
+      // test("Deriving account from master mnemonic", () async {
+      //   bool didDerive = await Wallet.deriveAccount(password, 1);
+      //   List<AccountData> accounts = Account.accounts;
+      //   for(int i = 0; i < accounts.length; i++)
+      //   {
+      //     // EthereumAddress address = await accounts[i].address;
+      //     String address = accounts[i].address;
+      //     Print.approve("Master | ID #$i Account Address: \"$address\"");
+      //   }
+      //   expect(didDerive, true);
+      // });
+      //
+      // test("Deriving account from imported mnemonic", () async {
+      //   bool didDerive = await Wallet.deriveAccount(
+      //     password,
+      //     0,
+      //     title: "Imported from Testing",
+      //     mnemonic: "hat salt toy seed check wise link execute pattern senior eyebrow melody"
+      //   );
+      //   List<AccountData> accounts = Account.accounts;
+      //   // EthereumAddress address = await accounts.last.address;
+      //   String address = accounts.last.address;
+      //   Print.approve("Imported | ID #${accounts.length - 1} Account Address $address");
+      //   expect(didDerive, true);
+      // });
     });
   }
 

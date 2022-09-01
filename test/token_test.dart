@@ -42,21 +42,9 @@ class TokenTest {
 
       test("Listen to Coin updates", () async {
         Coins().addListener(() {
-          Print.mark("[Listen] COINS: ${Coins.list.toString()}");
-          Print.mark("[Listen] Platform: ${Coins.list.first}");
+          Print.mark("[Listen] Coins/Tokens: ${Coins.list.toString()}");
         });
       });
-
-      // ///Remove
-      // test("Describe Coins", () async {
-      //   List<Token> a = Coins.list;
-      //   Print.mark("Coins.list [${a.length}]:");
-      //   for(Token item in a)
-      //   {
-      //     String typeObject = item is Platform ? "Platform" : "CoinData";
-      //     Print.mark("[$typeObject] $item");
-      //   }
-      // });
     });
   }
 }

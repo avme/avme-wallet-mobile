@@ -64,13 +64,14 @@ class ThreadsTest{
 
   static Future<void> main() async
   {
-    Threads? threads;
+    // Threads? threads;
+    Threads threads = Threads();
     group("Threads test", () {
-      test("Can initialize Threads", () async {
-        threads = Threads();
-        bool didStart = await threads!.init.future;
-        expect(didStart, true);
-      });
+      // test("Can initialize Threads", () async {
+      //   threads = Threads();
+      //   bool didStart = await threads!.init.future;
+      //   expect(didStart, true);
+      // });
 
       test("Gathering Coin values", () async {
         await Network.observeValueChanges();
@@ -97,7 +98,7 @@ class ThreadsTest{
           }
           if(i == 0)
           {
-            threads!.dispose();
+            threads.dispose();
           }
         }
       });
