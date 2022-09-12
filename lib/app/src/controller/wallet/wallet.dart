@@ -285,7 +285,7 @@ int secret.length = ${secret.length}''';
     } else {
       // if going to uncomment this, fix maxGas to be widget's parameter
       web3.Transaction transaction = web3.Transaction(maxGas: 70000, gasPrice: gasPrice);
-      web3c.EthereumAddress contractAddress = web3c.EthereumAddress.fromHex(contract.address);
+      web3c.EthereumAddress contractAddress = web3c.EthereumAddress.fromHex(contract.contractAddress);
       int chainId = int.tryParse(dotenv.get("CHAIN_ID")) ?? 43114;
 
       Erc20 erc20 = Erc20(

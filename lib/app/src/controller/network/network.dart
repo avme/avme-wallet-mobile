@@ -357,7 +357,7 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
     List<Token> coins = Coins.list;
     for(Token coin in coins)
     {
-      Print.approve("${coin.name} | ${coin.address}");
+      Print.approve("${coin.name} | ${coin.contractAddress}");
     }
     Threads threads = Threads();
 
@@ -391,7 +391,7 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
                 token.name: [
                   Utils.lowest(missing),
                   Utils.highest(missing),
-                  token.address
+                  token.contractAddress
                 ]
               });
             }
@@ -518,7 +518,7 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
       List<Map> result = await getTokenHistoryRange(
         from: Utils.lowest(_missing),
         to: Utils.highest(_missing),
-        address: coin is Platform ? "0x0" : coin.address,
+        address: coin is Platform ? "0x0" : coin.contractAddress,
         name: coin.name
       );
 
@@ -561,7 +561,7 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
           }
           else if (coinData is CoinData)
           {
-            data = await getPrice(address: coinData.address);
+            data = await getPrice(address: coinData.contractAddress);
             currency = data.first;
           }
 
@@ -585,20 +585,6 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
     MarketData inserted = await WalletDB.insert(md);
     Print.mark("[MarketData.inserted] $inserted");
   }
-
-  // static Future wrapObserveBalanceTest(List params, ThreadWrapper wrap) async {
-  //   await prepareOperation(wrap);
-  //   Print.warning("params wrapObserveBalanceTest: ${params.first}");
-  //   wrap.send("getAccounts");
-  //   print("AAAAAAAAAAAAAAAAAAAAAAAAAAA");
-  //   Print.warning("_QQQQQQQQQQQQQQQQQQQQQQ");
-  //   print("BBBBBBBBBBBBBBBBBBBBBBBBBBBB");
-  //   // do await Future.delayed(Duration(seconds: 1));
-  //   // while(!wrap.isCanceled());
-  //   await Future.delayed(Duration(seconds: 5));
-  //   print("done processo kst");
-  //   wrap.send("done processo kst");
-  // }
 
   static Future<bool> observeBalance() async
   {

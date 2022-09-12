@@ -66,29 +66,16 @@ class Coins extends ChangeNotifier {
     bool inTestnet = Utils.inTestnet();
     for(Map coinData in coinList)
     {
-      String address = "";
-      String testAddress = "";
-
-      if(inTestnet)
-      {
-        address = coinData["address"];
-        testAddress = coinData["test-address"];
-      }
-      else
-      {
-        testAddress = coinData["address"];
-        address = coinData["test-address"];
-      }
-
       CoinData data = CoinData(
         coinData["name"],
         coinData["symbol"],
-        address,
-        testAddress,
+        coinData["address"],
+        coinData["test-address"],
         int.parse(coinData["decimals"]),
         coinData["image"],
         coinData["abi"],
-        active: coinData["active"]
+        active: coinData["active"],
+        inTestnet: inTestnet
       );
 
       list.add(data);
@@ -197,7 +184,7 @@ class CoinData extends Token {
     int decimals,
     String image,
     String abi,
-    {bool active = false}
+    {bool active = false, bool inTestnet = false}
   ) : super(
     name,
     symbol,
@@ -206,7 +193,8 @@ class CoinData extends Token {
     decimals,
     image,
     abi,
-    active: active
+    active: active,
+    inTestnet: inTestnet
   );
 
   factory CoinData.fromMap(Map data) {
@@ -218,6 +206,7 @@ class CoinData extends Token {
       data["image"],
       data["abi"],
       active : data["active"],
+      inTestnet: data["inTestnet"]
     );
   }
 
@@ -237,8 +226,18 @@ class Platform extends Token {
     decimals,
     image,
     abi,
-    {bool active = false}
-  ) : super(name, symbol, address, testAddress, decimals, image, abi);
+    {bool active = false, bool inTestnet = false}
+  ) : super(
+    name,
+    symbol,
+    address,
+    testAddress,
+    decimals,
+    image,
+    abi,
+    active: active,
+    inTestnet: inTestnet
+  );
 
   @override
   factory Platform.fromMap(Map data) {
@@ -250,7 +249,8 @@ class Platform extends Token {
       int.parse(data["decimals"]),
       data["image"],
       data["abi"],
-      active: data["active"]
+      active: data["active"],
+      inTestnet: data["inTestnet"]
     );
   }
 

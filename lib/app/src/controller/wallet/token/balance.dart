@@ -45,7 +45,7 @@ class Balance extends BalanceInfo {
 
   @override
   factory Balance.fromToken(Token token) {
-    return Balance(token.name, token.symbol, token.address, decimals: token.decimals);
+    return Balance(token.name, token.symbol, token.contractAddress, decimals: token.decimals);
   }
 
   @override
@@ -67,6 +67,6 @@ class PlatformBalance extends BalanceInfo {
 
   @override
   factory PlatformBalance.fromToken(Token token) {
-    return PlatformBalance(token.name, token.symbol, token.address, decimals: token.decimals);
+    return PlatformBalance(token.name, token.symbol, token.contractAddress, decimals: token.decimals);
   }
 }
