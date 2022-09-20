@@ -547,7 +547,7 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
 
     List<Token> coins = params.first;
     coins.removeWhere((coin) => coin.name.contains('testnet'));
-    double test = 0;
+    // double test = 0;
     do {
       List<Map> coinsValue = await Future.wait(
         coins.map((Token coinData) async {
@@ -556,8 +556,8 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
           if(coinData is Platform)
           {
             data = await getPrice();
-            test += 0.2;
-            currency = data.first + test;
+            // test += 0.2;
+            currency = data.first;// + test;
           }
           else if (coinData is CoinData)
           {
@@ -606,14 +606,17 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
       "derived": accountData.derived,
       "balance": accountData.balance
     }).toList();
+
     ThreadMessage observeBalance = ThreadMessage(
       caller: "observeBalance",
       params: [accountsRaw, _self.url, _self.chain],
       // params: [[], "https://api.avax-test.network:443/ext/bc/C/rpc", "43114"],
       function: wrapObserveBalance,
     );
+
     bool selfInitialized = false;
     stream = threads.addToPool(id: 0, task: observeBalance, shouldReturnReference: true);
+
     await accountObj.rawAccounts.future;
 
     stream.listen((event) {
@@ -702,9 +705,8 @@ You received \$${difference.toStringAsFixed(2)}\b (${token.name}) in the Account
     int chainId = int.parse(params[2]);
     int seconds = 5;
     Print.mark("url: $url, chainID: $chainId");
+
     ///Network socket
-    http.Client httpClient = http.Client();
-    Web3Client web3client = Web3Client(url, httpClient);
     do {
       Map<String, Map> update = {};
       for (Map account in accounts) {
@@ -720,10 +722,11 @@ You received \$${difference.toStringAsFixed(2)}\b (${token.name}) in the Account
           //   continue;
           // }
 
-
           int tries = 0;
           Print.mark("balance? $balance");
           do {
+            http.Client httpClient = http.Client();
+            Web3Client web3client = Web3Client(url, httpClient);
             try {
               if(balance is PlatformBalance)
               {
@@ -749,7 +752,8 @@ You received \$${difference.toStringAsFixed(2)}\b (${token.name}) in the Account
                 tries++;
               }
               else
-                throw e;
+                Print.error("[T#${wrap.info.id} ID#${wrap.id}] Unexpected error \"$e\"");
+                // throw e;
             }
           } while(tries < 3);
 
