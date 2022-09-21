@@ -14,6 +14,7 @@ import 'package:avme_wallet/app/src/controller/settings.dart';
 import 'package:avme_wallet/app/src/helper/utils.dart';
 
 import '../drawer/drawer.dart';
+import '../widgets/scaffold/debug.dart';
 
 class AppScaffold extends StatefulWidget {
   @override
@@ -248,11 +249,11 @@ class _State extends State<AppScaffold>
             appScaffoldTabController: this.appScaffoldTabController,
           ),
           //TODO; Enable debug overlay
-          // DebugOverlay(
-          //   connected: connectionStatus,
-          //   connectionType: connectionType,
-          //   tabController: appScaffoldTabController,
-          // )
+          DebugOverlay(
+            connected: connectionStatus,
+            connectionType: connectionType,
+            tabController: appScaffoldTabController,
+          )
         ],
       ),
       //TODO; Enable the webview
