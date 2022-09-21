@@ -659,30 +659,6 @@ You received \$${difference.toStringAsFixed(2)}\b (${token.name}) in the Account
                 resAccount.updateToken(token, i);
               }
             }
-//             PlatformBalance platform = update["platform"];
-//             platform.inCurrency = platform.qtd * platform.token().value;
-//             if(platform.qtd != resAccount.platform.qtd)
-//             {
-//
-//               double difference = platform.inCurrency - resAccount.platform.inCurrency;
-//               Print.ok("platform: ${platform.inCurrency} - ${resAccount.platform.inCurrency}");
-//               if(difference > 0 && selfInitialized)
-//               {
-//                 PushNotification.showNotification(
-//                   id: 9,
-//                   title: "Transfer received (${platform.name})",
-//                   body:
-//                   '''Account Update:
-// You received \$${difference.toStringAsFixed(2)}\b (${platform.name}) in the Account#${Account.accounts.indexOf(resAccount)} ${resAccount.title}.''',
-//                   payload: "app/history"
-//                 );
-//               }
-//               resAccount.updatePlatform(platform);
-//             }
-//             else if(resAccount.platform.inCurrency != platform.qtd * platform.token().value)
-//             {
-//               resAccount.updatePlatform(platform);
-//             }
           }
         }
         if(!selfInitialized)
@@ -691,8 +667,8 @@ You received \$${difference.toStringAsFixed(2)}\b (${token.name}) in the Account
         }
       }
     });
-    // await stream.first;
-    await Future.delayed(Duration(seconds: 5));
+    await stream.first;
+    // await Future.delayed(Duration(seconds: 5));
     return true;
   }
   /*TODO: Using different objects to distinguish both Platform and Coins is
@@ -746,8 +722,8 @@ You received \$${difference.toStringAsFixed(2)}\b (${token.name}) in the Account
             catch (e) {
               if (e is RangeError) {
                 Print.error("[T#${wrap.info
-                    .id} ID#${wrap.id}] Failed to recover balance at contract \"${balance
-                    .name}\": ${balance.address} on address $accountAddress");
+                  .id} ID#${wrap.id}] Failed to recover balance at contract \"${balance
+                  .name}\": ${balance.address} on address $accountAddress");
                 await Future.delayed(Duration(seconds: 1));
                 tries++;
               }
@@ -757,19 +733,12 @@ You received \$${difference.toStringAsFixed(2)}\b (${token.name}) in the Account
             }
           } while(tries < 3);
 
-          String total = Convert.weiToFixedPoint(balance.raw.toString(), digits: balance.decimals);
+          String total = Convert.bigIntReadable(balance.raw);
           balance.qtd = double.parse(total);
           _tokens.add(balance);
         }
-        // List result = await getBalanceAny(account.address, url);
-        //
-        // BigInt ether = Convert.bigIntFromUnit(result.first["result"]);
-        // PlatformBalance platformBalance = PlatformBalance();
-        // platformBalance.qtd = double.parse(Convert.bigIntReadable(ether));
-        // platformBalance.raw = ether;
         update[accountAddress.hex] = {
           "token": _tokens,
-          // "platform": platformBalance
         };
       }
       wrap.send({"update": update});
