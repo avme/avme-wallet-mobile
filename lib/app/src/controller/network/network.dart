@@ -480,21 +480,6 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
   static Future<bool> updateCoinHistory() async
   {
     List<Token> coins = Coins.list;
-    // List<int> platformMissing =
-    //   await WalletDB.getMissingDays("platform");
-    // if (platformMissing.isNotEmpty) {
-    //   Print.warning("platform? $platformMissing");
-    //   List platformData = await getTokenHistoryRange(
-    //     from: Utils.lowest(platformMissing),
-    //     to: Utils.highest(platformMissing),
-    //   );
-    //   for (Map _entry in platformData) {
-    //     String price = _entry['exact'].toStringAsFixed(6);
-    //     Decimal value = Decimal.parse(price);
-    //     _self._insertHistoryValues("platform", _entry['unix'], value);
-    //   }
-    // }
-
     for (Token coin in coins) {
       Print.error("[${coin.name}]");
       if (coin.name.contains('testnet')) {
@@ -504,17 +489,7 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
       if (_missing.isEmpty) {
         continue;
       }
-      // late List<Map> result;
-      // if(coin is Platform)
-      // {
-      //   result = await getTokenHistoryRange(
-      //     from: Utils.lowest(_missing),
-      //     to: Utils.highest(_missing),
-      //     name: coin.name,
-      //   );
-      // }
-      // else
-      // {
+
       List<Map> result = await getTokenHistoryRange(
         from: Utils.lowest(_missing),
         to: Utils.highest(_missing),
@@ -614,7 +589,7 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
       function: wrapObserveBalance,
     );
 
-    bool selfInitialized = false;
+    Completer<bool> selfInitialized = Completer();
     stream = threads.addToPool(id: 0, task: observeBalance, shouldReturnReference: true);
 
     await accountObj.rawAccounts.future;
@@ -645,7 +620,7 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
                 token.inCurrency = token.qtd * token.token.value;
                 double difference = token.inCurrency - resAccount.balance[i].inCurrency;
                 Print.ok("${token.name} ${token.inCurrency} - ${resAccount.balance[i].inCurrency}");
-                if(difference > 0 && selfInitialized)
+                if(difference > 0 && selfInitialized.isCompleted)
                 {
                   PushNotification.showNotification(
                     id: 9,
@@ -661,14 +636,15 @@ You received \$${difference.toStringAsFixed(2)}\b (${token.name}) in the Account
             }
           }
         }
-        if(!selfInitialized)
+        if(!selfInitialized.isCompleted)
         {
-          selfInitialized = true;
+          selfInitialized.complete(true);
         }
       }
     });
-    await stream.first;
+    // await stream.first;
     // await Future.delayed(Duration(seconds: 5));
+    await selfInitialized.future;
     return true;
   }
   /*TODO: Using different objects to distinguish both Platform and Coins is

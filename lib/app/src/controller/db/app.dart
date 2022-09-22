@@ -209,6 +209,17 @@ class WalletDB {
     return result.map((map) => MarketData.fromMap(map)).toList();
   }
 
+  Future<List<MarketData>> readAmountIn(String whereIn, [int? limit, String args = ""]) async {
+    final Database database = await _self.database;
+    final result = await database.query(
+      MarketDataFields.table,
+      columns: MarketDataFields.values,
+      orderBy: '${MarketDataFields.dateTime} DESC',
+      where: '${MarketDataFields.tokenName} in ($whereIn) $args',
+    );
+    return result.map((map) => MarketData.fromMap(map)).toList();
+  }
+
   Future close() async{
     final Database database = await _self.database;
     database.close();
@@ -229,14 +240,14 @@ class WalletDB {
 
     final Database database = await _self.database;
     List<Map> rows = await database.query(
-        MarketDataFields.table,
-        columns: [MarketDataFields.dateTime],
-        where: '${MarketDataFields.tokenName} = ? and (${MarketDataFields.dateTime} between ? and ?)',
-        whereArgs: [
-          tokenName.toUpperCase(),
-          startUnix.toString(),
-          todayUnixHours.last.toString()
-        ]
+      MarketDataFields.table,
+      columns: [MarketDataFields.dateTime],
+      where: '${MarketDataFields.tokenName} = ? and (${MarketDataFields.dateTime} between ? and ?)',
+      whereArgs: [
+        tokenName.toUpperCase(),
+        startUnix.toString(),
+        todayUnixHours.last.toString()
+      ]
     );
 
     for(Map row in rows)

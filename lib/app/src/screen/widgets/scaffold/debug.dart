@@ -11,8 +11,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:provider/provider.dart';
 
-import '../../../controller/ui/push_notification.dart';
-import '../../../helper/size.dart';
+import 'package:avme_wallet/app/src/controller/ui/push_notification.dart';
+import 'package:avme_wallet/app/src/helper/size.dart';
 
 class DebugOverlay extends StatefulWidget {
   final bool connected;
@@ -199,7 +199,6 @@ class _DebugOverlayState extends State<DebugOverlay> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Container(
-              // color: Colors.blue,
               width: 36,
               height: 36,
               decoration: BoxDecoration(

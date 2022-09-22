@@ -1,6 +1,9 @@
+import 'package:avme_wallet/app/src/controller/db/app.dart';
 import 'package:avme_wallet/app/src/controller/wallet/token/coins.dart';
 import 'package:avme_wallet/app/src/helper/print.dart';
+import 'package:avme_wallet/app/src/helper/size.dart';
 import 'package:avme_wallet/app/src/helper/utils.dart';
+import 'package:avme_wallet/app/src/model/db/market_data.dart';
 import 'package:avme_wallet/app/src/screen/widgets/hint.dart';
 import 'package:avme_wallet/app/src/screen/widgets/overview/token_value.dart';
 import 'package:flutter/services.dart';
@@ -15,6 +18,8 @@ import 'package:avme_wallet/app/src/screen/widgets/overview/export.dart';
 import 'package:avme_wallet/app/src/controller/wallet/token/balance.dart';
 import 'package:avme_wallet/app/src/screen/widgets/generic.dart';
 import 'package:avme_wallet/app/src/screen/widgets/overview/pie_chart.dart';
+
+import '../../controller/wallet/token/token.dart';
 
 class Overview extends StatefulWidget {
   final TabController appScaffoldTabController;
@@ -76,7 +81,6 @@ class _OverviewState extends State<Overview> {
                   )
                 )
               ),
-              // totalBalance: _totalBalance(app),
               totalBalance: _totalBalance(),
               address: Account().accounts[account.selected].address,
               onPressed: () async {
@@ -187,7 +191,6 @@ class _OverviewState extends State<Overview> {
 
   Map<String, List> _tokenDistribution()
   {
-    // Map tokensWithBalance = app.currentAccount.tokensBalanceList;
     AccountData account = Account.current();
     Map tokensWithBalance = {};
     for(BalanceInfo balance in account.balance)
@@ -213,28 +216,14 @@ class _OverviewState extends State<Overview> {
     Print.warning(ret.toString());
     return ret;
   }
+
   String _totalBalance()
   {
-    // AccountData currentAccount = Account.current();
-    // double total = currentAccount.balance.map((balance) => balance.inCurrency).reduce((t, c) => t + c);
-    // return "$total";
-    return "0%";
-    // List<double> tokensValue = currentAccount.balance.map((e) => e.inCurrency).toList();
-    // double total = tokensValue.ma
-    // double platformValue = currentAccount.platform.inCurrency;
-    // tokensValue.forEach((value) => platformValue += value);
-    // return "$platformValue";
+    double total = 0;
+    for(BalanceInfo balanceInfo in Account.current().balance)
+    {
+      total += balanceInfo.inCurrency;
+    }
+    return "${Utils.shortReadable(total.toString(),comma: true, length: 7)}";
   }
-  // String _totalBalance(AvmeWallet app)
-  // {
-  //   List tokensValue = app.currentAccount.tokensBalanceList.entries.map((e) =>
-  //   e.value["balance"]).toList();
-  //
-  //   double totalValue = app.currentAccount.networkBalance;
-  //
-  //   tokensValue.forEach((value) => totalValue += value);
-  //
-  //   print(tokensValue);
-  //   return "${shortAmount(totalValue.toString(),comma: true, length: 7)}";
-  // }
 }
