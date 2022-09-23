@@ -367,6 +367,11 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
       function: observeHourlyCoinHistory
     );
     stream = threads.addToPool(id: 0, task: observeHist, shouldReturnReference: true);
+
+    ///Just to capture exceptions while unit testing
+    ///because this service is live until the app
+    ///closes
+    Completer<bool> didUpdate = Completer();
     stream.listen((event) async {
       if (event is Map) {
         if (event["command"] == "getMissingDays") {
@@ -374,26 +379,28 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
           List<Map> pending = [];
           await Future.forEach(coins, (Token token) async {
             List<int> missing = await WalletDB.getMissingHours(token.name);
-            if (token is Platform)
-            {
-              pending.insert(0,
-                {
-                  token.name : [
+            if(missing.isNotEmpty) {
+              if (token is Platform)
+              {
+                pending.insert(0,
+                    {
+                      token.name : [
+                        Utils.lowest(missing),
+                        Utils.highest(missing),
+                        "0x0"
+                      ]
+                    }
+                );
+              }
+              else if (token is CoinData) {
+                pending.add({
+                  token.name: [
                     Utils.lowest(missing),
                     Utils.highest(missing),
-                    "0x0"
+                    token.contractAddress
                   ]
-                }
-              );
-            }
-            else if (token is CoinData) {
-              pending.add({
-                token.name: [
-                  Utils.lowest(missing),
-                  Utils.highest(missing),
-                  token.contractAddress
-                ]
-              });
+                });
+              }
             }
           });
           socket.send(pending);
@@ -408,9 +415,13 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
               await _self._insertHistoryValues(coin, _entry['unix'], value);
             }
           }
+          didUpdate.complete(true);
         }
+
       }
     });
+    await didUpdate.future;
+
     return true;
   }
 
@@ -481,7 +492,6 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
   {
     List<Token> coins = Coins.list;
     for (Token coin in coins) {
-      Print.error("[${coin.name}]");
       if (coin.name.contains('testnet')) {
         continue;
       }

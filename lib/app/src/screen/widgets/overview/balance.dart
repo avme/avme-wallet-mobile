@@ -66,8 +66,6 @@ class _OverviewAndButtonsState extends State<OverviewAndButtons> {
       .where((balanceInfo) => balanceInfo.qtd > 0)
       .map((balanceInfo) => "'${balanceInfo.name.toUpperCase()}'").join(", ");
 
-    List a = current.balance
-        .where((balanceInfo) => balanceInfo.qtd > 0).toList();
     String andWhere = "and datetime between $midNight and ($midNight + 3500)";
     List<MarketData> data = await WalletDB().readAmountIn(whereIn, null, andWhere);
     double sumOfCurrent = 0;
@@ -75,10 +73,10 @@ class _OverviewAndButtonsState extends State<OverviewAndButtons> {
     double previousValue = 0;
     double updatedValue = 0;
 
-    Print.warning("{a?} $a");
-    Print.warning("{wherein?} $whereIn");
-    Print.warning("{futa?} $data");
-    Print.warning("{subdom?} ${current.balance}");
+    // Print.warning("{a?} $a");
+    // Print.warning("{wherein?} $whereIn");
+    // Print.warning("{data?} $data");
+    // Print.warning("{c?} ${current.balance}");
     do {
       if (data.isNotEmpty)
       {
@@ -91,9 +89,8 @@ class _OverviewAndButtonsState extends State<OverviewAndButtons> {
         }
 
         updatedValue = (((sumOfCurrent - sumOfMidnight) / sumOfCurrent) * 100);
-
         if (updatedValue != previousValue) {
-          difference.add(updatedValue.toStringAsFixed(2));
+          difference.add("${updatedValue > 0 ? "+" : ""}${updatedValue.toStringAsFixed(2)}");
           previousValue = updatedValue;
           setState(() {});
         }
@@ -145,7 +142,7 @@ class _OverviewAndButtonsState extends State<OverviewAndButtons> {
                               stream: difference.stream,
                               builder: (context, AsyncSnapshot<String> snapshot) {
                                 String data = snapshot.data ?? "0";
-                                return Text("+$data%",
+                                return Text("$data%",
                                   style: TextStyle(
                                     fontSize: DeviceSize.fontSize,
                                     // color: _styleColor.value

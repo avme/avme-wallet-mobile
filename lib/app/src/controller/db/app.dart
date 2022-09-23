@@ -106,7 +106,6 @@ class WalletDB {
     List<MarketData> ret = [];
     final Database database = await _self.database;
     String whereIn = data.map((marketData) => marketData.dateTime).join(", ");
-    // Print.warning("insertList '$whereIn'");
 
     List<Map>? rows = await database.query(
       MarketDataFields.table,
@@ -118,7 +117,6 @@ class WalletDB {
     );
 
     print("[where]\"(${MarketDataFields.tokenName} = ${data.first.tokenName}) and (${MarketDataFields.dateTime} in ($whereIn))\"");
-    print(rows);
     Iterable ignore = rows.map((row) => row[MarketDataFields.dateTime]);
 
     String insert = data.map((MarketData marketData) {
@@ -228,9 +226,9 @@ class WalletDB {
   static Future<List<int>> getMissingHours(String tokenName) async
   {
     List<int> todayUnixHours = [];
-    Map queryResult = await selectLatestTemp();
 
-    int startUnix = queryResult["dateepoch"];
+    int startUnix = await lastHourSaved(tokenName.toUpperCase());
+    if(startUnix == 0) { return []; }
     DateTime _now = DateTime.now();
     DateTime dateTimeNow = DateTime(_now.year, _now.month, _now.day, _now.hour);
     int nowUnix = int.parse(dateTimeNow.millisecondsSinceEpoch.toString().substring(0, 10));
@@ -254,8 +252,6 @@ class WalletDB {
     {
       todayUnixHours.remove(row.values.first);
     }
-
-    // Print.error("$todayUnixHours");
     return todayUnixHours;
   }
 
@@ -265,16 +261,25 @@ class WalletDB {
     return await database.rawQuery('SELECT dateepoch, datetime(dateepoch, \'unixepoch\') as converted FROM ${_self.temp};');
   }
 
-  static Future<Map> selectLatestTemp() async
+  static Future<int> lastHourSaved(String token) async
   {
-    final Database database = await _self.database;
-    List<Map> result = await database.rawQuery('''
-      SELECT 
-        dateepoch,
-        datetime(dateepoch, \'unixepoch\') as converted
-        FROM ${_self.temp} order by dateepoch desc limit 1;
-      ''');
-    return result.first;
+    final Database db = await _self.database;
+    String query = '''
+      SELECT dateTime
+        from tbMarketData
+        where tokenName = '$token'
+        order by dateTime desc
+        limit 1;
+      ''';
+    List<Map> result = await db.rawQuery(query);
+    if(result.isNotEmpty)
+    {
+      dynamic dateTime = result.first["dateTime"];
+      if(dateTime is int) { return dateTime; }
+      throw "ERROR at \"lastHourSaved\", returned type not integer at:"
+          " Executing query: \"$query\"";
+    }
+    else return 0;
   }
 
   static Future<List<MarketData>> viewMarketDataMonth(String token, {int limit = 30, int offset = 0}) async

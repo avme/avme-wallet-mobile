@@ -67,11 +67,11 @@ class ThreadsTest{
     // Threads? threads;
     Threads threads = Threads();
     group("Threads test", () {
-      // test("Can initialize Threads", () async {
-      //   threads = Threads();
-      //   bool didStart = await threads!.init.future;
-      //   expect(didStart, true);
-      // });
+      test("Can initialize Threads", () async {
+        threads = Threads();
+        bool didStart = await threads.init.future;
+        expect(didStart, true);
+      });
 
       test("Gathering Coin values", () async {
         await Network.observeValueChanges();
@@ -81,11 +81,12 @@ class ThreadsTest{
         bool done = await Network.updateCoinHistory();
         expect(done, true);
       });
-      //
+
       test("Synchronize current day missing dates", () async {
         bool done = await Network.observeTodayHistory();
         expect(done, true);
       });
+
       test("Dispose Threads", () async {
         ///Dispose after 30 seconds
         // for(int i = 7200; i >= 0; i--)
@@ -104,7 +105,4 @@ class ThreadsTest{
       });
     });
   }
-
-
-
 }

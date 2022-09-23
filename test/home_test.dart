@@ -38,13 +38,13 @@ class HomeTests
     // dialog.percentage.value = 100;
     // dialog.label.value = "done";
     FileManagerTest.main();
-    // Print.error("is in testnet? ${Utils.inTestnet()}");
-    // String password = "abacaxi";
-    // WalletTest.main(password);
+    Print.error("is in testnet? ${Utils.inTestnet()}");
+    String password = "abacaxi";
+    WalletTest.main(password);
     TokenTest.main();
-    WalletTest.main("abacaxi");
-    // NetworkTest.main();
-    // await ThreadsTest.main();
+    // WalletTest.main("abacaxi");
+    NetworkTest.main();
+    await ThreadsTest.main();
 
   }
 }
