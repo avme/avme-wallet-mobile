@@ -415,6 +415,13 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
               await _self._insertHistoryValues(coin, _entry['unix'], value);
             }
           }
+          if(!didUpdate.isCompleted)
+          {
+            didUpdate.complete(true);
+          }
+        }
+        else if(event["command"] == "synced" && !didUpdate.isCompleted)
+        {
           didUpdate.complete(true);
         }
 
@@ -458,6 +465,7 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
           String address = properties[2];
           if (lowest == highest) {
             Print.ok("[T#${wrap.info.id} ID#${wrap.id}] Skipping history request for Coin \"$coin\" UNIX range [$lowest - $highest] being too short");
+            wrap.send({"command": "synced"});
             return;
           }
           Print.warning("[T#${wrap.info.id} ID#${wrap
