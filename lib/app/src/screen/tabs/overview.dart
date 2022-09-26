@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:math';
+
 import 'package:avme_wallet/app/src/controller/db/app.dart';
 import 'package:avme_wallet/app/src/controller/wallet/token/coins.dart';
 import 'package:avme_wallet/app/src/helper/print.dart';
@@ -5,7 +8,6 @@ import 'package:avme_wallet/app/src/helper/size.dart';
 import 'package:avme_wallet/app/src/helper/utils.dart';
 import 'package:avme_wallet/app/src/model/db/market_data.dart';
 import 'package:avme_wallet/app/src/screen/widgets/hint.dart';
-import 'package:avme_wallet/app/src/screen/widgets/overview/token_value.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
@@ -30,7 +32,7 @@ class Overview extends StatefulWidget {
 
 class _OverviewState extends State<Overview> {
   bool initialPieAnimate = true;
-
+  late StreamController<String> difference;
   @override
   void initState()
   {
@@ -38,19 +40,56 @@ class _OverviewState extends State<Overview> {
     WidgetsBinding.instance!.addPostFrameCallback((_) {
       initialPieAnimate = false;
     });
+    difference = StreamController<String>();
+    difference.add("0");
+    updateDifference();
+  }
+
+  void updateDifference() async
+  {
+    Print.warning("updateDifference called");
+    AccountData current = Account.current();
+    DateTime _now = DateTime.now();
+    DateTime dateTimeNow = DateTime.utc(_now.year, _now.month, _now.day);
+    int midNight = int.parse(dateTimeNow.millisecondsSinceEpoch.toString().substring(0, 10));
+
+    String whereIn = current.balance
+        .where((balanceInfo) => balanceInfo.qtd > 0)
+        .map((balanceInfo) => "'${balanceInfo.name.toUpperCase()}'").join(", ");
+
+    String andWhere = "and datetime between $midNight and ($midNight + 3500)";
+    List<MarketData> data = await WalletDB().readAmountIn(whereIn, null, andWhere);
+    double sumOfCurrent = 0;
+    double sumOfMidnight = 0;
+    double previousValue = 0;
+    double updatedValue = 0;
+    // Random random = Random();
+    do {
+    if (data.isNotEmpty)
+    {
+      for (MarketData row in data) {
+        Token token = Coins.list.firstWhere((token) =>
+        token.name.toUpperCase() == row.tokenName);
+        Print.approve("${token.name}: ${token.value}");
+        sumOfMidnight += row.value.toDouble();
+        sumOfCurrent += token.value;
+      }
+
+      updatedValue = (((sumOfCurrent - sumOfMidnight) / sumOfCurrent) * 100)/* + random.nextInt(10)*/;
+      if (updatedValue != previousValue && !difference.isClosed) {
+        difference.add("${updatedValue > 0 ? "+" : ""}${updatedValue.toStringAsFixed(2)}");
+        previousValue = updatedValue;
+        setState(() {});
+      }
+    }
+      await Future.delayed(Duration(seconds: 10));
+    }
+    while(!difference.isClosed);
   }
 
   @override
   Widget build(BuildContext context) {
     AppColors appColors = AppColors();
-    // return Container(
-    //   child: Column(
-    //     children: [
-    //       Text("watch length: ${context.watch<Account>().accounts.length}"),
-    //       Text("singleton lenght: ${Account().accounts.length}"),
-    //     ],
-    //   ),
-    // );
     return Consumer<Account>(
       builder: (context, account, _){
         return ListView(
@@ -107,6 +146,18 @@ class _OverviewState extends State<Overview> {
               onBuyPressed: () {
                 AppHint.show("Not implemented");
               },
+              difference: StreamBuilder(
+                stream: difference.stream,
+                builder: (context, AsyncSnapshot<String> snapshot) {
+                  String data = snapshot.data ?? "0";
+                  return Text("$data%",
+                    style: TextStyle(
+                      fontSize: DeviceSize.fontSize,
+                      // color: _styleColor.value
+                    )
+                  );
+                },
+              ),
             ),
             TokenDistribution(
               chartData: _tokenDistribution(),
@@ -225,5 +276,11 @@ class _OverviewState extends State<Overview> {
       total += balanceInfo.inCurrency;
     }
     return "${Utils.shortReadable(total.toString(),comma: true, length: 7)}";
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    difference.close();
   }
 }
