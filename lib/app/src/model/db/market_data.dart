@@ -59,6 +59,6 @@ class MarketData {
 
   @override
   String toString() {
-    return 'TokenValue{id: $id, tokenName: $tokenName, value: $value, dateTime: $dateTime}';
+    return 'TokenValue(id: $id, tokenName: $tokenName, value: $value, dateTime: $dateTime)';
   }
 }

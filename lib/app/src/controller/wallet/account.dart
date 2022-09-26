@@ -25,6 +25,8 @@ class AccountData {
   /// You can also use : hasAddress.future.asStream
   Completer<bool> hasAddress = Completer();
 
+  BalanceInfo get getPlatformBalance => balance.first;
+
   AccountData(this.data, this.title, this.slot, this.derived) {
     insert(data);
   }
@@ -112,6 +114,12 @@ class Account extends ChangeNotifier
   ///Returns current working account
   static AccountData current() {
     return _self.accounts[_self.selected];
+  }
+
+  ///Used only for consumer/selector
+  AccountData get currentSelected
+  {
+    return accounts[selected];
   }
 
   static Future<bool> add(Map entry, Wallet? wallet) async {

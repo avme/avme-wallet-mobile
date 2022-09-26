@@ -17,8 +17,14 @@ class Coins extends ChangeNotifier {
   static final Coins _self = Coins._internal();
   factory Coins() => _self;
 
-  ///Coin's value, Platform is the Network's coin
+  /// This array stores both tokens and the platform being hosted
+  ///use the first in index to recover the platform token info
+  ///when operating!
+  ///
+  /// Alternately you can use Coins.getPlatformToken to avoid
+  ///confusion...
   static List<Token> list = [];
+  static Token get getPlatformToken => list.first;
 
   Completer<bool> init = Completer();
   Completer<List> _rawCoinsData = Completer();

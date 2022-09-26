@@ -6,6 +6,7 @@ import 'dart:typed_data';
 
 import 'package:aes_crypt_null_safe/aes_crypt_null_safe.dart';
 import 'package:avme_wallet/app/src/controller/network/network.dart';
+import 'package:avme_wallet/app/src/controller/ui/market_info.dart';
 import 'package:avme_wallet/app/src/controller/wallet/token/balance.dart';
 import 'package:avme_wallet/app/src/controller/wallet/token/coins.dart';
 import 'package:avme_wallet/app/src/helper/crypto/phrase.dart';
@@ -148,6 +149,8 @@ class Wallet
       }
     }
     Print.warning("Wallet.auth done");
+    MarketInfo mi = MarketInfo();
+    await mi.init.future;
     return true;
   }
 

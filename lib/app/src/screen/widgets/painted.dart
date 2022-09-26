@@ -144,13 +144,12 @@ class PaintedChart extends StatelessWidget {
       });
       this.chartData!.forEach((double element) =>
         formattedData.add(
-          element / (highest * 1.15)
+          // element / (highest * 1.15)
+          element / (highest * 1.25)
         )
       );
     }
     return GestureDetector(
-      // onTap: this.onTap ?? () => AppHint.show("${this.name} graph: Not implemented"),
-      // onTap: this.onTap ?? () => Navigator.push(context, MaterialPageRoute(builder: (context) => SyncFusionChart(tokenName: this.name))),
       child: Container(
         width: width,
         height: height,

@@ -22,6 +22,7 @@ import 'package:avme_wallet/app/src/screen/widgets/generic.dart';
 import 'package:avme_wallet/app/src/screen/widgets/overview/pie_chart.dart';
 
 import '../../controller/wallet/token/token.dart';
+import '../widgets/overview/token_value.dart';
 
 class Overview extends StatefulWidget {
   final TabController appScaffoldTabController;
@@ -47,7 +48,6 @@ class _OverviewState extends State<Overview> {
 
   void updateDifference() async
   {
-    Print.warning("updateDifference called");
     AccountData current = Account.current();
     DateTime _now = DateTime.now();
     DateTime dateTimeNow = DateTime.utc(_now.year, _now.month, _now.day);
@@ -102,8 +102,8 @@ class _OverviewState extends State<Overview> {
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                     colors: <Color>[
-                      appColors.preColorList[Account.currentSelectedId()][0],
-                      appColors.preColorList[Account.currentSelectedId()][1],
+                      appColors.preColorList[account.selected][0],
+                      appColors.preColorList[account.selected][1],
                     ]
                   )
                 ),
@@ -113,31 +113,28 @@ class _OverviewState extends State<Overview> {
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                     colors: <Color>[
-                      //TODO: Get the current wallet id
-                      appColors.preColorList[0][0],
-                      appColors.preColorList[0][1],
+                      appColors.preColorList[account.selected][0],
+                      appColors.preColorList[account.selected][1],
                     ]
                   )
                 )
               ),
               totalBalance: _totalBalance(),
-              address: Account().accounts[account.selected].address,
+              address: account.currentSelected.address,
               onPressed: () async {
-                await Clipboard.setData(ClipboardData(text: Account().accounts[account.selected].address));
+                await Clipboard.setData(ClipboardData(text: account.currentSelected.address));
                 AppHint.show("Address copied to clipboard");
               },
               onIconPressed: () async {
-                // NotificationBar().show(context,text: "Show RECEIVE widgets");
-                //TODO: Implent this back
                 await showDialog(
                   context: context,
-                  builder: receivePopup
+                  builder: ((context) => receivePopup(account.currentSelected))
                 );
               },
               onReceivePressed: () async {
                 await showDialog(
                   context: context,
-                  builder: receivePopup
+                  builder: ((context) => receivePopup(account.currentSelected))
                 );
               },
               onSendPressed: () {
@@ -165,7 +162,7 @@ class _OverviewState extends State<Overview> {
               appScaffoldTabController: widget.appScaffoldTabController,
             ),
           ]
-          ..addAll(_tokenDetailsCard())
+          ..addAll(_tokenDetailsCard(account.currentSelected))
             // ..addAll([
             //   HistorySnippet(
             //     appScaffoldTabController: widget.appScaffoldTabController,
@@ -177,18 +174,18 @@ class _OverviewState extends State<Overview> {
     );
   }
 
-  StatefulBuilder receivePopup(BuildContext? context)
+  StatefulBuilder receivePopup(AccountData account)
   {
     return StatefulBuilder(builder: (builder, setState) =>
       ReceivePopup(
         title: "Share QR Address",
-        accountTitle: Account.current().title,
-        address: Account.current().address,
+        accountTitle: account.title,
+        address: account.address,
         onQrPressed: () {
           AppHint.show(
             "text",
             onPressed:() async {
-              await Clipboard.setData(ClipboardData(text: Account.current().address));
+              await Clipboard.setData(ClipboardData(text: account.address));
             }
           );
         },
@@ -196,64 +193,87 @@ class _OverviewState extends State<Overview> {
     );
   }
 
-  List<Widget> _tokenDetailsCard()
+  List<Widget> _tokenDetailsCard(AccountData account)
   {
-    AccountData account = Account.current();
     Map tokensWithBalance = {};
-    for(BalanceInfo balance in account.balance)
+    for(int index = 0; index < account.balance.length; index ++)
     {
-      tokensWithBalance[balance.name] = balance.inCurrency;
+      ///Skipping first entry because its the platform's token
+      if(index == 0) { continue; }
+      tokensWithBalance[account.balance[index].name] = account.balance[index].inCurrency;
     }
-    return [
-      Container(child: Text("FIX ME"),)
-    ];
-    /*
-    List<Widget> ret = [
+    Widget platformLogo = Container();
+    BalanceInfo platformBalance = account.getPlatformBalance;
+    Token platformToken = Coins.getPlatformToken;
+    ///Defining if is the default "Avalanche" or any other blockchain
+    if(Coins.getPlatformToken.symbol == "AVAX")
+    {
+      platformLogo = Image.asset('assets/avax_logo.png', fit: BoxFit.fitHeight);
+    }
+    else
+    {
+      platformLogo = CircleAvatar(
+        backgroundColor: AppColors.purpleDark1,
+        child: Icon(
+          Icons.language_rounded,
+          color: Colors.white,
+        ),
+      );
+    }
+
+    List<TokenTracker> ret = [
       TokenTracker(
-        image:
-        Image.asset(
-          'assets/avax_logo.png',
-          fit: BoxFit.fitHeight,),
-        name: 'PLATFORM',
-        // amount: "${Utils.shortReadable(account.platform.qtd.toString(),comma: true, length: 3)}",
-        amount: "${account.platform.qtd}",
-        marketValue: "${account.platform.inCurrency.toStringAsFixed(5)}",
-        asNetworkToken: '',
-      )
+        name: Coins.getPlatformToken.name,
+        symbol: Coins.getPlatformToken.symbol,
+        image: platformLogo,
+        // amount: '${Utils.shortReadable(platformBalance.qtd.toString(),comma: true, length: 3)}',
+        amount: '${platformBalance.qtd}',
+        marketValue: '${platformBalance.inCurrency.toStringAsFixed(5)}',
+      ),
     ];
-    ///Checking for any token recovered
-    if(tokensWithBalance.length > 0) {
-      return ret..addAll(tokensWithBalance.entries.map((entry) {
-        CoinData coinData = Coins.list.firstWhere((_coinData) => _coinData.name == entry.key);
-        Balance balance = account.balance.firstWhere((_balance) => _balance.name == entry.key);
+
+    if(tokensWithBalance.isNotEmpty)
+    {
+      ret..addAll(tokensWithBalance.entries.map((token) {
+        Token coinData = Coins.list.firstWhere((_coinData) => _coinData.name == token.key);
+        BalanceInfo balance = account.balance.firstWhere((_balance) => _balance.name == token.key);
         return TokenTracker(
+          name: token.key,
+          symbol: coinData.symbol,
           image: Utils.resolveImage(coinData.image),
-          name: entry.key,
           amount: "${balance.qtd}",
           marketValue: "${Utils.shortReadable(balance.inCurrency.toString())}",
-          asNetworkToken: "FIX THIS",
+          convertedToPlatformValue: "${(coinData.value / platformToken.value).toStringAsFixed(8)} (${platformToken.symbol})",
         );
       }).toList());
     }
     return ret;
-    */
-
   }
 
   Map<String, List> _tokenDistribution()
   {
     AccountData account = Account.current();
     Map tokensWithBalance = {};
-    for(BalanceInfo balance in account.balance)
+
+    ///Ignoring first because its the platform token
+    // for(BalanceInfo balance in account.balance)
+    for(int i = 0; i < account.balance.length; i ++)
     {
-      tokensWithBalance[balance.name] = balance.inCurrency;
+      if(i == 0) { continue; }
+      tokensWithBalance[account.balance[i].symbol] = account.balance[i].inCurrency;
     }
 
-    Map<String, List> ret = {};
+    Map<String, List> ret = {
+      "AVAX": [
+        account.balance.first.inCurrency,
+        Colors.redAccent
+      ]
+    };
+
     int pos = 0;
 
     ///Checking for any token
-    if(account.balance.length > 0) {
+    if(account.balance.isNotEmpty) {
       ret.addAll(
         tokensWithBalance.map((key, value) {
           pos++;
@@ -264,7 +284,7 @@ class _OverviewState extends State<Overview> {
         })
       );
     }
-    Print.warning(ret.toString());
+    // Print.warning(ret.toString());
     return ret;
   }
 

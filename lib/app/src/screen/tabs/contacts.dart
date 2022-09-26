@@ -218,7 +218,7 @@ class _ContactsState extends State<Contacts> {
                         ),
                         child: GestureDetector(
                           onLongPress: (){
-                            if(!this.editMode && controller.contacts.length > 0)
+                            if(!this.editMode && controller.contacts.isNotEmpty)
                             {
                               AppHint.show("Entering Editing mode");
                               setState(() {
@@ -622,7 +622,7 @@ class _ContactsState extends State<Contacts> {
   {
     return AppTextFormField(
       onChanged: (String typedText) {
-        if(typedText.length > 0)
+        if(typedText.isNotEmpty)
         {
           this.filter = [];
           contacts.forEach((int key, c.Contact contact) {

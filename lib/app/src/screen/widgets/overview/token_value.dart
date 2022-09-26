@@ -1,3 +1,4 @@
+import 'package:avme_wallet/app/src/controller/ui/market_info.dart';
 import 'package:avme_wallet/app/src/controller/wallet/account.dart';
 import 'package:avme_wallet/app/src/controller/wallet/token/balance.dart';
 import 'package:avme_wallet/app/src/helper/size.dart';
@@ -10,9 +11,14 @@ import 'package:avme_wallet/app/src/screen/widgets/hint.dart';
 import 'package:avme_wallet/app/src/screen/widgets/painted.dart';
 import 'package:avme_wallet/app/src/screen/widgets/theme.dart';
 import 'package:avme_wallet/app/src/screen/widgets/overview/market_data.dart';
+import 'package:avme_wallet/app/src/model/db/market_data.dart' as db;
+
+import '../../../controller/wallet/token/coins.dart';
+import '../../../controller/wallet/token/token.dart';
+import '../../../helper/print.dart';
 
 class TokenValue extends StatefulWidget {
-  final Image image;
+  final Widget image;
   final String amount;
   final String marketValue;
   final String valueDifference;
@@ -105,23 +111,41 @@ class _TokenValueState extends State<TokenValue> {
 }
 
 class TokenTracker extends StatefulWidget {
-  final Image image;
+  final Widget image;
   final String amount;
   final String marketValue;
   final String name;
-  final String asNetworkToken;
+  final String symbol;
+  final String? convertedToPlatformValue;
 
-  const TokenTracker(
-      {Key? key, required this.image, required this.amount, required this.marketValue, required this.asNetworkToken, required this.name})
-      : super(key: key);
+  const TokenTracker({
+      Key? key,
+      required this.image,
+      required this.amount,
+      required this.marketValue,
+      required this.name,
+      required this.symbol,
+      this.convertedToPlatformValue
+    }) : super(key: key);
   @override
   _TokenTrackerState createState() => _TokenTrackerState();
 }
 
 class _TokenTrackerState extends State<TokenTracker> {
+  late Token token;
+  bool synced = false;
+  @override
+  void initState() {
+    super.initState();
+    token = Coins.list.firstWhere((token) => token.name == widget.name);
+    if(token.value > 0)
+    {
+      synced = true;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    String name = widget.name == "PLATFORM" ? dotenv.env["PLATFORM_SYMBOL"]! : widget.name;
     return ConstrainedBox(
       constraints: BoxConstraints(minHeight: DeviceSize.screenHeight / 5
         // minHeight: SizeConfig.screenHeight / 2
@@ -161,7 +185,7 @@ class _TokenTrackerState extends State<TokenTracker> {
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: DeviceSize.safeBlockHorizontal * 2),
                           child: Text(
-                            name,
+                            widget.symbol,
                             style: TextStyle(
                               fontSize: DeviceSize.fontSizeLarge * 1.2,
                             ),
@@ -184,54 +208,53 @@ class _TokenTrackerState extends State<TokenTracker> {
                     Text("\$${widget.marketValue}", style: AppTextStyles.span.copyWith(fontSize: DeviceSize.fontSizeLarge))
                   ]
                   ..addAll(
-                    widget.asNetworkToken.length > 0
-                    ? [ SizedBox(height: 8),
-                      Text(widget.asNetworkToken, style: AppTextStyles.span.copyWith(fontSize: DeviceSize.fontSizeLarge)),]
+                    widget.convertedToPlatformValue != null
+                    ? [
+                        SizedBox(height: 8),
+                        Text(widget.convertedToPlatformValue!, style: AppTextStyles.span.copyWith(fontSize: DeviceSize.fontSizeLarge)),
+                    ]
                     : [])
                 ),
               ),
               Expanded(
                 flex: 3,
                 child: FutureBuilder(
-                  //future: requestLastFourBalance(widget.name),
-                  future: lastFiveBalance(widget.name),
-                  builder: (context, AsyncSnapshot<List> snapshot) {
+                  future: lastFiveBalance(),
+                  builder: (context, AsyncSnapshot<List<double>> snapshot) {
                     if (snapshot.data != null) {
-                      final List tokenValues = snapshot.data!;
+                      final List<double> tokenValues = snapshot.data!;
                       return Stack(
                         children: [
                           PaintedChart(
                             width: double.maxFinite,
-                            height: DeviceSize.screenHeight / 7,
+                            height: DeviceSize.screenHeight / 7.5,
                             name: widget.name,
-                            chartData: [
-                              tokenValues.elementAt(4),
-                              tokenValues.elementAt(3),
-                              tokenValues.elementAt(2),
-                              tokenValues.elementAt(1),
-                              tokenValues.elementAt(0),
-                              // 150,
-                              // 95,
-                              // 82,
-                              // 80,
-                              // 79,
-                              // 75,
-                              // 77,
-                              // 78,
-                              // 50,
-                              // 62,
-                              // 40,
-                              // 80
-                            ],
+                            chartData: tokenValues,
                           ),
+                          !synced
+                            ? Positioned(
+                              right: 8,
+                              top: 6,
+                              child: GestureDetector(
+                                onTap: () {
+                                  AppHint.show("This data is not synced.");
+                                },
+                                child: Icon(
+                                  Icons.warning,
+                                  color: Colors.yellow,
+                                  size: DeviceSize.safeBlockHorizontal * 6,
+                                ),
+                              ),
+                            )
+                            : Container(),
                           Positioned(
                             bottom: 0,
                             right: 0,
                             child: GestureDetector(
                               onTap: () {
-                                Navigator.push(context, MaterialPageRoute(builder: (context) => MarketData(tokenName: widget.name)));
+                                // Navigator.push(context, MaterialPageRoute(builder: (context) => MarketData(tokenName: widget.name)));
                                 // TODO: Implement this page
-                                // AppHint.show("Implement MarketData");
+                                AppHint.show("Implement MarketData");
                               },
                               child: Icon(
                                 Icons.fullscreen,
@@ -260,35 +283,30 @@ class _TokenTrackerState extends State<TokenTracker> {
       ),
     );
   }
-}
 
-Future<List> lastFiveBalance(String name) async {
-  List tokenValues = [];
-  AccountData current = Account.current();
-  // if (name == 'PLATFORM') {
-  //   // tokenValues.add(double.tryParse(appState.networkToken.value));
-  //   tokenValues.add(current.platform.inCurrency);
-  // }
-  // else {
-    BalanceInfo balance = current.balance.firstWhere((_balance) => _balance.name == name);
-    tokenValues.add(balance.inCurrency);
-  // }
+  Future<List<double>> lastFiveBalance() async {
+    List<double> tokenValues = [];
+    List<db.MarketData> marketData = MarketInfo.previewWeek[widget.name.toUpperCase()]!;
+    for(db.MarketData data in marketData)
+    {
+      tokenValues.add(data.value.toDouble());
+    }
 
-  await WalletDB().readAmount(name, 4).then((value) => {
-    value.forEach((element) {
-      tokenValues.add(element.value.toDouble());
-    })
-  });
+    if(synced)
+    {
+      tokenValues.add(token.value);
+    }
 
-  if (tokenValues.length > 2) {
-    return tokenValues;
+    if (tokenValues.length > 2) {
+      return tokenValues;
+    }
+    return [
+      5.0,
+      5.0,
+      5.0,
+      5.0,
+      5.0,
+      5.0,
+    ];
   }
-  return [
-    5.0,
-    5.0,
-    5.0,
-    5.0,
-    5.0,
-    5.0,
-  ];
 }

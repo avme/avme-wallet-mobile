@@ -282,6 +282,52 @@ class WalletDB {
     else return 0;
   }
 
+  static Future<Map<String, List<MarketData>>> viewOverviewDays(List<String> tokens, [int limit = 5]) async
+  {
+
+
+    String sql = '''
+select * from 
+(
+  select md.*, datetime(dateTime, 'unixepoch') as converted
+    from ${_self.valueHistory} md
+    where md.dateTime between cast(strftime('%s', date('now')) as int) and (cast(strftime('%s', date('now')) as int) + 3500)
+    ''';
+    String base = '''
+  union 
+    select md.*, datetime(dateTime, 'unixepoch') as converted
+      from ${_self.valueHistory} md
+      where md.dateTime between cast(strftime('%s', date('now','-INDEX days')) as int) and (cast(strftime('%s', date('now','-INDEX days')) as int) + 3500)
+    ''';
+    String footer = '''
+) 
+  order by tokenName, dateTime asc;
+    ''';
+
+    for(int index = 1; index < limit; index++)
+    {
+      sql += base.replaceAll('INDEX', '$index');
+    }
+    sql += footer;
+
+    final Database db = await _self.database;
+    List<Map<String, dynamic>> query = await db.rawQuery(sql);
+    Map<String, List<MarketData>> ret = {};
+    for(String token in tokens)
+    {
+      List match = query.where((row) => row["tokenName"] == token).toList();
+      ret[token] = match.map((row) =>
+        MarketData(
+          id: row["id"],
+          tokenName: row["tokenName"],
+          value: Decimal.parse(row["value"]),
+          dateTime: row["dateTime"],
+        )
+      ).toList();
+    }
+    return ret;
+  }
+
   static Future<List<MarketData>> viewMarketDataMonth(String token, {int limit = 30, int offset = 0}) async
   {
     List<MarketData> ret = [];
@@ -312,7 +358,6 @@ class WalletDB {
         )
       );
     }
-
     return ret;
   }
 }
