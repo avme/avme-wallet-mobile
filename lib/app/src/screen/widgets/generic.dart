@@ -275,3 +275,15 @@ class _ReceivePopupState extends State<ReceivePopup> {
     );
   }
 }
+
+class SpaceGap extends StatelessWidget {
+  final double multiplier;
+  const SpaceGap([this.multiplier = 0.88]);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.red,
+        child: SizedBox(height: DeviceSize.safeBlockVertical * multiplier, width: 2,));
+  }
+}

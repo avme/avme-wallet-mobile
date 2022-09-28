@@ -70,7 +70,6 @@ class _OverviewState extends State<Overview> {
       for (MarketData row in data) {
         Token token = Coins.list.firstWhere((token) =>
         token.name.toUpperCase() == row.tokenName);
-        Print.approve("${token.name}: ${token.value}");
         sumOfMidnight += row.value.toDouble();
         sumOfCurrent += token.value;
       }
@@ -203,7 +202,6 @@ class _OverviewState extends State<Overview> {
       tokensWithBalance[account.balance[index].name] = account.balance[index].inCurrency;
     }
     Widget platformLogo = Container();
-    BalanceInfo platformBalance = account.getPlatformBalance;
     Token platformToken = Coins.getPlatformToken;
     ///Defining if is the default "Avalanche" or any other blockchain
     if(Coins.getPlatformToken.symbol == "AVAX")
@@ -226,9 +224,6 @@ class _OverviewState extends State<Overview> {
         name: Coins.getPlatformToken.name,
         symbol: Coins.getPlatformToken.symbol,
         image: platformLogo,
-        // amount: '${Utils.shortReadable(platformBalance.qtd.toString(),comma: true, length: 3)}',
-        amount: '${platformBalance.qtd}',
-        marketValue: '${platformBalance.inCurrency.toStringAsFixed(5)}',
       ),
     ];
 
@@ -236,14 +231,10 @@ class _OverviewState extends State<Overview> {
     {
       ret..addAll(tokensWithBalance.entries.map((token) {
         Token coinData = Coins.list.firstWhere((_coinData) => _coinData.name == token.key);
-        BalanceInfo balance = account.balance.firstWhere((_balance) => _balance.name == token.key);
         return TokenTracker(
           name: token.key,
           symbol: coinData.symbol,
           image: Utils.resolveImage(coinData.image),
-          amount: "${balance.qtd}",
-          marketValue: "${Utils.shortReadable(balance.inCurrency.toString())}",
-          convertedToPlatformValue: "${(coinData.value / platformToken.value).toStringAsFixed(8)} (${platformToken.symbol})",
         );
       }).toList());
     }
