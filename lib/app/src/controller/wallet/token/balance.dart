@@ -1,14 +1,49 @@
 import 'package:avme_wallet/app/src/controller/wallet/token/token.dart';
 import 'package:avme_wallet/app/src/controller/wallet/token/coins.dart';
+import 'package:flutter/material.dart';
 
-abstract class BalanceInfo {
+abstract class BalanceInfo extends ChangeNotifier {
   final String name;
   final String symbol;
   final String address;
   final int decimals;
-  double inCurrency = 0.0;
-  double qtd = 0.0;
-  BigInt raw = BigInt.zero;
+  double _inCurrency = 0.0;
+  double _qtd = 0.0;
+  BigInt _raw = BigInt.zero;
+
+  double get inCurrency => _inCurrency;
+  double get qtd => _qtd;
+  BigInt get raw => _raw;
+
+  set inCurrency(double newValue)
+  {
+    print("$name| BalanceInfo.inCurrency from \"$_inCurrency\" to \"$newValue\"");
+    if(_inCurrency != newValue)
+    {
+      _inCurrency = newValue;
+      notifyListeners();
+    }
+  }
+
+  set qtd(double newValue)
+  {
+    print("$name| BalanceInfo.qtd from \"$_qtd\" to \"$newValue\"");
+    if(_qtd != newValue)
+    {
+      _qtd = newValue;
+      notifyListeners();
+    }
+  }
+
+  set raw(BigInt newValue)
+  {
+    print("$name| BalanceInfo.raw from \"$_raw\" to \"$newValue\"");
+    if(_raw != newValue)
+    {
+      _raw = newValue;
+      notifyListeners();
+    }
+  }
 
   BalanceInfo(this.name, this.symbol, this.address, {required this.decimals});
 

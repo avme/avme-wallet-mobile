@@ -1,4 +1,6 @@
-abstract class Token {
+import 'package:flutter/material.dart';
+
+abstract class Token extends ChangeNotifier {
   final String name;
   final String symbol;
   final String address;
@@ -9,8 +11,29 @@ abstract class Token {
   final bool active;
   final bool inTestnet;
 
-  BigInt ether = BigInt.zero;
-  double value = 0;
+  BigInt _ether = BigInt.zero;
+  double _value = 0;
+
+  BigInt get ether => _ether;
+  set ether(BigInt newValue) {
+    if(_ether != newValue)
+    {
+      print("$name| Token.ether from \"$_ether\" to \"$newValue\"");
+      _ether = newValue;
+      notifyListeners();
+    }
+  }
+
+  double get value => _value;
+
+  set value(double newValue) {
+    if(_value != newValue)
+    {
+      print("$name| Token.value from \"$_value\" to \"$newValue\"");
+      _value = newValue;
+      notifyListeners();
+    }
+  }
 
   ///Default Constructor
   Token(this.name, this.symbol, this.address, this.testAddress, this.decimals, this.image, this.abi, {this.active = false, this.inTestnet = false});

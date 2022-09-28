@@ -97,12 +97,7 @@ class WalletDB {
   }
 
   static Future<List<MarketData>> insertList(List<MarketData> data) async
-  {/*
-  select md.dateTime from tbMarketData as md
-    where /*md.tokenName like '%AVAL%';*/
-        md.tokenName = 'AVALANCHE'
-        and md.dateTime in (1658188800);
-  */
+  {
     List<MarketData> ret = [];
     final Database database = await _self.database;
     String whereIn = data.map((marketData) => marketData.dateTime).join(", ");
@@ -120,7 +115,7 @@ class WalletDB {
     Iterable ignore = rows.map((row) => row[MarketDataFields.dateTime]);
 
     String insert = data.map((MarketData marketData) {
-      if(ignore.contains(marketData.dateTime)) { return null; }
+      if (ignore.contains(marketData.dateTime)) { return null; }
       ret.add(marketData);
       return "(\"${marketData.tokenName.toUpperCase()}\", ${marketData.value}, ${marketData.dateTime})";
     }).toList().join(",\n");
@@ -164,7 +159,7 @@ class WalletDB {
       ]
     );
     List<int> savedDays = [];
-    if(days.isNotEmpty){
+    if (days.isNotEmpty){
       days.forEach((Map row) => savedDays.add(row[MarketDataFields.dateTime]));
       _filterDays.removeWhere((date) => savedDays.contains(date));
     }
@@ -233,7 +228,7 @@ class WalletDB {
     DateTime dateTimeNow = DateTime(_now.year, _now.month, _now.day, _now.hour);
     int nowUnix = int.parse(dateTimeNow.millisecondsSinceEpoch.toString().substring(0, 10));
 
-    for(int i = startUnix; i < nowUnix; i += 3600)
+    for (int i = startUnix; i < nowUnix; i += 3600)
     { todayUnixHours.add(i); }
 
     final Database database = await _self.database;
@@ -272,7 +267,7 @@ class WalletDB {
         limit 1;
       ''';
     List<Map> result = await db.rawQuery(query);
-    if(result.isNotEmpty)
+    if (result.isNotEmpty)
     {
       dynamic dateTime = result.first["dateTime"];
       if(dateTime is int) { return dateTime; }
@@ -284,8 +279,6 @@ class WalletDB {
 
   static Future<Map<String, List<MarketData>>> viewOverviewDays(List<String> tokens, [int limit = 5]) async
   {
-
-
     String sql = '''
 select * from 
 (
@@ -304,7 +297,7 @@ select * from
   order by tokenName, dateTime asc;
     ''';
 
-    for(int index = 1; index < limit; index++)
+    for (int index = 1; index < limit; index++)
     {
       sql += base.replaceAll('INDEX', '$index');
     }
@@ -313,7 +306,7 @@ select * from
     final Database db = await _self.database;
     List<Map<String, dynamic>> query = await db.rawQuery(sql);
     Map<String, List<MarketData>> ret = {};
-    for(String token in tokens)
+    for (String token in tokens)
     {
       List match = query.where((row) => row["tokenName"] == token).toList();
       ret[token] = match.map((row) =>
@@ -328,7 +321,7 @@ select * from
     return ret;
   }
 
-  static Future<List<MarketData>> viewMarketDataMonth(String token, {int limit = 30, int offset = 0}) async
+  static Future<List<MarketData>> viewMarketDataMonth(String tokenName, {int limit = 30, int offset = 0}) async
   {
     List<MarketData> ret = [];
     final Database database = await _self.database;
@@ -339,7 +332,7 @@ select * from
           (SELECT td.dateepoch FROM ${_self.temp} td WHERE date(md.dateTime, 'unixepoch') = date(td.dateepoch, 'unixepoch')) AS 'approximate'
           FROM ${_self.valueHistory} md
         WHERE (SELECT td.dateepoch FROM ${_self.temp} td WHERE date(md.dateTime, 'unixepoch') = date(td.dateepoch, 'unixepoch'))
-          AND md.tokenName = '$token'
+          AND md.tokenName = '$tokenName'
         GROUP BY approximate
         ORDER BY md.dateTime desc
         LIMIT $limit
@@ -347,7 +340,7 @@ select * from
       '''
     );
 
-    for(Map row in result)
+    for (Map row in result)
     {
       ret.add(
         MarketData(
@@ -359,5 +352,28 @@ select * from
       );
     }
     return ret;
+  }
+
+  static Future<double> recoverLastTokenValue(String tokenName) async
+  {
+    String sql = '''
+    SELECT value FROM ${_self.valueHistory}
+      WHERE tokenName = "$tokenName"
+      ORDER BY dateTime desc limit 1;
+    ''';
+    final Database db = await _self.database;
+    List<Map> rows = await db.rawQuery(sql);
+    if(rows.isEmpty)
+    {
+      return 0;
+    }
+
+    Object result = rows.first.values.first;
+    if (result is double) { return result; }
+    else if (result is num) { return result.toDouble(); }
+    else if (result is String) { return double.parse(result); }
+    else {
+      throw "Error at WalletDB -> recoverLastTokenValue returned from query ${result.runtimeType}";
+    }
   }
 }

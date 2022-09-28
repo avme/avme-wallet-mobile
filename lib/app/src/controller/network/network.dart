@@ -60,10 +60,6 @@ class Network {
     return dotenv.env["NETWORK_PORT"] ?? "7545";
   }
 
-  // String url = dotenv.env["NETWORK_URL"] ??
-  //     'https://api.avax.network/ext/bc/C/rpc';
-  // String chain = dotenv.env["CHAIN_ID"] ?? '43114';
-
   static Future<bool> checkConnection({String? url}) async
   {
     Uri uri = Uri.parse(url ?? _self.url);
@@ -334,7 +330,6 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
     );
     stream = threads.addToPool(id: 0, task: observeValues, shouldReturnReference: true);
     stream.listen((event) {
-      // Print.approve("observeValues: ${event.toString()}");
       if (event is ThreadReference) {
         Services.add("valueSubscription", event);
       }
@@ -540,7 +535,7 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
 
     List<Token> coins = params.first;
     coins.removeWhere((coin) => coin.name.contains('testnet'));
-    // double test = 0;
+    double test = 0;
     do {
       List<Map> coinsValue = await Future.wait(
         coins.map((Token coinData) async {
@@ -549,25 +544,27 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
           if(coinData is Platform)
           {
             data = await getPrice();
-            // test += 0.2;
-            currency = data.first;// + test;
+            test += 0.2;
+            currency = data.first + test;
           }
           else if (coinData is CoinData)
           {
             data = await getPrice(address: coinData.contractAddress);
             currency = data.first;
           }
-
+          //TODO: Ask Itamar about this conversion
           BigInt ether = BigInt.from(data.last);
           return {coinData.name: [currency, ether]};
         })
       );
+      Print.approve("coinsValue $coinsValue");
       wrap.send(coinsValue);
 
       ///Lowered from 1 second to 30 seconds, the CoinGecko's endpoint can negate
       ///our request, and its unnecessary to request so many updates when
       ///dealing with a mobile device
       await Future.delayed(Duration(seconds: 30));
+      // await Future.delayed(Duration(seconds: 5));
     }
     while (!wrap.isCanceled());
   }
@@ -627,29 +624,30 @@ Error at Network.get: Caused by a \"$e\", retrying in 5 seconds...
             AccountData resAccount = accountObj.accounts.firstWhere((AccountData ad) => ad.address == address);
 
             Map update = event["update"]![address];
-            List<BalanceInfo> tokens = update["token"];
+            List<Map> tokens = update["token"];
             for(int i = 0; i < tokens.length; i++)
             {
-              BalanceInfo token = tokens[i];
-              Print.error("balance ${tokens[i].name}: \$${resAccount.balance[i].inCurrency}:TokenAmount ${resAccount.balance[i].qtd}");
-
-              if(token.qtd != resAccount.balance[i].qtd)
+              BalanceInfo prevBalance = resAccount.balance[i];
+              Map balanceInfo = tokens[i];
+              Token token = Coins.list.firstWhere((element) => element.name == balanceInfo["name"]);
+              double inCurrency = balanceInfo["qtd"] * token.value;
+              // Print.error("balance ${tokens[i].name}: \$${resAccount.balance[i].inCurrency}:TokenAmount ${resAccount.balance[i].qtd}");
+              if(inCurrency != prevBalance.inCurrency)
               {
-                token.inCurrency = token.qtd * token.token.value;
-                double difference = token.inCurrency - resAccount.balance[i].inCurrency;
-                Print.ok("${token.name} ${token.inCurrency} - ${resAccount.balance[i].inCurrency}");
-                if(difference > 0 && selfInitialized.isCompleted)
+                double difference = inCurrency - prevBalance.inCurrency;
+                Print.ok("${balanceInfo["name"]} $inCurrency - ${prevBalance.inCurrency}");
+                if(difference > 0 && selfInitialized.isCompleted && balanceInfo["qtd"] != prevBalance.qtd)
                 {
                   PushNotification.showNotification(
                     id: 9,
-                    title: "Transfer received (${token.name})",
+                    title: "Transfer received (${balanceInfo["name"]})",
                     body:
 '''Account Update:
-You received \$${difference.toStringAsFixed(2)}\b (${token.name}) in the Account#${accountObj.accounts.indexOf(resAccount)} ${resAccount.title}.''',
+You received \$${difference.toStringAsFixed(2)}\b (${balanceInfo["name"]}) in the Account#${accountObj.accounts.indexOf(resAccount)} ${resAccount.title}.''',
                     payload: "app/history"
                   );
                 }
-                resAccount.updateToken(token, i);
+                resAccount.updateToken(balanceInfo["qtd"], inCurrency, balanceInfo["raw"], i);
               }
             }
           }
@@ -681,26 +679,20 @@ You received \$${difference.toStringAsFixed(2)}\b (${token.name}) in the Account
       Map<String, Map> update = {};
       for (Map account in accounts) {
         EthereumAddress accountAddress = account["ethereumAddress"];
-        Print.mark("accountAddress in wrapObserveBalance ${account["address"]}");
-        List<BalanceInfo> _tokens = [];
+        // Print.mark("accountAddress in wrapObserveBalance ${account["address"]}");
+        List<Map> _tokens = [];
         for (BalanceInfo balance in account["balance"]) {
-          // if(balance.address.isEmpty) {
-          //   continue;
-          // }
-          // for (Balance token in account.balance) {
-          // if(token.address.isEmpty) {
-          //   continue;
-          // }
-
           int tries = 0;
-          Print.mark("balance? $balance");
+          BigInt raw = BigInt.zero;
+          double qtd = 0;
+          // Print.mark("balance? $balance");
           do {
             http.Client httpClient = http.Client();
             Web3Client web3client = Web3Client(url, httpClient);
             try {
               if(balance is PlatformBalance)
               {
-                balance.raw = (await web3client.getBalance(accountAddress)).getInWei;
+                raw = (await web3client.getBalance(accountAddress)).getInWei;
               }
               else {
                 EthereumAddress contract = EthereumAddress.fromHex(balance.address);
@@ -709,7 +701,7 @@ You received \$${difference.toStringAsFixed(2)}\b (${token.name}) in the Account
                   client: web3client,
                   chainId: chainId
                 );
-                balance.raw = await typeERC20.balanceOf(accountAddress);
+                raw = await typeERC20.balanceOf(accountAddress);
               }
               break;
             }
@@ -727,9 +719,13 @@ You received \$${difference.toStringAsFixed(2)}\b (${token.name}) in the Account
             }
           } while(tries < 3);
 
-          String total = Convert.bigIntReadable(balance.raw);
-          balance.qtd = double.parse(total);
-          _tokens.add(balance);
+          String total = Convert.bigIntReadable(raw);
+          qtd = double.parse(total);
+          _tokens.add({
+            "name" : balance.name,
+            "raw" : raw,
+            "qtd" : qtd
+          });
         }
         update[accountAddress.hex] = {
           "token": _tokens,

@@ -31,12 +31,14 @@ class AccountData {
     insert(data);
   }
 
-  void updateToken(BalanceInfo value, int pos)
+  void updateToken(double qtd, double inCurrency, BigInt raw, int pos)
   {
-    Print.mark("updateToken raw: ${value.raw}");
-    this.balance[pos] = value;
+    print("updateToken $qtd, $inCurrency, $raw");
+    BalanceInfo balance = this.balance[pos];
+    balance.qtd = qtd;
+    balance.inCurrency = inCurrency;
+    balance.raw = raw;
     Account.notify();
-    Print.mark("${this.address} -> AccountData.updateToken");
   }
 
   void insert(Wallet _data) async
