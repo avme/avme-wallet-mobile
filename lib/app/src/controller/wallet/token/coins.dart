@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:avme_wallet/app/src/controller/controller.dart';
+import 'package:avme_wallet/app/src/controller/db/app.dart';
 import 'package:avme_wallet/app/src/controller/wallet/token/token.dart';
 import 'package:avme_wallet/app/src/helper/enums.dart';
 import 'package:avme_wallet/app/src/helper/file_manager.dart';
@@ -98,6 +99,12 @@ class Coins extends ChangeNotifier {
         active: true,
       )
     );
+
+    ///If we have a backlog of any previous data we pre-load them...
+    for(Token token in list)
+    {
+      token.value = await WalletDB.recoverLastTokenValue(token.name.toUpperCase());
+    }
     _rawCoinsData.complete(coinList);
     init.complete(true);
   }
@@ -112,7 +119,6 @@ class Coins extends ChangeNotifier {
   ///When it receives -1 it means the API refused to return
   static void updateValue(int index, String name, double currency, BigInt ether)
   {
-    Print.approve("$name, $currency");
     if(currency == -1.0 || name.contains('testnet')) { return; }
     Token coin = list[index];
     if(coin.value != currency)
