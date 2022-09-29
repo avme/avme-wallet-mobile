@@ -342,16 +342,13 @@ class _TokenTrackerState extends State<TokenTracker> {
       context: context,
       builder: (BuildContext builder) {
         return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 32.0),
+          margin: EdgeInsets.symmetric(horizontal: DeviceSize.safeBlockHorizontal * 2),
           child: MarketData(
             name: widget.name,
             symbol: widget.symbol,
             image: widget.image,
             accountSelectorWidget: accountSelectorWidget,
             tokenSelectorWidget: tokenSelectorWidget,
-            // balance: widget.balance,
-            // tokenValue: widget.tokenValue,
-            // inPlatformToken: widget.inPlatformToken,
           ),
         );
       }
@@ -365,11 +362,6 @@ class _TokenTrackerState extends State<TokenTracker> {
     {
       tokenValues.add(data.value.toDouble());
     }
-
-    // if(synced)
-    // {
-    //   tokenValues.add(token.value);
-    // }
 
     if (tokenValues.length > 2) {
       return tokenValues;

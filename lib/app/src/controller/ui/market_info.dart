@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:avme_wallet/app/src/controller/db/app.dart';
+import 'package:decimal/decimal.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:avme_wallet/app/src/helper/print.dart';
@@ -18,12 +19,30 @@ class MarketInfo extends ChangeNotifier{
 
   Completer<bool> init = Completer();
   static Map<String, List<MarketData>> previewWeek = {};
-  
+  static Map<String, List<ChartData>> chartData = {};
+
   void _init() async {
     List<String> tokens = Coins.list.map((token) => token.name.toUpperCase()).toList();
-    previewWeek = await WalletDB.viewOverviewDays(tokens, 14);
-    // Print.ok("[PREVIEW WEEK]");
-    // Print.ok("$previewWeek");
+    // previewWeek = await WalletDB.viewOverviewDays(tokens, 30);
+    chartData = await WalletDB.viewOverviewDaysDetails(tokens, 30);
+    previewWeek = chartData.map((key, value) =>
+      MapEntry(key, value.map((e) =>
+        MarketData(
+          dateTime: e.x!.millisecondsSinceEpoch,
+          tokenName: key,
+          value: Decimal.parse(e.open!.toString())
+        )).toList()
+      )
+    );
     init.complete(true);
   }
+}
+
+class ChartData {
+  ChartData({this.x, this.open, this.close, this.low, this.high});
+  final DateTime? x;
+  final double? open;
+  final double? close;
+  final double? low;
+  final double? high;
 }

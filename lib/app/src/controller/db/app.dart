@@ -7,6 +7,7 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../../helper/print.dart';
+import '../ui/market_info.dart';
 
 class WalletDB {
   static final WalletDB _self = WalletDB._init();
@@ -277,20 +278,106 @@ class WalletDB {
     else return 0;
   }
 
-  static Future<Map<String, List<MarketData>>> viewOverviewDays(List<String> tokens, [int limit = 5]) async
+  static Future<Map<String, List<ChartData>>> viewOverviewDaysDetails(List<String> tokens, [int limit = 5]) async
   {
     String sql = '''
 select * from 
 (
-  select md.*, datetime(dateTime, 'unixepoch') as converted
-    from ${_self.valueHistory} md
-    where md.dateTime between cast(strftime('%s', date('now')) as int) and (cast(strftime('%s', date('now')) as int) + 3500)
+          select
+            md.id,
+            md.tokenName,
+            md.dateTime,
+            md.value,
+            cast(strftime('%s', date('now')) as int) as midNight,
+            cast(strftime('%s', date('now')) as int) + 3500 as oneAm,
+            datetime(dateTime, 'unixepoch') as converted,
+            (
+                select l.value from tbMarketData as l 
+                    where l.dateTime
+                        between cast(strftime('%s', date('now')) as int) 
+                        and cast(strftime('%s', date('now')) as int) + (23 * 3600)
+                    and l.tokenName = md.tokenName                        
+                    order by l.dateTime asc
+                limit 1
+            ) as open,
+            (
+                select l.value from tbMarketData as l 
+                    where l.dateTime
+                        between cast(strftime('%s', date('now')) as int) 
+                        and cast(strftime('%s', date('now')) as int) + (23 * 3600)
+                    and l.tokenName = md.tokenName                        
+                    order by l.dateTime desc
+                limit 1
+            ) as close,
+            (
+                select l.value from tbMarketData as l 
+                    where l.dateTime
+                        between cast(strftime('%s', date('now')) as int) 
+                        and cast(strftime('%s', date('now')) as int) + (23 * 3600)
+                    and l.tokenName = md.tokenName                        
+                    order by l.value asc
+                limit 1
+            ) as low,
+            (
+                select l.value from tbMarketData as l 
+                    where l.dateTime
+                        between cast(strftime('%s', date('now')) as int) 
+                        and cast(strftime('%s', date('now')) as int) + (23 * 3600)
+                    and l.tokenName = md.tokenName                        
+                    order by l.value desc
+                limit 1
+            ) as high
+        from tbMarketData as md
+        where md.dateTime between midNight and oneAm
     ''';
     String base = '''
-  union 
-    select md.*, datetime(dateTime, 'unixepoch') as converted
-      from ${_self.valueHistory} md
-      where md.dateTime between cast(strftime('%s', date('now','-INDEX days')) as int) and (cast(strftime('%s', date('now','-INDEX days')) as int) + 3500)
+    UNION
+        select
+            md.id,
+            md.tokenName,
+            md.dateTime,
+            md.value,
+            cast(strftime('%s', date('now','-INDEX days')) as int) as midNight,
+            cast(strftime('%s', date('now','-INDEX days')) as int) + 3500 as oneAm,
+            datetime(dateTime, 'unixepoch') as converted,
+            (
+                select l.value from tbMarketData as l 
+                    where l.dateTime
+                        between cast(strftime('%s', date('now','-INDEX days')) as int) 
+                        and cast(strftime('%s', date('now','-INDEX days')) as int) + (23 * 3600)
+                    and l.tokenName = md.tokenName                        
+                    order by l.dateTime asc
+                limit 1
+            ) as open,
+            (
+                select l.value from tbMarketData as l 
+                    where l.dateTime
+                        between cast(strftime('%s', date('now','-INDEX days')) as int) 
+                        and cast(strftime('%s', date('now','-INDEX days')) as int) + (23 * 3600)
+                    and l.tokenName = md.tokenName                        
+                    order by l.dateTime desc
+                limit 1
+            ) as close,
+            (
+                select l.value from tbMarketData as l 
+                    where l.dateTime
+                        between cast(strftime('%s', date('now','-INDEX days')) as int) 
+                        and cast(strftime('%s', date('now','-INDEX days')) as int) + (23 * 3600)
+                    and l.tokenName = md.tokenName                        
+                    order by l.value asc
+                limit 1
+            ) as low,
+            (
+                select l.value from tbMarketData as l 
+                    where l.dateTime
+                        between cast(strftime('%s', date('now','-INDEX days')) as int) 
+                        and cast(strftime('%s', date('now','-INDEX days')) as int) + (23 * 3600)
+                    and l.tokenName = md.tokenName                        
+                    order by l.value desc
+                limit 1
+            ) as high
+        from tbMarketData as md
+        where md.dateTime between midNight and oneAm
     ''';
     String footer = '''
 ) 
@@ -300,22 +387,25 @@ select * from
     for (int index = 1; index < limit; index++)
     {
       sql += base.replaceAll('INDEX', '$index');
+
     }
     sql += footer;
 
     final Database db = await _self.database;
     List<Map<String, dynamic>> query = await db.rawQuery(sql);
-    Map<String, List<MarketData>> ret = {};
+    Map<String, List<ChartData>> ret = {};
     for (String token in tokens)
     {
       List match = query.where((row) => row["tokenName"] == token).toList();
-      ret[token] = match.map((row) =>
-        MarketData(
-          id: row["id"],
-          tokenName: row["tokenName"],
-          value: Decimal.parse(row["value"]),
-          dateTime: row["dateTime"],
-        )
+      ret[token] = match.map((row) {
+        return ChartData(
+          x: DateTime.fromMillisecondsSinceEpoch(row["dateTime"] * 1000),
+          low: double.parse(row["low"]),
+          high: double.parse(row["high"]),
+          open: double.parse(row["open"]),
+          close: double.parse(row["close"])
+        );
+      }
       ).toList();
     }
     return ret;

@@ -6,17 +6,25 @@ import 'generic.dart';
 
 class AppCard extends StatelessWidget {
   final Widget? child;
-  const AppCard({Key? key, this.child}) : super(key: key);
+  final EdgeInsets padding;
+  final EdgeInsets? innerPadding;
+  const AppCard({
+    Key? key,
+    this.child,
+    this.padding = const EdgeInsets.all(12.0),
+    this.innerPadding
+  }) : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: EdgeInsets.all(12.0),
+      margin: this.padding,
       color: AppColors.cardDefaultColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
       child: Padding(
-        padding: EdgeInsets.all(DeviceSize.safeBlockVertical * 1.5),
+        // padding: EdgeInsets.all(DeviceSize.safeBlockVertical * 1.5),
+        padding: this.innerPadding ?? EdgeInsets.all(DeviceSize.safeBlockVertical * 1.5),
         child: this.child,
       ),
     );
